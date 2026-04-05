@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Loan Obligations - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">Loan Obligations</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}">Services</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_obligation_index') }}">Loan Investment</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="section-title">
+                    <h1>Available Loan Obligations</h1>
+                    <p>Browse through available loan types and start your investment journey</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{{ path('app_obligation_new') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i>Create
+                </a>
+                <a href="{{ path('app_investment_index') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-line me-1"></i>My Investments
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="row mb-4">
+            <div class="col-lg-6 mx-auto">
+                <form method="get" action="{{ path('app_obligation_index') }}" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by obligation name..." value="{{ search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if search %}
+                        <a href="{{ path('app_obligation_index') }}" class="btn btn-secondary ms-2">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Obligations Grid -->
+        <div class="row">
+            {% if obligations is empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No obligations found.
+                        <a href="{{ path('app_obligation_new') }}">Create your first obligation</a>
+                    </div>
+                </div>
+            {% else %}
+                {% for obligation in obligations %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h4 class="card-title text-primary">{{ obligation.nom }}</h4>
+                                <div class="mt-3">
+                                    <p class="mb-2">
+                                        <i class="fas fa-percent text-primary me-2"></i>
+                                        <strong>Interest Rate:</strong> {{ obligation.tauxInteret }}%
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                        <strong>Duration:</strong> {{ obligation.duree }} months
+                                    </p>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ path('app_obligation_show', {'idObligation': obligation.idObligation}) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ path('app_obligation_edit', {'idObligation': obligation.idObligation}) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a href="{{ path('app_investment_new', {'idObligation': obligation.idObligation}) }}" class="btn btn-sm btn-success">Invest</a>
+                                    <form method="post" action="{{ path('app_obligation_delete', {'idObligation': obligation.idObligation}) }}" style="display: inline-block;" onsubmit="return confirm('Are you sure?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ obligation.idObligation) }}">
+                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
