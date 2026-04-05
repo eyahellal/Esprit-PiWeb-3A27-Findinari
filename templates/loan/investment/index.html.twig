@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Investments - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">My Investments</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_investment_index') }}">My Investments</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="section-title">
+                    <h1>My Investment Portfolio</h1>
+                    <p>Track all your loan investments and monitor your returns</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{{ path('app_obligation_index') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Browse Obligations
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="row mb-4">
+            <div class="col-lg-6 mx-auto">
+                <form method="get" action="{{ path('app_investment_index') }}" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by obligation name..." value="{{ search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if search %}
+                        <a href="{{ path('app_investment_index') }}" class="btn btn-secondary ms-2">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Investments Grid -->
+        <div class="row">
+            {% if investments is empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-info">
+                        <i class="fas fa-chart-line fa-3x mb-3 d-block"></i>
+                        <h4>No investments yet</h4>
+                        <p>Browse available obligations and start your investment journey today!</p>
+                        <a href="{{ path('app_obligation_index') }}" class="btn btn-primary mt-2">Browse Obligations</a>
+                    </div>
+                </div>
+            {% else %}
+                {% for investment in investments %}
+                    {% set currentDate = date() %}
+                    {% set isMatured = currentDate > investment.dateMaturite %}
+                    {% set obligation = obligations[investment.obligationId] %}
+                    
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h4 class="card-title text-primary mb-0">
+                                        {% if obligation %}
+                                            {{ obligation.nom }}
+                                        {% else %}
+                                            Investment #{{ investment.idInvestissement }}
+                                        {% endif %}
+                                    </h4>
+                                    {% if isMatured %}
+                                        <span class="badge bg-success">Matured</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Active</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="mt-2">
+                                    <p class="mb-2">
+                                        <i class="fas fa-percent text-primary me-2"></i>
+                                        <strong>Interest Rate:</strong> 
+                                        {% if obligation %}{{ obligation.tauxInteret }}%{% else %}--{% endif %}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-wallet text-primary me-2"></i>
+                                        <strong>Wallet:</strong> #{{ investment.walletId }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-money-bill-wave text-primary me-2"></i>
+                                        <strong>Amount:</strong> 
+                                        <span class="fw-bold text-success">{{ investment.montantInvesti|number_format(2) }} DT</span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                        <strong>Purchase:</strong> {{ investment.dateAchat|date('d/m/Y') }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-calendar-check text-primary me-2"></i>
+                                        <strong>Maturity:</strong> {{ investment.dateMaturite|date('d/m/Y') }}
+                                    </p>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ path('app_investment_show', {'idInvestissement': investment.idInvestissement}) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ path('app_investment_edit', {'idInvestissement': investment.idInvestissement}) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <form method="post" action="{{ path('app_investment_delete', {'idInvestissement': investment.idInvestissement}) }}" style="display: inline-block;" onsubmit="return confirm('Are you sure?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ investment.idInvestissement) }}">
+                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
