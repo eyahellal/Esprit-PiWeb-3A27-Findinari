@@ -38,6 +38,13 @@ class HomeController extends AbstractController
         return $this->render('home/contact.html.twig');
     }
 
+    #[Route('/support', name: 'support_center')]
+    public function support(): Response
+    {
+        return $this->render('reclamation/support_center.html.twig');
+    }
+
+
 
     #[Route('/service/{id}', name: 'app_service_details')]
 public function serviceDetails($id = 1): Response
