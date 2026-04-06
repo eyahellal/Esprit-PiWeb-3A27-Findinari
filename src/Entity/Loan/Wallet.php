@@ -21,23 +21,19 @@ class Wallet
         return $this->id;
     }
 
-    // COMMENT OUT the Utilisateur relationship
-    /*
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'wallets')]
-    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id')]
-    private ?Utilisateur $utilisateur = null;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $utilisateur_id = 1;
 
-    public function getUtilisateur(): ?Utilisateur
+    public function getUtilisateurId(): ?int
     {
-        return $this->utilisateur;
+        return $this->utilisateur_id;
     }
 
-    public function setUtilisateur(?Utilisateur $utilisateur): self
+    public function setUtilisateurId(int $utilisateur_id): self
     {
-        $this->utilisateur = $utilisateur;
+        $this->utilisateur_id = $utilisateur_id;
         return $this;
     }
-    */
 
     #[ORM\Column(type: 'string', nullable: false)]
     private ?string $pays = null;
@@ -87,6 +83,7 @@ class Wallet
     public function __construct()
     {
         $this->investissementobligations = new ArrayCollection();
+        $this->utilisateur_id = 1; // Default to user ID 1
     }
 
     public function getInvestissementobligations(): Collection
