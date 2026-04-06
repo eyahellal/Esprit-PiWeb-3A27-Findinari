@@ -1,6 +1,10 @@
 <?php
 
-namespace App\Entity\user;
+namespace App\Entity\Loan;
+
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\Mapping as ORM;
