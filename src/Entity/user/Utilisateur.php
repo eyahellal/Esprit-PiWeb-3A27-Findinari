@@ -188,10 +188,11 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
    public function getRoles(): array
 {
-    $role = strtoupper($this->role ?? 'USER');
+   $role = strtoupper($this->role ?? 'USER');
 
     $roles = match ($role) {
         'ADMIN' => ['ROLE_ADMIN'],
+        'INFLUENCER' => ['ROLE_INFLUENCER'],
         default => ['ROLE_USER'],
     };
 

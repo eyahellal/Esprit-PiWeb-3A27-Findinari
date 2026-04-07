@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <style>
+        body{
+            margin:0;
+            font-family:Arial,sans-serif;
+            background:#f5f5f9;
+            color:#233242;
+        }
+        .layout{
+            display:flex;
+            min-height:100vh;
+        }
+        .sidebar{
+            width:260px;
+            background:#fff;
+            border-right:1px solid #e5e7eb;
+            padding:25px 18px;
+        }
+        .brand{
+            font-size:34px;
+            font-weight:800;
+            color:#696cff;
+            margin-bottom:25px;
+        }
+        .side-link{
+            display:block;
+            text-decoration:none;
+            color:#455a64;
+            padding:12px 14px;
+            border-radius:12px;
+            margin-bottom:8px;
+            font-weight:700;
+        }
+        .side-link.active{
+            background:#eef0ff;
+            color:#696cff;
+        }
+        .content{
+            flex:1;
+            padding:25px;
+        }
+        .topbar{
+            background:#fff;
+            border-radius:16px;
+            padding:18px 22px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:22px;
+            box-shadow:0 4px 18px rgba(0,0,0,.05);
+        }
+        .cards{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:18px;
+            margin-bottom:22px;
+        }
+        .card{
+            background:#fff;
+            border-radius:18px;
+            padding:22px;
+            box-shadow:0 4px 18px rgba(0,0,0,.05);
+        }
+        .card h3{
+            margin:0 0 10px;
+            font-size:18px;
+        }
+        .big{
+            font-size:34px;
+            font-weight:800;
+            color:#233242;
+        }
+        .section{
+            background:#fff;
+            border-radius:18px;
+            padding:22px;
+            box-shadow:0 4px 18px rgba(0,0,0,.05);
+            margin-bottom:22px;
+        }
+        table{
+            width:100%;
+            border-collapse:collapse;
+        }
+        th, td{
+            text-align:left;
+            padding:14px 10px;
+            border-bottom:1px solid #eef2f7;
+            vertical-align:top;
+        }
+        th{
+            color:#6b7280;
+            font-size:14px;
+        }
+        .btn{
+            border:none;
+            border-radius:10px;
+            padding:10px 14px;
+            cursor:pointer;
+            font-weight:700;
+        }
+        .btn-primary{ background:#696cff; color:#fff; }
+        .btn-danger{ background:#ff3e1d; color:#fff; }
+        .btn-success{ background:#28c76f; color:#fff; }
+        .btn-secondary{ background:#8592a3; color:#fff; }
+        .flash{
+            padding:14px;
+            border-radius:12px;
+            margin-bottom:18px;
+            font-weight:700;
+        }
+        .success{ background:#e8fff1; color:#166534; }
+        .danger{ background:#ffecec; color:#991b1b; }
+        input, select, textarea{
+            width:100%;
+            padding:12px;
+            border:1px solid #dbe1ea;
+            border-radius:10px;
+            box-sizing:border-box;
+            margin-bottom:12px;
+        }
+        .grid-2{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:16px;
+        }
+        .badge{
+            display:inline-block;
+            padding:6px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:700;
+        }
+        .admin{ background:#efeaff; color:#696cff; }
+        .user{ background:#e8f7ff; color:#0ea5e9; }
+        .influencer{ background:#fff4e5; color:#f59e0b; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+    <div class="brand">Sneat</div>
+    <a class="side-link active" href="{{ path('app_admin_dashboard') }}">Dashboard</a>
+    <a class="side-link" href="{{ path('app_admin_wallets') }}">Manage Wallets</a>
+    <a class="side-link" href="{{ path('app_home') }}">Back to site</a>
+    <a class="side-link" href="{{ path('app_logout') }}">Logout</a>
+</aside>
+
+    <main class="content">
+        <div class="topbar">
+    <div style="font-size:24px; font-weight:800;">Admin Dashboard</div>
+
+    <div style="display:flex; align-items:center; gap:12px;">
+        <a href="{{ path('app_admin_wallets') }}" class="btn btn-primary" style="text-decoration:none;">
+            Manage Wallets
+        </a>
+        <div>Welcome {{ app.user.prenom }} {{ app.user.nom }}</div>
+    </div>
+</div>
+
+        {% for message in app.flashes('success') %}
+            <div class="flash success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="flash danger">{{ message }}</div>
+        {% endfor %}
+
+        <div class="cards">
+            <div class="card">
+                <h3>Total Users</h3>
+                <div class="big">{{ totalUsers }}</div>
+            </div>
+            <div class="card">
+                <h3>Total Feedbacks</h3>
+                <div class="big">{{ totalFeedbacks }}</div>
+            </div>
+            <div class="card">
+                <h3>Admins</h3>
+                <div class="big">{{ adminCount }}</div>
+            </div>
+            <div class="card">
+                <h3>Influencers</h3>
+                <div class="big">{{ influencerCount }}</div>
+            </div>
+            <div class="card">
+    <h3>Wallet Management</h3>
+    <div style="margin-top:12px;">
+        <a href="{{ path('app_admin_wallets') }}" class="btn btn-primary" style="text-decoration:none;">
+            Open Wallets
+        </a>
+    </div>
+</div>
+        </div>
+
+        <div class="section">
+            <h2 style="margin-top:0;">Create Admin Account</h2>
+            <form method="post" action="{{ path('app_admin_create_admin') }}">
+                <div class="grid-2">
+                    <input type="text" name="nom" placeholder="Last name" required>
+                    <input type="text" name="prenom" placeholder="First name" required>
+                </div>
+                <input type="email" name="gmail" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button class="btn btn-primary" type="submit">Create Admin</button>
+            </form>
+        </div>
+
+        <div class="section">
+            <h2 style="margin-top:0;">Users</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Change Role</th>
+                    <th>Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.prenom }} {{ user.nom }}</td>
+                        <td>{{ user.gmail }}</td>
+                        <td>
+                            <span class="badge {% if user.role == 'ADMIN' %}admin{% elseif user.role == 'INFLUENCER' %}influencer{% else %}user{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}">
+                                <select name="role">
+                                    <option value="USER" {% if user.role == 'USER' %}selected{% endif %}>USER</option>
+                                    <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                                    <option value="INFLUENCER" {% if user.role == 'INFLUENCER' %}selected{% endif %}>INFLUENCER</option>
+                                </select>
+                                <button class="btn btn-success" type="submit">Update Role</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Delete this user?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                                <button class="btn btn-danger" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2 style="margin-top:0;">Feedbacks</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User Email</th>
+                    <th>Rating</th>
+                    <th>Message</th>
+                    <th>Created At</th>
+                    <th>Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for feedback in feedbacks %}
+                    <tr>
+                        <td>{{ feedback.id }}</td>
+                        <td>{{ feedback.userEmail }}</td>
+                        <td>{{ feedback.rating }}/5</td>
+                        <td>{{ feedback.message }}</td>
+                        <td>{{ feedback.createdAt ? feedback.createdAt|date('Y-m-d H:i') : '' }}</td>
+                        <td>
+                            <form method="post" action="{{ path('app_admin_feedback_delete', {id: feedback.id}) }}" onsubmit="return confirm('Delete this feedback?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback_admin_' ~ feedback.id) }}">
+                                <button class="btn btn-danger" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">No feedbacks found.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>
