@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Form;
+namespace App\form;
 
 use App\Entity\Loan\Wallet;
 use Symfony\Component\Form\AbstractType;

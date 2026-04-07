@@ -3,7 +3,8 @@
 namespace App\Controller\Loan;
 
 use App\Entity\Loan\Wallet;
-use App\Form\WalletType;
+use App\form\WalletType;
+use App\Entity\user\Utilisateur;
 use App\Repository\WalletRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,14 +15,45 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/wallet')]
 class WalletController extends AbstractController
 {
+    private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            $user = $entityManager->getRepository(Utilisateur::class)->find(1);
+        }
+        
+        if (!$user) {
+            $user = $entityManager->getRepository(Utilisateur::class)->findOneBy(['gmail' => 'admin@findinari.com']);
+        }
+        
+        if (!$user) {
+            $user = new Utilisateur();
+            $user->setNom('Admin');
+            $user->setPrenom('User');
+            $user->setGmail('admin@findinari.com');
+            $user->setMdp('password');
+            $user->setRole('ADMIN');
+            $user->setStatut('ACTIF');
+            $user->setDateCreation(new \DateTime());
+            $user->setDateModification(new \DateTime());
+            $user->setFaceEnabled(false);
+            $entityManager->persist($user);
+            $entityManager->flush();
+        }
+        
+        return $user;
+    }
+
     #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
-    public function index(WalletRepository $repository, Request $request): Response
+    public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
+        $user = $this->getUserOrCreate($entityManager);
         
-        // Filter by user_id = 1 (temporary)
         $qb = $repository->createQueryBuilder('w')
-            ->where('w.utilisateur_id = 1');
+            ->where('w.utilisateur = :user')
+            ->setParameter('user', $user);
         
         if ($search) {
             $qb->andWhere('w.pays LIKE :search OR w.devise LIKE :search')
@@ -40,7 +72,8 @@ class WalletController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $wallet = new Wallet();
-        $wallet->setUtilisateurId(1); // Set default user ID to 1
+        $user = $this->getUserOrCreate($entityManager);
+        $wallet->setUtilisateur($user);
         
         $form = $this->createForm(WalletType::class, $wallet);
         $form->handleRequest($request);
@@ -60,9 +93,10 @@ class WalletController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_wallet_show', methods: ['GET'])]
-    public function show(int $id, WalletRepository $repository): Response
+    public function show(string $id, WalletRepository $repository, EntityManagerInterface $entityManager): Response
     {
-        $wallet = $repository->findOneBy(['id' => $id, 'utilisateur_id' => 1]);
+        $user = $this->getUserOrCreate($entityManager);
+        $wallet = $repository->findOneBy(['id' => $id, 'utilisateur' => $user]);
         
         if (!$wallet) {
             throw $this->createNotFoundException('Wallet not found');
@@ -74,9 +108,10 @@ class WalletController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_wallet_edit', methods: ['GET', 'POST'])]
-    public function edit(int $id, Request $request, WalletRepository $repository, EntityManagerInterface $entityManager): Response
+    public function edit(string $id, Request $request, WalletRepository $repository, EntityManagerInterface $entityManager): Response
     {
-        $wallet = $repository->findOneBy(['id' => $id, 'utilisateur_id' => 1]);
+        $user = $this->getUserOrCreate($entityManager);
+        $wallet = $repository->findOneBy(['id' => $id, 'utilisateur' => $user]);
         
         if (!$wallet) {
             throw $this->createNotFoundException('Wallet not found');
@@ -98,9 +133,10 @@ class WalletController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_wallet_delete', methods: ['POST'])]
-    public function delete(int $id, Request $request, WalletRepository $repository, EntityManagerInterface $entityManager): Response
+    public function delete(string $id, Request $request, WalletRepository $repository, EntityManagerInterface $entityManager): Response
     {
-        $wallet = $repository->findOneBy(['id' => $id, 'utilisateur_id' => 1]);
+        $user = $this->getUserOrCreate($entityManager);
+        $wallet = $repository->findOneBy(['id' => $id, 'utilisateur' => $user]);
         
         if (!$wallet) {
             throw $this->createNotFoundException('Wallet not found');
