@@ -7,52 +7,170 @@
 {% block content %}
 
 <turbo-frame id="content-frame">
-    <div class="row mb-4">
+
+    {# Header #}
+    <div class="row mb-4 align-items-center">
         <div class="col-lg-8">
-            <div class="section-title">
-                <h1 class="text-primary">📁 Categories</h1>
-                <p class="text-secondary">Manage your spending categories</p>
-            </div>
+            <h1 class="fw-bold mb-1" style="color: #26474E;">
+                <i class="fas fa-folder me-2"></i>Categories
+            </h1>
+            <p class="text-muted mb-0">Manage your spending categories</p>
         </div>
         <div class="col-lg-4 text-end">
-            <a href="{{ path('app_categorie_new') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i>Create Category
+            <a href="{{ path('app_categorie_new') }}" class="btn btn-lg px-4"
+               style="background: linear-gradient(135deg, #F27438, #F9968B); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(242,116,56,0.3);">
+                <i class="fas fa-plus me-2"></i>New Category
             </a>
         </div>
     </div>
 
+    {# Stats Bar #}
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #26474E; box-shadow: 0 4px 20px rgba(38,71,78,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Categories</p>
+                        <h2 class="fw-bold mb-0">{{ categories|length }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-folder fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #76CDCD; box-shadow: 0 4px 20px rgba(118,205,205,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Active</p>
+                        <h2 class="fw-bold mb-0">
+                            {{ categories|filter(c => c.statut == 'ACTIF')|length }}
+                        </h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #2CCED2; box-shadow: 0 4px 20px rgba(44,206,210,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Inactive</p>
+                        <h2 class="fw-bold mb-0">
+                            {{ categories|filter(c => c.statut == 'INACTIF')|length }}
+                        </h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-times-circle fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Search Bar #}
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <form method="get" action="{{ path('app_categorie_index') }}"
+                  data-turbo-frame="content-frame"
+                  class="d-flex gap-2">
+                <div class="input-group">
+                    <span class="input-group-text border-0 bg-white">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-0 shadow-sm"
+                           placeholder="Search by name..."
+                           value="{{ search ?? '' }}"
+                           style="border-radius: 0 12px 12px 0;">
+                </div>
+                <button type="submit" class="btn px-4"
+                        style="background: #F27438; color: white; border-radius: 12px;">
+                    Search
+                </button>
+                {% if search ?? '' %}
+                    <a href="{{ path('app_categorie_index') }}" class="btn btn-outline-secondary"
+                       style="border-radius: 12px;">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {# Categories Grid #}
     <div class="row">
         {% if categories is empty %}
             <div class="col-12 text-center py-5">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>No categories found.
-                    <a href="{{ path('app_categorie_new') }}">Create your first category</a>
+                <div class="rounded-4 p-5" style="background: #f8fffe; border: 2px dashed #F27438;">
+                    <i class="fas fa-folder-open fa-3x mb-3" style="color: #F27438;"></i>
+                    <h4 style="color: #26474E;">No categories found</h4>
+                    <p class="text-muted">Start by creating your first category</p>
+                    <a href="{{ path('app_categorie_new') }}" class="btn mt-2"
+                       style="background: #F27438; color: white; border-radius: 12px;">
+                        <i class="fas fa-plus me-2"></i>Create Category
+                    </a>
                 </div>
             </div>
         {% else %}
             {% for categorie in categories %}
                 <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm" style="border-left: 4px solid {{ categorie.color ?? '#F27438' }}">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-2">
-                                {% if categorie.icon %}
-                                    <i class="fas {{ categorie.icon }} me-2 text-primary fa-lg"></i>
-                                {% endif %}
-                                <h4 class="card-title text-primary mb-0">{{ categorie.nom }}</h4>
+                    <div class="card h-100 border-0 rounded-4 categorie-card"
+                         style="box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+
+                        {# Card Header #}
+                        <div class="rounded-top-4 p-4 text-white"
+                             style="background: {{ categorie.color is not null ? categorie.color : '#F27438' }};">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="mb-1 opacity-75 small text-uppercase fw-semibold">Category</p>
+                                    <h4 class="fw-bold mb-0">{{ categorie.nom }}</h4>
+                                </div>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                                    <i class="fas {{ categorie.icon is not null ? categorie.icon : 'fa-folder' }} fa-lg"></i>
+                                </div>
                             </div>
+                        </div>
+
+                        {# Card Body #}
+                        <div class="card-body p-4">
+
                             {% if categorie.description %}
-                                <p class="text-muted small">{{ categorie.description }}</p>
+                                <p class="text-muted small mb-3">{{ categorie.description }}</p>
                             {% endif %}
-                            <span class="badge {{ categorie.statut == 'ACTIF' ? 'bg-success' : 'bg-secondary' }}">
-                                {{ categorie.statut }}
-                            </span>
-                            <hr>
-                            <div class="d-flex justify-content-between">
-                                <a href="{{ path('app_categorie_edit', {'id': categorie.id}) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                                <form method="post" action="{{ path('app_categorie_delete', {'id': categorie.id}) }}" 
-                                    onsubmit="return confirm('Are you sure?');">
+
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <span class="badge rounded-pill px-3 py-2"
+                                      style="background: {{ categorie.statut == 'ACTIF' ? '#e8f5e9' : '#fde8e8' }}; 
+                                             color: {{ categorie.statut == 'ACTIF' ? '#2d6a4f' : '#c0392b' }};">
+                                    <i class="fas {{ categorie.statut == 'ACTIF' ? 'fa-check-circle' : 'fa-times-circle' }} me-1"></i>
+                                    {{ categorie.statut }}
+                                </span>
+                            </div>
+
+                            <hr class="my-3">
+
+                            {# Actions #}
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_categorie_edit', {'id': categorie.id}) }}"
+                                   class="btn btn-sm flex-fill edit-btn"
+                                   style="background: #e3f2fd; color: #1e3a5f; border-radius: 10px;">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <form method="post" action="{{ path('app_categorie_delete', {'id': categorie.id}) }}"
+                                      onsubmit="return confirm('Are you sure?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
-                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    <button class="btn btn-sm delete-btn"
+                                            style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </form>
                             </div>
                         </div>
@@ -61,6 +179,28 @@
             {% endfor %}
         {% endif %}
     </div>
+
 </turbo-frame>
+
+<style>
+    .categorie-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(242, 116, 56, 0.2) !important;
+    }
+    .rounded-top-4 {
+        border-radius: 1rem 1rem 0 0 !important;
+    }
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+    .edit-btn:hover {
+        background: #F27438 !important;
+        color: white !important;
+    }
+    .delete-btn:hover {
+        background: #c0392b !important;
+        color: white !important;
+    }
+</style>
 
 {% endblock %}

@@ -76,7 +76,9 @@
     {# Search Bar #}
     <div class="row mb-4">
         <div class="col-lg-6">
-            <form method="get" action="{{ path('app_wallet_index') }}" class="d-flex gap-2">
+           <form method="get" action="{{ path('app_wallet_index') }}"
+      data-turbo-frame="content-frame"
+      class="d-flex gap-2">
                 <div class="input-group">
                     <span class="input-group-text border-0 bg-white">
                         <i class="fas fa-search text-muted"></i>
