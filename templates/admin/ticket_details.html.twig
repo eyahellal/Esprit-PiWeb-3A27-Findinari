@@ -458,7 +458,7 @@
                                     {{ message.contenu|nl2br }}
                                 </div>
 
-                                {% if isAdmin and message.contenu != 'Ce message a été retiré' %}
+                                {% if isAdmin %}
                                     <div style="position: relative;" class="message-actions-dropdown">
                                         <button type="button" onclick="toggleMessageMenu({{ message.id }})" style="background:none; border:none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;" title="Actions">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px; height:18px;"><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
@@ -470,7 +470,7 @@
                                                 Modifier
                                             </button>
                                             
-                                            <form method="post" action="{{ path('app_admin_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ce message (Détruira le contenu original) ?');" style="display: block; width: 100%;">
+                                            <form method="post" action="{{ path('app_admin_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ce message définitivement ?');" style="display: block; width: 100%;">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_message_admin_' ~ message.id) }}">
                                                 <button type="submit" style="background:none; border:none; color: var(--danger); cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px; width: 100%; transition: background .2s;" onmouseover="this.style.background='#fff0f0'" onmouseout="this.style.background='none'">
                                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px; height:14px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>
