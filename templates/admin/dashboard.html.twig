@@ -45,10 +45,8 @@
             line-height: 1.6;
         }
 
-        /* ── LAYOUT ── */
         .layout { display: flex; min-height: 100vh; }
 
-        /* ── SIDEBAR ── */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--surface);
@@ -134,7 +132,6 @@
             border-top: 1px solid var(--border);
         }
 
-        /* ── MAIN ── */
         .content {
             margin-left: var(--sidebar-width);
             flex: 1;
@@ -142,7 +139,6 @@
             min-width: 0;
         }
 
-        /* ── TOPBAR ── */
         .topbar {
             background: var(--surface);
             border-radius: var(--radius-lg);
@@ -158,7 +154,7 @@
         .topbar-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
         .topbar-title span { color: var(--brand); }
 
-        .topbar-right { display: flex; align-items: center; gap: 14px; }
+        .topbar-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
         .avatar {
             width: 38px; height: 38px;
@@ -174,7 +170,6 @@
         .welcome-text { font-size: 13.5px; color: var(--text-secondary); font-weight: 600; }
         .welcome-text strong { color: var(--text-primary); }
 
-        /* ── FLASH ── */
         .flash {
             padding: 14px 18px;
             border-radius: var(--radius-md);
@@ -197,7 +192,6 @@
         .flash.danger  { background: var(--danger-light);  color: #9b1c1c; border-color: #fdb9b9; }
         .flash svg { flex-shrink: 0; width: 18px; height: 18px; }
 
-        /* ── STAT CARDS ── */
         .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -251,14 +245,12 @@
 
         .card-link { text-decoration: none; }
 
-        /* Card color variants */
         .card.c-purple  { --card-accent: #dcfce7; } .card.c-purple  .card-icon svg { color: var(--brand); }
         .card.c-green   { --card-accent: #d1fae5; } .card.c-green   .card-icon svg { color: var(--brand-dark); }
         .card.c-amber   { --card-accent: #fff8e6; } .card.c-amber   .card-icon svg { color: var(--warning); }
         .card.c-blue    { --card-accent: #e6f6ff; } .card.c-blue    .card-icon svg { color: var(--info); }
         .card.c-red     { --card-accent: #fef2f2; } .card.c-red     .card-icon svg { color: var(--danger); }
 
-        /* ── SECTION PANELS ── */
         .section {
             background: var(--surface);
             border-radius: var(--radius-lg);
@@ -274,6 +266,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .section-title {
@@ -289,7 +283,6 @@
 
         .section-body { padding: 24px 26px; }
 
-        /* ── FORM ── */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
         @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
 
@@ -322,7 +315,6 @@
 
         input::placeholder { color: var(--text-muted); font-weight: 400; }
 
-        /* ── BUTTONS ── */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -350,7 +342,6 @@
         .btn-sm        { padding: 7px 13px; font-size: 12.5px; border-radius: 6px; }
         .btn svg       { width: 15px; height: 15px; }
 
-        /* ── TABLE ── */
         .table-wrapper { overflow-x: auto; }
 
         table {
@@ -388,7 +379,6 @@
         tbody tr:hover { background: #fafbff; }
         tbody tr:last-child td { border-bottom: none; }
 
-        /* ── BADGES ── */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -410,11 +400,11 @@
             background: currentColor;
         }
 
-        /* ── ROLE FORM INLINE ── */
         .role-form {
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .role-form select {
@@ -425,7 +415,6 @@
             min-width: 110px;
         }
 
-        /* ── EMPTY STATE ── */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -435,25 +424,43 @@
         .empty-state svg { width: 44px; height: 44px; margin-bottom: 12px; opacity: .45; }
         .empty-state p { font-size: 14px; font-weight: 600; }
 
-        /* ── SCROLLBAR ── */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        /* ── STAR RATING ── */
         .stars { display: inline-flex; gap: 2px; }
         .star { color: #d1d5db; font-size: 14px; }
         .star.filled { color: var(--warning); }
 
-        /* ── DIVIDER ── */
         .form-divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+        .filters-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: end;
+        }
+
+        .filters-bar .form-group.flex-grow {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .filters-bar .form-group.fixed-width {
+            min-width: 220px;
+        }
+
+        .filters-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
 <div class="layout">
 
-    <!-- ══ SIDEBAR ══ -->
     <aside class="sidebar">
         <div class="brand">
             <div class="brand-icon">
@@ -484,10 +491,8 @@
         </div>
     </aside>
 
-    <!-- ══ MAIN CONTENT ══ -->
     <main class="content">
 
-        <!-- TOPBAR -->
         <div class="topbar">
             <div>
                 <div class="topbar-title">Admin <span>Dashboard</span></div>
@@ -502,7 +507,6 @@
             </div>
         </div>
 
-        <!-- FLASH MESSAGES -->
         {% for message in app.flashes('success') %}
             <div class="flash success">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -516,7 +520,6 @@
             </div>
         {% endfor %}
 
-        <!-- STAT CARDS -->
         <div class="cards">
             <div class="card c-purple">
                 <div class="card-icon">
@@ -569,7 +572,6 @@
             </a>
         </div>
 
-        <!-- CREATE ADMIN FORM -->
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
@@ -608,15 +610,43 @@
             </div>
         </div>
 
-        <!-- USERS TABLE -->
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                     All Users
                 </div>
-                <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ users|length }} total</span>
+                <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
+                    {{ filteredUsersCount|default(users|length) }} shown / {{ totalUsers }} total
+                </span>
             </div>
+
+            <div class="section-body" style="padding-bottom: 0;">
+                <form method="get" action="{{ path('app_admin_dashboard') }}" class="filters-bar">
+                    <div class="form-group flex-grow">
+                        <label>Search user by name</label>
+                        <input type="text" name="q" value="{{ search|default('') }}" placeholder="Search by first name or last name">
+                    </div>
+
+                    <div class="form-group fixed-width">
+                        <label>Sort by</label>
+                        <select name="sort">
+                            <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name A → Z</option>
+                            <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z → A</option>
+                            <option value="role_asc" {% if sort == 'role_asc' %}selected{% endif %}>Role A → Z</option>
+                            <option value="role_desc" {% if sort == 'role_desc' %}selected{% endif %}>Role Z → A</option>
+                            <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>Oldest ID</option>
+                            <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>Newest ID</option>
+                        </select>
+                    </div>
+
+                    <div class="filters-actions">
+                        <button class="btn btn-primary" type="submit">Apply</button>
+                        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-secondary">Reset</a>
+                    </div>
+                </form>
+            </div>
+
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -650,8 +680,8 @@
                             <td>
                                 <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="role-form">
                                     <select name="role">
-                                        <option value="USER"       {% if user.role == 'USER' %}selected{% endif %}>USER</option>
-                                        <option value="ADMIN"      {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                                        <option value="USER" {% if user.role == 'USER' %}selected{% endif %}>USER</option>
+                                        <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
                                         <option value="INFLUENCER" {% if user.role == 'INFLUENCER' %}selected{% endif %}>INFLUENCER</option>
                                     </select>
                                     <button class="btn btn-success btn-sm" type="submit">
@@ -670,13 +700,21 @@
                                 </form>
                             </td>
                         </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                                    <p>No users found for this search.</p>
+                                </div>
+                            </td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- FEEDBACKS TABLE -->
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
