@@ -1,0 +1,66 @@
+{% extends 'management/dashboard.html.twig' %}
+
+{% block title %}Categories - Fin-Dinari{% endblock %}
+
+{% set active_tab = 'categorie' %}
+
+{% block content %}
+
+<turbo-frame id="content-frame">
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="section-title">
+                <h1 class="text-primary">📁 Categories</h1>
+                <p class="text-secondary">Manage your spending categories</p>
+            </div>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{{ path('app_categorie_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Create Category
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if categories is empty %}
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>No categories found.
+                    <a href="{{ path('app_categorie_new') }}">Create your first category</a>
+                </div>
+            </div>
+        {% else %}
+            {% for categorie in categories %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm" style="border-left: 4px solid {{ categorie.color ?? '#2d6a4f' }}">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if categorie.icon %}
+                                    <i class="fas {{ categorie.icon }} me-2 text-primary fa-lg"></i>
+                                {% endif %}
+                                <h4 class="card-title text-primary mb-0">{{ categorie.nom }}</h4>
+                            </div>
+                            {% if categorie.description %}
+                                <p class="text-muted small">{{ categorie.description }}</p>
+                            {% endif %}
+                            <span class="badge {{ categorie.statut == 'ACTIF' ? 'bg-success' : 'bg-secondary' }}">
+                                {{ categorie.statut }}
+                            </span>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ path('app_categorie_edit', {'id': categorie.id}) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <form method="post" action="{{ path('app_categorie_delete', {'id': categorie.id}) }}" 
+                                    onsubmit="return confirm('Are you sure?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</turbo-frame>
+
+{% endblock %}

@@ -6,7 +6,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use App\Entity\Loan\Wallet;
+use App\Entity\Categorie;
 use App\Repository\ObjectifRepository;
 
 #[ORM\Entity(repositoryClass: ObjectifRepository::class)]
