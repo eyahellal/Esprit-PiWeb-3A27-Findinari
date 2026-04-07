@@ -673,13 +673,17 @@
                         <tr>
                             <td style="color:var(--text-muted);font-weight:700;">{{ user.id }}</td>
                             <td>
-                                <div style="display:flex;align-items:center;gap:10px;">
-                                    <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-light);color:var(--brand-dark);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
-                                        {{ user.prenom|first|upper }}
-                                    </div>
-                                    <span style="font-weight:600;">{{ user.prenom }} {{ user.nom }}</span>
-                                </div>
-                            </td>
+                    <a href="{{ path('app_admin_user_show', {id: user.id}) }}" style="text-decoration:none;color:inherit;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-light);color:var(--brand-dark);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
+                                {{ user.prenom|first|upper }}
+                            </div>
+                            <span style="font-weight:700;color:var(--brand-dark);">
+                                {{ user.prenom }} {{ user.nom }}
+                            </span>
+                        </div>
+                    </a>
+                </td>
                             <td style="color:var(--text-secondary);">{{ user.gmail }}</td>
 
                             <td>
