@@ -2,7 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Ticket;
+use App\Entity\reclamation\Ticket;
+use App\Entity\reclamation\Message;
 use App\Form\TicketType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -95,7 +96,7 @@ class TicketUserController extends AbstractController
             throw $this->createAccessDeniedException('You do not have access to this ticket.');
         }
 
-        $message = new \App\Entity\Message();
+        $message = new Message();
         $form = $this->createForm(\App\Form\MessageType::class, $message);
 
         $messages = $ticket->getMessages();

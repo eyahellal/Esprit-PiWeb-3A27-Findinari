@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Entity\Message;
-use App\Entity\Ticket;
+use App\Entity\reclamation\Message;
+use App\Entity\reclamation\Ticket;
 use App\Form\MessageType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

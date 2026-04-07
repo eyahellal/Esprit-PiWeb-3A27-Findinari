@@ -13,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use App\Entity\Ticket;
+use App\Entity\reclamation\Ticket;
 use Symfony\Component\Routing\Attribute\Route;
 
 class AdminController extends AbstractController
@@ -267,7 +267,7 @@ class AdminController extends AbstractController
 
     #[Route('/admin/ticket/{id}/delete', name: 'app_admin_ticket_delete', methods: ['POST'])]
     public function deleteTicketAdmin(
-        \App\Entity\Ticket $ticket,
+        \App\Entity\reclamation\Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
@@ -314,7 +314,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
         }
 
-        $message = new \App\Entity\Message();
+        $message = new \App\Entity\reclamation\Message();
         $form = $this->createForm(\App\Form\MessageType::class, $message);
 
         $messages = $ticket->getMessages();
