@@ -1,0 +1,84 @@
+{% extends 'front/layout.html.twig' %}
+
+{% block title %}Feedback{% endblock %}
+
+{% block body %}
+<section style="background:linear-gradient(135deg,#eefcf4,#d8f6e4); min-height:100vh; padding:60px 20px;">
+    <div style="max-width:1100px; margin:0 auto;">
+
+        <div style="text-align:center; margin-bottom:30px;">
+            <h1 style="margin:0; color:#173b2f; font-size:40px; font-weight:800;">Feedbacks</h1>
+            <p style="margin-top:10px; color:#567468;">Share your feedback and read others.</p>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div style="max-width:800px; margin:0 auto 20px auto; padding:14px 16px; border-radius:12px; background:#e8f9ee; color:#1f6b3d; font-weight:700;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% if app.user and feedbackForm %}
+            <div style="max-width:800px; margin:0 auto 35px auto; background:#fff; border-radius:20px; padding:28px; box-shadow:0 20px 50px rgba(0,0,0,.08);">
+                <h2 style="margin:0 0 18px; color:#173b2f;">Add your feedback</h2>
+
+                {{ form_start(feedbackForm) }}
+                    {{ form_widget(feedbackForm.rating, {'attr': {'style': 'width:100%; padding:14px; border:1px solid #cdebd7; border-radius:12px; margin-bottom:14px; box-sizing:border-box; background:#fff;'}}) }}
+                    {{ form_widget(feedbackForm.message, {'attr': {'style': 'width:100%; padding:14px; border:1px solid #cdebd7; border-radius:12px; margin-bottom:14px; box-sizing:border-box; resize:none;'}}) }}
+
+                    <button type="submit" style="padding:14px 22px; background:#28a745; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">
+                        Publish Feedback
+                    </button>
+                {{ form_end(feedbackForm) }}
+            </div>
+        {% else %}
+            <div style="max-width:800px; margin:0 auto 35px auto; background:#fff; border-radius:20px; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,.08); text-align:center;">
+                <p style="margin:0; color:#385a4d; font-size:17px;">
+                    Please <a href="{{ path('app_front_login') }}" style="color:#1c8f66; font-weight:700; text-decoration:none;">log in</a> to add feedback.
+                </p>
+            </div>
+        {% endif %}
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px;">
+            {% for feedback in feedbacks %}
+                <div style="background:#fff; border-radius:20px; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,.08); border:1px solid #e8f5ed;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div style="font-size:15px; color:#567468; font-weight:700;">
+                            {{ feedback.userEmail }}
+                        </div>
+                        <div style="background:#edf9f2; color:#16924f; padding:8px 12px; border-radius:999px; font-weight:800;">
+                            {{ feedback.rating }}/5
+                        </div>
+                    </div>
+
+                    <p style="margin:0 0 16px; color:#27463b; line-height:1.7;">
+                        {{ feedback.message }}
+                    </p>
+
+                    <div style="font-size:13px; color:#7a9388; margin-bottom:16px;">
+                        {{ feedback.createdAt ? feedback.createdAt|date('Y-m-d H:i') : '' }}
+                    </div>
+
+                    {% if app.user and app.user.gmail == feedback.userEmail %}
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <a href="{{ path('app_feedback_edit', {id: feedback.id}) }}" style="text-decoration:none; background:#1c8f66; color:#fff; padding:10px 14px; border-radius:10px; font-weight:700;">
+                                Edit
+                            </a>
+
+                            <form method="post" action="{{ path('app_feedback_delete', {id: feedback.id}) }}" onsubmit="return confirm('Delete this feedback?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback_' ~ feedback.id) }}">
+                                <button type="submit" style="background:#dc3545; color:#fff; padding:10px 14px; border:none; border-radius:10px; font-weight:700; cursor:pointer;">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div style="grid-column:1/-1; background:#fff; border-radius:20px; padding:30px; text-align:center; color:#567468;">
+                    No feedback yet.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
