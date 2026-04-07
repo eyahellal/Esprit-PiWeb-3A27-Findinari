@@ -339,6 +339,7 @@
         .btn-danger    { background: var(--danger);   color: #fff; box-shadow: 0 4px 14px rgba(239,68,68,.28); }
         .btn-success   { background: var(--success);  color: #fff; box-shadow: 0 4px 14px rgba(34,197,94,.28); }
         .btn-secondary { background: #f0f2f7;         color: var(--text-secondary); }
+        .btn-warning   { background: var(--warning);  color: #fff; box-shadow: 0 4px 14px rgba(245,158,11,.28); }
         .btn-sm        { padding: 7px 13px; font-size: 12.5px; border-radius: 6px; }
         .btn svg       { width: 15px; height: 15px; }
 
@@ -393,6 +394,9 @@
         .badge.admin       { background: var(--brand-light);   color: var(--brand-dark); }
         .badge.user        { background: var(--info-light);     color: var(--info); }
         .badge.influencer  { background: var(--warning-light);  color: var(--warning); }
+        .badge.active      { background: #dcfce7; color: #166534; }
+        .badge.inactive    { background: #fef2f2; color: #b91c1c; }
+
         .badge::before {
             content: '';
             width: 6px; height: 6px;
@@ -400,7 +404,8 @@
             background: currentColor;
         }
 
-        .role-form {
+        .role-form,
+        .status-form {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -635,6 +640,8 @@
                             <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z → A</option>
                             <option value="role_asc" {% if sort == 'role_asc' %}selected{% endif %}>Role A → Z</option>
                             <option value="role_desc" {% if sort == 'role_desc' %}selected{% endif %}>Role Z → A</option>
+                            <option value="status_asc" {% if sort == 'status_asc' %}selected{% endif %}>Status A → Z</option>
+                            <option value="status_desc" {% if sort == 'status_desc' %}selected{% endif %}>Status Z → A</option>
                             <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>Oldest ID</option>
                             <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>Newest ID</option>
                         </select>
@@ -655,7 +662,9 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Status</th>
                             <th>Change Role</th>
+                            <th>Activate / Deactivate</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -672,11 +681,21 @@
                                 </div>
                             </td>
                             <td style="color:var(--text-secondary);">{{ user.gmail }}</td>
+
                             <td>
                                 <span class="badge {% if user.role == 'ADMIN' %}admin{% elseif user.role == 'INFLUENCER' %}influencer{% else %}user{% endif %}">
                                     {{ user.role }}
                                 </span>
                             </td>
+
+                            <td>
+                                {% if user.statut == 'ACTIF' %}
+                                    <span class="badge active">ACTIF</span>
+                                {% else %}
+                                    <span class="badge inactive">INACTIF</span>
+                                {% endif %}
+                            </td>
+
                             <td>
                                 <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="role-form">
                                     <select name="role">
@@ -690,6 +709,24 @@
                                     </button>
                                 </form>
                             </td>
+
+                            <td>
+                                <form method="post" action="{{ path('app_admin_user_status', {id: user.id}) }}" class="status-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_status_' ~ user.id) }}">
+                                    <input type="hidden" name="statut" value="{% if user.statut == 'ACTIF' %}INACTIF{% else %}ACTIF{% endif %}">
+
+                                    {% if user.statut == 'ACTIF' %}
+                                        <button class="btn btn-warning btn-sm" type="submit" onclick="return confirm('Deactivate this account?');">
+                                            Deactivate
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-success btn-sm" type="submit" onclick="return confirm('Activate this account?');">
+                                            Activate
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+
                             <td>
                                 <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
@@ -702,7 +739,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="6">
+                            <td colspan="8">
                                 <div class="empty-state">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
                                     <p>No users found for this search.</p>
