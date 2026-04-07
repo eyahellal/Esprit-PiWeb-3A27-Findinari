@@ -47,37 +47,56 @@ class BudgetController extends AbstractController
 }
 
 #[Route('/', name: 'app_budget_index', methods: ['GET'])]
-public function index(BudgetRepository $budgetRepository, Request $request, EntityManagerInterface $entityManager): Response
+public function index(Request $request, EntityManagerInterface $entityManager): Response
 {
     $user = $this->getUserOrCreate($entityManager);
 
-    $budgets = $budgetRepository->createQueryBuilder('b')
-        ->join('b.wallet', 'w')
-        ->where('w.utilisateur = :user')
-        ->setParameter('user', $user)
-        ->getQuery()
-        ->getResult();
+    // First get all wallet IDs of the current user
+    $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
+        ->findBy(['utilisateur' => $user]);
+
+    // Then get all budgets that belong to those wallets
+    $budgets = [];
+    if (!empty($wallets)) {
+        $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
+            ->createQueryBuilder('b')
+            ->where('b.wallet IN (:wallets)')
+            ->setParameter('wallets', $wallets)
+            ->getQuery()
+            ->getResult();
+    }
 
     return $this->render('management/budget/index.html.twig', [
         'budgets' => $budgets,
     ]);
 }
-
     #[Route('/new/step1', name: 'app_budget_new_step1', methods: ['GET', 'POST'])]
-    public function step1(Request $request, WalletRepository $walletRepository, SessionInterface $session): Response
-    {
-        if ($request->isMethod('POST')) {
-            $walletId = $request->request->get('wallet_id');
-            if ($walletId) {
+public function step1(Request $request, WalletRepository $walletRepository, SessionInterface $session, EntityManagerInterface $entityManager): Response
+{
+    $user = $this->getUserOrCreate($entityManager);
+
+    if ($request->isMethod('POST')) {
+        $walletId = $request->request->get('wallet_id');
+        if ($walletId) {
+            // Verify the wallet belongs to the current user
+            $wallet = $walletRepository->findOneBy([
+                'id' => $walletId,
+                'utilisateur' => $user
+            ]);
+            if ($wallet) {
                 $session->set('budget_wallet_id', $walletId);
                 return $this->redirectToRoute('app_budget_new_step2');
             }
         }
-
-        return $this->render('management/budget/step1.html.twig', [
-            'wallets' => $walletRepository->findAll(),
-        ]);
     }
+
+    // Fetch ONLY wallets of the current user
+    $wallets = $walletRepository->findBy(['utilisateur' => $user]);
+
+    return $this->render('management/budget/step1.html.twig', [
+        'wallets' => $wallets,
+    ]);
+}
 
     #[Route('/new/step2', name: 'app_budget_new_step2', methods: ['GET', 'POST'])]
     public function step2(Request $request, CategorieRepository $categorieRepository, SessionInterface $session): Response
