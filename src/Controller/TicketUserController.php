@@ -13,8 +13,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 use App\Repository\TicketRepository;
-use App\Entity\Message;
-use App\Form\MessageType;
 
 class TicketUserController extends AbstractController
 {
@@ -81,7 +79,7 @@ class TicketUserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET', 'POST'])]
+    #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET'])]
     public function ticketDetails(
         Ticket $ticket,
         Request $request,
@@ -97,42 +95,8 @@ class TicketUserController extends AbstractController
             throw $this->createAccessDeniedException('You do not have access to this ticket.');
         }
 
-        $message = new Message();
-        $form = $this->createForm(MessageType::class, $message);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $message->setTicket($ticket);
-            $message->setDate(new \DateTime());
-            $message->setTypeSender('USER');
-            $message->setUtilisateur($user);
-
-            $entityManager->persist($message);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Message sent successfully.');
-            return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
-        }
-
-        // Legacy raw POST logic
-        if ($request->isMethod('POST') && $request->request->has('add_message')) {
-            $contenu = trim((string) $request->request->get('contenu'));
-            
-            if ($contenu !== '') {
-                $legacyMessage = new Message();
-                $legacyMessage->setTicket($ticket);
-                $legacyMessage->setContenu($contenu);
-                $legacyMessage->setDate(new \DateTime());
-                $legacyMessage->setTypeSender('USER');
-                $legacyMessage->setUtilisateur($user);
-
-                $entityManager->persist($legacyMessage);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Message sent successfully.');
-                return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
-            }
-        }
+        $message = new \App\Entity\Message();
+        $form = $this->createForm(\App\Form\MessageType::class, $message);
 
         $messages = $ticket->getMessages();
 
@@ -143,62 +107,6 @@ class TicketUserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/message/{id}/delete', name: 'app_user_message_delete', methods: ['POST'])]
-    public function deleteMessageUser(
-        Message $message,
-        Request $request,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        $ticketId = $message->getTicket()->getId();
-
-        // Security check: ensure own message and belongs to user's ticket
-        if ($message->getUtilisateur() !== $user || $message->getTypeSender() !== 'USER') {
-            $this->addFlash('danger', 'You can only delete your own messages.');
-            return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
-        }
-
-        if ($this->isCsrfTokenValid('delete_message_user_' . $message->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($message);
-            $entityManager->flush();
-            $this->addFlash('success', 'Message deleted successfully.');
-        }
-
-        return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
-    }
-
-    #[Route('/user/message/{id}/edit', name: 'app_user_message_edit', methods: ['POST'])]
-    public function editMessageUser(
-        Message $message,
-        Request $request,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $user = $this->getUser();
-        if (!$user) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        $ticketId = $message->getTicket()->getId();
-
-        if ($message->getUtilisateur() !== $user || $message->getTypeSender() !== 'USER') {
-            $this->addFlash('danger', 'You can only edit your own messages.');
-            return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
-        }
-
-        $newContenu = trim((string) $request->request->get('edit_contenu'));
-
-        if ($newContenu !== '') {
-            $message->setContenu($newContenu);
-            $entityManager->flush();
-            $this->addFlash('success', 'Message updated successfully.');
-        }
-
-        return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
-    }
 
     #[Route('/user/ticket/{id}/delete', name: 'app_user_ticket_delete', methods: ['POST'])]
     public function deleteTicket(

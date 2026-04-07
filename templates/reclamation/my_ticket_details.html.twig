@@ -236,7 +236,7 @@
                 {% endfor %}
             </div>
 
-            {{ form_start(form, {'attr': {'class': 'chat-form', 'novalidate': 'novalidate'}}) }}
+            {{ form_start(form, {'action': path('app_user_message_new', {id: ticket.id}), 'attr': {'class': 'chat-form', 'novalidate': 'novalidate'}}) }}
                 <div style="flex: 1; display: flex; flex-direction: column;">
                     {{ form_widget(form.contenu) }}
                     <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
