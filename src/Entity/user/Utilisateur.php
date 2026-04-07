@@ -1,12 +1,10 @@
 <?php
 
 namespace App\Entity\user;
+
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\UtilisateurRepository;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -20,18 +18,58 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $id = null;
 
     #[ORM\Column(name: 'nom', type: 'string', length: 100)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: "Le nom doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le nom ne doit pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-ZÀ-ÿ\s'-]+$/",
+        message: "Le nom ne doit contenir que des lettres."
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(name: 'prenom', type: 'string', length: 100)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire.")]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: "Le prénom doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le prénom ne doit pas dépasser {{ limit }} caractères."
+    )]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-ZÀ-ÿ\s'-]+$/",
+        message: "Le prénom ne doit contenir que des lettres."
+    )]
     private ?string $prenom = null;
 
     #[ORM\Column(name: 'gmail', type: 'string', length: 150, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "Veuillez saisir une adresse email valide.")]
+    #[Assert\Length(
+        max: 150,
+        maxMessage: "L'email ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $gmail = null;
 
     #[ORM\Column(name: 'mdp', type: 'string', length: 255)]
+    #[Assert\NotBlank(message: "Le mot de passe est obligatoire.")]
+    #[Assert\Length(
+        min: 6,
+        max: 255,
+        minMessage: "Le mot de passe doit contenir au moins {{ limit }} caractères.",
+        maxMessage: "Le mot de passe ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $mdp = null;
 
     #[ORM\Column(name: 'role', type: 'string', length: 50, options: ['default' => 'USER'])]
+    #[Assert\NotBlank(message: "Le rôle est obligatoire.")]
+    #[Assert\Choice(
+        choices: ['USER', 'ADMIN', 'INFLUENCER'],
+        message: "Le rôle doit être USER, ADMIN ou INFLUENCER."
+    )]
     private ?string $role = 'USER';
 
     #[ORM\Column(name: 'dateCreation', type: 'datetime')]
@@ -41,9 +79,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeInterface $dateModification = null;
 
     #[ORM\Column(name: 'statut', type: 'string', length: 20, options: ['default' => 'ACTIF'])]
+    #[Assert\NotBlank(message: "Le statut est obligatoire.")]
+    #[Assert\Choice(
+        choices: ['ACTIF', 'BLOQUE', 'INACTIF'],
+        message: "Le statut doit être ACTIF, BLOQUE ou INACTIF."
+    )]
     private ?string $statut = 'ACTIF';
 
     #[ORM\Column(name: 'face_token', type: 'string', length: 255, nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: "Le face token ne doit pas dépasser {{ limit }} caractères."
+    )]
     private ?string $faceToken = null;
 
     #[ORM\Column(name: 'face_enabled', type: 'boolean', options: ['default' => false])]
@@ -78,7 +125,6 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->prenom = $prenom;
         return $this;
     }
-    
 
     public function getGmail(): ?string
     {
@@ -95,7 +141,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->mdp;
     }
-    
+
     public function setMdp(string $mdp): static
     {
         $this->mdp = $mdp;
@@ -109,7 +155,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRole(string $role): static
     {
-        $this->role = $role;
+        $this->role = strtoupper($role);
         return $this;
     }
 
@@ -142,7 +188,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setStatut(string $statut): static
     {
-        $this->statut = $statut;
+        $this->statut = strtoupper($statut);
         return $this;
     }
 
@@ -184,33 +230,32 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getRoles(): array
+    {
+        $role = strtoupper($this->role ?? 'USER');
 
-   public function getRoles(): array
-{
-   $role = strtoupper($this->role ?? 'USER');
+        $roles = match ($role) {
+            'ADMIN' => ['ROLE_ADMIN'],
+            'INFLUENCER' => ['ROLE_INFLUENCER'],
+            default => ['ROLE_USER'],
+        };
 
-    $roles = match ($role) {
-        'ADMIN' => ['ROLE_ADMIN'],
-        'INFLUENCER' => ['ROLE_INFLUENCER'],
-        default => ['ROLE_USER'],
-    };
+        $roles[] = 'ROLE_USER';
 
-    $roles[] = 'ROLE_USER';
-
-    return array_unique($roles);
-}
-public function getUserIdentifier(): string
-{
-    return $this->gmail ?? '';
-}
-
-public function getPassword(): string
-{
-    return $this->mdp ?? '';
-}
-
-public function eraseCredentials(): void
-{
-}
-
+        return array_unique($roles);
     }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->gmail ?? '';
+    }
+
+    public function getPassword(): string
+    {
+        return $this->mdp ?? '';
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+}
