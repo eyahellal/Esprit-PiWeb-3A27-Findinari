@@ -15,6 +15,24 @@ class CategorieRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Categorie::class);
     }
+    public function findByFilters(string $search = '', string $statut = ''): array
+{
+    $qb = $this->createQueryBuilder('c');
+
+    if ($search) {
+        $qb->andWhere('c.nom LIKE :search OR c.description LIKE :search')
+           ->setParameter('search', '%' . $search . '%');
+    }
+
+    if ($statut) {
+        $qb->andWhere('c.statut = :statut')
+           ->setParameter('statut', $statut);
+    }
+
+    return $qb->orderBy('c.nom', 'ASC')
+              ->getQuery()
+              ->getResult();
+}
 
     //    /**
     //     * @return Categorie[] Returns an array of Categorie objects

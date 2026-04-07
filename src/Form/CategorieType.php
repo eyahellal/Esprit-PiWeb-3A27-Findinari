@@ -28,8 +28,8 @@ class CategorieType extends AbstractType
             ->add('statut', ChoiceType::class, [
                 'label' => 'Status',
                 'choices' => [
-                    'Active' => 'ACTIF',
-                    'Inactive' => 'INACTIF',
+                    'Active' => 'Active',
+                    'Inactive' => 'Inactive',
                 ],
                 'attr' => ['class' => 'form-select']
             ])
