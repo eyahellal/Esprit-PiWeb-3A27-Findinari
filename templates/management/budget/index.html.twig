@@ -1,0 +1,183 @@
+{% extends 'management/dashboard.html.twig' %}
+
+{% block title %}Budgets - Fin-Dinari{% endblock %}
+
+{% set active_tab = 'budget' %}
+
+{% block content %}
+
+<turbo-frame id="content-frame">
+
+    {# Header #}
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-1" style="color: #26474E;">
+                <i class="fas fa-chart-pie me-2"></i>Budgets
+            </h1>
+            <p class="text-muted mb-0">Manage your budgets and track your spending limits</p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{{ path('app_budget_new_step1') }}" class="btn btn-lg px-4"
+               style="background: linear-gradient(135deg, #F27438, #F9968B); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(242,116,56,0.3);">
+                <i class="fas fa-plus me-2"></i>New Budget
+            </a>
+        </div>
+    </div>
+
+    {# Stats Bar #}
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #26474E; box-shadow: 0 4px 20px rgba(38,71,78,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Budgets</p>
+                        <h2 class="fw-bold mb-0">{{ budgets|length }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-chart-pie fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #2d6a4f; box-shadow: 0 4px 20px rgba(45,106,79,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Amount</p>
+                        <h2 class="fw-bold mb-0">
+                            {% set total = 0 %}
+                            {% for budget in budgets %}
+                                {% set total = total + budget.montantMax %}
+                            {% endfor %}
+                            {{ total|number_format(2) }}
+                        </h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-money-bill-wave fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #2CCED2; box-shadow: 0 4px 20px rgba(44,206,210,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Categories Used</p>
+                        <h2 class="fw-bold mb-0">{{ budgets|length }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-folder fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Budgets Grid #}
+    <div class="row">
+        {% if budgets is empty %}
+            <div class="col-12 text-center py-5">
+                <div class="rounded-4 p-5" style="background: #f8fffe; border: 2px dashed #F27438;">
+                    <i class="fas fa-chart-pie fa-3x mb-3" style="color: #F27438;"></i>
+                    <h4 style="color: #26474E;">No budgets found</h4>
+                    <p class="text-muted">Start by creating your first budget</p>
+                    <a href="{{ path('app_budget_new_step1') }}" class="btn mt-2"
+                       style="background: #F27438; color: white; border-radius: 12px;">
+                        <i class="fas fa-plus me-2"></i>Create Budget
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            {% for budget in budgets %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 border-0 rounded-4 budget-card"
+                         style="box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+
+                        {# Card Header #}
+                        <div class="rounded-top-4 p-4 text-white"
+                             style="background: {{ budget.categorie.color is not null ? budget.categorie.color : '#F27438' }};">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="mb-1 opacity-75 small text-uppercase fw-semibold">
+                                        {{ budget.wallet.pays }}
+                                    </p>
+                                    <h4 class="fw-bold mb-0">{{ budget.categorie.nom }}</h4>
+                                </div>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                                    <i class="fas {{ budget.categorie.icon is not null ? budget.categorie.icon : 'fa-chart-pie' }} fa-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Card Body #}
+                        <div class="card-body p-4">
+
+                            {# Amount #}
+                            <div class="mb-3">
+                                <p class="text-muted small mb-1 text-uppercase fw-semibold">Max Amount</p>
+                                <h3 class="fw-bold mb-0" style="color: #26474E;">
+                                    {{ budget.montantMax|number_format(2) }}
+                                    <span class="fs-5 text-muted">{{ budget.wallet.devise }}</span>
+                                </h3>
+                            </div>
+
+                            {# Details #}
+                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                <span class="badge rounded-pill px-3 py-2"
+                                      style="background: #e8f5e9; color: #2d6a4f;">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    {{ budget.dateBudget|date('d/m/Y') }}
+                                </span>
+                                <span class="badge rounded-pill px-3 py-2"
+                                      style="background: #e3f2fd; color: #1e3a5f;">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ budget.dureeBudget }} days
+                                </span>
+                            </div>
+
+                            <hr class="my-3">
+
+                            {# Actions #}
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_budget_new_step1') }}"
+                                   class="btn btn-sm flex-fill edit-btn"
+                                   style="background: #e3f2fd; color: #1e3a5f; border-radius: 10px;">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <form method="post" action="{{ path('app_budget_delete', {'id': budget.id}) }}"
+                                      onsubmit="return confirm('Are you sure?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ budget.id) }}">
+                                    <button class="btn btn-sm delete-btn"
+                                            style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+</turbo-frame>
+
+<style>
+    .budget-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(242, 116, 56, 0.2) !important;
+    }
+    .rounded-top-4 { border-radius: 1rem 1rem 0 0 !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .edit-btn:hover { background: #F27438 !important; color: white !important; }
+    .delete-btn:hover { background: #c0392b !important; color: white !important; }
+</style>
+
+{% endblock %}
