@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\reclamation\Message;
+use App\Entity\Message;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

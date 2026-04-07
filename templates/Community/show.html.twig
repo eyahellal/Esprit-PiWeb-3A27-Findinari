@@ -1,5 +1,4 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}Post Community{% endblock %}
 
 {% block body %}
@@ -10,7 +9,7 @@
                 <h2 class="mb-3 text-capitalize">Community Post</h2>
                 <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
                     <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
-                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_service_details', {id: 4}) }}">Community</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('community_index') }}">Community</a></li>
                     <li class="list-inline-item">/ &nbsp; Détail du post</li>
                 </ul>
             </div>
@@ -20,109 +19,151 @@
 
 <section class="section-sm">
     <div class="container community-shell">
+
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div class="alert {{ label == 'success' ? 'alert-success' : 'alert-danger' }} mb-4">{{ message }}</div>
+                <div class="alert {{ label == 'success' ? 'alert-success' : 'alert-danger' }} mb-4">
+                    {{ message }}
+                </div>
             {% endfor %}
         {% endfor %}
 
-        <div class="mb-4"><a href="{{ path('app_service_details', {id: 4}) }}" class="btn btn-outline-primary community-action-btn">Retour à Community</a></div>
-        <article class="community-post card border-0 mb-4">
+        <div class="mb-4">
+            <a href="{{ path('community_index') }}" class="btn btn-outline-primary">
+                Retour à Community
+            </a>
+        </div>
+
+        <article class="card border-0 mb-4">
             <div class="card-body p-4 p-lg-5">
+
                 <div class="d-flex justify-content-between gap-3 align-items-start">
                     <div class="d-flex gap-3 align-items-start">
-                        <div class="community-avatar gradient">{{ post.utilisateur.nom|slice(0,1)|upper }}</div>
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                             style="width:40px;height:40px;">
+                            {{ post.utilisateur.nom|slice(0,1)|upper }}
+                        </div>
+
                         <div>
                             <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <strong>{{ post.utilisateur.communityHandle }}</strong>
-                                <span class="text-muted small">{{ post.utilisateur.displayName }}</span>
-                                <span class="community-dot"></span>
-                                <span class="text-muted small">{{ post.relativeTime }}</span>
+                                <strong>{{ post.utilisateur.prenom }} {{ post.utilisateur.nom }}</strong>
+                                <span class="text-muted small">
+                                    {{ post.dateCreation ? post.dateCreation|date('d/m/Y H:i') : '' }}
+                                </span>
                             </div>
                         </div>
                     </div>
-                    {% if post.isOwnedBy(currentUser) %}
-                        <details class="community-menu">
-                            <summary aria-label="Actions du post">•••</summary>
-                            <div class="community-menu-box">
-                                <a class="community-menu-link" href="{{ path('community_edit', {id: post.idPost}) }}">Modifier</a>
-                                <form method="post" action="{{ path('community_delete', {id: post.idPost}) }}" onsubmit="return confirm('Supprimer ce post ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ post.idPost) }}">
-                                    <button class="community-menu-button text-danger" type="submit">Supprimer</button>
-                                </form>
-                            </div>
-                        </details>
+
+                    {% if currentUser and post.utilisateur and post.utilisateur.id == currentUser.id %}
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('community_edit', {id: post.idPost}) }}" class="btn btn-sm btn-outline-secondary">
+                                Modifier
+                            </a>
+
+                            <form method="post"
+                                  action="{{ path('community_delete', {id: post.idPost}) }}"
+                                  onsubmit="return confirm('Supprimer ce post ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ post.idPost) }}">
+                                <button class="btn btn-sm btn-outline-danger" type="submit">
+                                    Supprimer
+                                </button>
+                            </form>
+                        </div>
                     {% endif %}
                 </div>
 
-                <div class="mt-4 community-post-content">{{ post.contenu|nl2br }}</div>
+                <div class="mt-4">
+                    {{ post.contenu|nl2br }}
+                </div>
 
-                <div class="community-actions d-flex flex-wrap align-items-center gap-2 mt-4">
+                <div class="d-flex gap-2 mt-4">
                     <form method="post" action="{{ path('community_like', {id: post.idPost}) }}">
-                        <button class="btn {{ post.isLikedBy(currentUser) ? 'btn-primary' : 'btn-outline-primary' }} btn-sm community-action-btn" type="submit">
-                            {{ post.isLikedBy(currentUser) ? 'Dislike' : 'Like' }} ({{ post.nombreLikes }})
+                        <button class="btn btn-outline-primary btn-sm" type="submit">
+                            👍 Like ({{ post.nombreLikes }})
                         </button>
                     </form>
-                    <span class="btn btn-outline-secondary btn-sm community-action-btn disabled">Commentaire ({{ post.nombreCommentaires }})</span>
+
+                    <span class="btn btn-outline-secondary btn-sm">
+                        💬 {{ post.nombreCommentaires }}
+                    </span>
                 </div>
+
             </div>
         </article>
 
-        <div class="community-panel card border-0 mb-4">
+        <div class="card border-0 mb-4">
             <div class="card-body p-4 p-lg-5">
-                <h4 class="community-panel-title">Ajouter un commentaire</h4>
+                <h4>Ajouter un commentaire</h4>
+
                 {{ form_start(commentForm) }}
-                    <div class="community-comment-shell">
-                        {{ form_widget(commentForm.contenu) }}
+                    <div class="mb-3">
+                        {{ form_widget(commentForm.contenu, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(commentForm.contenu) }}
                     </div>
-                    {{ form_errors(commentForm.contenu) }}
-                    <div class="community-comment-actions">
-                        <span class="community-caption">Votre commentaire apparaîtra sous ce post.</span>
-                        <button class="btn btn-primary community-action-btn" type="submit">Envoyer</button>
-                    </div>
+
+                    <button class="btn btn-primary" type="submit">
+                        Envoyer
+                    </button>
                 {{ form_end(commentForm) }}
             </div>
         </div>
 
-        <div class="community-panel card border-0">
+        <div class="card border-0">
             <div class="card-body p-4 p-lg-5">
-                <h4 class="community-panel-title">Tous les commentaires</h4>
+                <h4>Tous les commentaires</h4>
+
                 {% for commentaire in post.commentaires %}
-                    <div id="comment-{{ commentaire.idCommentaire }}" class="community-comment-preview d-flex gap-3 {% if not loop.last %}mb-4{% endif %}">
-                        <div class="community-mini-avatar">{{ commentaire.utilisateur.nom|slice(0,1)|upper }}</div>
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                             style="width:35px;height:35px;">
+                            {{ commentaire.utilisateur.nom|slice(0,1)|upper }}
+                        </div>
+
                         <div class="flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start gap-3">
                                 <div>
-                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
-                                        <strong>{{ commentaire.utilisateur.communityHandle }}</strong>
-                                        <span class="text-muted small">{{ commentaire.utilisateur.displayName }}</span>
-                                        <span class="community-dot"></span>
-                                        <span class="text-muted small">{{ commentaire.relativeTime }}</span>
+                                    <div class="d-flex gap-2 align-items-center mb-1">
+                                        <strong>{{ commentaire.utilisateur.prenom }} {{ commentaire.utilisateur.nom }}</strong>
+                                        <span class="text-muted small">
+                                            {{ commentaire.dateCreation ? commentaire.dateCreation|date('d/m/Y H:i') : '' }}
+                                        </span>
                                     </div>
                                 </div>
-                                {% if commentaire.canBeManagedBy(currentUser) %}
-                                    <details class="community-menu">
-                                        <summary aria-label="Actions du commentaire">•••</summary>
-                                        <div class="community-menu-box">
-                                            <a class="community-menu-link" href="{{ path('community_comment_edit', {id: commentaire.idCommentaire}) }}">Modifier</a>
-                                            <form method="post" action="{{ path('community_comment_delete', {id: commentaire.idCommentaire}) }}" onsubmit="return confirm('Supprimer ce commentaire ?');">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ commentaire.idCommentaire) }}">
-                                                <button class="community-menu-button text-danger" type="submit">Supprimer</button>
-                                            </form>
-                                        </div>
-                                    </details>
+
+                                {% if currentUser and commentaire.utilisateur and commentaire.utilisateur.id == currentUser.id %}
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ path('community_comment_edit', {id: commentaire.idCommentaire}) }}"
+                                           class="btn btn-sm btn-outline-secondary">
+                                            Modifier
+                                        </a>
+
+                                        <form method="post"
+                                              action="{{ path('community_comment_delete', {id: commentaire.idCommentaire}) }}"
+                                              onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                            <input type="hidden"
+                                                   name="_token"
+                                                   value="{{ csrf_token('delete_comment_' ~ commentaire.idCommentaire) }}">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                                                Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
                                 {% endif %}
                             </div>
-                            <p class="mt-2 mb-0">{{ commentaire.contenu|nl2br }}</p>
+
+                            <p class="mb-0">
+                                {{ commentaire.contenu|nl2br }}
+                            </p>
                         </div>
                     </div>
                 {% else %}
-                    <div class="text-muted">Aucun commentaire pour ce post.</div>
+                    <div class="text-muted">
+                        Aucun commentaire pour ce post.
+                    </div>
                 {% endfor %}
             </div>
         </div>
+
     </div>
 </section>
-
-{% include 'Community/_styles.html.twig' %}
 {% endblock %}

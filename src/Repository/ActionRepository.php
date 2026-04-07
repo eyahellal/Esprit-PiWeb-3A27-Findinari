@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\error\Action;
+use App\Entity\Action;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
