@@ -1,0 +1,255 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Ticket - FinDinari{% endblock %}
+
+{% block body %}
+<style>
+    .ticket-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+        padding-top: 120px;
+    }
+
+    .page-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .page-subtitle {
+        color: #6b7280;
+        margin-bottom: 35px;
+        font-size: 1rem;
+    }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1.8fr 1fr;
+        gap: 40px;
+    }
+
+    @media (max-width: 992px) {
+        .content-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-group {
+        margin-bottom: 30px !important;
+        position: relative !important;
+    }
+
+    .form-card label {
+        display: block !important;
+        position: static !important;
+        transform: none !important;
+        margin: 0 0 10px 0 !important;
+        padding: 0 !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #374151 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+    }
+
+    .form-control, .form-select {
+        display: block !important;
+        width: 100% !important;
+        padding: 14px 18px !important;
+        border: 1.5px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        font-size: 1rem !important;
+        background-color: #f9fafb !important;
+        color: #1f2937 !important;
+    }
+
+    .form-select option {
+        color: #1f2937 !important;
+        background-color: #fff !important;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #22c55e !important;
+        background-color: #fff !important;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1) !important;
+        outline: none !important;
+    }
+
+    .file-upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 16px;
+        padding: 30px;
+        text-align: center;
+        background: #f9fafb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .file-upload-area:hover {
+        border-color: #22c55e;
+        background: #f0fdf4;
+    }
+
+    .btn-submit {
+        background: #22c55e;
+        color: white;
+        border: none;
+        padding: 16px 30px;
+        border-radius: 14px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    }
+
+    .btn-submit:hover {
+        background: #16a34a;
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 30px;
+        border-radius: 14px;
+        border: 1.5px solid #e5e7eb;
+        text-decoration: none;
+        color: #6b7280;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        color: #1f2937;
+    }
+
+    .sidebar-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 30px;
+        position: sticky;
+        top: 140px;
+    }
+
+    .sidebar-title {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sidebar-text {
+        color: #4b5563;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+</style>
+
+{# Custom Support Header removed to show default navbar #}
+
+<div class="ticket-container">
+    <div class="breadcrumb">
+        <a href="{{ path('app_home') }}" style="text-decoration:none; color:#6b7280;">Home</a> &gt; 
+        <a href="{{ path('support_center') }}" style="text-decoration:none; color:#6b7280;">Support</a> &gt; 
+        <a href="{{ path('app_user_tickets') }}" style="text-decoration:none; color:#6b7280;">My Tickets</a> &gt; 
+        Edit Ticket
+    </div>
+    
+    <h1 class="page-title">Edit Ticket: {{ ticket.titre }}</h1>
+    <p class="page-subtitle">Update your request details. Note that status and priority can only be modified by the support team.</p>
+    
+    <div class="content-grid">
+        <div class="form-card">
+            {{ form_start(form, {'attr': {'id': 'ticket-form', 'novalidate': 'novalidate'}}) }}
+                
+                <div class="form-group">
+                    {{ form_label(form.titre, 'Subject') }}
+                    {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+                    <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ form_errors(form.titre) }}</div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.type, 'Category') }}
+                    {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                    <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ form_errors(form.type) }}</div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.description, 'Description') }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '6'}}) }}
+                    <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ form_errors(form.description) }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Update Attachment (Optional)</label>
+                    {% if ticket.imageUrl %}
+                        <div style="margin-bottom: 20px; background: #f9fafb; padding: 15px; border-radius: 12px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 15px;">
+                            <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <div>
+                                <div style="font-size: 13px; font-weight: 700; color: #374151;">Current File</div>
+                                <div style="font-size: 12px; color: #6b7280;">This image is currently attached to your ticket.</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="file-upload-area" onclick="document.getElementById('{{ form.imageUrl.vars.id }}').click();">
+                        <div style="font-size: 1.5rem; color: #9ca3af; margin-bottom: 10px;"><i class="fas fa-upload"></i></div>
+                        <div style="font-size: 0.95rem; color: #4b5563;"><span>Click to change</span> or drag & drop</div>
+                        <div id="file-name-preview" style="margin-top: 10px; font-weight: 700; color: #111827; font-size: 0.9rem;"></div>
+                    </div>
+                    {{ form_widget(form.imageUrl, {'attr': {'onchange': 'showFileName(this)', 'style': 'display: none;'}}) }}
+                    <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ form_errors(form.imageUrl) }}</div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <a href="{{ path('app_user_tickets') }}" class="btn-cancel" style="flex: 1;">Cancel</a>
+                    <button type="submit" class="btn-submit" style="flex: 2;">Update Ticket</button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+        
+        <div>
+            <div class="sidebar-card">
+                <div class="sidebar-title">
+                    <i class="fas fa-shield-alt" style="color: #22c55e;"></i> Security Policy
+                </div>
+                <p class="sidebar-text">
+                    You can only edit tickets that are still open. Once a ticket is closed by an administrator, it becomes read-only for archival purposes.
+                </p>
+                <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+                <div class="sidebar-title">
+                    <i class="far fa-lightbulb" style="color: #f59e0b;"></i> Pro Tip
+                </div>
+                <p class="sidebar-text">
+                    Updating your ticket title or description can help support agents understand the context better if your situation has evolved.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showFileName(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('file-name-preview').textContent = 'Selected: ' + input.files[0].name;
+        }
+    }
+</script>
+{% endblock %}
