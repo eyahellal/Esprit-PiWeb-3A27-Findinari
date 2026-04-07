@@ -233,12 +233,37 @@ class AdminController extends AbstractController
 
     #[Route('/admin/ticket', name: 'app_admin_tickets')]
     public function tickets(
+        Request $request,
         \App\Repository\TicketRepository $ticketRepository
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        $sort = $request->query->get('sort', 'newest');
+        $qb = $ticketRepository->createQueryBuilder('t');
+
+        switch ($sort) {
+            case 'oldest':
+                $qb->orderBy('t.id', 'ASC');
+                break;
+            case 'priority_high':
+                // Priority is a string Low, Medium, High. We can't sort it directly alphabetically for logic.
+                // But we can use a CASE statement if needed or just sort it if they are alphabetical (H, L, M)
+                // Let's use ID desc for newest first by default
+                $qb->addSelect("(CASE WHEN t.priorite = 'High' THEN 3 WHEN t.priorite = 'Medium' THEN 2 ELSE 1 END) AS HIDDEN p_order")
+                   ->orderBy('p_order', 'DESC');
+                break;
+            case 'status_open':
+                $qb->orderBy('t.statut', 'DESC'); // Open starts with O, Fermé starts with F. Desc should put Open first.
+                break;
+            case 'newest':
+            default:
+                $qb->orderBy('t.id', 'DESC');
+                break;
+        }
+
         return $this->render('admin/tickets.html.twig', [
-            'tickets' => $ticketRepository->findAll(),
+            'tickets' => $qb->getQuery()->getResult(),
+            'currentSort' => $sort,
         ]);
     }
 
