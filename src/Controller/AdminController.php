@@ -276,4 +276,12 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_wallets');
     }
+    #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
+public function showUser(
+    Utilisateur $utilisateur
+): Response {
+    return $this->render('admin/user_show.html.twig', [
+        'selectedUser' => $utilisateur,
+    ]);
+}
 }
