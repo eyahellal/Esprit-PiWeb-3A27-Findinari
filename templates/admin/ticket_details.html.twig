@@ -349,7 +349,7 @@
                     </div>
 
                     <div class="chat-input-wrapper">
-                        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'style': 'display:flex; gap:12px; align-items:flex-end;'}}) }}
+                        {{ form_start(form, {'action': path('app_admin_message_new', {id: ticket.id}), 'attr': {'novalidate': 'novalidate', 'style': 'display:flex; gap:12px; align-items:flex-end;'}}) }}
                             <div style="flex:1;">
                                 {{ form_widget(form.contenu, {'attr': {'class': 'modern-textarea', 'placeholder': 'Type your message here...'}}) }}
                                 <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form_errors(form.contenu) }}</div>
