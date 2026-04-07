@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\WalletRepository;
+use App\Entity\user\Utilisateur;
 
 #[ORM\Entity(repositoryClass: WalletRepository::class)]
 #[ORM\Table(name: 'wallet')]
@@ -13,25 +14,26 @@ class Wallet
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
+    #[ORM\Column(type: 'bigint')]
+    private ?string $id = null;
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $utilisateur_id = 1;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: false)]
+    private ?Utilisateur $utilisateur = null;
 
-    public function getUtilisateurId(): ?int
+    public function getUtilisateur(): ?Utilisateur
     {
-        return $this->utilisateur_id;
+        return $this->utilisateur;
     }
 
-    public function setUtilisateurId(int $utilisateur_id): self
+    public function setUtilisateur(?Utilisateur $utilisateur): self
     {
-        $this->utilisateur_id = $utilisateur_id;
+        $this->utilisateur = $utilisateur;
         return $this;
     }
 
@@ -49,7 +51,7 @@ class Wallet
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?float $solde = null;
 
     public function getSolde(): ?float
@@ -83,25 +85,10 @@ class Wallet
     public function __construct()
     {
         $this->investissementobligations = new ArrayCollection();
-        $this->utilisateur_id = 1; // Default to user ID 1
     }
 
     public function getInvestissementobligations(): Collection
     {
         return $this->investissementobligations;
-    }
-
-    public function addInvestissementobligation(Investissementobligation $investissementobligation): self
-    {
-        if (!$this->investissementobligations->contains($investissementobligation)) {
-            $this->investissementobligations->add($investissementobligation);
-        }
-        return $this;
-    }
-
-    public function removeInvestissementobligation(Investissementobligation $investissementobligation): self
-    {
-        $this->investissementobligations->removeElement($investissementobligation);
-        return $this;
     }
 }

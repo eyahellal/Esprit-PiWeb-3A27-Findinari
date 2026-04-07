@@ -14,8 +14,8 @@ class Investissementobligation
     #[ORM\Column(name: 'idInvestissement', type: 'integer')]
     private ?int $idInvestissement = null;
 
-    #[ORM\Column(name: 'wallet_id', type: 'integer', nullable: true)]
-    private ?int $walletId = null;
+    #[ORM\Column(name: 'wallet_id', type: 'string', nullable: true)]
+    private ?string $walletId = null;
 
     #[ORM\Column(name: 'obligation_id', type: 'integer', nullable: true)]
     private ?int $obligationId = null;
@@ -29,18 +29,17 @@ class Investissementobligation
     #[ORM\Column(name: 'dateMaturite', type: 'date', nullable: true)]
     private ?\DateTimeInterface $dateMaturite = null;
 
-    // Getters and Setters
     public function getIdInvestissement(): ?int
     {
         return $this->idInvestissement;
     }
 
-    public function getWalletId(): ?int
+    public function getWalletId(): ?string
     {
         return $this->walletId;
     }
 
-    public function setWalletId(?int $walletId): self
+    public function setWalletId(?string $walletId): self
     {
         $this->walletId = $walletId;
         return $this;

@@ -1,39 +1,51 @@
 <?php
 
-namespace App\Form;
+namespace App\form;
 
 use App\Entity\Loan\Investissementobligation;
 use App\Repository\WalletRepository;
 use App\Repository\ObligationRepository;
+use App\Entity\user\Utilisateur;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
+use Symfony\Component\Security\Core\Security;
 
 class InvestissementobligationType extends AbstractType
 {
     private $walletRepository;
     private $obligationRepository;
+    private $security;
 
-    public function __construct(WalletRepository $walletRepository, ObligationRepository $obligationRepository)
+    public function __construct(WalletRepository $walletRepository, ObligationRepository $obligationRepository, Security $security)
     {
         $this->walletRepository = $walletRepository;
         $this->obligationRepository = $obligationRepository;
+        $this->security = $security;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // Get all wallets from database (filter by user_id = 1 for now)
-        $wallets = $this->walletRepository->findBy(['utilisateur_id' => 1]);
+        // Get current user
+        $user = $this->security->getUser();
+        
+        // Fallback to user ID 1
+        if (!$user) {
+            $user = $this->walletRepository->getEntityManager()->getRepository(Utilisateur::class)->find(1);
+        }
+        
+        // Get wallets for this user only
+        $wallets = $this->walletRepository->findBy(['utilisateur' => $user]);
+        
         $walletChoices = [];
         foreach ($wallets as $wallet) {
-            $walletChoices[$wallet->getPays() . ' - ' . $wallet->getSolde() . ' ' . $wallet->getDevise()] = $wallet->getId();
+            $walletChoices[$wallet->getPays() . ' - ' . number_format($wallet->getSolde(), 2) . ' ' . $wallet->getDevise()] = (string) $wallet->getId();
         }
 
-        // Get all obligations from database
+        // Get all obligations
         $obligations = $this->obligationRepository->findAll();
         $obligationChoices = [];
         foreach ($obligations as $obligation) {
