@@ -60,8 +60,11 @@ class Budget
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false)]
-    private ?float $montantMax = null;
+    #[ORM\Column(type: 'decimal', nullable: false, name: 'montantMax')]
+private ?float $montantMax = null;
+
+
+
 
     public function getMontantMax(): ?float
     {
@@ -74,8 +77,9 @@ class Budget
         return $this;
     }
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $dureeBudget = null;
+    #[ORM\Column(type: 'integer', nullable: false, name: 'dureeBudget')]
+private ?int $dureeBudget = null;
+
 
     public function getDureeBudget(): ?int
     {
@@ -88,8 +92,8 @@ class Budget
         return $this;
     }
 
-    #[ORM\Column(type: 'date', nullable: false)]
-    private ?\DateTimeInterface $dateBudget = null;
+   #[ORM\Column(type: 'date', nullable: false, name: 'dateBudget')]
+private ?\DateTimeInterface $dateBudget = null;
 
     public function getDateBudget(): ?\DateTimeInterface
     {
