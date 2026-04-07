@@ -315,7 +315,7 @@ class AdminController extends AbstractController
         }
 
         $message = new \App\Entity\reclamation\Message();
-        $form = $this->createForm(\App\Form\MessageType::class, $message);
+        $form = $this->createForm(\App\form\MessageType::class, $message);
 
         $messages = $ticket->getMessages();
 

@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\user\Utilisateur;
-use App\Form\UpdatePasswordType;
-use App\Form\UpdateProfileType;
+use App\form\UpdatePasswordType;
+use App\form\UpdateProfileType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;

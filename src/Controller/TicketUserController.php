@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\reclamation\Ticket;
 use App\Entity\reclamation\Message;
-use App\Form\TicketType;
+use App\form\TicketType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -97,7 +97,7 @@ class TicketUserController extends AbstractController
         }
 
         $message = new Message();
-        $form = $this->createForm(\App\Form\MessageType::class, $message);
+        $form = $this->createForm(\App\form\MessageType::class, $message);
 
         $messages = $ticket->getMessages();
 
