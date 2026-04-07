@@ -1,13 +1,15 @@
 <?php
 
 namespace App\Controller;
-
+use App\Entity\Loan\Obligation;
+use App\Repository\ObligationRepository;
+use App\Repository\InvestissementobligationRepository;
 use App\Entity\Loan\Wallet;
 use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
 use App\Entity\user\Feedback;
 use App\Entity\user\Utilisateur;
-use App\Form\MessageType;
+use App\form\MessageType;
 use App\Repository\FeedbackRepository;
 use App\Repository\TicketRepository;
 use App\Repository\UtilisateurRepository;
@@ -377,4 +379,64 @@ class AdminController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+    #[Route('/admin/obligations', name: 'app_admin_obligations')]
+public function obligations(
+    ObligationRepository $obligationRepository,
+    InvestissementobligationRepository $investmentRepository
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    $obligations = $obligationRepository->findAll();
+
+    $avgRate = 0;
+    if (count($obligations) > 0) {
+        $totalRate = 0;
+        foreach ($obligations as $obligation) {
+            $totalRate += $obligation->getTauxInteret();
+        }
+        $avgRate = round($totalRate / count($obligations), 2);
+    }
+
+    $totalInvestments = count($investmentRepository->findAll());
+
+    return $this->render('admin/obligations.html.twig', [
+        'obligations' => $obligations,
+        'avgInterestRate' => $avgRate,
+        'totalInvestments' => $totalInvestments,
+    ]);
+}
+
+#[Route('/admin/obligation/{id}/delete', name: 'app_admin_obligation_delete', methods: ['POST'])]
+public function deleteObligationAdmin(
+    Obligation $obligation,
+    Request $request,
+    EntityManagerInterface $entityManager,
+    InvestissementobligationRepository $investmentRepository
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    if ($this->isCsrfTokenValid('delete_obligation_admin_'.$obligation->getIdObligation(), (string) $request->request->get('_token'))) {
+        $investments = $investmentRepository->findBy(['obligationId' => $obligation->getIdObligation()]);
+        foreach ($investments as $investment) {
+            $entityManager->remove($investment);
+        }
+
+        $entityManager->remove($obligation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Obligation and all related investments deleted successfully.');
+    } else {
+        $this->addFlash('danger', 'Invalid CSRF token.');
+    }
+
+    return $this->redirectToRoute('app_admin_obligations');
+}
+  #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
+public function showUser(
+    Utilisateur $utilisateur
+): Response {
+    return $this->render('admin/user_show.html.twig', [
+        'selectedUser' => $utilisateur,
+    ]);
+}
 }
