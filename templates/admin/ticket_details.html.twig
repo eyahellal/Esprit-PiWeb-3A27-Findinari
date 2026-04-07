@@ -327,10 +327,10 @@
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                                         </div>
                                         <div id="menu-{{ message.id }}" class="dropdown-menu">
-                                            <button class="dropdown-item" onclick="editMsg({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)">Modifier</button>
+                                            <button class="dropdown-item" onclick="editMsg({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)">Edit</button>
                                             <form method="POST" action="{{ path('app_admin_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ?')">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete_message_admin_' ~ message.id) }}">
-                                                <button type="submit" class="dropdown-item danger">Supprimer</button>
+                                                <button type="submit" class="dropdown-item danger">Delete</button>
                                             </form>
                                         </div>
                                     </div>
@@ -354,7 +354,7 @@
                                 {{ form_widget(form.contenu, {'attr': {'class': 'modern-textarea', 'placeholder': 'Type your message here...'}}) }}
                                 <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form_errors(form.contenu) }}</div>
                             </div>
-                            <button type="submit" class="btn btn-primary" style="height:50px; padding:0 24px;">Envoyer</button>
+                            <button type="submit" class="btn btn-primary" style="height:50px; padding:0 24px;">send</button>
                         {{ form_end(form) }}
                     </div>
                 </div>
