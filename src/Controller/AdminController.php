@@ -13,6 +13,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Entity\Ticket;
+use App\Entity\Message;
+use App\Form\MessageType;
 use Symfony\Component\Routing\Attribute\Route;
 
 class AdminController extends AbstractController
@@ -226,5 +229,165 @@ class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_wallets');
+    }
+
+    #[Route('/admin/ticket', name: 'app_admin_tickets')]
+    public function tickets(
+        \App\Repository\TicketRepository $ticketRepository
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('admin/tickets.html.twig', [
+            'tickets' => $ticketRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/admin/ticket/{id}/delete', name: 'app_admin_ticket_delete', methods: ['POST'])]
+    public function deleteTicketAdmin(
+        \App\Entity\Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if ($this->isCsrfTokenValid('delete_ticket_admin_' . $ticket->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($ticket);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Ticket deleted successfully.');
+        } else {
+            $this->addFlash('danger', 'Invalid CSRF token.');
+        }
+
+        return $this->redirectToRoute('app_admin_tickets');
+    }
+
+    #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
+    public function ticketDetails(
+        Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        // Update status or priority
+        if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
+            $newStatut = $request->request->get('statut');
+            $newPriorite = $request->request->get('priorite');
+
+            if ($newStatut) {
+                $ticket->setStatut($newStatut);
+            }
+            if ($newPriorite) {
+                $ticket->setPriorite($newPriorite);
+            }
+
+            if ($newStatut === 'Fermé') {
+                $ticket->setDateFermeture(new \DateTime());
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Ticket updated successfully.');
+            return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+        }
+
+        // Use MessageType for the chat form
+        $message = new Message();
+        $form = $this->createForm(MessageType::class, $message);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message->setTicket($ticket);
+            $message->setDate(new \DateTime());
+            $message->setTypeSender('ADMIN');
+            $message->setUtilisateur($this->getUser());
+
+            $entityManager->persist($message);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Message sent successfully.');
+            return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+        }
+
+        // Add a message (Legacy raw POST logic just in case)
+        if ($request->isMethod('POST') && $request->request->has('add_message')) {
+            $contenu = trim((string) $request->request->get('contenu'));
+            
+            if ($contenu !== '') {
+                $legacyMessage = new Message();
+                $legacyMessage->setTicket($ticket);
+                $legacyMessage->setContenu($contenu);
+                $legacyMessage->setDate(new \DateTime());
+                $legacyMessage->setTypeSender('ADMIN');
+                $legacyMessage->setUtilisateur($this->getUser());
+
+                $entityManager->persist($legacyMessage);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'Message sent successfully.');
+                return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+            }
+        }
+
+        $messages = $ticket->getMessages();
+
+        return $this->render('admin/ticket_details.html.twig', [
+            'ticket' => $ticket,
+            'messages' => $messages,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/admin/message/{id}/delete', name: 'app_admin_message_delete', methods: ['POST'])]
+    public function deleteMessageAdmin(
+        Message $message,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $ticketId = $message->getTicket()->getId();
+
+        if ($message->getTypeSender() !== 'ADMIN') {
+            $this->addFlash('danger', 'You can only delete your own messages.');
+            return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
+        }
+
+        if ($this->isCsrfTokenValid('delete_message_admin_' . $message->getId(), $request->request->get('_token'))) {
+            $message->setContenu('Ce message a été retiré');
+            $message->setUrlPieceJointe(null); 
+            $entityManager->flush();
+            $this->addFlash('success', 'Le message a été marqué comme retiré.');
+        } else {
+            $this->addFlash('danger', 'Invalid CSRF token.');
+        }
+
+        return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
+    }
+
+    #[Route('/admin/message/{id}/edit', name: 'app_admin_message_edit', methods: ['POST'])]
+    public function editMessageAdmin(
+        Message $message,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $ticketId = $message->getTicket()->getId();
+
+        if ($message->getTypeSender() !== 'ADMIN') {
+            $this->addFlash('danger', 'You can only edit your own messages.');
+            return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
+        }
+
+        $newContenu = trim((string) $request->request->get('edit_contenu'));
+
+        if ($newContenu !== '') {
+            $message->setContenu($newContenu);
+            $entityManager->flush();
+            $this->addFlash('success', 'Message updated successfully.');
+        } else {
+            $this->addFlash('danger', 'Message cannot be empty.');
+        }
+
+        return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
     }
 }

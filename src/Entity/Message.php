@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\MessageRepository;
 use App\Entity\user\Utilisateur;
@@ -61,6 +62,7 @@ class Message
     }
 
     #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(message: 'Le message ne peut pas être vide.')]
     private ?string $contenu = null;
 
     public function getContenu(): ?string
@@ -88,7 +90,7 @@ class Message
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(name: 'typeSender', type: 'string', nullable: false)]
     private ?string $typeSender = null;
 
     public function getTypeSender(): ?string
@@ -102,7 +104,7 @@ class Message
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(name: 'urlPieceJointe', type: 'string', nullable: true)]
     private ?string $urlPieceJointe = null;
 
     public function getUrlPieceJointe(): ?string

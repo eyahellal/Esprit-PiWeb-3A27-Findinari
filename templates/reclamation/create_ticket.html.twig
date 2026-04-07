@@ -167,13 +167,23 @@
     }
     .form-group {
         margin-bottom: 20px;
+        position: relative !important;
+        padding-top: 0 !important;
     }
     .form-label {
-        display: block;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #374151;
-        margin-bottom: 8px;
+        display: block !important;
+        position: static !important;
+        background: transparent !important;
+        padding: 0 !important;
+        height: auto !important;
+        line-height: normal !important;
+        transform: none !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        color: #374151 !important;
+        margin-bottom: 8px !important;
+        border: none !important;
+        opacity: 1 !important;
     }
     .form-control, .form-select {
         width: 100%;
@@ -193,62 +203,49 @@
         box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
     }
     
-    /* Custom Priority Radio Buttons */
+    /* Manual Priority Radio Buttons */
     .priority-options {
         display: flex;
-        gap: 10px;
+        gap: 15px;
+        width: 100%;
+        margin-top: 5px;
     }
-    .priority-options > div {
+    .priority-item {
         flex: 1;
-        display: block !important;
+        position: relative;
     }
-    .priority-options label {
+    .priority-item input[type="radio"] {
+        display: none !important;
+    }
+    .priority-item label {
         display: block !important;
+        position: static !important; /* Extremely important to prevent global floating label CSS */
         text-align: center;
-        padding: 12px 0;
-        border-radius: 8px;
+        padding: 12px 0 !important;
+        border-radius: 8px !important;
         cursor: pointer;
-        font-weight: 500;
+        font-weight: 500 !important;
         transition: all 0.2s;
-        border: 1px solid;
-        margin-bottom: 0 !important;
-    }
-    /* Hide the actual radio buttons */
-    .priority-options input[type="radio"] {
-        display: none;
-    }
-    
-    /* Low Priority (from Figma) */
-    .priority-options > div:nth-child(1) label {
-        border-color: #3b82f6; /* blue */
-        color: #3b82f6;
-    }
-    .priority-options > div:nth-child(1) input[type="radio"]:checked + label {
-        background-color: #e0f2fe; /* light blue bg */
-        color: #3b82f6;
-        border-color: #3b82f6;
+        border: 1px solid !important;
+        margin: 0 !important;
+        width: 100%;
+        background: transparent;
+        height: auto !important;
+        transform: none !important;
+        opacity: 1 !important;
     }
     
-    /* Medium Priority (from Figma) */
-    .priority-options > div:nth-child(2) label {
-        border-color: #f97316; /* orange */
-        color: #f97316;
-    }
-    .priority-options > div:nth-child(2) input[type="radio"]:checked + label {
-        background-color: #f97316;
-        color: white;
-    }
+    /* Low Priority */
+    .priority-item:nth-child(1) label { border-color: #3b82f6 !important; color: #3b82f6 !important; }
+    .priority-item:nth-child(1) input[type="radio"]:checked + label { background-color: #e0f2fe !important; color: #3b82f6 !important; }
     
-    /* High Priority (from Figma) */
-    .priority-options > div:nth-child(3) label {
-        border-color: #22c55e; /* green */
-        color: #22c55e;
-    }
-    .priority-options > div:nth-child(3) input[type="radio"]:checked + label {
-        background-color: #dcfce7; /* light green bg */
-        color: #22c55e;
-        border-color: #22c55e;
-    }
+    /* Medium Priority */
+    .priority-item:nth-child(2) label { border-color: #f97316 !important; color: #f97316 !important; }
+    .priority-item:nth-child(2) input[type="radio"]:checked + label { background-color: #f97316 !important; color: white !important; }
+    
+    /* High Priority */
+    .priority-item:nth-child(3) label { border-color: #22c55e !important; color: #22c55e !important; }
+    .priority-item:nth-child(3) input[type="radio"]:checked + label { background-color: #dcfce7 !important; color: #22c55e !important; }
     
     /* File Upload Area */
     .file-upload-area {
@@ -311,6 +308,14 @@
         font-size: 0.85rem;
         margin-top: 5px;
     }
+    .form-error ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin: 0;
+    }
+    .form-error li {
+        margin-bottom: 3px;
+    }
     
     @media (max-width: 768px) {
         .content-grid {
@@ -331,7 +336,7 @@
         
         <nav class="support-nav">
             <a href="{{ path('support_center') }}">Support Center</a>
-            <a href="#">My Tickets</a>
+            <a href="{{ path('app_user_tickets') }}">My Tickets</a>
         </nav>
 
         <a href="{{ path('app_user_createticket') }}" class="btn-open-ticket">Open a ticket</a>
@@ -366,13 +371,21 @@
                 <div class="form-group">
                     <label class="form-label">Priority</label>
                     <div class="priority-options">
-                        {% for child in form.priorite %}
-                            <div>
-                                {{ form_widget(child) }}
-                                {{ form_label(child) }}
-                            </div>
-                        {% endfor %}
+                        <div class="priority-item">
+                            <input type="radio" id="ticket_priorite_1" name="ticket[priorite]" value="Low">
+                            <label for="ticket_priorite_1">Low</label>
+                        </div>
+                        <div class="priority-item">
+                            <input type="radio" id="ticket_priorite_2" name="ticket[priorite]" value="Medium" checked>
+                            <label for="ticket_priorite_2">Medium</label>
+                        </div>
+                        <div class="priority-item">
+                            <input type="radio" id="ticket_priorite_3" name="ticket[priorite]" value="High">
+                            <label for="ticket_priorite_3">High</label>
+                        </div>
                     </div>
+                    {% do form.priorite.setRendered() %}
+                    <div class="form-error">{{ form_errors(form.priorite) }}</div>
                 </div>
                 
                 <div class="form-group">

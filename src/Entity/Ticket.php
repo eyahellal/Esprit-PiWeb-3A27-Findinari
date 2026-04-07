@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\TicketRepository;
 use App\Entity\user\Utilisateur;
@@ -46,6 +47,8 @@ class Ticket
     }
 
     #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(min: 10, minMessage: 'La description doit comporter au moins {{ limit }} caractères')]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -88,6 +91,8 @@ class Ticket
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire')]
+    #[Assert\Length(min: 5, minMessage: 'Le titre doit comporter au moins {{ limit }} caractères')]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -102,6 +107,7 @@ class Ticket
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le type est obligatoire')]
     private ?string $type = null;
 
     public function getType(): ?string
@@ -130,6 +136,7 @@ class Ticket
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'La priorité est obligatoire')]
     private ?string $priorite = null;
 
     public function getPriorite(): ?string

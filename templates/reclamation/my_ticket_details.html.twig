@@ -1,0 +1,439 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ticket Details - FinDinari{% endblock %}
+
+{% block body %}
+<style>
+    /* Hide the default header only for this page */
+    .navigation {
+        display: none !important;
+    }
+
+    :root {
+        --primary-green: #22c55e;
+        --light-green: #eafaf1;
+        --dark-text: #1f2937;
+        --gray-text: #6b7280;
+        --white: #ffffff;
+        --border-color: #e5e7eb;
+        --chat-admin-bg: #ffffff;
+        --chat-user-bg: #22c55e;
+        --surface: #ffffff;
+    }
+
+    body {
+        background-color: #f9fafb;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Custom Header */
+    .support-header {
+        background: var(--white);
+        border-bottom: 1px solid var(--border-color);
+        padding: 15px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .support-header .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .support-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--dark-text);
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .support-logo img { height: 40px; }
+
+    .support-nav {
+        display: flex;
+        gap: 30px;
+        align-items: center;
+    }
+
+    .support-nav a {
+        text-decoration: none;
+        color: var(--gray-text);
+        font-weight: 500;
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+    .support-nav a:hover, .support-nav a.active {
+        color: var(--primary-green);
+    }
+
+    .btn-open-ticket {
+        background-color: var(--primary-green);
+        color: white !important;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+
+    .btn-open-ticket:hover {
+        background-color: #16a34a;
+    }
+
+    .details-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: var(--gray-text);
+        margin-bottom: 20px;
+    }
+    .breadcrumb a {
+        color: var(--gray-text);
+        text-decoration: none;
+    }
+    .breadcrumb a:hover {
+        color: var(--primary-green);
+    }
+    
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 25px;
+    }
+
+    @media (max-width: 768px) {
+        .main-grid { grid-template-columns: 1fr; }
+        .support-nav { display: none; }
+    }
+
+    .card-panel {
+        background: var(--white);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--white);
+        font-weight: 700;
+        color: var(--dark-text);
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    .info-group {
+        margin-bottom: 20px;
+    }
+
+    .info-label {
+        font-size: 11px;
+        color: var(--gray-text);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .info-value {
+        font-size: 14.5px;
+        color: var(--dark-text);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .status-open { background-color: #dbeafe; color: #2563eb; }
+    .status-closed { background-color: #f3f4f6; color: #4b5563; }
+    .status-in-progress { background-color: #fef3c7; color: #d97706; }
+
+    .priority-high { color: #ef4444; }
+    .priority-medium { color: #f59e0b; }
+    .priority-low { color: #3b82f6; }
+
+    .chat-container {
+        background: #fafbff;
+        height: 600px;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .msg-wrapper {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+        width: 100%;
+    }
+
+    .msg-wrapper.user {
+        align-items: flex-end;
+    }
+
+    .msg-wrapper.admin {
+        align-items: flex-start;
+    }
+
+    .msg-meta {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--gray-text);
+        margin-bottom: 4px;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .msg-bubble {
+        padding: 12px 16px;
+        border-radius: 12px;
+        max-width: 80%;
+        font-size: 14px;
+        line-height: 1.5;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .msg-wrapper.user .msg-bubble {
+        background: var(--chat-user-bg);
+        color: white;
+        border-bottom-right-radius: 0;
+    }
+
+    .msg-wrapper.admin .msg-bubble {
+        background: var(--chat-admin-bg);
+        color: var(--dark-text);
+        border: 1px solid var(--border-color);
+        border-bottom-left-radius: 0;
+    }
+
+    .chat-form {
+        padding: 20px 24px;
+        border-top: 1px solid var(--border-color);
+        background: var(--white);
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    .chat-form textarea {
+        flex: 1;
+        height: 48px;
+        min-height: 48px;
+        max-height: 120px;
+        padding: 13px 16px;
+        border-radius: 12px;
+        border: 1.5px solid var(--border-color);
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .chat-form textarea:focus {
+        border-color: var(--primary-green);
+    }
+
+    .chat-form button {
+        background-color: var(--primary-green);
+        color: white;
+        border: none;
+        height: 48px;
+        padding: 0 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+    }
+
+    .chat-form button:hover {
+        background-color: #16a34a;
+    }
+</style>
+
+<header class="support-header">
+    <div class="container">
+        <a href="{{ path('app_home') }}" class="support-logo">
+            <img src="{{ asset('images/logo.png') }}" alt="FD FinDinari" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+            <span style="display:none">FinDinari</span>
+        </a>
+        
+        <nav class="support-nav">
+            <a href="{{ path('support_center') }}">Support Center</a>
+            <a href="{{ path('app_user_tickets') }}" class="active">My Tickets</a>
+        </nav>
+
+        <a href="{{ path('app_user_createticket') }}" class="btn-open-ticket">Open a ticket</a>
+    </div>
+</header>
+
+<div class="details-container">
+    <div class="breadcrumb">
+        <a href="{{ path('app_home') }}">Home</a> &gt; 
+        <a href="{{ path('support_center') }}">Support</a> &gt; 
+        <a href="{{ path('app_user_tickets') }}">My Tickets</a> &gt; 
+        Ticket #{{ ticket.id }}
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    {% for message in app.flashes('success') %}
+        <div style="background: #dcfce7; color: #166534; padding: 14px 18px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; border: 1px solid #b2f5d1;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <div class="main-grid">
+        
+        <!-- LEFT: TICKET INFO -->
+        <div class="card-panel">
+            <div class="card-header">
+                <i class="fas fa-info-circle" style="color: var(--primary-green);"></i>
+                Ticket Details
+            </div>
+            <div class="card-body">
+                <div class="info-group">
+                    <span class="info-label">Title</span>
+                    <div class="info-value" style="font-size: 18px;">{{ ticket.titre }}</div>
+                </div>
+                
+                <div class="info-group">
+                    <span class="info-label">Status</span>
+                    <div class="status-badge {% if ticket.statut|lower == 'open' or ticket.statut == 'Ouvert' %}status-open{% elseif ticket.statut|lower == 'closed' or ticket.statut == 'Fermé' %}status-closed{% else %}status-in-progress{% endif %}">
+                        {{ ticket.statut }}
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <span class="info-label">Priority</span>
+                    <div class="info-value priority-{{ ticket.priorite|lower }}">
+                        {% if ticket.priorite == 'Haute' or ticket.priorite|lower == 'high' %}
+                            <i class="fas fa-arrow-up"></i>
+                        {% elseif ticket.priorite == 'Moyenne' or ticket.priorite|lower == 'medium' %}
+                            <i class="fas fa-minus"></i>
+                        {% else %}
+                            <i class="fas fa-arrow-down"></i>
+                        {% endif %}
+                        {{ ticket.priorite }}
+                    </div>
+                </div>
+                
+                <div class="info-group">
+                    <span class="info-label">Category</span>
+                    <div class="info-value">{{ ticket.type }}</div>
+                </div>
+
+                <div class="info-group">
+                    <span class="info-label">Created At</span>
+                    <div class="info-value" style="color: var(--gray-text);">{{ ticket.dateCreation|date('d M Y, H:i') }}</div>
+                </div>
+
+                <div class="info-group" style="margin-top: 25px; padding-top: 25px; border-top: 1px dashed var(--border-color);">
+                    <span class="info-label">Description</span>
+                    <p style="color: var(--dark-text); font-size: 14px; line-height: 1.6; margin-top: 8px;">{{ ticket.description }}</p>
+                </div>
+
+                {% if ticket.imageUrl %}
+                <div class="info-group">
+                   <span class="info-label">Attached Image</span>
+                   <div style="margin-top: 10px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+                       <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" alt="Ticket Attachment" style="width: 100%; display: block;" onerror="this.onerror=null; this.src='{{ asset('images/placeholder-image-icon.png') }}';">
+                   </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- RIGHT: CHAT -->
+        <div class="card-panel chat-container">
+            <div class="card-header">
+                <i class="far fa-comments" style="color: var(--primary-green);"></i>
+                Discussion
+            </div>
+            
+            <div id="chatContainer" class="chat-messages">
+                {% for message in messages %}
+                    {% set isUser = message.typeSender == 'USER' %}
+                    
+                    <div class="msg-wrapper {{ isUser ? 'user' : 'admin' }}">
+                        <div class="msg-meta">
+                            {% if isUser %}
+                                You &bull; {{ message.date|date('d M, H:i') }}
+                            {% else %}
+                                <span style="color: var(--primary-green); font-weight: 800;">Support Team</span> &bull; {{ message.date|date('d M, H:i') }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="msg-bubble">
+                            {{ message.contenu|nl2br }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-text); opacity: 0.6;">
+                        <i class="far fa-comment-dots" style="font-size: 3rem; margin-bottom: 12px;"></i>
+                        <p style="font-weight: 600; font-size: 15px; margin:0;">No messages yet.</p>
+                        <span style="font-size: 13px;">Add a reply to follow up on your ticket.</span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {{ form_start(form, {'attr': {'class': 'chat-form', 'novalidate': 'novalidate'}}) }}
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    {{ form_widget(form.contenu) }}
+                    <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
+                </div>
+                <button type="submit">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            {{ form_end(form) }}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Auto-scroll chat to bottom
+    const chatContainer = document.getElementById('chatContainer');
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+</script>
+{% endblock %}
