@@ -1,0 +1,174 @@
+{% extends 'management/dashboard.html.twig' %}
+
+{% block title %}Edit Budget - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header" style="background: #e8f5f5;">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3" style="color: #26474E;">Edit Budget</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}" style="color: #26474E;">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp;<a href="{{ path('app_budget_index') }}" style="color: #26474E;">Budgets</a></li>
+                    <li class="list-inline-item">/ &nbsp; Edit</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+
+                <div class="card border-0 rounded-4"
+                     style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+
+                    {# Card Header — uses category color #}
+                    <div class="rounded-top-4 p-4 text-white"
+                         style="background: {{ budget.categorie.color ?? '#F27438' }};">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1 opacity-75 small text-uppercase fw-semibold">Editing Budget</p>
+                                <h4 class="fw-bold mb-0">{{ budget.categorie.nom }}</h4>
+                            </div>
+                            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                                <i class="fas {{ budget.categorie.icon ?? 'fa-chart-pie' }} fa-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Card Body #}
+                    <div class="card-body p-4">
+
+                        {# Read-only Summary #}
+                        <div class="rounded-4 p-3 mb-4 d-flex gap-3"
+                             style="background: #f8f9fa;">
+                            <div class="flex-fill text-center p-2 rounded-3"
+                                 style="background: white;">
+                                <p class="text-muted small mb-1 text-uppercase fw-semibold">Wallet</p>
+                                <p class="fw-bold mb-0" style="color: #26474E;">
+                                    <i class="fas fa-wallet me-1" style="color: #F27438;"></i>
+                                    {{ budget.wallet.pays }}
+                                </p>
+                                <p class="text-muted small mb-0">{{ budget.wallet.devise }}</p>
+                            </div>
+                            <div class="flex-fill text-center p-2 rounded-3"
+                                 style="background: white;">
+                                <p class="text-muted small mb-1 text-uppercase fw-semibold">Category</p>
+                                <p class="fw-bold mb-0" style="color: #26474E;">
+                                    <i class="fas {{ budget.categorie.icon ?? 'fa-folder' }} me-1"
+                                       style="color: {{ budget.categorie.color ?? '#F27438' }};"></i>
+                                    {{ budget.categorie.nom }}
+                                </p>
+                            </div>
+                        </div>
+
+                        {# Info Note #}
+                        <div class="rounded-3 p-3 mb-4"
+                             style="background: #fff3ee; border-left: 4px solid #F27438;">
+                            <p class="mb-0 small" style="color: #26474E;">
+                                <i class="fas fa-info-circle me-2" style="color: #F27438;"></i>
+                                Wallet and category cannot be changed. Only amount, duration and date can be updated.
+                            </p>
+                        </div>
+
+                        <form method="post" action="{{ path('app_budget_edit', {'id': budget.id}) }}">
+
+                            {# Max Amount #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #26474E;">
+                                    Maximum Amount
+                                    <span class="text-muted fw-normal">({{ budget.wallet.devise }})</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"
+                                          style="background: #e8f5f5; border-color: #76CDCD; color: #26474E;">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </span>
+                                    <input type="number" name="montantMax"
+                                           class="form-control"
+                                           value="{{ budget.montantMax }}"
+                                           step="0.01" min="0.01" required
+                                           style="border-color: #76CDCD;">
+                                </div>
+                                <small class="text-muted">The maximum amount you want to spend</small>
+                            </div>
+
+                            {# Duration #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #26474E;">
+                                    Duration
+                                    <span class="text-muted fw-normal">(days)</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"
+                                          style="background: #e8f5f5; border-color: #76CDCD; color: #26474E;">
+                                        <i class="fas fa-clock"></i>
+                                    </span>
+                                    <input type="number" name="dureeBudget"
+                                           class="form-control"
+                                           value="{{ budget.dureeBudget }}"
+                                           min="1" required
+                                           style="border-color: #76CDCD;">
+                                </div>
+                            </div>
+
+                            {# Start Date #}
+                            <div class="mb-4">
+                                <label class="form-label fw-bold" style="color: #26474E;">Start Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"
+                                          style="background: #e8f5f5; border-color: #76CDCD; color: #26474E;">
+                                        <i class="fas fa-calendar"></i>
+                                    </span>
+                                    <input type="date" name="dateBudget"
+                                           class="form-control"
+                                           value="{{ budget.dateBudget|date('Y-m-d') }}"
+                                           required
+                                           style="border-color: #76CDCD;">
+                                </div>
+                            </div>
+
+                            <hr class="my-3">
+
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_budget_index') }}"
+                                   class="btn btn-sm flex-fill"
+                                   style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+                                    <i class="fas fa-arrow-left me-1"></i>Cancel
+                                </a>
+                                <button type="submit"
+                                        class="btn btn-sm flex-fill update-btn"
+                                        style="background: #e8f5e9; color: #2d6a4f; border-radius: 10px;">
+                                    <i class="fas fa-save me-1"></i>Update Budget
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .rounded-top-4 { border-radius: 1rem 1rem 0 0 !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .form-control:focus {
+        border-color: #F27438 !important;
+        box-shadow: 0 0 0 0.2rem rgba(242,116,56,0.2) !important;
+    }
+    .update-btn:hover {
+        background: #F27438 !important;
+        color: white !important;
+    }
+</style>
+
+{% endblock %}

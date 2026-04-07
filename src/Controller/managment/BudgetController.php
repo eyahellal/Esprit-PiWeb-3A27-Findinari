@@ -161,7 +161,24 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
             'categorie' => $categorie,
         ]);
     }
+#[Route('/{id}/edit', name: 'app_budget_edit', methods: ['GET', 'POST'])]
+public function edit(Request $request, Budget $budget, EntityManagerInterface $entityManager): Response
+{
+    if ($request->isMethod('POST')) {
+        $budget->setMontantMax((float) $request->request->get('montantMax'));
+        $budget->setDureeBudget((int) $request->request->get('dureeBudget'));
+        $budget->setDateBudget(new \DateTime($request->request->get('dateBudget')));
 
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Budget updated successfully!');
+        return $this->redirectToRoute('app_budget_index');
+    }
+
+    return $this->render('management/budget/edit.html.twig', [
+        'budget' => $budget,
+    ]);
+}
     #[Route('/{id}/delete', name: 'app_budget_delete', methods: ['POST'])]
     public function delete(Request $request, Budget $budget, EntityManagerInterface $entityManager): Response
     {
