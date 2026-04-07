@@ -3,15 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Loan\Wallet;
-use App\Entity\Loan\Obligation;
-use App\Entity\Loan\Investissementobligation;
-use App\Entity\user\Utilisateur;
+use App\Entity\reclamation\Message;
+use App\Entity\reclamation\Ticket;
 use App\Entity\user\Feedback;
-use App\Repository\UtilisateurRepository;
+use App\Entity\user\Utilisateur;
+use App\Form\MessageType;
 use App\Repository\FeedbackRepository;
+use App\Repository\TicketRepository;
+use App\Repository\UtilisateurRepository;
 use App\Repository\WalletRepository;
-use App\Repository\ObligationRepository;
-use App\Repository\InvestissementobligationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +34,7 @@ class AdminController extends AbstractController
 
         if ($q !== '') {
             $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
-               ->setParameter('q', '%' . $q . '%');
+               ->setParameter('q', '%'.$q.'%');
         }
 
         switch ($sort) {
@@ -51,18 +51,6 @@ class AdminController extends AbstractController
 
             case 'role_desc':
                 $qb->orderBy('u.role', 'DESC')
-                   ->addOrderBy('u.nom', 'ASC')
-                   ->addOrderBy('u.prenom', 'ASC');
-                break;
-
-            case 'status_asc':
-                $qb->orderBy('u.statut', 'ASC')
-                   ->addOrderBy('u.nom', 'ASC')
-                   ->addOrderBy('u.prenom', 'ASC');
-                break;
-
-            case 'status_desc':
-                $qb->orderBy('u.statut', 'DESC')
                    ->addOrderBy('u.nom', 'ASC')
                    ->addOrderBy('u.prenom', 'ASC');
                 break;
@@ -89,22 +77,22 @@ class AdminController extends AbstractController
         $adminCount = 0;
         $userCount = 0;
         $influencerCount = 0;
-        $activeCount = 0;
-        $inactiveCount = 0;
+        $activeUsersCount = 0;
+        $inactiveUsersCount = 0;
 
         foreach ($allUsers as $u) {
             if ($u->getRole() === 'ADMIN') {
-                $adminCount++;
+                ++$adminCount;
             } elseif ($u->getRole() === 'INFLUENCER') {
-                $influencerCount++;
+                ++$influencerCount;
             } else {
-                $userCount++;
+                ++$userCount;
             }
 
-            if (strtoupper((string) $u->getStatut()) === 'ACTIF') {
-                $activeCount++;
+            if (in_array($u->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
+                ++$activeUsersCount;
             } else {
-                $inactiveCount++;
+                ++$inactiveUsersCount;
             }
         }
 
@@ -117,8 +105,8 @@ class AdminController extends AbstractController
             'adminCount' => $adminCount,
             'userCount' => $userCount,
             'influencerCount' => $influencerCount,
-            'activeCount' => $activeCount,
-            'inactiveCount' => $inactiveCount,
+            'activeUsersCount' => $activeUsersCount,
+            'inactiveUsersCount' => $inactiveUsersCount,
             'search' => $q,
             'sort' => $sort,
         ]);
@@ -130,7 +118,7 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        if ($this->isCsrfTokenValid('delete_user_' . $utilisateur->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_user_'.$utilisateur->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($utilisateur);
             $entityManager->flush();
 
@@ -169,23 +157,17 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        if (!$this->isCsrfTokenValid('toggle_status_' . $utilisateur->getId(), $request->request->get('_token'))) {
-            $this->addFlash('danger', 'Invalid CSRF token.');
-            return $this->redirectToRoute('app_admin_dashboard');
-        }
-
         $newStatus = strtoupper(trim((string) $request->request->get('statut')));
 
-        if (!in_array($newStatus, ['ACTIF', 'INACTIF'], true)) {
+        if (in_array($newStatus, ['ACTIF', 'ACTIVE', 'INACTIF', 'INACTIVE', 'BANNED'], true)) {
+            $utilisateur->setStatut($newStatus);
+            $utilisateur->setDateModification(new \DateTime());
+            $entityManager->flush();
+
+            $this->addFlash('success', 'User status updated successfully.');
+        } else {
             $this->addFlash('danger', 'Invalid status selected.');
-            return $this->redirectToRoute('app_admin_dashboard');
         }
-
-        $utilisateur->setStatut($newStatus);
-        $utilisateur->setDateModification(new \DateTime());
-        $entityManager->flush();
-
-        $this->addFlash('success', 'User status updated successfully.');
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
@@ -207,7 +189,7 @@ class AdminController extends AbstractController
         }
 
         $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy([
-            'gmail' => $gmail
+            'gmail' => $gmail,
         ]);
 
         if ($existing) {
@@ -238,7 +220,7 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        if ($this->isCsrfTokenValid('delete_feedback_admin_' . $feedback->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_feedback_admin_'.$feedback->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($feedback);
             $entityManager->flush();
 
@@ -251,34 +233,33 @@ class AdminController extends AbstractController
     }
 
     #[Route('/admin/wallets', name: 'app_admin_wallets')]
-    public function wallets(WalletRepository $walletRepository): Response
-    {
+    public function wallets(
+        WalletRepository $walletRepository,
+        UtilisateurRepository $utilisateurRepository
+    ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        
+
         $wallets = $walletRepository->findAll();
-        
-        // Calculate active users count
-        $activeUsers = [];
-        foreach ($wallets as $wallet) {
-            if ($wallet->getUtilisateur() && !in_array($wallet->getUtilisateur()->getId(), $activeUsers)) {
-                $activeUsers[] = $wallet->getUtilisateur()->getId();
+        $users = $utilisateurRepository->findAll();
+
+        $activeUsersCount = 0;
+        foreach ($users as $user) {
+            if (in_array($user->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
+                ++$activeUsersCount;
             }
         }
-        $activeUsersCount = count($activeUsers);
-        
-        // Calculate unique currencies count
+
         $currencies = [];
         foreach ($wallets as $wallet) {
-            if ($wallet->getDevise() && !in_array($wallet->getDevise(), $currencies)) {
+            if (method_exists($wallet, 'getDevise') && $wallet->getDevise()) {
                 $currencies[] = $wallet->getDevise();
             }
         }
-        $currenciesCount = count($currencies);
 
         return $this->render('admin/wallets.html.twig', [
             'wallets' => $wallets,
             'activeUsersCount' => $activeUsersCount,
-            'currenciesCount' => $currenciesCount,
+            'currenciesCount' => count(array_unique($currencies)),
         ]);
     }
 
@@ -290,7 +271,7 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($this->isCsrfTokenValid('delete_wallet_admin_' . $wallet->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_wallet_admin_'.$wallet->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($wallet);
             $entityManager->flush();
 
@@ -302,71 +283,98 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_wallets');
     }
 
-    // ============ OBLIGATIONS MANAGEMENT ============
-
-    #[Route('/admin/obligations', name: 'app_admin_obligations')]
-    public function obligations(
-        ObligationRepository $obligationRepository,
-        InvestissementobligationRepository $investmentRepository
+    #[Route('/admin/ticket', name: 'app_admin_tickets')]
+    public function tickets(
+        Request $request,
+        TicketRepository $ticketRepository
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $obligations = $obligationRepository->findAll();
-        
-        // Calculate average interest rate
-        $avgRate = 0;
-        if (count($obligations) > 0) {
-            $totalRate = 0;
-            foreach ($obligations as $obligation) {
-                $totalRate += $obligation->getTauxInteret();
-            }
-            $avgRate = round($totalRate / count($obligations), 2);
-        }
-        
-        // Count total investments
-        $totalInvestments = count($investmentRepository->findAll());
+        $sort = $request->query->get('sort', 'newest');
+        $qb = $ticketRepository->createQueryBuilder('t');
 
-        return $this->render('admin/obligations.html.twig', [
-            'obligations' => $obligations,
-            'avgInterestRate' => $avgRate,
-            'totalInvestments' => $totalInvestments,
+        switch ($sort) {
+            case 'oldest':
+                $qb->orderBy('t.id', 'ASC');
+                break;
+            case 'priority_high':
+                $qb->addSelect("(CASE WHEN t.priorite = 'High' THEN 3 WHEN t.priorite = 'Medium' THEN 2 ELSE 1 END) AS HIDDEN p_order")
+                   ->orderBy('p_order', 'DESC');
+                break;
+            case 'status_open':
+                $qb->orderBy('t.statut', 'DESC');
+                break;
+            case 'newest':
+            default:
+                $qb->orderBy('t.id', 'DESC');
+                break;
+        }
+
+        return $this->render('admin/tickets.html.twig', [
+            'tickets' => $qb->getQuery()->getResult(),
+            'currentSort' => $sort,
         ]);
     }
 
-    #[Route('/admin/obligation/{id}/delete', name: 'app_admin_obligation_delete', methods: ['POST'])]
-    public function deleteObligationAdmin(
-        Obligation $obligation,
+    #[Route('/admin/ticket/{id}/delete', name: 'app_admin_ticket_delete', methods: ['POST'])]
+    public function deleteTicketAdmin(
+        Ticket $ticket,
         Request $request,
-        EntityManagerInterface $entityManager,
-        InvestissementobligationRepository $investmentRepository
+        EntityManagerInterface $entityManager
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($this->isCsrfTokenValid('delete_obligation_admin_' . $obligation->getIdObligation(), $request->request->get('_token'))) {
-            // First delete all related investments
-            $investments = $investmentRepository->findBy(['obligationId' => $obligation->getIdObligation()]);
-            foreach ($investments as $investment) {
-                $entityManager->remove($investment);
-            }
-            
-            // Then delete the obligation
-            $entityManager->remove($obligation);
+        if ($this->isCsrfTokenValid('delete_ticket_admin_'.$ticket->getId(), (string) $request->request->get('_token'))) {
+            $entityManager->remove($ticket);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Obligation and all related investments deleted successfully.');
+            $this->addFlash('success', 'Ticket deleted successfully.');
         } else {
             $this->addFlash('danger', 'Invalid CSRF token.');
         }
 
-        return $this->redirectToRoute('app_admin_obligations');
+        return $this->redirectToRoute('app_admin_tickets');
     }
-    #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
-public function showUser(
-    Utilisateur $utilisateur
-): Response {
-    return $this->render('admin/user_show.html.twig', [
-        'selectedUser' => $utilisateur,
-    ]);
-}
 
+    #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
+    public function ticketDetails(
+        Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
+            $newStatut = $request->request->get('statut');
+            $newPriorite = $request->request->get('priorite');
+
+            if ($newStatut) {
+                $ticket->setStatut($newStatut);
+            }
+
+            if ($newPriorite) {
+                $ticket->setPriorite($newPriorite);
+            }
+
+            if (in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
+                $ticket->setDateFermeture(new \DateTime());
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Ticket updated successfully.');
+
+            return $this->redirectToRoute('app_admin_ticket_details', [
+                'id' => $ticket->getId(),
+            ]);
+        }
+
+        $message = new Message();
+        $form = $this->createForm(MessageType::class, $message);
+
+        return $this->render('admin/ticket_details.html.twig', [
+            'ticket' => $ticket,
+            'messages' => $ticket->getMessages(),
+            'form' => $form->createView(),
+        ]);
+    }
 }
