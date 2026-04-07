@@ -4,344 +4,179 @@
 
 {% block body %}
 <style>
-    /* Hide the default header only for this page */
-    .navigation {
-        display: none !important;
-    }
-
-    :root {
-        --primary-green: #22c55e;
-        --light-green: #eafaf1;
-        --dark-text: #1f2937;
-        --gray-text: #6b7280;
-        --white: #ffffff;
-        --border-color: #e5e7eb;
-    }
-
-    body {
-        background-color: #f9fafb;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    }
-
-    /* Custom Header */
-    .support-header {
-        background: var(--white);
-        border-bottom: 1px solid var(--border-color);
-        padding: 15px 0;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-    }
-
-    .support-header .container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
-
-    .support-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-        color: var(--dark-text);
-        font-weight: 700;
-        font-size: 1.5rem;
-    }
-
-    .support-logo img {
-        height: 40px;
-    }
-
-    .support-nav {
-        display: flex;
-        gap: 30px;
-        align-items: center;
-    }
-
-    .support-nav a {
-        text-decoration: none;
-        color: var(--gray-text);
-        font-weight: 500;
-        font-size: 14px;
-        transition: color 0.2s;
-    }
-
-    .support-nav a:hover, .support-nav a.active {
-        color: var(--primary-green);
-    }
-
-    .btn-open-ticket {
-        background-color: var(--primary-green);
-        color: white !important;
-        padding: 10px 25px;
-        border-radius: 50px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: background-color 0.2s;
-    }
-
-    .btn-open-ticket:hover {
-        background-color: #16a34a;
-    }
-
-    /* Page Content */
     .ticket-container {
         max-width: 1200px;
         margin: 40px auto;
-        padding: 0 20px;
+        padding: 20px;
+        padding-top: 120px;
     }
-    .breadcrumb {
-        font-size: 0.9rem;
-        color: #6b7280;
-        margin-bottom: 20px;
-    }
-    .breadcrumb a {
-        color: #6b7280;
-        text-decoration: none;
-    }
-    .breadcrumb a:hover {
-        color: #22c55e;
-    }
+
     .page-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 30px;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 35px;
     }
+
     .content-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 30px;
+        grid-template-columns: 1.8fr 1fr;
+        gap: 40px;
     }
+
+    @media (max-width: 992px) {
+        .content-grid { grid-template-columns: 1fr; }
+    }
+
     .form-card {
-        background: #fff;
+        background: #ffffff;
         border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
     }
-    .sidebar-card {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 25px;
-        height: fit-content;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-    }
-    .sidebar-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 600;
-        color: #1f2937;
-        font-size: 1.1rem;
-        margin-bottom: 20px;
-    }
-    .sidebar-title i {
-        color: #22c55e;
-    }
-    .sidebar-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        color: #6b7280;
-        font-size: 0.95rem;
-        line-height: 1.6;
-    }
-    .sidebar-list li {
-        margin-bottom: 12px;
-        padding-left: 15px;
-        position: relative;
-    }
-    .sidebar-list li::before {
-        content: "•";
-        color: #22c55e;
-        position: absolute;
-        left: 0;
-        top: 0;
-        font-size: 1.2rem;
-    }
+
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 30px !important;
         position: relative !important;
-        padding-top: 0 !important;
     }
-    .form-label {
+
+    .form-card label {
         display: block !important;
         position: static !important;
-        background: transparent !important;
+        transform: none !important;
+        margin: 0 0 10px 0 !important;
         padding: 0 !important;
-        height: auto !important;
-        line-height: normal !important;
-        transform: none !important;
         font-size: 0.95rem !important;
-        font-weight: 500 !important;
+        font-weight: 700 !important;
         color: #374151 !important;
-        margin-bottom: 8px !important;
-        border: none !important;
         opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
     }
+
     .form-control, .form-select {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        color: #1f2937;
-        font-family: inherit;
-    }
-    .form-control::placeholder {
-        color: #9ca3af;
-    }
-    .form-control:focus, .form-select:focus {
-        outline: none;
-        border-color: #22c55e;
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-    }
-    
-    /* Manual Priority Radio Buttons */
-    .priority-options {
-        display: flex;
-        gap: 15px;
-        width: 100%;
-        margin-top: 5px;
-    }
-    .priority-item {
-        flex: 1;
-        position: relative;
-    }
-    .priority-item input[type="radio"] {
-        display: none !important;
-    }
-    .priority-item label {
         display: block !important;
-        position: static !important; /* Extremely important to prevent global floating label CSS */
-        text-align: center;
-        padding: 12px 0 !important;
-        border-radius: 8px !important;
-        cursor: pointer;
-        font-weight: 500 !important;
-        transition: all 0.2s;
-        border: 1px solid !important;
-        margin: 0 !important;
-        width: 100%;
-        background: transparent;
-        height: auto !important;
-        transform: none !important;
-        opacity: 1 !important;
+        width: 100% !important;
+        padding: 14px 18px !important;
+        border: 1.5px solid #e5e7eb !important;
+        border-radius: 12px !important;
+        font-size: 1rem !important;
+        background-color: #f9fafb !important;
     }
-    
-    /* Low Priority */
-    .priority-item:nth-child(1) label { border-color: #3b82f6 !important; color: #3b82f6 !important; }
-    .priority-item:nth-child(1) input[type="radio"]:checked + label { background-color: #e0f2fe !important; color: #3b82f6 !important; }
-    
-    /* Medium Priority */
-    .priority-item:nth-child(2) label { border-color: #f97316 !important; color: #f97316 !important; }
-    .priority-item:nth-child(2) input[type="radio"]:checked + label { background-color: #f97316 !important; color: white !important; }
-    
-    /* High Priority */
-    .priority-item:nth-child(3) label { border-color: #22c55e !important; color: #22c55e !important; }
-    .priority-item:nth-child(3) input[type="radio"]:checked + label { background-color: #dcfce7 !important; color: #22c55e !important; }
-    
-    /* File Upload Area */
+
+    .priority-options {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 15px !important;
+        margin-top: 10px !important;
+    }
+
+    .priority-item {
+        position: relative !important;
+    }
+
+    .priority-item input[type="radio"] {
+        position: absolute !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    .priority-item label {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 55px !important;
+        border-radius: 12px !important;
+        border: 2px solid #e5e7eb !important;
+        background: #ffffff !important;
+        color: #4b5563 !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+    }
+
+    .priority-item input#ticket_priorite_1:checked + label {
+        border-color: #3b82f6 !important;
+        background: #eff6ff !important;
+        color: #3b82f6 !important;
+    }
+
+    .priority-item input#ticket_priorite_2:checked + label {
+        border-color: #f59e0b !important;
+        background: #fffbeb !important;
+        color: #f59e0b !important;
+    }
+
+    .priority-item input#ticket_priorite_3:checked + label {
+        border-color: #ef4444 !important;
+        background: #fef2f2 !important;
+        color: #ef4444 !important;
+    }
+
     .file-upload-area {
         border: 2px dashed #d1d5db;
-        border-radius: 8px;
-        padding: 40px 20px;
+        border-radius: 16px;
+        padding: 40px;
         text-align: center;
-        background: #fdfdfd;
-        cursor: pointer;
-        transition: border-color 0.2s;
+        background: #f9fafb;
     }
+    
     .file-upload-area:hover {
         border-color: #22c55e;
     }
-    .file-upload-icon {
-        font-size: 2rem;
-        color: #6b7280;
-        margin-bottom: 10px;
-    }
-    .file-upload-text {
-        color: #4b5563;
-        font-size: 0.95rem;
-    }
-    .file-upload-text span {
-        color: #22c55e;
-        font-weight: 500;
-    }
-    .file-upload-info {
-        font-size: 0.8rem;
-        color: #9ca3af;
-        margin-top: 5px;
-    }
-    
+
     .btn-submit {
         background: #22c55e;
         color: white;
         border: none;
         width: 100%;
-        padding: 14px;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
+        padding: 16px;
+        border-radius: 14px;
+        font-size: 1.1rem;
+        font-weight: 700;
         cursor: pointer;
-        transition: background 0.2s;
         margin-top: 20px;
     }
-    .btn-submit:hover {
-        background: #16a34a;
+
+    .sidebar-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 20px;
+        padding: 30px;
+        position: sticky;
+        top: 140px;
     }
-    .char-count {
-        text-align: right;
-        font-size: 0.85rem;
-        color: #9ca3af;
-        margin-top: 8px;
+
+    .sidebar-title {
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-    
-    /* Form Errors */
-    .form-error {
-        color: #ef4444;
-        font-size: 0.85rem;
-        margin-top: 5px;
+
+    .sidebar-list {
+        list-style: none;
+        padding: 0;
     }
-    .form-error ul {
-        list-style-type: none;
-        padding-left: 0;
-        margin: 0;
+
+    .sidebar-list li {
+        margin-bottom: 15px;
+        display: flex;
+        gap: 10px;
+        font-size: 0.95rem;
     }
-    .form-error li {
-        margin-bottom: 3px;
-    }
-    
-    @media (max-width: 768px) {
-        .content-grid {
-            grid-template-columns: 1fr;
-        }
-        .support-nav {
-            display: none;
-        }
+
+    .sidebar-list li::before {
+        content: "✓";
+        color: #22c55e;
+        font-weight: 900;
     }
 </style>
 
-<header class="support-header">
-    <div class="container">
-        <a href="{{ path('app_home') }}" class="support-logo">
-            <img src="{{ asset('images/logo.png') }}" alt="FD FinDinari" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-            <span style="display:none">FinDinari</span>
-        </a>
-        
-        <nav class="support-nav">
-            <a href="{{ path('support_center') }}">Support Center</a>
-            <a href="{{ path('app_user_tickets') }}">My Tickets</a>
-        </nav>
-
-        <a href="{{ path('app_user_createticket') }}" class="btn-open-ticket">Open a ticket</a>
-    </div>
-</header>
+{# Custom Support Header removed to show default navbar #}
 
 <div class="ticket-container">
     <div class="breadcrumb">

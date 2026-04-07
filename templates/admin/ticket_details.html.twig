@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket #{{ ticket.id }} Details — Fin-Dinari Admin</title>
+    <title>Ticket Details — Fin-Dinari Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -240,9 +240,9 @@
 
     <main class="content">
         <div class="topbar">
-            <div class="topbar-title">Ticket <span>#{{ ticket.id }}</span></div>
+            <div class="topbar-title">Ticket <span>Details</span></div>
             <div class="topbar-right">
-                <div class="avatar">{{ ticket.utilisateur.prenom|first }}</div>
+                <div class="avatar">{{ ticket.utilisateur.prenom|first|upper }}</div>
                 <div class="welcome-text">Customer: <strong>{{ ticket.utilisateur.prenom }} {{ ticket.utilisateur.nom }}</strong></div>
             </div>
         </div>
