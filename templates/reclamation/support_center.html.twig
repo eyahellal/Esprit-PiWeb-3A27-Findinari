@@ -211,7 +211,7 @@
         
         <nav class="support-nav">
             <a href="{{ path('support_center') }}" class="active">Support Center</a>
-            <a href="#">My Tickets</a>
+            <a href="{{ path('app_user_tickets') }}">My Tickets</a>
         </nav>
 
         <a href="{{ path('app_user_createticket') }}" class="btn-open-ticket">Open a ticket</a>
@@ -251,7 +251,7 @@
                 </div>
                 <h3>My Tickets</h3>
                 <p>View and manage your existing support tickets. Track the status of your requests in real-time.</p>
-                <a href="#" class="btn-card-action">View Tickets</a>
+                <a href="{{ path('app_user_tickets') }}" class="btn-card-action">View Tickets</a>
             </div>
         </div>
     </div>
