@@ -199,4 +199,81 @@ class TicketUserController extends AbstractController
 
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
     }
+
+    #[Route('/user/ticket/{id}/delete', name: 'app_user_ticket_delete', methods: ['POST'])]
+    public function deleteTicket(
+        Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+        if (!$user || $ticket->getUtilisateur() !== $user) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($this->isCsrfTokenValid('delete_ticket_' . $ticket->getId(), $request->request->get('_token'))) {
+            // Delete associated messages first (cascading normally handles this but let's be sure or just remove ticket)
+            $entityManager->remove($ticket);
+            $entityManager->flush();
+            $this->addFlash('success', 'Ticket deleted successfully.');
+        }
+
+        return $this->redirectToRoute('app_user_tickets');
+    }
+
+    #[Route('/user/ticket/{id}/edit', name: 'app_user_ticket_edit', methods: ['GET', 'POST'])]
+    public function editTicket(
+        Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
+    ): Response {
+        $user = $this->getUser();
+        if (!$user || $ticket->getUtilisateur() !== $user) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // Check if ticket can still be edited (not closed?)
+        if ($ticket->getStatut() === 'Fermé') {
+            $this->addFlash('danger', 'Closed tickets cannot be edited.');
+            return $this->redirectToRoute('app_user_tickets');
+        }
+
+        $form = $this->createForm(TicketType::class, $ticket);
+        
+        // Remove priority and status fields from the user edit form as requested
+        $form->remove('priorite');
+        // (Status isn't in TicketType but just in case)
+        if ($form->has('statut')) $form->remove('statut');
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('imageUrl')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('tickets_directory'),
+                        $newFilename
+                    );
+                    $ticket->setImageUrl($newFilename);
+                } catch (FileException $e) {
+                    // handle exception
+                }
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Ticket updated successfully.');
+            return $this->redirectToRoute('app_user_tickets');
+        }
+
+        return $this->render('reclamation/edit_ticket.html.twig', [
+            'form' => $form->createView(),
+            'ticket' => $ticket,
+        ]);
+    }
 }
