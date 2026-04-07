@@ -142,4 +142,61 @@ class TicketUserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    #[Route('/user/message/{id}/delete', name: 'app_user_message_delete', methods: ['POST'])]
+    public function deleteMessageUser(
+        Message $message,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $ticketId = $message->getTicket()->getId();
+
+        // Security check: ensure own message and belongs to user's ticket
+        if ($message->getUtilisateur() !== $user || $message->getTypeSender() !== 'USER') {
+            $this->addFlash('danger', 'You can only delete your own messages.');
+            return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
+        }
+
+        if ($this->isCsrfTokenValid('delete_message_user_' . $message->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($message);
+            $entityManager->flush();
+            $this->addFlash('success', 'Message deleted successfully.');
+        }
+
+        return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
+    }
+
+    #[Route('/user/message/{id}/edit', name: 'app_user_message_edit', methods: ['POST'])]
+    public function editMessageUser(
+        Message $message,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $ticketId = $message->getTicket()->getId();
+
+        if ($message->getUtilisateur() !== $user || $message->getTypeSender() !== 'USER') {
+            $this->addFlash('danger', 'You can only edit your own messages.');
+            return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
+        }
+
+        $newContenu = trim((string) $request->request->get('edit_contenu'));
+
+        if ($newContenu !== '') {
+            $message->setContenu($newContenu);
+            $entityManager->flush();
+            $this->addFlash('success', 'Message updated successfully.');
+        }
+
+        return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
+    }
 }

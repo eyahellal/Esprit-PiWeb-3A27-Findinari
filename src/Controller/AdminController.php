@@ -353,10 +353,9 @@ class AdminController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete_message_admin_' . $message->getId(), $request->request->get('_token'))) {
-            $message->setContenu('Ce message a été retiré');
-            $message->setUrlPieceJointe(null); 
+            $entityManager->remove($message);
             $entityManager->flush();
-            $this->addFlash('success', 'Le message a été marqué comme retiré.');
+            $this->addFlash('success', 'Message deleted successfully.');
         } else {
             $this->addFlash('danger', 'Invalid CSRF token.');
         }

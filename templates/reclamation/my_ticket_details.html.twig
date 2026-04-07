@@ -402,8 +402,40 @@
                             {% endif %}
                         </div>
                         
-                        <div class="msg-bubble">
-                            {{ message.contenu|nl2br }}
+                        <div style="display: flex; gap: 8px; align-items: center; {{ isUser ? 'flex-direction: row-reverse;' : '' }}">
+                            <div class="msg-bubble" id="msg-content-{{ message.id }}">
+                                {{ message.contenu|nl2br }}
+                            </div>
+
+                            {% if isUser %}
+                                <div style="position: relative;" class="message-actions-dropdown">
+                                    <button type="button" onclick="toggleMessageMenu({{ message.id }})" style="background:none; border:none; color: var(--gray-text); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-ellipsis-v" style="font-size: 14px;"></i>
+                                    </button>
+                                    
+                                    <div id="dropdown-{{ message.id }}" style="display: none; position: absolute; {{ isUser ? 'right: 0' : 'left: 0' }}; top: 100%; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10; min-width: 120px; padding: 6px; flex-direction: column; gap: 4px;">
+                                        <button type="button" onclick="editMessage({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)" style="background:none; border:none; color: var(--dark-text); cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px;">
+                                            <i class="fas fa-edit" style="width:14px;"></i> Modifier
+                                        </button>
+                                        
+                                        <form method="post" action="{{ path('app_user_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ce message définitivement ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_message_user_' ~ message.id) }}">
+                                            <button type="submit" style="background:none; border:none; color: #ef4444; cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px; width: 100%;">
+                                                <i class="fas fa-trash-alt" style="width:14px;"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden edit form -->
+                                <form id="edit-form-{{ message.id }}" method="post" action="{{ path('app_user_message_edit', {id: message.id}) }}" style="display: none; align-items: flex-end; gap: 8px;">
+                                    <textarea name="edit_contenu" style="width: 250px; height: 60px; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); font-family: inherit; font-size: 13px; resize: vertical;" required></textarea>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <button type="submit" style="padding: 4px 8px; font-size: 11px; background: var(--primary-green); color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
+                                        <button type="button" onclick="cancelEdit({{ message.id }})" style="padding: 4px 8px; font-size: 11px; background: #eee; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                                    </div>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
                 {% else %}
@@ -434,6 +466,36 @@
     const chatContainer = document.getElementById('chatContainer');
     if (chatContainer) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function toggleMessageMenu(id) {
+        const dropdown = document.getElementById('dropdown-' + id);
+        const isOpen = dropdown.style.display === 'flex';
+        
+        // Close all other dropdowns
+        document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.style.display = 'none');
+        
+        dropdown.style.display = isOpen ? 'none' : 'flex';
+    }
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.message-actions-dropdown')) {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.style.display = 'none');
+        }
+    });
+
+    function editMessage(id, content) {
+        document.getElementById('msg-content-' + id).style.visibility = 'hidden';
+        document.getElementById('dropdown-' + id).style.display = 'none';
+        const form = document.getElementById('edit-form-' + id);
+        form.style.display = 'flex';
+        form.querySelector('textarea').value = content;
+    }
+
+    function cancelEdit(id) {
+        document.getElementById('msg-content-' + id).style.visibility = 'visible';
+        document.getElementById('edit-form-' + id).style.display = 'none';
     }
 </script>
 {% endblock %}
