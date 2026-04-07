@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Controller;
+
 use App\Entity\Loan\Wallet;
-use App\Repository\WalletRepository;
 use App\Entity\user\Utilisateur;
 use App\Entity\user\Feedback;
 use App\Repository\UtilisateurRepository;
 use App\Repository\FeedbackRepository;
+use App\Repository\WalletRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,17 +19,62 @@ class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'app_admin_dashboard')]
     public function dashboard(
+        Request $request,
         UtilisateurRepository $utilisateurRepository,
         FeedbackRepository $feedbackRepository
     ): Response {
-        $users = $utilisateurRepository->findAll();
+        $q = trim((string) $request->query->get('q', ''));
+        $sort = trim((string) $request->query->get('sort', 'name_asc'));
+
+        $qb = $utilisateurRepository->createQueryBuilder('u');
+
+        if ($q !== '') {
+            $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
+               ->setParameter('q', '%' . $q . '%');
+        }
+
+        switch ($sort) {
+            case 'name_desc':
+                $qb->orderBy('u.nom', 'DESC')
+                   ->addOrderBy('u.prenom', 'DESC');
+                break;
+
+            case 'role_asc':
+                $qb->orderBy('u.role', 'ASC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+
+            case 'role_desc':
+                $qb->orderBy('u.role', 'DESC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+
+            case 'id_asc':
+                $qb->orderBy('u.id', 'ASC');
+                break;
+
+            case 'id_desc':
+                $qb->orderBy('u.id', 'DESC');
+                break;
+
+            case 'name_asc':
+            default:
+                $qb->orderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+        }
+
+        $users = $qb->getQuery()->getResult();
+        $allUsers = $utilisateurRepository->findAll();
         $feedbacks = $feedbackRepository->findAll();
 
         $adminCount = 0;
         $userCount = 0;
         $influencerCount = 0;
 
-        foreach ($users as $u) {
+        foreach ($allUsers as $u) {
             if ($u->getRole() === 'ADMIN') {
                 $adminCount++;
             } elseif ($u->getRole() === 'INFLUENCER') {
@@ -41,11 +87,14 @@ class AdminController extends AbstractController
         return $this->render('admin/dashboard.html.twig', [
             'users' => $users,
             'feedbacks' => $feedbacks,
-            'totalUsers' => count($users),
+            'totalUsers' => count($allUsers),
+            'filteredUsersCount' => count($users),
             'totalFeedbacks' => count($feedbacks),
             'adminCount' => $adminCount,
             'userCount' => $userCount,
             'influencerCount' => $influencerCount,
+            'search' => $q,
+            'sort' => $sort,
         ]);
     }
 
@@ -55,12 +104,13 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        
         if ($this->isCsrfTokenValid('delete_user_' . $utilisateur->getId(), $request->request->get('_token'))) {
             $entityManager->remove($utilisateur);
             $entityManager->flush();
 
             $this->addFlash('success', 'User deleted successfully.');
+        } else {
+            $this->addFlash('danger', 'Invalid CSRF token.');
         }
 
         return $this->redirectToRoute('app_admin_dashboard');
@@ -72,7 +122,7 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        $newRole = $request->request->get('role');
+        $newRole = strtoupper(trim((string) $request->request->get('role')));
 
         if (in_array($newRole, ['USER', 'ADMIN', 'INFLUENCER'], true)) {
             $utilisateur->setRole($newRole);
@@ -80,6 +130,8 @@ class AdminController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'User role updated successfully.');
+        } else {
+            $this->addFlash('danger', 'Invalid role selected.');
         }
 
         return $this->redirectToRoute('app_admin_dashboard');
@@ -138,11 +190,14 @@ class AdminController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Feedback deleted successfully.');
+        } else {
+            $this->addFlash('danger', 'Invalid CSRF token.');
         }
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
-        #[Route('/admin/wallets', name: 'app_admin_wallets')]
+
+    #[Route('/admin/wallets', name: 'app_admin_wallets')]
     public function wallets(
         WalletRepository $walletRepository
     ): Response {
