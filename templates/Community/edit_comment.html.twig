@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modifier le commentaire{% endblock %}
+{% block body %}
+<section class="section-sm">
+  <div class="container community-shell">
+    <div class="row justify-content-center">
+      <div class="col-lg-7">
+        <div class="community-panel card border-0 shadow-sm">
+          <div class="card-body p-4 p-lg-5">
+            <h3 class="community-panel-title">Modifier le commentaire</h3>
+            {{ form_start(form) }}
+              {{ form_widget(form.contenu, {'attr': {'class': 'community-edit-field'}}) }}
+              {{ form_errors(form.contenu) }}
+              <div class="d-flex justify-content-between mt-4 gap-2 flex-wrap">
+                <a href="{{ path('community_show', {id: commentaire.post.idPost}) }}" class="btn btn-outline-secondary community-action-btn">Annuler</a>
+                <button class="btn btn-primary community-action-btn" type="submit">Enregistrer</button>
+              </div>
+            {{ form_end(form) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% include 'Community/_styles.html.twig' %}
+{% endblock %}
