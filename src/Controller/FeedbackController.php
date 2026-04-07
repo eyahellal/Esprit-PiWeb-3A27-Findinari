@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\user\Feedback;
 use App\Entity\user\Utilisateur;
-use App\form\FeedbackType;
+use App\Form\FeedbackType;
 use App\Repository\FeedbackRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
