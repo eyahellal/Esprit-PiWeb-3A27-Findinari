@@ -51,6 +51,18 @@ class AdminController extends AbstractController
                    ->addOrderBy('u.prenom', 'ASC');
                 break;
 
+            case 'status_asc':
+                $qb->orderBy('u.statut', 'ASC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+
+            case 'status_desc':
+                $qb->orderBy('u.statut', 'DESC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+
             case 'id_asc':
                 $qb->orderBy('u.id', 'ASC');
                 break;
@@ -73,6 +85,8 @@ class AdminController extends AbstractController
         $adminCount = 0;
         $userCount = 0;
         $influencerCount = 0;
+        $activeCount = 0;
+        $inactiveCount = 0;
 
         foreach ($allUsers as $u) {
             if ($u->getRole() === 'ADMIN') {
@@ -81,6 +95,12 @@ class AdminController extends AbstractController
                 $influencerCount++;
             } else {
                 $userCount++;
+            }
+
+            if (strtoupper((string) $u->getStatut()) === 'ACTIF') {
+                $activeCount++;
+            } else {
+                $inactiveCount++;
             }
         }
 
@@ -93,6 +113,8 @@ class AdminController extends AbstractController
             'adminCount' => $adminCount,
             'userCount' => $userCount,
             'influencerCount' => $influencerCount,
+            'activeCount' => $activeCount,
+            'inactiveCount' => $inactiveCount,
             'search' => $q,
             'sort' => $sort,
         ]);
@@ -133,6 +155,33 @@ class AdminController extends AbstractController
         } else {
             $this->addFlash('danger', 'Invalid role selected.');
         }
+
+        return $this->redirectToRoute('app_admin_dashboard');
+    }
+
+    #[Route('/admin/user/{id}/status', name: 'app_admin_user_status', methods: ['POST'])]
+    public function changeUserStatus(
+        Utilisateur $utilisateur,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        if (!$this->isCsrfTokenValid('toggle_status_' . $utilisateur->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Invalid CSRF token.');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
+        $newStatus = strtoupper(trim((string) $request->request->get('statut')));
+
+        if (!in_array($newStatus, ['ACTIF', 'INACTIF'], true)) {
+            $this->addFlash('danger', 'Invalid status selected.');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
+        $utilisateur->setStatut($newStatus);
+        $utilisateur->setDateModification(new \DateTime());
+        $entityManager->flush();
+
+        $this->addFlash('success', 'User status updated successfully.');
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
