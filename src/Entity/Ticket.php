@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 
 use App\Repository\TicketRepository;
+use App\Entity\user\Utilisateur;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ORM\Table(name: 'ticket')]
@@ -58,7 +59,7 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(name: 'imageUrl', type: 'string', nullable: true)]
     private ?string $imageUrl = null;
 
     public function getImageUrl(): ?string
@@ -142,7 +143,7 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(name: 'dateCreation', type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $dateCreation = null;
 
     public function getDateCreation(): ?\DateTimeInterface
@@ -156,7 +157,7 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'dateFermeture', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateFermeture = null;
 
     public function getDateFermeture(): ?\DateTimeInterface

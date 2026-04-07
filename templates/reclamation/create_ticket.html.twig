@@ -1,0 +1,482 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Ticket - FinDinari{% endblock %}
+
+{% block body %}
+<style>
+    /* Hide the default header only for this page */
+    .navigation {
+        display: none !important;
+    }
+
+    :root {
+        --primary-green: #22c55e;
+        --light-green: #eafaf1;
+        --dark-text: #1f2937;
+        --gray-text: #6b7280;
+        --white: #ffffff;
+        --border-color: #e5e7eb;
+    }
+
+    body {
+        background-color: #f9fafb;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Custom Header */
+    .support-header {
+        background: var(--white);
+        border-bottom: 1px solid var(--border-color);
+        padding: 15px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .support-header .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .support-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--dark-text);
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .support-logo img {
+        height: 40px;
+    }
+
+    .support-nav {
+        display: flex;
+        gap: 30px;
+        align-items: center;
+    }
+
+    .support-nav a {
+        text-decoration: none;
+        color: var(--gray-text);
+        font-weight: 500;
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+    .support-nav a:hover, .support-nav a.active {
+        color: var(--primary-green);
+    }
+
+    .btn-open-ticket {
+        background-color: var(--primary-green);
+        color: white !important;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+
+    .btn-open-ticket:hover {
+        background-color: #16a34a;
+    }
+
+    /* Page Content */
+    .ticket-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+    .breadcrumb a {
+        color: #6b7280;
+        text-decoration: none;
+    }
+    .breadcrumb a:hover {
+        color: #22c55e;
+    }
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 30px;
+    }
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+    .form-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .sidebar-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 25px;
+        height: fit-content;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+    .sidebar-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+    .sidebar-title i {
+        color: #22c55e;
+    }
+    .sidebar-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+    .sidebar-list li {
+        margin-bottom: 12px;
+        padding-left: 15px;
+        position: relative;
+    }
+    .sidebar-list li::before {
+        content: "•";
+        color: #22c55e;
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 1.2rem;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+    .form-control, .form-select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        color: #1f2937;
+        font-family: inherit;
+    }
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+    .form-control:focus, .form-select:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Custom Priority Radio Buttons */
+    .priority-options {
+        display: flex;
+        gap: 10px;
+    }
+    .priority-options > div {
+        flex: 1;
+        display: block !important;
+    }
+    .priority-options label {
+        display: block !important;
+        text-align: center;
+        padding: 12px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: 1px solid;
+        margin-bottom: 0 !important;
+    }
+    /* Hide the actual radio buttons */
+    .priority-options input[type="radio"] {
+        display: none;
+    }
+    
+    /* Low Priority (from Figma) */
+    .priority-options > div:nth-child(1) label {
+        border-color: #3b82f6; /* blue */
+        color: #3b82f6;
+    }
+    .priority-options > div:nth-child(1) input[type="radio"]:checked + label {
+        background-color: #e0f2fe; /* light blue bg */
+        color: #3b82f6;
+        border-color: #3b82f6;
+    }
+    
+    /* Medium Priority (from Figma) */
+    .priority-options > div:nth-child(2) label {
+        border-color: #f97316; /* orange */
+        color: #f97316;
+    }
+    .priority-options > div:nth-child(2) input[type="radio"]:checked + label {
+        background-color: #f97316;
+        color: white;
+    }
+    
+    /* High Priority (from Figma) */
+    .priority-options > div:nth-child(3) label {
+        border-color: #22c55e; /* green */
+        color: #22c55e;
+    }
+    .priority-options > div:nth-child(3) input[type="radio"]:checked + label {
+        background-color: #dcfce7; /* light green bg */
+        color: #22c55e;
+        border-color: #22c55e;
+    }
+    
+    /* File Upload Area */
+    .file-upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        background: #fdfdfd;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+    .file-upload-area:hover {
+        border-color: #22c55e;
+    }
+    .file-upload-icon {
+        font-size: 2rem;
+        color: #6b7280;
+        margin-bottom: 10px;
+    }
+    .file-upload-text {
+        color: #4b5563;
+        font-size: 0.95rem;
+    }
+    .file-upload-text span {
+        color: #22c55e;
+        font-weight: 500;
+    }
+    .file-upload-info {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        margin-top: 5px;
+    }
+    
+    .btn-submit {
+        background: #22c55e;
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 20px;
+    }
+    .btn-submit:hover {
+        background: #16a34a;
+    }
+    .char-count {
+        text-align: right;
+        font-size: 0.85rem;
+        color: #9ca3af;
+        margin-top: 8px;
+    }
+    
+    /* Form Errors */
+    .form-error {
+        color: #ef4444;
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
+    
+    @media (max-width: 768px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        .support-nav {
+            display: none;
+        }
+    }
+</style>
+
+<header class="support-header">
+    <div class="container">
+        <a href="{{ path('app_home') }}" class="support-logo">
+            <img src="{{ asset('images/logo.png') }}" alt="FD FinDinari" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+            <span style="display:none">FinDinari</span>
+        </a>
+        
+        <nav class="support-nav">
+            <a href="{{ path('support_center') }}">Support Center</a>
+            <a href="#">My Tickets</a>
+        </nav>
+
+        <a href="{{ path('app_user_createticket') }}" class="btn-open-ticket">Open a ticket</a>
+    </div>
+</header>
+
+<div class="ticket-container">
+    <div class="breadcrumb">
+        <a href="{{ path('app_home') }}">Home</a> &gt; 
+        <a href="{{ path('support_center') }}">Support</a> &gt; 
+        New Ticket
+    </div>
+    
+    <h1 class="page-title">Submit a Support Request</h1>
+    
+    <div class="content-grid">
+        <div class="form-card">
+            {{ form_start(form, {'attr': {'id': 'ticket-form', 'novalidate': 'novalidate'}}) }}
+                
+                <div class="form-group">
+                    {{ form_label(form.titre, 'Subject', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Brief description of your issue'}}) }}
+                    <div class="form-error">{{ form_errors(form.titre) }}</div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.type, 'Category', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
+                    <div class="form-error">{{ form_errors(form.type) }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <div class="priority-options">
+                        {% for child in form.priorite %}
+                            <div>
+                                {{ form_widget(child) }}
+                                {{ form_label(child) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Please provide detailed information about your issue...', 'onkeyup': 'updateCharCount(this)'}}) }}
+                    <div class="char-count"><span id="charCount">0</span> / 1000 characters</div>
+                    <div class="form-error">{{ form_errors(form.description) }}</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Attachments</label>
+                    <div class="file-upload-area" onclick="document.getElementById('{{ form.imageUrl.vars.id }}').click();">
+                        <div class="file-upload-icon">
+                            <i class="fas fa-upload" style="color: #9ca3af;"></i>
+                        </div>
+                        <div class="file-upload-text">
+                            <span>Click to upload</span> or drag and drop
+                        </div>
+                        <div class="file-upload-info">PNG, JPG, PDF up to 10MB</div>
+                        <!-- Provide a preview text for selected file -->
+                        <div id="file-name-preview" style="margin-top: 10px; font-weight: 500; color: #1f2937;"></div>
+                    </div>
+                    <!-- The actual file input is hidden by the class in TicketType -->
+                    {{ form_widget(form.imageUrl, {'attr': {'onchange': 'showFileName(this)', 'style': 'display: none;'}}) }}
+                    <div class="form-error">{{ form_errors(form.imageUrl) }}</div>
+                </div>
+
+                <button type="submit" class="btn-submit">Submit Ticket</button>
+            {{ form_end(form) }}
+        </div>
+        
+        <div>
+            <div class="sidebar-card">
+                <div class="sidebar-title">
+                    <i class="far fa-clock" style="color: #22c55e;"></i> Tips for faster support
+                </div>
+                <ul class="sidebar-list">
+                    <li>Be as specific as possible about your issue</li>
+                    <li>Include transaction IDs or account numbers if relevant</li>
+                    <li>Attach screenshots or error messages when applicable</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateCharCount(textarea) {
+        document.getElementById('charCount').textContent = textarea.value.length;
+    }
+    
+    function showFileName(input) {
+        if (input.files && input.files[0]) {
+            document.getElementById('file-name-preview').textContent = 'Selected: ' + input.files[0].name;
+            document.querySelector('.file-upload-icon').innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
+        } else {
+            document.getElementById('file-name-preview').textContent = '';
+            document.querySelector('.file-upload-icon').innerHTML = '<i class="fas fa-upload" style="color: #9ca3af;"></i>';
+        }
+    }
+    
+    // Drag and drop functionality
+    const dropArea = document.querySelector('.file-upload-area');
+    const fileInput = document.getElementById('{{ form.imageUrl.vars.id }}');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+            dropArea.style.borderColor = '#22c55e';
+            dropArea.style.backgroundColor = '#f0fdf4';
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+            dropArea.style.borderColor = '#d1d5db';
+            dropArea.style.backgroundColor = '#fdfdfd';
+        }, false);
+    });
+    
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        
+        fileInput.files = files;
+        showFileName(fileInput);
+    }
+    
+    // Initialize character count on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.querySelector('textarea.form-control');
+        if(textarea) {
+            updateCharCount(textarea);
+        }
+    });
+</script>
+{% endblock %}
