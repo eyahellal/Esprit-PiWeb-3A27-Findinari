@@ -3,7 +3,7 @@
 namespace App\Controller\managment;
 
 use App\Entity\management\Categorie;
-use App\Form\CategorieType;
+use App\form\CategorieType;
 use App\Repository\CategorieRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,18 +15,25 @@ use Symfony\Component\Routing\Attribute\Route;
 class CategorieController extends AbstractController
 {
     #[Route('/', name: 'app_categorie_index', methods: ['GET'])]
-    public function index(CategorieRepository $categorieRepository): Response
-    {
-        return $this->render('management/categorie/index.html.twig', [
-            'categories' => $categorieRepository->findAll(),
-        ]);
-    }
+public function index(CategorieRepository $categorieRepository, Request $request): Response
+{
+    $search = $request->query->get('search', '');
+    $statut = $request->query->get('statut', '');
+
+    $categories = $categorieRepository->findByFilters($search, $statut);
+
+    return $this->render('management/categorie/index.html.twig', [
+        'categories' => $categories,
+        'search' => $search,
+        'statut' => $statut,
+    ]);
+}
 
     #[Route('/new', name: 'app_categorie_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $categorie = new Categorie();
-        $categorie->setStatut('ACTIF');
+        $categorie->setStatut('Active');
 
         $form = $this->createForm(CategorieType::class, $categorie);
         $form->handleRequest($request);

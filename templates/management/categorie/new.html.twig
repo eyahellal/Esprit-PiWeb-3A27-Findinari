@@ -4,15 +4,15 @@
 
 {% block body %}
 
-<section class="page-header bg-tertiary">
+<section class="page-header" style="background: #e8f5f5;">
     <div class="container">
         <div class="row">
             <div class="col-8 mx-auto text-center">
-                <h2 class="mb-3 text-capitalize">Create New Category</h2>
+                <h2 class="mb-3 text-capitalize" style="color: #26474E;">Create New Category</h2>
                 <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
-                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
-                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_wallet_index') }}">Budget Management</a></li>
-                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_categorie_new') }}">Create Category</a></li>
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}" style="color: #26474E;">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_wallet_index') }}" style="color: #26474E;">Budget Management</a></li>
+                    <li class="list-inline-item">/ &nbsp; Create Category</li>
                 </ul>
             </div>
         </div>
@@ -22,58 +22,287 @@
 <section class="section">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="shadow rounded p-5 bg-white">
-                    <h3 class="mb-4">Create a New Category</h3>
+            <div class="col-lg-7">
 
-                    {{ form_start(form) }}
+                <div class="card border-0 rounded-4 categorie-card"
+                     style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
 
-                        <div class="mb-3">
-                            {{ form_label(form.nom, 'Category Name', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Food, Transport, Health...'}}) }}
-                            <div class="text-danger">{{ form_errors(form.nom) }}</div>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Describe this category...', 'rows': '3'}}) }}
-                            <small class="text-muted">Optional - describe what this category is for</small>
-                            <div class="text-danger">{{ form_errors(form.description) }}</div>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form_label(form.statut, 'Status', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
-                            <div class="text-danger">{{ form_errors(form.statut) }}</div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_label(form.color, 'Color', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                {{ form_widget(form.color, {'attr': {'class': 'form-control form-control-color w-100'}}) }}
-                                <small class="text-muted">Pick a color for this category</small>
-                                <div class="text-danger">{{ form_errors(form.color) }}</div>
+                    {# Card Header #}
+                    <div class="rounded-top-4 p-4 text-white"
+                         style="background: #F27438;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="mb-1 opacity-75 small text-uppercase fw-semibold">New</p>
+                                <h4 class="fw-bold mb-0">Create Category</h4>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                {{ form_label(form.icon, 'Icon', {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                {{ form_widget(form.icon, {'attr': {'class': 'form-select'}}) }}
-                                <small class="text-muted">Choose an icon for this category</small>
-                                <div class="text-danger">{{ form_errors(form.icon) }}</div>
+                            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-folder-plus fa-lg"></i>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="{{ path('app_wallet_index') }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i>Create Category
-                            </button>
-                        </div>
+                    {# Card Body #}
+                    <div class="card-body p-4">
 
-                    {{ form_end(form) }}
+                        {{ form_start(form) }}
+
+                            {# Name #}
+                            <div class="mb-3">
+                                {{ form_label(form.nom, 'Category Name', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
+                                {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Food, Transport, Health...'}}) }}
+                                <div class="text-danger small mt-1">{{ form_errors(form.nom) }}</div>
+                            </div>
+
+                            {# Description #}
+                            <div class="mb-3">
+                                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
+                                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Describe this category...', 'rows': '3'}}) }}
+                                <small class="text-muted">Optional - describe what this category is for</small>
+                                <div class="text-danger small mt-1">{{ form_errors(form.description) }}</div>
+                            </div>
+
+                            {# Status — Toggle Buttons #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #26474E;">Status</label>
+                                <div class="d-flex gap-3">
+                                    <div class="status-option flex-fill text-center p-3 rounded-3 status-btn"
+                                         id="status-actif"
+                                         onclick="selectStatus('Active')"
+                                         style="border: 2px solid #e8f5e9; cursor: pointer; background: #e8f5e9;">
+                                        <i class="fas fa-check-circle fa-lg mb-2" style="color: #2d6a4f;"></i>
+                                        <p class="mb-0 fw-bold small" style="color: #2d6a4f;">Active</p>
+                                    </div>
+                                    <div class="status-option flex-fill text-center p-3 rounded-3 status-btn"
+                                         id="status-inactif"
+                                         onclick="selectStatus('Inactive')"
+                                         style="border: 2px solid #f5f5f5; cursor: pointer; background: #f5f5f5;">
+                                        <i class="fas fa-times-circle fa-lg mb-2" style="color: #999;"></i>
+                                        <p class="mb-0 fw-bold small" style="color: #999;">Inactive</p>
+                                    </div>
+                                </div>
+                                {# Hidden statut field #}
+                                {{ form_widget(form.statut, {'attr': {'class': 'd-none', 'id': 'statut_field'}}) }}
+                                <div class="text-danger small mt-1">{{ form_errors(form.statut) }}</div>
+                            </div>
+
+                            {# Color — Modern Palette #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #26474E;">Color</label>
+                                <div class="d-flex gap-2 flex-wrap mb-2" id="colorPalette">
+                                    {% set colors = ['#F27438', '#26474E', '#76CDCD', '#2CCED2', '#2d6a4f', '#e74c3c', '#9b59b6', '#3498db', '#f39c12', '#1abc9c'] %}
+                                    {% for color in colors %}
+                                        <div class="color-swatch rounded-circle"
+                                             style="width:36px; height:36px; background: {{ color }}; cursor: pointer; border: 3px solid transparent; transition: all 0.2s;"
+                                             onclick="selectColor('{{ color }}', this)"
+                                             title="{{ color }}">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {# Custom color picker #}
+                                <div class="d-flex align-items-center gap-2">
+                                    {{ form_widget(form.color, {'attr': {'class': 'form-control form-control-color', 'id': 'color_field', 'style': 'width: 50px; height: 38px; padding: 2px; border-radius: 8px;', 'oninput': 'syncColor(this.value)'}}) }}
+                                    <span class="text-muted small">Or pick a custom color</span>
+                                    <span id="colorPreview" class="rounded-3 px-3 py-1 text-white small fw-bold"
+                                          style="background: #F27438;">#F27438</span>
+                                </div>
+                                <div class="text-danger small mt-1">{{ form_errors(form.color) }}</div>
+                            </div>
+
+                            {# Icon — Visual Picker #}
+                            <div class="mb-4">
+                                <label class="form-label fw-bold" style="color: #26474E;">Icon</label>
+                                <div class="d-flex gap-2 flex-wrap mb-2" id="iconPicker">
+                                    {% set icons = [
+                                        'fa-utensils', 'fa-car', 'fa-heart-pulse', 'fa-bag-shopping',
+                                        'fa-graduation-cap', 'fa-film', 'fa-house', 'fa-plane',
+                                        'fa-chart-line', 'fa-circle-dot', 'fa-gamepad', 'fa-shirt',
+                                        'fa-pills', 'fa-dumbbell', 'fa-music', 'fa-book',
+                                        'fa-wifi', 'fa-gas-pump', 'fa-baby', 'fa-paw'
+                                    ] %}
+                                    {% for icon in icons %}
+                                        <div class="icon-option rounded-3 d-flex align-items-center justify-content-center"
+                                             style="width:44px; height:44px; background: #f5f5f5; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;"
+                                             onclick="selectIcon('{{ icon }}', this)"
+                                             title="{{ icon }}">
+                                            <i class="fas {{ icon }}" style="color: #26474E;"></i>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {# Hidden icon field #}
+                                {{ form_widget(form.icon, {'attr': {'class': 'd-none', 'id': 'icon_field'}}) }}
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    <span class="text-muted small">Selected icon:</span>
+                                    <div class="rounded-3 px-3 py-1"
+                                         style="background: #F27438; color: white;">
+                                        <i class="fas fa-folder" id="selectedIconPreview"></i>
+                                        <span id="selectedIconName" class="small ms-1">None</span>
+                                    </div>
+                                </div>
+                                <div class="text-danger small mt-1">{{ form_errors(form.icon) }}</div>
+                            </div>
+
+                            <hr class="my-3">
+
+                            {# Buttons #}
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_categorie_index') }}"
+                                   class="btn btn-sm flex-fill"
+                                   style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+                                    <i class="fas fa-arrow-left me-1"></i>Cancel
+                                </a>
+                                <button type="submit"
+                                        class="btn btn-sm flex-fill create-btn"
+                                        style="background: #e8f5e9; color: #2d6a4f; border-radius: 10px;">
+                                    <i class="fas fa-save me-1"></i>Create Category
+                                </button>
+                            </div>
+
+                        {{ form_end(form) }}
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
 </section>
+
+<style>
+    .rounded-top-4 { border-radius: 1rem 1rem 0 0 !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+
+    .categorie-card { transition: all 0.3s ease; }
+    .categorie-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(242, 116, 56, 0.2) !important;
+    }
+
+    .color-swatch:hover { transform: scale(1.2); }
+    .color-swatch.selected { border-color: #26474E !important; transform: scale(1.2); }
+
+    .icon-option:hover { background: #F27438 !important; }
+    .icon-option:hover i { color: white !important; }
+    .icon-option.selected {
+        background: #F27438 !important;
+        border-color: #26474E !important;
+    }
+    .icon-option.selected i { color: white !important; }
+
+    .status-btn { transition: all 0.2s ease; }
+    .status-btn.active-status {
+        border-color: #2d6a4f !important;
+        box-shadow: 0 4px 12px rgba(45,106,79,0.2);
+    }
+    .status-btn.inactive-status {
+        border-color: #c0392b !important;
+        box-shadow: 0 4px 12px rgba(192,57,43,0.2);
+    }
+
+    .create-btn:hover { background: #F27438 !important; color: white !important; }
+    .form-control:focus {
+        border-color: #F27438 !important;
+        box-shadow: 0 0 0 0.2rem rgba(242,116,56,0.2) !important;
+    }
+</style>
+
+<script>
+    // Status Selection
+    function selectStatus(value) {
+        // Find the select element - Symfony generates it differently
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            if (select.id.includes('statut') || select.name.includes('statut')) {
+                for (let option of select.options) {
+                    if (option.value === value) {
+                        option.selected = true;
+                    }
+                }
+            }
+        });
+
+        const actifBtn = document.getElementById('status-actif');
+        const inactifBtn = document.getElementById('status-inactif');
+
+        if (value === 'Active') {
+            actifBtn.style.border = '2px solid #2d6a4f';
+            actifBtn.style.background = '#e8f5e9';
+            actifBtn.querySelector('i').style.color = '#2d6a4f';
+            actifBtn.querySelector('p').style.color = '#2d6a4f';
+            inactifBtn.style.border = '2px solid #f5f5f5';
+            inactifBtn.style.background = '#f5f5f5';
+            inactifBtn.querySelector('i').style.color = '#999';
+            inactifBtn.querySelector('p').style.color = '#999';
+        } else {
+            inactifBtn.style.border = '2px solid #c0392b';
+            inactifBtn.style.background = '#fde8e8';
+            inactifBtn.querySelector('i').style.color = '#c0392b';
+            inactifBtn.querySelector('p').style.color = '#c0392b';
+            actifBtn.style.border = '2px solid #f5f5f5';
+            actifBtn.style.background = '#f5f5f5';
+            actifBtn.querySelector('i').style.color = '#999';
+            actifBtn.querySelector('p').style.color = '#999';
+        }
+    }
+
+    // Icon Selection
+    function selectIcon(iconValue, element) {
+        // Find the select element for icon
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            if (select.id.includes('icon') || select.name.includes('icon')) {
+                for (let option of select.options) {
+                    if (option.value === iconValue) {
+                        option.selected = true;
+                    }
+                }
+            }
+        });
+
+        // Update preview
+        const preview = document.getElementById('selectedIconPreview');
+        preview.className = 'fas ' + iconValue;
+        document.getElementById('selectedIconName').textContent = iconValue;
+
+        // Update selected styling
+        document.querySelectorAll('.icon-option').forEach(i => {
+            i.classList.remove('selected');
+            i.style.background = '#f5f5f5';
+            i.querySelector('i').style.color = '#26474E';
+        });
+        element.classList.add('selected');
+        element.style.background = '#F27438';
+        element.querySelector('i').style.color = 'white';
+    }
+
+    // Color Selection
+    function selectColor(color, element) {
+        // Find the color input
+        const colorInput = document.querySelector('input[type="color"]');
+        if (colorInput) colorInput.value = color;
+
+        document.getElementById('colorPreview').style.background = color;
+        document.getElementById('colorPreview').textContent = color;
+
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.style.border = '3px solid transparent';
+            s.style.transform = 'scale(1)';
+        });
+        element.style.border = '3px solid #26474E';
+        element.style.transform = 'scale(1.2)';
+    }
+
+    function syncColor(value) {
+        document.getElementById('colorPreview').style.background = value;
+        document.getElementById('colorPreview').textContent = value;
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.style.border = '3px solid transparent';
+        });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        selectStatus('Active');
+    });
+</script>
 
 {% endblock %}
