@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\reclamation;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
+use App\Entity\user\Utilisateur;
+use App\Entity\reclamation\Ticket;
 use App\Repository\MessageRepository;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]

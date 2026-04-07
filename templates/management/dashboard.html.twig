@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Budget Management - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">Budget Management</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; Budget Management</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+
+        {# Navigation Tabs #}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex gap-2 border-bottom pb-3">
+                    <a href="{{ path('app_wallet_index') }}" 
+                       class="btn {{ active_tab == 'wallet' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame">
+                        <i class="fas fa-wallet me-1"></i>Wallets
+                    </a>
+                    <a href="{{ path('app_categorie_index') }}" 
+                       class="btn {{ active_tab == 'categorie' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame">
+                        <i class="fas fa-folder me-1"></i>Categories
+                    </a>
+                    <a href="{{ path('app_wallet_index') }}" 
+                       class="btn {{ active_tab == 'budget' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame">
+                        <i class="fas fa-chart-pie me-1"></i>Budgets
+                    </a>
+                    <a href="{{ path('app_wallet_index') }}" 
+                       class="btn {{ active_tab == 'transaction' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame">
+                        <i class="fas fa-exchange-alt me-1"></i>Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# Content Frame - Only this part reloads #}
+        <turbo-frame id="content-frame">
+            {% block content %}{% endblock %}
+        </turbo-frame>
+
+    </div>
+</section>
+
+<style>
+    .btn-primary { background-color: #2d6a4f; border-color: #2d6a4f; }
+    .btn-primary:hover { background-color: #1b4d3b; }
+    .btn-outline-primary { color: #2d6a4f; border-color: #2d6a4f; }
+    .btn-outline-primary:hover { background-color: #2d6a4f; color: white; }
+    .bg-tertiary { background-color: #e8f5e9 !important; }
+</style>
+
+{% endblock %}

@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\community;
+use App\Entity\user\Utilisateur;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
