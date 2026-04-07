@@ -1,0 +1,26 @@
+{% extends 'front/layout.html.twig' %}
+
+{% block title %}Edit Feedback{% endblock %}
+
+{% block body %}
+<section style="background:linear-gradient(135deg,#eefcf4,#d8f6e4); min-height:100vh; padding:60px 20px;">
+    <div style="max-width:700px; margin:0 auto; background:#fff; border-radius:20px; padding:28px; box-shadow:0 20px 50px rgba(0,0,0,.08);">
+        <h2 style="margin:0 0 18px; color:#173b2f;">Edit your feedback</h2>
+
+        {{ form_start(feedbackForm) }}
+            {{ form_widget(feedbackForm.rating, {'attr': {'style': 'width:100%; padding:14px; border:1px solid #cdebd7; border-radius:12px; margin-bottom:14px; box-sizing:border-box; background:#fff;'}}) }}
+            {{ form_widget(feedbackForm.message, {'attr': {'style': 'width:100%; padding:14px; border:1px solid #cdebd7; border-radius:12px; margin-bottom:14px; box-sizing:border-box; resize:none;'}}) }}
+
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <button type="submit" style="padding:14px 22px; background:#28a745; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">
+                    Save
+                </button>
+
+                <a href="{{ path('app_feedback_index') }}" style="text-decoration:none; background:#1c8f66; color:#fff; padding:14px 22px; border-radius:12px; font-weight:800;">
+                    Back
+                </a>
+            </div>
+        {{ form_end(feedbackForm) }}
+    </div>
+</section>
+{% endblock %}

@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\reclamation\Ticket;
+use App\Entity\Ticket;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

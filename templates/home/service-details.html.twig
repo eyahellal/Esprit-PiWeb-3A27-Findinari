@@ -14,8 +14,7 @@
 					</li>
 					<li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}">Services</a>
 					</li>
-					<li class="list-inline-item">/ &nbsp; <a href="{{ path('app_service_details', {id: id}) }}">{{ service.name }}</a>
-					</li>
+<a class="btn btn-sm btn-outline-primary" href="{{ path('app_service_details', {'id': 4}) }}">View Details <i class="las la-arrow-right ms-1"></i></a>					</li>
 				</ul>
 			</div>
 		</div>
@@ -177,9 +176,6 @@
 					<h2 id="get-started">Get Started with Our Community</h2>
 					<p>Join thousands of users who have transformed their financial lives with Fin-Dinari. Create your profile, introduce yourself in the welcome forum, join groups that match your interests, and start connecting. Share your first financial win, ask a question, or find an accountability partner today.</p>
 					<p>Premium members get full access to all groups, mentorship opportunities, and can create their own private groups for family or close friends.</p>
-					
-					{% include 'Community/_feed.html.twig' %}
-					{% include 'Community/_styles.html.twig' %}
 					
 					{% endif %}
 					

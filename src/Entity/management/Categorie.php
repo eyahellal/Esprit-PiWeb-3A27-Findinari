@@ -1,6 +1,10 @@
 <?php
 
+<<<<<<< HEAD
 namespace App\Entity\management;
+=======
+namespace App\Entity;
+>>>>>>> 1f200ec7b43db6ab0daf1e80d59c65340d6b24ad
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
