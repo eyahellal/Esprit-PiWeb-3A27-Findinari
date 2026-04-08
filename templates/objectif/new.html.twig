@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+{% block title %}Nouvel objectif{% endblock %}
+{% block body %}
+
+<style>
+  .form-page { max-width: 560px; margin: 2rem auto; padding: 0 1rem; font-family: 'DM Sans', sans-serif; }
+  .form-card { background: #fff; border: 0.5px solid #e0e0dc; border-radius: 12px; padding: 2rem; }
+  .form-title { font-size: 20px; font-weight: 600; margin-bottom: 1.5rem; }
+  .form-page .form-label { font-size: 13px; color: #555; font-weight: 500; }
+  .form-page .form-control,
+  .form-page .form-select { border-radius: 8px; border: 0.5px solid #ccc; font-size: 14px; padding: 8px 12px; width: 100%; }
+  .form-page .form-control:focus,
+  .form-page .form-select:focus { border-color: #1a9e6e; box-shadow: none; outline: none; }
+  .form-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+  .btn-save { background: #1a9e6e; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .btn-save:hover { background: #157a55; }
+  .btn-cancel { padding: 10px 20px; border-radius: 8px; border: 0.5px solid #ccc; background: transparent; font-size: 14px; text-decoration: none; color: #555; }
+  .btn-cancel:hover { background: #f5f5f3; color: #555; }
+  .invalid-feedback { color: #a32d2d; font-size: 12px; margin-top: 4px; }
+</style>
+
+<div class="form-page">
+  <div class="form-card">
+    <h2 class="form-title">Nouvel objectif</h2>
+
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+      <div class="mb-3">
+        {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.titre, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.titre) }}
+      </div>
+
+      <div class="mb-3">
+        {{ form_label(form.montant, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.montant, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.montant) }}
+      </div>
+
+      <div class="mb-3">
+        {{ form_label(form.dateDebut, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.dateDebut) }}
+      </div>
+
+      <div class="mb-3">
+        {{ form_label(form.duree, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.duree, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.duree) }}
+      </div>
+
+      <div class="mb-3">
+        {{ form_label(form.statut, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
+        {{ form_errors(form.statut) }}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Enregistrer</button>
+        <a href="{{ path('objectif_index') }}" class="btn-cancel">Annuler</a>
+      </div>
+
+    {{ form_end(form) }}
+  </div>
+</div>
+
+{% endblock %}
