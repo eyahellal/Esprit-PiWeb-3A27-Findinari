@@ -34,7 +34,7 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $passwordHasher
     ): Response {
         $user = new Utilisateur();
-        $form = $this->createForm(RegisterType::class, $user);
+        $form = $this->createForm('App\Form\RegisterType', $user);
 
         $form->handleRequest($request);
 

@@ -4,10 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Loan\Wallet;
 use App\Entity\user\Utilisateur;
+use App\Entity\objective\Objectif;
 use App\Entity\user\Feedback;
 use App\Repository\UtilisateurRepository;
 use App\Repository\FeedbackRepository;
 use App\Repository\WalletRepository;
+
+use App\Repository\ObjectifRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +24,8 @@ class AdminController extends AbstractController
     public function dashboard(
         Request $request,
         UtilisateurRepository $utilisateurRepository,
-        FeedbackRepository $feedbackRepository
+        FeedbackRepository $feedbackRepository,
+        ObjectifRepository $objectifRepo
     ): Response {
         $q = trim((string) $request->query->get('q', ''));
         $sort = trim((string) $request->query->get('sort', 'name_asc'));
@@ -69,6 +73,7 @@ class AdminController extends AbstractController
         $users = $qb->getQuery()->getResult();
         $allUsers = $utilisateurRepository->findAll();
         $feedbacks = $feedbackRepository->findAll();
+        $objectifs = $objectifRepo->findAll();
 
         $adminCount = 0;
         $userCount = 0;
@@ -83,13 +88,14 @@ class AdminController extends AbstractController
                 $userCount++;
             }
         }
-
+        
         return $this->render('admin/dashboard.html.twig', [
             'users' => $users,
             'feedbacks' => $feedbacks,
             'totalUsers' => count($allUsers),
             'filteredUsersCount' => count($users),
             'totalFeedbacks' => count($feedbacks),
+            'objectifs' => $objectifs,
             'adminCount' => $adminCount,
             'userCount' => $userCount,
             'influencerCount' => $influencerCount,
@@ -227,4 +233,37 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_wallets');
     }
+    #[Route('/admin/objectifs', name: 'app_admin_objectifs')]
+public function objectifs(
+    ObjectifRepository $objectifRepository,
+    WalletRepository $walletRepository,
+    Request $request
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    $selectedWalletId = $request->query->get('wallet_id');
+
+    // Construire le tableau wallets [id => [pays, devise, solde]]
+    $wallets = [];
+    foreach ($walletRepository->findAll() as $w) {
+        $wallets[$w->getId()] = [
+            'pays'   => $w->getPays(),
+            'devise' => $w->getDevise(),
+            'solde'  => $w->getSolde(),
+        ];
+    }
+
+    // Filtrer les objectifs par wallet si sélectionné
+    if ($selectedWalletId) {
+        $objectifs = $objectifRepository->findBy(['walletId' => (int) $selectedWalletId]);
+    } else {
+        $objectifs = $objectifRepository->findAll();
+    }
+
+    return $this->render('admin/objectifs.html.twig', [
+        'objectifs'        => $objectifs,
+        'wallets'          => $wallets,
+        'selectedWalletId' => $selectedWalletId,
+    ]);
+}
 }

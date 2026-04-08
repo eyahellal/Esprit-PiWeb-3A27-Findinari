@@ -1,0 +1,417 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes objectifs{% endblock %}
+{% block body %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Syne:wght@600&display=swap');
+
+  .obj-page { padding: 2rem; font-family: 'DM Sans', sans-serif; }
+
+  .obj-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  .obj-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+  }
+  .btn-new {
+    background: #1a9e6e;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .btn-new:hover { background: #157a55; color: #fff; }
+  .btn-new-disabled {
+    background: #ccc;
+    color: #888;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .flash-success {
+    background: #e1f5ee;
+    color: #0f6e56;
+    border: 0.5px solid #9fe1cb;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+  }
+  .flash-error {
+    background: #fcebeb;
+    color: #a32d2d;
+    border: 0.5px solid #f09595;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+  }
+
+  .wallet-filter { margin-bottom: 1.5rem; }
+  .wallet-select {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 0.5px solid #ccc;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    min-width: 280px;
+  }
+  .wallet-select:focus { outline: none; border-color: #1a9e6e; }
+
+  .obj-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 2rem;
+  }
+  .stat-box { background: #f5f5f3; border-radius: 8px; padding: 1rem; text-align: center; }
+  .stat-num { font-size: 22px; font-weight: 500; }
+  .stat-label { font-size: 12px; color: #888; margin-top: 2px; }
+
+  .obj-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1rem;
+  }
+  .obj-card {
+    background: #fff;
+    border: 0.5px solid #e0e0dc;
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-accent { position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+  .accent-termine  { background: #1a9e6e; }
+  .accent-en_cours { background: #e9a000; }
+  .accent-echoue   { background: #c0392b; }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .card-title { font-weight: 500; font-size: 15px; padding-left: 12px; flex: 1; }
+  .badge-statut { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .badge-termine  { background: #e1f5ee; color: #0f6e56; }
+  .badge-en_cours { background: #faeeda; color: #854f0b; }
+  .badge-echoue   { background: #fcebeb; color: #a32d2d; }
+
+  .card-body { padding-left: 12px; }
+
+  .progress-bg { height: 6px; background: #f0f0ee; border-radius: 3px; overflow: hidden; margin: 10px 0 4px; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .fill-termine  { background: #1a9e6e; }
+  .fill-en_cours { background: #e9a000; }
+  .fill-echoue   { background: #c0392b; }
+  .progress-pct { font-size: 12px; color: #888; margin-bottom: 4px; }
+
+  .card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .meta-label { font-size: 12px; color: #888; }
+  .meta-val   { font-size: 13px; font-weight: 500; }
+
+  .wallet-info {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px; padding: 8px 10px;
+    background: #f5f5f3; border-radius: 8px; font-size: 12px;
+  }
+  .wallet-pays  { font-weight: 500; color: #333; }
+  .wallet-solde { color: #1a9e6e; font-weight: 500; margin-left: auto; }
+  .wallet-devise { color: #888; }
+
+  .contrib-list { margin-top: 12px; padding-left: 12px; }
+  .contrib-list-title {
+    font-size: 12px; color: #888; margin-bottom: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .contrib-items { display: none; flex-direction: column; gap: 5px; }
+  .contrib-items.open { display: flex; }
+  .contrib-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 8px; background: #f9f9f7; border-radius: 7px; font-size: 12px;
+  }
+  .contrib-row-info { display: flex; flex-direction: column; gap: 1px; }
+  .contrib-montant { font-weight: 500; color: #333; }
+  .contrib-date    { color: #aaa; font-size: 11px; }
+  .btn-del-contrib {
+    background: none; border: none; color: #c0392b;
+    font-size: 14px; cursor: pointer; padding: 2px 6px;
+    border-radius: 5px; line-height: 1;
+  }
+  .btn-del-contrib:hover { background: #fcebeb; }
+
+  .card-actions {
+    display: flex; gap: 8px; margin-top: 14px;
+    padding-top: 12px; border-top: 0.5px solid #e0e0dc;
+  }
+  .btn-edit {
+    flex: 1; padding: 7px; border-radius: 8px;
+    border: 0.5px solid #ccc; background: transparent;
+    font-size: 13px; cursor: pointer; text-align: center;
+    text-decoration: none; color: inherit; display: block;
+  }
+  .btn-edit:hover { background: #f5f5f3; }
+  .btn-del {
+    padding: 7px 14px; border-radius: 8px;
+    border: 0.5px solid rgba(240,149,133,0.5);
+    background: transparent; font-size: 13px; color: #a32d2d; cursor: pointer;
+  }
+  .btn-del:hover { background: #fcebeb; }
+
+  .btn-contrib {
+    width: 100%; margin-top: 10px; padding: 8px; border-radius: 8px;
+    border: 0.5px solid #1a9e6e; background: transparent;
+    font-size: 13px; color: #1a9e6e; cursor: pointer; font-weight: 500;
+  }
+  .btn-contrib:hover { background: #e1f5ee; }
+
+  .contrib-form { display: none; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .contrib-form.open { display: flex; }
+  .contrib-input {
+    width: 100%; padding: 7px 10px; border-radius: 8px;
+    border: 0.5px solid #ccc; font-size: 13px; font-family: 'DM Sans', sans-serif;
+  }
+  .contrib-input:focus { outline: none; border-color: #1a9e6e; }
+  .btn-submit-contrib {
+    padding: 8px; border-radius: 8px; background: #1a9e6e;
+    color: #fff; border: none; font-size: 13px; cursor: pointer;
+    font-weight: 500; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-submit-contrib:hover { background: #157a55; }
+
+  .objectif-atteint {
+    margin-top: 10px; padding: 8px; border-radius: 8px;
+    background: #e1f5ee; color: #0f6e56;
+    font-size: 13px; font-weight: 500; text-align: center;
+  }
+  .empty-msg {
+    color: #888; padding: 3rem; text-align: center;
+    grid-column: 1 / -1; font-size: 15px;
+  }
+  .wallet-notice {
+    background: #faeeda;
+    color: #854f0b;
+    border: 0.5px solid #f0c06e;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 1.5rem;
+    font-size: 14px;
+  }
+</style>
+
+<div class="obj-page">
+
+  {% for msg in app.flashes('success') %}
+    <div class="flash-success">{{ msg }}</div>
+  {% endfor %}
+  {% for msg in app.flashes('error') %}
+    <div class="flash-error">{{ msg }}</div>
+  {% endfor %}
+
+  <div class="obj-header">
+    <h1 class="obj-title">Mes objectifs</h1>
+    {% if selectedWalletId %}
+      <a href="{{ path('objectif_new') }}" class="btn-new">+ Nouvel objectif</a>
+    {% else %}
+      <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour créer un objectif">
+        + Nouvel objectif
+      </button>
+    {% endif %}
+  </div>
+
+  <div class="wallet-filter">
+    <select class="wallet-select" onchange="window.location.href=this.value">
+      <option value="{{ path('objectif_index') }}"
+              {{ selectedWalletId is null ? 'selected' : '' }}>
+        Tous les wallets
+      </option>
+      {% for id, w in wallets %}
+        <option value="{{ path('objectif_index', {wallet_id: id}) }}"
+                {{ selectedWalletId == id ? 'selected' : '' }}>
+          {{ w['pays'] }} · {{ w['devise'] }} — Solde : {{ w['solde']|number_format(2, ',', ' ') }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if not selectedWalletId %}
+    <div class="wallet-notice">
+      Sélectionnez un wallet pour pouvoir créer un objectif.
+    </div>
+  {% endif %}
+
+  {% set total    = objectifs|length %}
+  {% set en_cours = objectifs|filter(o => o.statut == 'EN_COURS')|length %}
+  {% set termines = objectifs|filter(o => o.statut == 'TERMINE')|length %}
+  <div class="obj-stats">
+    <div class="stat-box"><div class="stat-num">{{ total }}</div><div class="stat-label">Total</div></div>
+    <div class="stat-box"><div class="stat-num">{{ en_cours }}</div><div class="stat-label">En cours</div></div>
+    <div class="stat-box"><div class="stat-num">{{ termines }}</div><div class="stat-label">Terminés</div></div>
+  </div>
+
+  <div class="obj-cards">
+    {% for obj in objectifs %}
+
+      {% set statutClass = obj.statut|lower %}
+      {% set totalContrib = 0 %}
+      {% for c in obj.contributiongoals %}
+        {% set totalContrib = totalContrib + c.montant %}
+      {% endfor %}
+      {% set pct = obj.montant > 0 ? ((totalContrib / obj.montant) * 100)|round : 0 %}
+      {% set pct = pct > 100 ? 100 : pct %}
+      {% set walletInfo = wallets[obj.walletId] is defined ? wallets[obj.walletId] : null %}
+
+      <div class="obj-card">
+        <div class="card-accent accent-{{ statutClass }}"></div>
+
+        <div class="card-head">
+          <span class="card-title">{{ obj.titre }}</span>
+          <span class="badge-statut badge-{{ statutClass }}">{{ obj.statut }}</span>
+        </div>
+
+        <div class="card-body">
+          <div class="progress-bg">
+            <div class="progress-fill fill-{{ statutClass }}" style="width: {{ pct }}%"></div>
+          </div>
+          <div class="progress-pct">
+            {{ totalContrib|number_format(0, ',', ' ') }} /
+            {{ obj.montant|number_format(0, ',', ' ') }} — {{ pct }}%
+          </div>
+
+          <div class="card-meta">
+            <div>
+              <div class="meta-label">Date début</div>
+              <div class="meta-val">{{ obj.dateDebut|date('d/m/Y') }}</div>
+            </div>
+            <div>
+              <div class="meta-label">Durée</div>
+              <div class="meta-val">{{ obj.duree }} mois</div>
+            </div>
+          </div>
+
+          {% if walletInfo %}
+            <div class="wallet-info">
+              <span style="font-size:14px;">🌍</span>
+              <span class="wallet-pays">{{ walletInfo['pays'] }}</span>
+              <span class="wallet-devise">{{ walletInfo['devise'] }}</span>
+              <span class="wallet-solde">
+                Solde : {{ walletInfo['solde']|number_format(2, ',', ' ') }} {{ walletInfo['devise'] }}
+              </span>
+            </div>
+          {% endif %}
+
+          {% if obj.contributiongoals|length > 0 %}
+            <div class="contrib-list">
+              <div class="contrib-list-title" onclick="toggleContribList({{ obj.id }})">
+                Contributions ({{ obj.contributiongoals|length }})
+                <span id="arrow-{{ obj.id }}">▼</span>
+              </div>
+              <div class="contrib-items" id="contrib-list-{{ obj.id }}">
+                {% for c in obj.contributiongoals %}
+                  <div class="contrib-row">
+                    <div class="contrib-row-info">
+                      <span class="contrib-montant">{{ c.montant|number_format(2, ',', ' ') }}</span>
+                      <span class="contrib-date">{{ c.date|date('d/m/Y') }}</span>
+                    </div>
+                    <form method="POST"
+                          action="{{ path('contribution_delete', {id: c.id}) }}"
+                          onsubmit="return confirm('Supprimer cette contribution ? Le montant sera remboursé dans le wallet.')">
+                      <input type="hidden" name="_token" value="{{ csrf_token('delete_contrib'~c.id) }}">
+                      <button class="btn-del-contrib" type="submit" title="Supprimer et rembourser">✕</button>
+                    </form>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+        </div>
+
+        <div class="card-actions">
+          <a href="{{ path('objectif_edit', {id: obj.id}) }}" class="btn-edit">Modifier</a>
+          <form method="POST" action="{{ path('objectif_delete', {id: obj.id}) }}" style="display:inline">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete'~obj.id) }}">
+            <button class="btn-del" onclick="return confirm('Supprimer cet objectif ? Toutes les contributions seront remboursées.')">Supprimer</button>
+          </form>
+        </div>
+
+        {% if obj.statut != 'TERMINE' %}
+          {% set resteAAtteindre = obj.montant - totalContrib %}
+          <button class="btn-contrib" onclick="toggleContrib({{ obj.id }})">
+            + Ajouter une contribution
+          </button>
+          <form method="POST"
+                action="{{ path('objectif_contribuer', {id: obj.id}) }}"
+                class="contrib-form"
+                id="contrib-{{ obj.id }}">
+            <small style="color:#888; font-size:11px;">
+              {% if walletInfo %}
+                Solde disponible : {{ walletInfo['solde']|number_format(2, ',', ' ') }} {{ walletInfo['devise'] }} —
+              {% endif %}
+              Max contributible : {{ resteAAtteindre|number_format(2, ',', ' ') }}
+            </small>
+            <input type="number"
+                   name="montant"
+                   class="contrib-input"
+                   placeholder="Montant à contribuer"
+                   min="0.01"
+                   step="0.01"
+                   max="{{ resteAAtteindre }}"
+                   required>
+            <button type="submit" class="btn-submit-contrib">Confirmer</button>
+          </form>
+        {% else %}
+          <div class="objectif-atteint">✓ Objectif atteint !</div>
+        {% endif %}
+
+      </div>
+
+    {% else %}
+      <p class="empty-msg">
+        {% if selectedWalletId %}
+          Aucun objectif pour ce wallet. Créez votre premier objectif !
+        {% else %}
+          Sélectionnez un wallet pour voir ou créer vos objectifs.
+        {% endif %}
+      </p>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+function toggleContrib(id) {
+  const form = document.getElementById('contrib-' + id);
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) {
+    form.querySelector('input[type="number"]').focus();
+  }
+}
+function toggleContribList(id) {
+  const list  = document.getElementById('contrib-list-' + id);
+  const arrow = document.getElementById('arrow-' + id);
+  list.classList.toggle('open');
+  arrow.textContent = list.classList.contains('open') ? '▲' : '▼';
+}
+</script>
+
+{% endblock %}
