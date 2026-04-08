@@ -19,7 +19,25 @@
         </div>
     </div>
 </section>
+<script>
+function validateWallet() {
+    const soldeInput = document.querySelector('input[name$="[solde]"]') || 
+                       document.querySelector('input[name="solde"]');
+    const solde = parseFloat(soldeInput.value);
+    const errorDiv = document.getElementById('soldeError');
 
+    errorDiv.innerHTML = '';
+
+    if (isNaN(solde) || solde < 0) {
+        errorDiv.innerHTML = '❌ Balance cannot be negative! Please enter a valid amount.';
+        soldeInput.style.borderColor = '#c0392b';
+        soldeInput.scrollIntoView({ behavior: 'smooth' });
+        return false;
+    }
+
+    return true;
+}
+</script>
 <section class="section">
     <div class="container">
         <div class="row justify-content-center">
@@ -46,7 +64,7 @@
                     {# Card Body #}
                     <div class="card-body p-4">
 
-                        {{ form_start(form) }}
+                        {{ form_start(form , {'attr': {'onsubmit': 'return validateWallet()'}}) }}
 
                             <div class="mb-3">
                                 {{ form_label(form.pays, 'Country', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
@@ -55,10 +73,11 @@
                             </div>
 
                             <div class="mb-3">
-                                {{ form_label(form.solde, 'Balance', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
-                                {{ form_widget(form.solde, {'attr': {'class': 'form-control', 'step': '0.01'}}) }}
-                                <div class="text-danger small mt-1">{{ form_errors(form.solde) }}</div>
-                            </div>
+    {{ form_label(form.solde, 'Balance', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
+    {{ form_widget(form.solde, {'attr': {'class': 'form-control', 'step': '0.01', 'min': '0'}}) }}
+    <div class="text-danger small mt-1" id="soldeError"></div>
+    <div class="text-danger small mt-1">{{ form_errors(form.solde) }}</div>
+</div>
 
                             <div class="mb-4">
                                 {{ form_label(form.devise, 'Currency', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
