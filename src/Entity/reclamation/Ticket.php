@@ -1,11 +1,14 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\reclamation;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\user\Utilisateur;
+
 
 use App\Repository\TicketRepository;
 
@@ -45,6 +48,8 @@ class Ticket
     }
 
     #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(min: 10, minMessage: 'La description doit comporter au moins {{ limit }} caractères')]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -58,7 +63,7 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(name: 'imageUrl', type: 'string', nullable: true)]
     private ?string $imageUrl = null;
 
     public function getImageUrl(): ?string
@@ -87,6 +92,8 @@ class Ticket
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire')]
+    #[Assert\Length(min: 5, minMessage: 'Le titre doit comporter au moins {{ limit }} caractères')]
     private ?string $titre = null;
 
     public function getTitre(): ?string
@@ -101,6 +108,7 @@ class Ticket
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le type est obligatoire')]
     private ?string $type = null;
 
     public function getType(): ?string
@@ -129,6 +137,7 @@ class Ticket
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'La priorité est obligatoire')]
     private ?string $priorite = null;
 
     public function getPriorite(): ?string
@@ -142,7 +151,7 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(name: 'dateCreation', type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $dateCreation = null;
 
     public function getDateCreation(): ?\DateTimeInterface
@@ -156,7 +165,7 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'dateFermeture', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $dateFermeture = null;
 
     public function getDateFermeture(): ?\DateTimeInterface

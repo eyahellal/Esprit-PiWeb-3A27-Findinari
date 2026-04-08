@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Post;
+use App\Entity\community\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +16,21 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
-    //    /**
-    //     * @return Post[] Returns an array of Post objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function searchCommunityFeed(?string $term): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.utilisateur', 'u')->addSelect('u')
+            ->leftJoin('p.commentaires', 'c')->addSelect('c')
+            ->leftJoin('c.utilisateur', 'cu')->addSelect('cu')
+            ->leftJoin('p.likes', 'l')->addSelect('l')
+            ->orderBy('p.dateCreation', 'DESC');
 
-    //    public function findOneBySomeField($value): ?Post
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        $term = trim((string) $term);
+        if ($term !== '') {
+            $qb->andWhere('LOWER(p.contenu) LIKE :term OR LOWER(u.nom) LIKE :term OR LOWER(u.prenom) LIKE :term OR LOWER(CONCAT(u.nom, u.prenom)) LIKE :term OR LOWER(CONCAT(u.prenom, u.nom)) LIKE :term')
+                ->setParameter('term', '%'.mb_strtolower($term).'%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

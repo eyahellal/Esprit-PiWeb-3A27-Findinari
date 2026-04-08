@@ -5,8 +5,13 @@ namespace App\Entity\objective;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use App\Repository\ObjectifRepository;
-use Symfony\Component\Validator\Constraints as Assert;
+
+
+use App\Entity\Loan\Wallet;
+use App\Entity\Categorie;
+
+
+
 
 #[ORM\Entity(repositoryClass: ObjectifRepository::class)]
 #[ORM\Table(name: 'objectif')]
