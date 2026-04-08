@@ -24,34 +24,33 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="shadow rounded p-5 bg-white">
+                <div class="shadow rounded p-5 bg-white border-success">
                     <div class="text-center mb-4">
                         <div class="icon-box mb-3">
                             <div class="icon icon-lg bg-success-light rounded-circle mx-auto">
-                                <i class="fas fa-chart-line fa-3x text-success"></i>
+                                <i class="fas fa-chart-line fa-3x text-primary"></i>
                             </div>
                         </div>
                         <h2 class="text-primary">
                             {% if obligation %}
                                 {{ obligation.nom }}
                             {% else %}
-                                Obligation #{{ investment.obligationId }}
+                                Investment Details
                             {% endif %}
                         </h2>
-                        <p class="text-muted">Investment ID: #{{ investment.idInvestissement }}</p>
                     </div>
                     
                     <div class="row mb-4">
                         <div class="col-md-4">
-                            <div class="border rounded p-3 text-center">
+                            <div class="border border-success rounded p-3 text-center bg-light">
                                 <p class="text-muted mb-1">Amount Invested</p>
                                 <h4 class="text-success mb-0">{{ investment.montantInvesti|number_format(2) }} DT</h4>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="border rounded p-3 text-center">
+                            <div class="border border-success rounded p-3 text-center bg-light">
                                 <p class="text-muted mb-1">Interest Rate</p>
-                                <h4 class="text-success mb-0">
+                                <h4 class="text-primary mb-0">
                                     {% if obligation %}
                                         {{ obligation.tauxInteret }}%
                                     {% else %}
@@ -61,9 +60,9 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="border rounded p-3 text-center">
+                            <div class="border border-success rounded p-3 text-center bg-light">
                                 <p class="text-muted mb-1">Duration</p>
-                                <h4 class="text-success mb-0">
+                                <h4 class="text-primary mb-0">
                                     {% if obligation %}
                                         {{ obligation.duree }} months
                                     {% else %}
@@ -76,35 +75,29 @@
                     
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <div class="border rounded p-3">
-                                <p class="text-muted mb-1">Wallet ID</p>
-                                <h5 class="mb-0">#{{ investment.walletId }}</h5>
+                            <div class="border border-success rounded p-3 bg-light">
+                                <p class="text-muted mb-1">Purchase Date</p>
+                                <h5 class="text-primary mb-0">{{ investment.dateAchat|date('d/m/Y') }}</h5>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="border rounded p-3">
-                                <p class="text-muted mb-1">Purchase Date</p>
-                                <h5 class="mb-0">{{ investment.dateAchat|date('d/m/Y') }}</h5>
+                            <div class="border border-success rounded p-3 bg-light">
+                                <p class="text-muted mb-1">Maturity Date</p>
+                                <h5 class="text-primary mb-0">{{ investment.dateMaturite|date('d/m/Y') }}</h5>
                             </div>
                         </div>
                     </div>
                     
                     <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="border rounded p-3">
-                                <p class="text-muted mb-1">Maturity Date</p>
-                                <h5 class="mb-0">{{ investment.dateMaturite|date('d/m/Y') }}</h5>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="border rounded p-3">
+                        <div class="col-md-12">
+                            <div class="border border-success rounded p-3 bg-light">
                                 <p class="text-muted mb-1">Status</p>
                                 {% set currentDate = date() %}
                                 {% set isMatured = currentDate > investment.dateMaturite %}
                                 {% if isMatured %}
                                     <h5 class="mb-0 text-success"><i class="fas fa-check-circle me-1"></i>Matured</h5>
                                 {% else %}
-                                    <h5 class="mb-0 text-warning"><i class="fas fa-clock me-1"></i>Active</h5>
+                                    <h5 class="mb-0 text-primary"><i class="fas fa-clock me-1"></i>Active</h5>
                                 {% endif %}
                             </div>
                         </div>
@@ -130,7 +123,7 @@
                             </a>
                             <form method="post" action="{{ path('app_investment_delete', {'idInvestissement': investment.idInvestissement}) }}" style="display: inline-block;" onsubmit="return confirm('Are you sure you want to delete this investment?');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ investment.idInvestissement) }}">
-                                <button type="submit" class="btn btn-outline-danger">
+                                <button type="submit" class="btn btn-outline-danger ms-2">
                                     <i class="fas fa-trash me-1"></i>Delete
                                 </button>
                             </form>
@@ -141,5 +134,18 @@
         </div>
     </div>
 </section>
+
+<style>
+    .bg-success-light { background-color: #e8f5e9; }
+    .text-primary { color: #2d6a4f !important; }
+    .text-success { color: #28a745 !important; }
+    .border-success { border-color: #28a745 !important; }
+    .btn-outline-primary { color: #2d6a4f; border-color: #2d6a4f; }
+    .btn-outline-primary:hover { background-color: #2d6a4f; border-color: #2d6a4f; color: white; }
+    .btn-primary { background-color: #2d6a4f; border-color: #2d6a4f; }
+    .btn-primary:hover { background-color: #1b4d3b; border-color: #1b4d3b; }
+    .bg-tertiary { background-color: #e8f5e9 !important; }
+    .bg-light { background-color: #f8f9fa !important; }
+</style>
 
 {% endblock %}

@@ -46,9 +46,16 @@
                 </ul>
 
                 {% if app.user %}
+                   {% if app.user.role == 'ADMIN' %}
+                     <a href="{{ path('app_admin_dashboard') }}" class="btn btn-warning me-2">
+                     Admin Panel
+                      </a>
+                   {% endif %}
+
                     <a href="{{ path('app_profile') }}" class="btn btn-outline-primary">Profile</a>
                     <a href="{{ path('app_logout') }}" class="btn btn-primary ms-2 ms-lg-3">Logout</a>
-                {% else %}
+
+               {% else %}
                     <a href="{{ path('app_front_login') }}" class="btn btn-outline-primary">Log In</a>
                     <a href="{{ path('app_front_register') }}" class="btn btn-primary ms-2 ms-lg-3">Sign Up</a>
                 {% endif %}
