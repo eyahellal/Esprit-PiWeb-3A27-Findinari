@@ -1,0 +1,183 @@
+{% extends 'management/dashboard.html.twig' %}
+
+{% block title %}Transactions - Fin-Dinari{% endblock %}
+
+{% set active_tab = 'transaction' %}
+
+{% block content %}
+
+<turbo-frame id="content-frame">
+
+    {# Header #}
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-1" style="color: #26474E;">
+                <i class="fas fa-exchange-alt me-2"></i>Transactions
+            </h1>
+            <p class="text-muted mb-0">Track your income and expenses</p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{{ path('app_transaction_new_step1') }}" class="btn btn-lg px-4"
+               style="background: linear-gradient(135deg, #F27438, #F9968B); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(242,116,56,0.3);">
+                <i class="fas fa-plus me-2"></i>New Transaction
+            </a>
+        </div>
+    </div>
+
+    {# Stats Bar #}
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #26474E; box-shadow: 0 4px 20px rgba(38,71,78,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Transactions</p>
+                        <h2 class="fw-bold mb-0">{{ transactions|length }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-exchange-alt fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #2d6a4f; box-shadow: 0 4px 20px rgba(45,106,79,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Income</p>
+                        <h2 class="fw-bold mb-0">{{ totalIncome|number_format(2) }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-arrow-up fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #c0392b; box-shadow: 0 4px 20px rgba(192,57,43,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Expense</p>
+                        <h2 class="fw-bold mb-0">{{ totalExpense|number_format(2) }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-arrow-down fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Filter Bar #}
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="d-flex gap-2">
+                <a href="{{ path('app_transaction_index') }}"
+                   class="btn px-4 {{ type == '' ? 'active-filter' : '' }}"
+                   style="border-radius: 12px; background: {{ type == '' ? '#F27438' : 'white' }}; color: {{ type == '' ? 'white' : '#26474E' }}; border: 2px solid {{ type == '' ? '#F27438' : '#e0e0e0' }};">
+                    <i class="fas fa-list me-1"></i>All
+                </a>
+                <a href="{{ path('app_transaction_index', {'type': 'income'}) }}"
+                   class="btn px-4"
+                   style="border-radius: 12px; background: {{ type == 'income' ? '#2d6a4f' : 'white' }}; color: {{ type == 'income' ? 'white' : '#2d6a4f' }}; border: 2px solid {{ type == 'income' ? '#2d6a4f' : '#e0e0e0' }};">
+                    <i class="fas fa-arrow-up me-1"></i>Income
+                </a>
+                <a href="{{ path('app_transaction_index', {'type': 'depense'}) }}"
+                   class="btn px-4"
+                   style="border-radius: 12px; background: {{ type == 'depense' ? '#c0392b' : 'white' }}; color: {{ type == 'depense' ? 'white' : '#c0392b' }}; border: 2px solid {{ type == 'depense' ? '#c0392b' : '#e0e0e0' }};">
+                    <i class="fas fa-arrow-down me-1"></i>Expense
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# Transactions List #}
+    <div class="row">
+        {% if transactions is empty %}
+            <div class="col-12 text-center py-5">
+                <div class="rounded-4 p-5" style="background: #f8fffe; border: 2px dashed #F27438;">
+                    <i class="fas fa-exchange-alt fa-3x mb-3" style="color: #F27438;"></i>
+                    <h4 style="color: #26474E;">No transactions found</h4>
+                    <p class="text-muted">Start by adding your first transaction</p>
+                    <a href="{{ path('app_transaction_new_step1') }}" class="btn mt-2"
+                       style="background: #F27438; color: white; border-radius: 12px;">
+                        <i class="fas fa-plus me-2"></i>Add Transaction
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="card border-0 rounded-4"
+                     style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                    <div class="card-body p-0">
+                        {% for transaction in transactions %}
+                            <div class="d-flex align-items-center p-3 transaction-row"
+                                 style="border-bottom: 1px solid #f5f5f5; transition: all 0.2s;">
+
+                                {# Icon #}
+                                <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                                     style="width:48px; height:48px;
+                                            background: {{ transaction.type == 'income' ? '#e8f5e9' : '#fde8e8' }};">
+                                    <i class="fas {{ transaction.type == 'income' ? 'fa-arrow-up' : 'fa-arrow-down' }}"
+                                       style="color: {{ transaction.type == 'income' ? '#2d6a4f' : '#c0392b' }};"></i>
+                                </div>
+
+                                {# Info #}
+                                <div class="flex-fill">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="fw-bold mb-0" style="color: #26474E;">
+                                                {{ transaction.categorie.nom }}
+                                            </h6>
+                                            <p class="text-muted small mb-0">
+                                                <i class="fas fa-wallet me-1"></i>{{ transaction.wallet.pays }}
+                                                {% if transaction.description %}
+                                                    · {{ transaction.description|slice(0, 40) }}{% if transaction.description|length > 40 %}...{% endif %}
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <div class="text-end">
+                                            <h6 class="fw-bold mb-0"
+                                                style="color: {{ transaction.type == 'income' ? '#2d6a4f' : '#c0392b' }};">
+                                                {{ transaction.type == 'income' ? '+' : '-' }}{{ transaction.montant|number_format(2) }} {{ transaction.devise }}
+                                            </h6>
+                                            <p class="text-muted small mb-0">
+                                                {{ transaction.date|date('d/m/Y H:i') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Delete #}
+                                <div class="ms-3 flex-shrink-0">
+                                    <form method="post" action="{{ path('app_transaction_delete', {'id': transaction.id}) }}"
+                                          onsubmit="return confirm('Are you sure?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ transaction.id) }}">
+                                        <button class="btn btn-sm delete-btn"
+                                                style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+</turbo-frame>
+
+<style>
+    .rounded-4 { border-radius: 1rem !important; }
+    .transaction-row:hover { background: #fff8f5; }
+    .delete-btn:hover { background: #c0392b !important; color: white !important; }
+</style>
+
+{% endblock %}
