@@ -1,0 +1,285 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit {{ categorie.nom }} - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header" style="background: #e8f5f5;">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize" style="color: #26474E;">Edit Category</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}" style="color: #26474E;">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}" style="color: #26474E;">Services</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_categorie_index') }}" style="color: #26474E;">Categories</a></li>
+                    <li class="list-inline-item">/ &nbsp; Edit</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+
+                <div class="card border-0 rounded-4 categorie-card"
+                     style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+
+                    {# Card Header #}
+                    <div class="rounded-top-4 p-4 text-white"
+                         style="background: {{ categorie.color is not null ? categorie.color : '#F27438' }};">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="mb-1 opacity-75 small text-uppercase fw-semibold">Editing</p>
+                                <h4 class="fw-bold mb-0">{{ categorie.nom }}</h4>
+                            </div>
+                            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                                <i class="fas {{ categorie.icon is not null ? categorie.icon : 'fa-folder' }} fa-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Card Body #}
+                    <div class="card-body p-4">
+
+                        {{ form_start(form) }}
+
+                            {# Name #}
+                            <div class="mb-3">
+                                {{ form_label(form.nom, 'Category Name', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
+                                {{ form_widget(form.nom, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Food, Transport, Health...'}}) }}
+                                <div class="text-danger small mt-1">{{ form_errors(form.nom) }}</div>
+                            </div>
+
+                            {# Description #}
+                            <div class="mb-3">
+                                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}
+                                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'placeholder': 'Describe this category...', 'rows': '3'}}) }}
+                                <small class="text-muted">Optional - describe what this category is for</small>
+                                <div class="text-danger small mt-1">{{ form_errors(form.description) }}</div>
+                            </div>
+
+                            {# Status Toggle #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #26474E;">Status</label>
+                                <div class="d-flex gap-3">
+                                    <div class="status-option flex-fill text-center p-3 rounded-3 status-btn"
+                                         id="status-actif"
+                                         onclick="selectStatus('Active')"
+                                         style="border: 2px solid {{ categorie.statut == 'Active' ? '#2d6a4f' : '#f5f5f5' }};
+                                                background: {{ categorie.statut == 'Active' ? '#e8f5e9' : '#f5f5f5' }};
+                                                cursor: pointer;">
+                                        <i class="fas fa-check-circle fa-lg mb-2"
+                                           style="color: {{ categorie.statut == 'Active' ? '#2d6a4f' : '#999' }};"></i>
+                                        <p class="mb-0 fw-bold small"
+                                           style="color: {{ categorie.statut == 'Active' ? '#2d6a4f' : '#999' }};">Active</p>
+                                    </div>
+                                    <div class="status-option flex-fill text-center p-3 rounded-3 status-btn"
+                                         id="status-inactif"
+                                         onclick="selectStatus('Inactive')"
+                                         style="border: 2px solid {{ categorie.statut == 'Inactive' ? '#c0392b' : '#f5f5f5' }};
+                                                background: {{ categorie.statut == 'Inactive' ? '#fde8e8' : '#f5f5f5' }};
+                                                cursor: pointer;">
+                                        <i class="fas fa-times-circle fa-lg mb-2"
+                                           style="color: {{ categorie.statut == 'Inactive' ? '#c0392b' : '#999' }};"></i>
+                                        <p class="mb-0 fw-bold small"
+                                           style="color: {{ categorie.statut == 'Inactive' ? '#c0392b' : '#999' }};">Inactive</p>
+                                    </div>
+                                </div>
+                                {{ form_widget(form.statut, {'attr': {'class': 'd-none', 'id': 'statut_field'}}) }}
+                                <div class="text-danger small mt-1">{{ form_errors(form.statut) }}</div>
+                            </div>
+
+                            {# Color Palette #}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold" style="color: #26474E;">Color</label>
+                                <div class="d-flex gap-2 flex-wrap mb-2">
+                                    {% set colors = ['#F27438', '#26474E', '#76CDCD', '#2CCED2', '#2d6a4f', '#e74c3c', '#9b59b6', '#3498db', '#f39c12', '#1abc9c'] %}
+                                    {% for color in colors %}
+                                        <div class="color-swatch rounded-circle"
+                                             style="width:36px; height:36px; background: {{ color }}; cursor: pointer;
+                                                    border: 3px solid {{ categorie.color == color ? '#26474E' : 'transparent' }};
+                                                    transform: {{ categorie.color == color ? 'scale(1.2)' : 'scale(1)' }};
+                                                    transition: all 0.2s;"
+                                             onclick="selectColor('{{ color }}', this)"
+                                             title="{{ color }}">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    {{ form_widget(form.color, {'attr': {'class': 'form-control form-control-color', 'id': 'color_field', 'style': 'width: 50px; height: 38px; padding: 2px; border-radius: 8px;', 'oninput': 'syncColor(this.value)'}}) }}
+                                    <span class="text-muted small">Or pick a custom color</span>
+                                    <span id="colorPreview" class="rounded-3 px-3 py-1 text-white small fw-bold"
+                                          style="background: {{ categorie.color ?? '#F27438' }};">
+                                        {{ categorie.color ?? '#F27438' }}
+                                    </span>
+                                </div>
+                                <div class="text-danger small mt-1">{{ form_errors(form.color) }}</div>
+                            </div>
+
+                            {# Icon Picker #}
+                            <div class="mb-4">
+                                <label class="form-label fw-bold" style="color: #26474E;">Icon</label>
+                                <div class="d-flex gap-2 flex-wrap mb-2">
+                                    {% set icons = [
+                                        'fa-utensils', 'fa-car', 'fa-heart-pulse', 'fa-bag-shopping',
+                                        'fa-graduation-cap', 'fa-film', 'fa-house', 'fa-plane',
+                                        'fa-chart-line', 'fa-circle-dot', 'fa-gamepad', 'fa-shirt',
+                                        'fa-pills', 'fa-dumbbell', 'fa-music', 'fa-book',
+                                        'fa-wifi', 'fa-gas-pump', 'fa-baby', 'fa-paw'
+                                    ] %}
+                                    {% for icon in icons %}
+                                        <div class="icon-option rounded-3 d-flex align-items-center justify-content-center"
+                                             style="width:44px; height:44px; cursor: pointer; transition: all 0.2s;
+                                                    background: {{ categorie.icon == icon ? '#F27438' : '#f5f5f5' }};
+                                                    border: 2px solid {{ categorie.icon == icon ? '#26474E' : 'transparent' }};"
+                                             onclick="selectIcon('{{ icon }}', this)"
+                                             title="{{ icon }}">
+                                            <i class="fas {{ icon }}"
+                                               style="color: {{ categorie.icon == icon ? 'white' : '#26474E' }};"></i>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {{ form_widget(form.icon, {'attr': {'class': 'd-none', 'id': 'icon_field'}}) }}
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                    <span class="text-muted small">Selected icon:</span>
+                                    <div class="rounded-3 px-3 py-1"
+                                         style="background: #F27438; color: white;">
+                                        <i class="fas {{ categorie.icon ?? 'fa-folder' }}" id="selectedIconPreview"></i>
+                                        <span id="selectedIconName" class="small ms-1">
+                                            {{ categorie.icon ?? 'None' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-danger small mt-1">{{ form_errors(form.icon) }}</div>
+                            </div>
+
+                            <hr class="my-3">
+
+                            {# Buttons #}
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_categorie_index') }}"
+                                   class="btn btn-sm flex-fill"
+                                   style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+                                    <i class="fas fa-arrow-left me-1"></i>Cancel
+                                </a>
+                                <button type="submit"
+                                        class="btn btn-sm flex-fill update-btn"
+                                        style="background: #e8f5e9; color: #2d6a4f; border-radius: 10px;">
+                                    <i class="fas fa-save me-1"></i>Update Category
+                                </button>
+                            </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .rounded-top-4 { border-radius: 1rem 1rem 0 0 !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .categorie-card { transition: all 0.3s ease; }
+    .color-swatch:hover { transform: scale(1.2) !important; }
+    .icon-option:hover { background: #F27438 !important; }
+    .icon-option:hover i { color: white !important; }
+    .update-btn:hover { background: #F27438 !important; color: white !important; }
+    .form-control:focus {
+        border-color: #F27438 !important;
+        box-shadow: 0 0 0 0.2rem rgba(242,116,56,0.2) !important;
+    }
+</style>
+
+<script>
+    function selectStatus(value) {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            if (select.id.includes('statut') || select.name.includes('statut')) {
+                for (let option of select.options) {
+                    if (option.value === value) option.selected = true;
+                }
+            }
+        });
+
+        const actifBtn = document.getElementById('status-actif');
+        const inactifBtn = document.getElementById('status-inactif');
+
+        if (value === 'Active') {
+            actifBtn.style.border = '2px solid #2d6a4f';
+            actifBtn.style.background = '#e8f5e9';
+            actifBtn.querySelector('i').style.color = '#2d6a4f';
+            actifBtn.querySelector('p').style.color = '#2d6a4f';
+            inactifBtn.style.border = '2px solid #f5f5f5';
+            inactifBtn.style.background = '#f5f5f5';
+            inactifBtn.querySelector('i').style.color = '#999';
+            inactifBtn.querySelector('p').style.color = '#999';
+        } else {
+            inactifBtn.style.border = '2px solid #c0392b';
+            inactifBtn.style.background = '#fde8e8';
+            inactifBtn.querySelector('i').style.color = '#c0392b';
+            inactifBtn.querySelector('p').style.color = '#c0392b';
+            actifBtn.style.border = '2px solid #f5f5f5';
+            actifBtn.style.background = '#f5f5f5';
+            actifBtn.querySelector('i').style.color = '#999';
+            actifBtn.querySelector('p').style.color = '#999';
+        }
+    }
+
+    function selectColor(color, element) {
+        document.getElementById('color_field').value = color;
+        document.getElementById('colorPreview').style.background = color;
+        document.getElementById('colorPreview').textContent = color;
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.style.border = '3px solid transparent';
+            s.style.transform = 'scale(1)';
+        });
+        element.style.border = '3px solid #26474E';
+        element.style.transform = 'scale(1.2)';
+
+        document.querySelector('.rounded-top-4').style.background = color;
+    }
+
+    function syncColor(value) {
+        document.getElementById('colorPreview').style.background = value;
+        document.getElementById('colorPreview').textContent = value;
+        document.querySelector('.rounded-top-4').style.background = value;
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.style.border = '3px solid transparent';
+        });
+    }
+
+    function selectIcon(iconValue, element) {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            if (select.id.includes('icon') || select.name.includes('icon')) {
+                for (let option of select.options) {
+                    if (option.value === iconValue) option.selected = true;
+                }
+            }
+        });
+
+        document.getElementById('selectedIconPreview').className = 'fas ' + iconValue;
+        document.getElementById('selectedIconName').textContent = iconValue;
+
+        document.querySelectorAll('.icon-option').forEach(i => {
+            i.style.background = '#f5f5f5';
+            i.style.border = '2px solid transparent';
+            i.querySelector('i').style.color = '#26474E';
+        });
+        element.style.background = '#F27438';
+        element.style.border = '2px solid #26474E';
+        element.querySelector('i').style.color = 'white';
+
+        
+        document.querySelector('.rounded-top-4 .fas').className = 'fas ' + iconValue + ' fa-lg';
+    }
+</script>
+
+{% endblock %}

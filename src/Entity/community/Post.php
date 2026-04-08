@@ -2,12 +2,16 @@
 
 namespace App\Entity\community;
 
-use App\Repository\PostRepository;
+use App\Entity\user\Utilisateur;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+
+use App\Repository\PostRepository;
+
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\user\Utilisateur;
+
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Table(name: 'post')]

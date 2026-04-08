@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Budget Management - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header" style="background: #e8f5f5;">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3" style="color: #26474E;">Budget Management</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+
+        {# Navigation Tabs #}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex gap-2 border-bottom pb-3">
+                    <a href="{{ path('app_wallet_index') }}"
+                       class="btn {{ active_tab == 'wallet' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame"
+                       style="border-radius: 10px;">
+                        <i class="fas fa-wallet me-1"></i>Wallets
+                    </a>
+                    <a href="{{ path('app_categorie_index') }}"
+                       class="btn {{ active_tab == 'categorie' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame"
+                       style="border-radius: 10px;">
+                        <i class="fas fa-folder me-1"></i>Categories
+                    </a>
+                    <a href="{{ path('app_budget_index') }}"
+                       class="btn {{ active_tab == 'budget' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame"
+                       style="border-radius: 10px;">
+                        <i class="fas fa-chart-pie me-1"></i>Budgets
+                    </a>
+                    <a href="{{ path('app_transaction_index') }}"
+                       class="btn {{ active_tab == 'transaction' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame"
+                       style="border-radius: 10px;">
+                        <i class="fas fa-exchange-alt me-1"></i>Transactions
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# Content Frame #}
+        <turbo-frame id="content-frame" target="_top">
+            {% block content %}{% endblock %}
+        </turbo-frame>
+
+    </div>
+</section>
+
+{% endblock %}
