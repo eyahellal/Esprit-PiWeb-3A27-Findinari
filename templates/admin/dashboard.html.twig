@@ -69,16 +69,8 @@
             margin-bottom: 18px;
         }
 
-        .brand-icon {
-            width: 40px;
-            height: 40px;
-        }
-
-        .brand-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        .brand-icon { width: 40px; height: 40px; }
+        .brand-icon img { width: 100%; height: 100%; object-fit: contain; }
 
         .brand-name {
             font-size: 22px;
@@ -112,18 +104,8 @@
             position: relative;
         }
 
-        .side-link:hover {
-            background: var(--brand-light);
-            color: var(--brand);
-            transform: translateX(2px);
-        }
-
-        .side-link.active {
-            background: var(--brand-light);
-            color: var(--brand);
-            box-shadow: inset 3px 0 0 var(--brand);
-        }
-
+        .side-link:hover { background: var(--brand-light); color: var(--brand); transform: translateX(2px); }
+        .side-link.active { background: var(--brand-light); color: var(--brand); box-shadow: inset 3px 0 0 var(--brand); }
         .side-link svg { width: 18px; height: 18px; flex-shrink: 0; }
 
         .sidebar-footer {
@@ -132,12 +114,7 @@
             border-top: 1px solid var(--border);
         }
 
-        .content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 28px;
-            min-width: 0;
-        }
+        .content { margin-left: var(--sidebar-width); flex: 1; padding: 28px; min-width: 0; }
 
         .topbar {
             background: var(--surface);
@@ -153,7 +130,6 @@
 
         .topbar-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
         .topbar-title span { color: var(--brand); }
-
         .topbar-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
         .avatar {
@@ -224,10 +200,7 @@
             opacity: .55;
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-        }
+        .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
 
         .card-icon {
             width: 46px; height: 46px;
@@ -238,11 +211,9 @@
         }
 
         .card-icon svg { width: 22px; height: 22px; }
-
         .card-body { flex: 1; min-width: 0; }
         .card-label { font-size: 12.5px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
         .card-value { font-size: 32px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1; }
-
         .card-link { text-decoration: none; }
 
         .card.c-purple  { --card-accent: #dcfce7; } .card.c-purple  .card-icon svg { color: var(--brand); }
@@ -280,7 +251,6 @@
         }
 
         .section-title svg { width: 18px; height: 18px; color: var(--brand); }
-
         .section-body { padding: 24px 26px; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
@@ -289,11 +259,7 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
 
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        select,
-        textarea {
+        input[type="text"], input[type="email"], input[type="password"], select, textarea {
             width: 100%;
             padding: 11px 14px;
             border: 1.5px solid var(--border);
@@ -345,15 +311,8 @@
 
         .table-wrapper { overflow-x: auto; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead tr {
-            background: #f8f9fd;
-            border-bottom: 2px solid var(--border);
-        }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { background: #f8f9fd; border-bottom: 2px solid var(--border); }
 
         th {
             text-align: left;
@@ -373,10 +332,7 @@
             color: var(--text-primary);
         }
 
-        tbody tr {
-            transition: background var(--transition);
-        }
-
+        tbody tr { transition: background var(--transition); }
         tbody tr:hover { background: #fafbff; }
         tbody tr:last-child td { border-bottom: none; }
 
@@ -396,6 +352,8 @@
         .badge.influencer  { background: var(--warning-light);  color: var(--warning); }
         .badge.active      { background: #dcfce7; color: #166534; }
         .badge.inactive    { background: #fef2f2; color: #b91c1c; }
+        .badge.badge-termine  { background: #dcfce7; color: #166534; }
+        .badge.badge-en-cours { background: #fff8e6; color: #b45309; }
 
         .badge::before {
             content: '';
@@ -404,28 +362,10 @@
             background: currentColor;
         }
 
-        .role-form,
-        .status-form {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        .role-form, .status-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .role-form select { padding: 7px 10px; border-radius: 6px; margin: 0; font-size: 13px; min-width: 110px; }
 
-        .role-form select {
-            padding: 7px 10px;
-            border-radius: 6px;
-            margin: 0;
-            font-size: 13px;
-            min-width: 110px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-        }
-
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
         .empty-state svg { width: 44px; height: 44px; margin-bottom: 12px; opacity: .45; }
         .empty-state p { font-size: 14px; font-weight: 600; }
 
@@ -440,39 +380,34 @@
 
         .form-divider { height: 1px; background: var(--border); margin: 18px 0; }
 
-        .filters-bar {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: end;
-        }
+        .filters-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+        .filters-bar .form-group.flex-grow { flex: 1; min-width: 260px; }
+        .filters-bar .form-group.fixed-width { min-width: 220px; }
+        .filters-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-        .filters-bar .form-group.flex-grow {
-            flex: 1;
-            min-width: 260px;
+        .action-icons { display: flex; align-items: center; gap: 8px; }
+        .action-icons a, .action-icons button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 6px;
+            transition: background var(--transition);
         }
-
-        .filters-bar .form-group.fixed-width {
-            min-width: 220px;
-        }
-
-        .filters-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        .action-icons a:hover, .action-icons button:hover { background: var(--brand-light); }
     </style>
 </head>
 <body>
 <div class="layout">
 
-   <aside class="sidebar">
-    <div class="brand">
-        <div class="brand-icon">
-            <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
+            </div>
+            <span class="brand-name">Fin-Dinari</span>
         </div>
-        <span class="brand-name">Fin-Dinari</span>
-    </div>
 
         <div class="nav-section">Main</div>
         <a class="side-link active" href="{{ path('app_admin_dashboard') }}">
@@ -482,6 +417,18 @@
         <a class="side-link" href="{{ path('app_admin_wallets') }}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
             Manage Wallets
+        </a>
+        <a class="side-link" href="{{ path('app_admin_objectifs') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Manage Objectifs
+        </a>
+        <a class="side-link" href="{{ path('app_admin_tickets') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Tickets & Messages
+        </a>
+        <a class="side-link" href="{{ path('app_admin_obligations') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+            Manage Obligations
         </a>
 
         <div class="sidebar-footer">
@@ -507,9 +454,6 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                     Wallets
                 </a>
-                
-                 <a class="side-link" href="{{ path('app_admin_objectifs') }}">Manage Objectifs</a>
-
                 <div class="welcome-text">Welcome back, <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong></div>
                 <div class="avatar">{{ app.user.prenom|first|upper }}</div>
             </div>
@@ -528,10 +472,11 @@
             </div>
         {% endfor %}
 
+        {# ── STAT CARDS ── #}
         <div class="cards">
             <div class="card c-purple">
                 <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
                 </div>
                 <div class="card-body">
                     <div class="card-label">Total Users</div>
@@ -541,7 +486,7 @@
 
             <div class="card c-blue">
                 <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
                 </div>
                 <div class="card-body">
                     <div class="card-label">Total Feedbacks</div>
@@ -551,7 +496,7 @@
 
             <div class="card c-red">
                 <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
                 <div class="card-body">
                     <div class="card-label">Admins</div>
@@ -561,7 +506,7 @@
 
             <div class="card c-amber">
                 <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 </div>
                 <div class="card-body">
                     <div class="card-label">Influencers</div>
@@ -571,7 +516,7 @@
 
             <a class="card c-green card-link" href="{{ path('app_admin_wallets') }}" style="text-decoration:none;">
                 <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                 </div>
                 <div class="card-body">
                     <div class="card-label">Wallets</div>
@@ -580,6 +525,7 @@
             </a>
         </div>
 
+        {# ── CREATE ADMIN ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
@@ -618,6 +564,7 @@
             </div>
         </div>
 
+        {# ── ALL USERS ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
@@ -635,21 +582,17 @@
                         <label>Search user by name</label>
                         <input type="text" name="q" value="{{ search|default('') }}" placeholder="Search by first name or last name">
                     </div>
-
                     <div class="form-group fixed-width">
                         <label>Sort by</label>
                         <select name="sort">
-                            <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name A → Z</option>
+                            <option value="name_asc"  {% if sort == 'name_asc'  %}selected{% endif %}>Name A → Z</option>
                             <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z → A</option>
-                            <option value="role_asc" {% if sort == 'role_asc' %}selected{% endif %}>Role A → Z</option>
+                            <option value="role_asc"  {% if sort == 'role_asc'  %}selected{% endif %}>Role A → Z</option>
                             <option value="role_desc" {% if sort == 'role_desc' %}selected{% endif %}>Role Z → A</option>
-                            <option value="status_asc" {% if sort == 'status_asc' %}selected{% endif %}>Status A → Z</option>
-                            <option value="status_desc" {% if sort == 'status_desc' %}selected{% endif %}>Status Z → A</option>
-                            <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>Oldest ID</option>
-                            <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>Newest ID</option>
+                            <option value="id_asc"    {% if sort == 'id_asc'    %}selected{% endif %}>Oldest ID</option>
+                            <option value="id_desc"   {% if sort == 'id_desc'   %}selected{% endif %}>Newest ID</option>
                         </select>
                     </div>
-
                     <div class="filters-actions">
                         <button class="btn btn-primary" type="submit">Apply</button>
                         <a href="{{ path('app_admin_dashboard') }}" class="btn btn-secondary">Reset</a>
@@ -661,14 +604,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Change Role</th>
-                            <th>Activate / Deactivate</th>
-                            <th>Action</th>
+                            <th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Change Role</th><th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -684,26 +620,23 @@
                                 </div>
                             </td>
                             <td style="color:var(--text-secondary);">{{ user.gmail }}</td>
-
                             <td>
                                 <span class="badge {% if user.role == 'ADMIN' %}admin{% elseif user.role == 'INFLUENCER' %}influencer{% else %}user{% endif %}">
                                     {{ user.role }}
                                 </span>
                             </td>
-
                             <td>
-                                {% if user.statut == 'ACTIF' %}
+                                {% if user.statut in ['ACTIF', 'ACTIVE'] %}
                                     <span class="badge active">ACTIF</span>
                                 {% else %}
                                     <span class="badge inactive">INACTIF</span>
                                 {% endif %}
                             </td>
-
                             <td>
                                 <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="role-form">
                                     <select name="role">
-                                        <option value="USER" {% if user.role == 'USER' %}selected{% endif %}>USER</option>
-                                        <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                                        <option value="USER"       {% if user.role == 'USER'       %}selected{% endif %}>USER</option>
+                                        <option value="ADMIN"      {% if user.role == 'ADMIN'      %}selected{% endif %}>ADMIN</option>
                                         <option value="INFLUENCER" {% if user.role == 'INFLUENCER' %}selected{% endif %}>INFLUENCER</option>
                                     </select>
                                     <button class="btn btn-success btn-sm" type="submit">
@@ -723,20 +656,14 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr>
-                            <td colspan="8">
-                                <div class="empty-state">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                                    <p>No users found for this search.</p>
-                                </div>
-                            </td>
-                        </tr>
+                        <tr><td colspan="7"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No users found for this search.</p></div></td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
 
+        {# ── FEEDBACKS ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
@@ -748,14 +675,7 @@
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>User</th>
-                            <th>Rating</th>
-                            <th>Message</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
+                        <tr><th>#</th><th>User</th><th>Rating</th><th>Message</th><th>Date</th><th>Action</th></tr>
                     </thead>
                     <tbody>
                     {% for feedback in feedbacks %}
@@ -785,38 +705,37 @@
                             </td>
                         </tr>
                     {% else %}
-                        <tr>
-                            <td colspan="6">
-                                <div class="empty-state">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                                    <p>No feedbacks found yet.</p>
-                                </div>
-                            </td>
-                        </tr>
+                        <tr><td colspan="6"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><p>No feedbacks found yet.</p></div></td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
-                <table id="objectifsTable">
+            </div>
+        </div>
+
+        {# ── OBJECTIFS ── #}
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    Objectifs
+                </div>
+                <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ objectifs|length }} total</span>
+            </div>
+            <div class="table-wrapper">
+                <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Wallet ID</th>
-                            <th>Titre</th>
-                            <th>Montant</th>
-                            <th>Date début</th>
-                            <th>Durée (mois)</th>
-                            <th>Statut</th>
-                            <th>Actions</th>
+                            <th>#</th><th>Wallet ID</th><th>Titre</th><th>Montant</th><th>Date début</th><th>Durée (mois)</th><th>Statut</th><th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for obj in objectifs %}
+                    {% for obj in objectifs %}
                         <tr>
                             <td style="color:var(--text-muted);font-weight:700;">{{ obj.id }}</td>
                             <td>{{ obj.walletId }}</td>
                             <td><strong>{{ obj.titre }}</strong></td>
                             <td>{{ obj.montant|number_format(2, ',', ' ') }}</td>
-                            <td>{{ obj.dateDebut ? obj.dateDebut|date('Y-m-d') : '' }}</td>
+                            <td>{{ obj.dateDebut ? obj.dateDebut|date('Y-m-d') : '—' }}</td>
                             <td>{{ obj.duree }}</td>
                             <td>
                                 <span class="badge {{ obj.statut == 'TERMINE' ? 'badge-termine' : 'badge-en-cours' }}">
@@ -831,14 +750,9 @@
                                 </form>
                             </td>
                         </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="8" class="empty-state">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                                <p>Aucun objectif trouvé.</p>
-                            </td>
-                        </tr>
-                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>Aucun objectif trouvé.</p></div></td></tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </div>
