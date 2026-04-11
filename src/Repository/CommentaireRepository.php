@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Commentaire;
+use App\Entity\community\Commentaire;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

@@ -4,10 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Loan\Wallet;
 use App\Entity\user\Utilisateur;
+use App\Entity\Objectif;
 use App\Entity\user\Feedback;
 use App\Repository\UtilisateurRepository;
 use App\Repository\FeedbackRepository;
 use App\Repository\WalletRepository;
+
+use App\Repository\ObjectifRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +24,8 @@ class AdminController extends AbstractController
     public function dashboard(
         Request $request,
         UtilisateurRepository $utilisateurRepository,
-        FeedbackRepository $feedbackRepository
+        FeedbackRepository $feedbackRepository,
+        ObjectifRepository $objectifRepo
     ): Response {
         $q = trim((string) $request->query->get('q', ''));
         $sort = trim((string) $request->query->get('sort', 'name_asc'));
@@ -51,18 +55,6 @@ class AdminController extends AbstractController
                    ->addOrderBy('u.prenom', 'ASC');
                 break;
 
-            case 'status_asc':
-                $qb->orderBy('u.statut', 'ASC')
-                   ->addOrderBy('u.nom', 'ASC')
-                   ->addOrderBy('u.prenom', 'ASC');
-                break;
-
-            case 'status_desc':
-                $qb->orderBy('u.statut', 'DESC')
-                   ->addOrderBy('u.nom', 'ASC')
-                   ->addOrderBy('u.prenom', 'ASC');
-                break;
-
             case 'id_asc':
                 $qb->orderBy('u.id', 'ASC');
                 break;
@@ -81,12 +73,11 @@ class AdminController extends AbstractController
         $users = $qb->getQuery()->getResult();
         $allUsers = $utilisateurRepository->findAll();
         $feedbacks = $feedbackRepository->findAll();
+        $objectifs = $objectifRepo->findAll();
 
         $adminCount = 0;
         $userCount = 0;
         $influencerCount = 0;
-        $activeCount = 0;
-        $inactiveCount = 0;
 
         foreach ($allUsers as $u) {
             if ($u->getRole() === 'ADMIN') {
@@ -96,25 +87,18 @@ class AdminController extends AbstractController
             } else {
                 $userCount++;
             }
-
-            if (strtoupper((string) $u->getStatut()) === 'ACTIF') {
-                $activeCount++;
-            } else {
-                $inactiveCount++;
-            }
         }
-
+        
         return $this->render('admin/dashboard.html.twig', [
             'users' => $users,
             'feedbacks' => $feedbacks,
             'totalUsers' => count($allUsers),
             'filteredUsersCount' => count($users),
             'totalFeedbacks' => count($feedbacks),
+            'objectifs' => $objectifs,
             'adminCount' => $adminCount,
             'userCount' => $userCount,
             'influencerCount' => $influencerCount,
-            'activeCount' => $activeCount,
-            'inactiveCount' => $inactiveCount,
             'search' => $q,
             'sort' => $sort,
         ]);
@@ -155,33 +139,6 @@ class AdminController extends AbstractController
         } else {
             $this->addFlash('danger', 'Invalid role selected.');
         }
-
-        return $this->redirectToRoute('app_admin_dashboard');
-    }
-
-    #[Route('/admin/user/{id}/status', name: 'app_admin_user_status', methods: ['POST'])]
-    public function changeUserStatus(
-        Utilisateur $utilisateur,
-        Request $request,
-        EntityManagerInterface $entityManager
-    ): Response {
-        if (!$this->isCsrfTokenValid('toggle_status_' . $utilisateur->getId(), $request->request->get('_token'))) {
-            $this->addFlash('danger', 'Invalid CSRF token.');
-            return $this->redirectToRoute('app_admin_dashboard');
-        }
-
-        $newStatus = strtoupper(trim((string) $request->request->get('statut')));
-
-        if (!in_array($newStatus, ['ACTIF', 'INACTIF'], true)) {
-            $this->addFlash('danger', 'Invalid status selected.');
-            return $this->redirectToRoute('app_admin_dashboard');
-        }
-
-        $utilisateur->setStatut($newStatus);
-        $utilisateur->setDateModification(new \DateTime());
-        $entityManager->flush();
-
-        $this->addFlash('success', 'User status updated successfully.');
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
@@ -276,12 +233,37 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_wallets');
     }
-    #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
-public function showUser(
-    Utilisateur $utilisateur
+    #[Route('/admin/objectifs', name: 'app_admin_objectifs')]
+public function objectifs(
+    ObjectifRepository $objectifRepository,
+    WalletRepository $walletRepository,
+    Request $request
 ): Response {
-    return $this->render('admin/user_show.html.twig', [
-        'selectedUser' => $utilisateur,
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    $selectedWalletId = $request->query->get('wallet_id');
+
+    // Construire le tableau wallets [id => [pays, devise, solde]]
+    $wallets = [];
+    foreach ($walletRepository->findAll() as $w) {
+        $wallets[$w->getId()] = [
+            'pays'   => $w->getPays(),
+            'devise' => $w->getDevise(),
+            'solde'  => $w->getSolde(),
+        ];
+    }
+
+    // Filtrer les objectifs par wallet si sélectionné
+    if ($selectedWalletId) {
+        $objectifs = $objectifRepository->findBy(['walletId' => (int) $selectedWalletId]);
+    } else {
+        $objectifs = $objectifRepository->findAll();
+    }
+
+    return $this->render('admin/objectifs.html.twig', [
+        'objectifs'        => $objectifs,
+        'wallets'          => $wallets,
+        'selectedWalletId' => $selectedWalletId,
     ]);
 }
 }

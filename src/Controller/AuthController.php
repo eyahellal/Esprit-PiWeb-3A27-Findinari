@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\user\Utilisateur;
-use App\form\RegisterType;
+use App\Form\RegisterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,7 +34,7 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $passwordHasher
     ): Response {
         $user = new Utilisateur();
-        $form = $this->createForm(RegisterType::class, $user);
+        $form = $this->createForm('App\Form\RegisterType', $user);
 
         $form->handleRequest($request);
 

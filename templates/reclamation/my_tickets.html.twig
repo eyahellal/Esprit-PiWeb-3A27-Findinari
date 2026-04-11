@@ -1,0 +1,258 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Tickets - FinDinari{% endblock %}
+
+{% block body %}
+<style>
+    /* Scope styles to the tickets-container to avoid global conflicts */
+    .tickets-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: transparent;
+        padding-top: 100px; /* Avoid content being hidden behind a fixed navbar */
+    }
+
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 20px;
+    }
+    .breadcrumb a {
+        color: #6b7280;
+        text-decoration: none;
+    }
+    .breadcrumb a:hover {
+        color: #22c55e;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+    
+    .tickets-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .ticket-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .ticket-main-content {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        flex: 1;
+    }
+    
+    .ticket-info {
+        flex: 1;
+    }
+    
+    .ticket-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+    
+    .ticket-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+    
+    .status-badge {
+        padding: 5px 14px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .status-open { background-color: #dbeafe; color: #2563eb; }
+    .status-closed { background-color: #f3f4f6; color: #4b5563; }
+    .status-in-progress { background-color: #fef3c7; color: #d97706; }
+
+    .priority-badge {
+        font-size: 0.8rem;
+        padding: 5px 12px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+    .priority-high { color: #ef4444; background: #fef2f2; }
+    .priority-medium { color: #f59e0b; background: #fffbeb; }
+    .priority-low { color: #3b82f6; background: #eff6ff; }
+    
+    .ticket-meta {
+        display: flex;
+        gap: 20px;
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    
+    .ticket-desc {
+        color: #4b5563;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Actions Buttons */
+    .ticket-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 180px;
+        flex-shrink: 0;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+        border: 1.5px solid transparent;
+        height: 42px;
+    }
+
+    .btn-action-primary {
+        background: #22c55e;
+        color: white !important;
+    }
+    .btn-action-primary:hover { background: #16a34a; }
+
+    .btn-action-outline {
+        border-color: #e5e7eb;
+        color: #6b7280 !important;
+    }
+    .btn-action-outline:hover { border-color: #22c55e; color: #22c55e !important; }
+
+    .btn-action-danger {
+        color: #ef4444 !important;
+        background: #fef2f2;
+    }
+    .btn-action-danger:hover { background: #ef4444; color: white !important; }
+
+    .btn-open-ticket {
+        background-color: #22c55e;
+        color: white !important;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
+
+{# Custom Support Header removed to show default navbar #}
+
+<div class="tickets-container">
+    <div class="breadcrumb">
+        <a href="{{ path('app_home') }}">Home</a> &gt; 
+        <a href="{{ path('support_center') }}">Support</a> &gt; 
+        My Tickets
+    </div>
+    
+    <div class="page-header">
+        <h1 class="page-title">My Support Tickets</h1>
+        <a href="{{ path('app_user_createticket') }}" class="btn-open-ticket"><i class="fas fa-plus"></i> New Ticket</a>
+    </div>
+    
+    {% if tickets is empty %}
+        <div class="empty-state">
+            <i class="far fa-folder-open"></i>
+            <h3>No tickets found</h3>
+            <p>You haven't submitted any support requests yet.</p>
+            <a href="{{ path('app_user_createticket') }}" class="btn-open-ticket">Create your first ticket</a>
+        </div>
+    {% else %}
+        <div class="tickets-grid">
+            {% for ticket in tickets %}
+                <div class="ticket-card">
+                    <div class="ticket-main-content">
+                        {% if ticket.imageUrl %}
+                            <a href="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" target="_blank" class="ticket-image-container" title="View attached image">
+                                <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" alt="Ticket Attachment" class="ticket-image" onerror="this.onerror=null; this.src='{{ asset('images/placeholder-image-icon.png') }}';">
+                            </a>
+                        {% endif %}
+                        
+                        <div class="ticket-info">
+                            <div class="ticket-header">
+                                <h3 class="ticket-title">{{ ticket.titre }}</h3>
+                                <span class="status-badge {% if ticket.statut|lower == 'open' %}status-open{% elseif ticket.statut|lower == 'closed' %}status-closed{% else %}status-in-progress{% endif %}">
+                                    {{ ticket.statut }}
+                                </span>
+                                <div class="priority-badge priority-{{ ticket.priorite|lower }}">
+                                    {% if ticket.priorite|lower == 'high' %}
+                                        <i class="fas fa-arrow-up"></i>
+                                    {% elseif ticket.priorite|lower == 'medium' %}
+                                        <i class="fas fa-minus"></i>
+                                    {% else %}
+                                        <i class="fas fa-arrow-down"></i>
+                                    {% endif %}
+                                    {{ ticket.priorite }}
+                                </div>
+                            </div>
+                            
+                            <div class="ticket-meta">
+                                <span><i class="far fa-clock"></i> {{ ticket.dateCreation|date('M d, Y \\a\\t H:i') }}</span>
+                                <span><i class="far fa-folder"></i> {{ ticket.type }}</span>
+                                <span><i class="fas fa-fingerprint"></i> #{{ ticket.id }}</span>
+                            </div>
+                            
+                            <p class="ticket-desc">{{ ticket.description|length > 150 ? ticket.description|slice(0, 150) ~ '...' : ticket.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-actions">
+                        <a href="{{ path('app_user_ticket_details', {id: ticket.id}) }}" class="btn-action btn-action-primary">
+                            <i class="far fa-eye"></i> Details
+                        </a>
+                        
+                        {% if ticket.statut != 'Fermé' %}
+                            <a href="{{ path('app_user_ticket_edit', {id: ticket.id}) }}" class="btn-action btn-action-outline">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        {% endif %}
+                        
+                        <form method="post" action="{{ path('app_user_ticket_delete', {id: ticket.id}) }}" onsubmit="return confirm('Delete this ticket?')" style="width: 100%;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_ticket_' ~ ticket.id) }}">
+                            <button type="submit" class="btn-action btn-action-danger" style="width: 100%;">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

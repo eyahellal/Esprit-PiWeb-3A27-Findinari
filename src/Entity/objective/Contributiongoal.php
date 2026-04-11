@@ -1,12 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\objective;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-
 use App\Repository\ContributiongoalRepository;
 
 #[ORM\Entity(repositoryClass: ContributiongoalRepository::class)]
@@ -18,58 +14,57 @@ class Contributiongoal
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
     #[ORM\ManyToOne(targetEntity: Objectif::class, inversedBy: 'contributiongoals')]
-    #[ORM\JoinColumn(name: 'objectif_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'objectif_id', referencedColumnName: 'id', nullable: false)]
     private ?Objectif $objectif = null;
 
-    public function getObjectif(): ?Objectif
-    {
-        return $this->objectif;
-    }
-
-    public function setObjectif(?Objectif $objectif): self
-    {
-        $this->objectif = $objectif;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'decimal', nullable: false)]
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: false)]
     private ?float $montant = null;
-
-    public function getMontant(): ?float
-    {
-        return $this->montant;
-    }
-
-    public function setMontant(float $montant): self
-    {
-        $this->montant = $montant;
-        return $this;
-    }
 
     #[ORM\Column(type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $date = null;
 
-    public function getDate(): ?\DateTimeInterface
-    {
-        return $this->date;
-    }
+    // ───────────────────────────────────────────
+    public function getId(): ?int { return $this->id; }
 
-    public function setDate(\DateTimeInterface $date): self
+    // ── OBJECTIF ────────────────────────────────
+    public function getObjectif(): ?Objectif { return $this->objectif; }
+
+    public function setObjectif(?Objectif $objectif): self
     {
-        $this->date = $date;
+        if ($objectif === null) {
+            throw new \InvalidArgumentException("L'objectif est obligatoire.");
+        }
+        $this->objectif = $objectif;
         return $this;
     }
 
+    // ── MONTANT ─────────────────────────────────
+    public function getMontant(): ?float { return $this->montant; }
+
+    public function setMontant(float $montant): self
+    {
+        if ($montant <= 0) {
+            throw new \InvalidArgumentException("Le montant doit être positif ");
+        }
+        if ($montant > 99_999_999.99) {
+            throw new \InvalidArgumentException("Le montant ne peut pas dépasser 99 999 999,99.");
+        }
+        if (round($montant, 2) !== $montant) {
+            throw new \InvalidArgumentException("Le montant ne peut avoir que 2 décimales maximum.");
+        }
+        $this->montant = $montant;
+        return $this;
+    }
+
+    // ── DATE ────────────────────────────────────
+    public function getDate(): ?\DateTimeInterface { return $this->date; }
+
+    public function setDate(\DateTimeInterface $date): self
+    {
+        
+       
+        $this->date = $date;
+        return $this;
+    }
 }

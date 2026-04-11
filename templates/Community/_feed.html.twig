@@ -1,0 +1,158 @@
+{% if id == 4 %}
+<div class="community-shell mt-5 pt-4 border-top">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert {{ label == 'success' ? 'alert-success' : 'alert-danger' }} mb-4">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="community-toolbar card border-0 mb-4">
+        <div class="card-body p-4 p-lg-5">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                <div>
+                    <span class="community-badge">Community feed</span>
+                    <h3 class="mt-2 mb-1">Share ideas with the Fin-Dinari community</h3>
+                    <p class="text-muted mb-0">Publiez un statut, recherchez des posts et interagissez avec les derniers échanges.</p>
+                </div>
+            </div>
+
+            <form method="get" action="{{ path('app_service_details', {id: 4}) }}" class="mb-4">
+                <label class="form-label fw-semibold">Rechercher un post</label>
+                <div class="d-flex flex-column flex-lg-row gap-3 align-items-stretch">
+                    <div class="community-search-shell flex-grow-1">
+                        <input type="text" name="q" value="{{ communityQuery|default('') }}" class="form-control shadow-none community-search-input" placeholder="Rechercher par contenu ou utilisateur...">
+                    </div>
+                    <button class="btn btn-primary community-search-btn">Recherche</button>
+                </div>
+            </form>
+
+            <div class="community-composer-head">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="community-avatar">{{ currentUser.nom|default('D')|slice(0,1)|upper }}</div>
+                    <div>
+                        <strong>{{ currentUser.communityHandle }}</strong>
+                        <div class="text-muted small">{{ currentUser.displayName }}</div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm community-upload-btn" disabled>Upload file</button>
+            </div>
+
+            {{ form_start(postForm) }}
+                <div class="community-editor-shell">
+                    {{ form_widget(postForm.contenu) }}
+                </div>
+                {% if postForm.contenu.vars.errors|length > 0 %}
+                    <div class="text-danger small mt-2">{{ form_errors(postForm.contenu) }}</div>
+                {% endif %}
+                <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-primary px-4 community-action-btn">Publier</button>
+                </div>
+            {{ form_end(postForm) }}
+        </div>
+    </div>
+
+    <div class="community-feed d-flex flex-column gap-4">
+        {% for post in posts %}
+            <article class="community-post card border-0">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                        <a href="{{ path('community_show', {id: post.idPost}) }}" class="d-flex gap-3 community-meta-link flex-grow-1">
+                            <div class="community-avatar gradient">{{ post.utilisateur.nom|slice(0,1)|upper }}</div>
+                            <div>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <strong>{{ post.utilisateur.communityHandle }}</strong>
+                                    <span class="text-muted small">{{ post.utilisateur.displayName }}</span>
+                                    <span class="community-dot"></span>
+                                    <span class="text-muted small">{{ post.relativeTime }}</span>
+                                </div>
+                            </div>
+                        </a>
+                        {% if post.isOwnedBy(currentUser) %}
+                            <details class="community-menu">
+                                <summary aria-label="Actions du post">•••</summary>
+                                <div class="community-menu-box">
+                                    <a class="community-menu-link" href="{{ path('community_edit', {id: post.idPost}) }}">Modifier</a>
+                                    <form method="post" action="{{ path('community_delete', {id: post.idPost}) }}" onsubmit="return confirm('Supprimer ce post ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ post.idPost) }}">
+                                        <button class="community-menu-button text-danger" type="submit">Supprimer</button>
+                                    </form>
+                                </div>
+                            </details>
+                        {% endif %}
+                    </div>
+
+                    <a href="{{ path('community_show', {id: post.idPost}) }}" class="community-post-link mt-4">
+                        <div class="community-post-content">{{ post.contenu|nl2br }}</div>
+                    </a>
+
+                    <div class="community-actions d-flex flex-wrap align-items-center gap-2 mt-4">
+                        <form method="post" action="{{ path('community_like', {id: post.idPost}) }}">
+                            <button class="btn {{ post.isLikedBy(currentUser) ? 'btn-primary' : 'btn-outline-primary' }} btn-sm community-action-btn" type="submit">
+                                {{ post.isLikedBy(currentUser) ? 'Dislike' : 'Like' }} ({{ post.nombreLikes }})
+                            </button>
+                        </form>
+                        <a href="{{ path('community_show', {id: post.idPost}) }}" class="btn btn-outline-secondary btn-sm community-action-btn">
+                            Commentaire ({{ post.nombreCommentaires }})
+                        </a>
+                    </div>
+
+                    <div class="community-inline-comment mt-4">
+                        {{ form_start(commentForms[post.idPost]) }}
+                            <div class="community-inline-row">
+                                <div class="community-comment-shell">{{ form_widget(commentForms[post.idPost].contenu) }}</div>
+                                <div class="community-comment-actions">
+                                    <span class="community-caption">Ajoutez un commentaire à ce post.</span>
+                                    <button class="btn btn-primary community-action-btn" type="submit">Envoyer</button>
+                                </div>
+                            </div>
+                            {% if commentForms[post.idPost].contenu.vars.errors|length > 0 %}
+                                <div class="text-danger small mt-2">{{ form_errors(commentForms[post.idPost].contenu) }}</div>
+                            {% endif %}
+                        {{ form_end(commentForms[post.idPost]) }}
+                    </div>
+
+                    <div class="community-comments-preview mt-4">
+                        <div class="small text-muted mb-3">Les 3 derniers commentaires</div>
+                        {% for commentaire in post.recentCommentaires(3) %}
+                            <div class="community-comment-preview d-flex gap-3 mb-3" id="comment-preview-{{ commentaire.idCommentaire }}">
+                                <div class="community-mini-avatar">{{ commentaire.utilisateur.nom|slice(0,1)|upper }}</div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between gap-2 align-items-start">
+                                        <a href="{{ path('community_show', {id: post.idPost}) }}#comment-{{ commentaire.idCommentaire }}" class="text-decoration-none text-reset flex-grow-1">
+                                            <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+                                                <strong class="small">{{ commentaire.utilisateur.communityHandle }}</strong>
+                                                <span class="text-muted small">{{ commentaire.relativeTime }}</span>
+                                            </div>
+                                            <div class="small text-muted">{{ commentaire.contenu|slice(0, 180) }}{% if commentaire.contenu|length > 180 %}...{% endif %}</div>
+                                        </a>
+                                        {% if commentaire.canBeManagedBy(currentUser) %}
+                                            <details class="community-menu">
+                                                <summary aria-label="Actions du commentaire">•••</summary>
+                                                <div class="community-menu-box">
+                                                    <a class="community-menu-link" href="{{ path('community_comment_edit', {id: commentaire.idCommentaire}) }}">Modifier</a>
+                                                    <form method="post" action="{{ path('community_comment_delete', {id: commentaire.idCommentaire}) }}" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_comment_' ~ commentaire.idCommentaire) }}">
+                                                        <button class="community-menu-button text-danger" type="submit">Supprimer</button>
+                                                    </form>
+                                                </div>
+                                            </details>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-muted small">Aucun commentaire pour le moment.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </article>
+        {% else %}
+            <div class="card border-0 community-panel">
+                <div class="card-body community-empty">
+                    Aucun post trouvé. Publiez le premier message de la communauté.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
