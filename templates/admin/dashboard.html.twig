@@ -466,13 +466,13 @@
 <body>
 <div class="layout">
 
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">
-                <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
-            </div>
-            <span class="brand-name">Fin-Dinari</span>
+   <aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">
+            <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
         </div>
+        <span class="brand-name">Fin-Dinari</span>
+    </div>
 
         <div class="nav-section">Main</div>
         <a class="side-link active" href="{{ path('app_admin_dashboard') }}">
@@ -507,6 +507,9 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                     Wallets
                 </a>
+                
+                 <a class="side-link" href="{{ path('app_admin_objectifs') }}">Manage Objectifs</a>
+
                 <div class="welcome-text">Welcome back, <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong></div>
                 <div class="avatar">{{ app.user.prenom|first|upper }}</div>
             </div>
@@ -673,17 +676,13 @@
                         <tr>
                             <td style="color:var(--text-muted);font-weight:700;">{{ user.id }}</td>
                             <td>
-                    <a href="{{ path('app_admin_user_show', {id: user.id}) }}" style="text-decoration:none;color:inherit;">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-light);color:var(--brand-dark);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
-                                {{ user.prenom|first|upper }}
-                            </div>
-                            <span style="font-weight:700;color:var(--brand-dark);">
-                                {{ user.prenom }} {{ user.nom }}
-                            </span>
-                        </div>
-                    </a>
-                </td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-light);color:var(--brand-dark);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
+                                        {{ user.prenom|first|upper }}
+                                    </div>
+                                    <span style="font-weight:600;">{{ user.prenom }} {{ user.nom }}</span>
+                                </div>
+                            </td>
                             <td style="color:var(--text-secondary);">{{ user.gmail }}</td>
 
                             <td>
@@ -713,24 +712,6 @@
                                     </button>
                                 </form>
                             </td>
-
-                            <td>
-                                <form method="post" action="{{ path('app_admin_user_status', {id: user.id}) }}" class="status-form">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_status_' ~ user.id) }}">
-                                    <input type="hidden" name="statut" value="{% if user.statut == 'ACTIF' %}INACTIF{% else %}ACTIF{% endif %}">
-
-                                    {% if user.statut == 'ACTIF' %}
-                                        <button class="btn btn-warning btn-sm" type="submit" onclick="return confirm('Deactivate this account?');">
-                                            Deactivate
-                                        </button>
-                                    {% else %}
-                                        <button class="btn btn-success btn-sm" type="submit" onclick="return confirm('Activate this account?');">
-                                            Activate
-                                        </button>
-                                    {% endif %}
-                                </form>
-                            </td>
-
                             <td>
                                 <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
@@ -813,6 +794,51 @@
                             </td>
                         </tr>
                     {% endfor %}
+                    </tbody>
+                </table>
+                <table id="objectifsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Wallet ID</th>
+                            <th>Titre</th>
+                            <th>Montant</th>
+                            <th>Date début</th>
+                            <th>Durée (mois)</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for obj in objectifs %}
+                        <tr>
+                            <td style="color:var(--text-muted);font-weight:700;">{{ obj.id }}</td>
+                            <td>{{ obj.walletId }}</td>
+                            <td><strong>{{ obj.titre }}</strong></td>
+                            <td>{{ obj.montant|number_format(2, ',', ' ') }}</td>
+                            <td>{{ obj.dateDebut ? obj.dateDebut|date('Y-m-d') : '' }}</td>
+                            <td>{{ obj.duree }}</td>
+                            <td>
+                                <span class="badge {{ obj.statut == 'TERMINE' ? 'badge-termine' : 'badge-en-cours' }}">
+                                    {{ obj.statut == 'TERMINE' ? 'Terminé' : 'En cours' }}
+                                </span>
+                            </td>
+                            <td class="action-icons">
+                                <a href="{{ path('objectif_edit', {id: obj.id}) }}" title="Modifier">✏️</a>
+                                <form method="post" action="{{ path('objectif_delete', {id: obj.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer cet objectif ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete'~obj.id) }}">
+                                    <button type="submit" title="Supprimer">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                                <p>Aucun objectif trouvé.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
