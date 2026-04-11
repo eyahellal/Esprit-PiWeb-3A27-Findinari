@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
-use App\form\MessageType;
+use App\Form\MessageType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
