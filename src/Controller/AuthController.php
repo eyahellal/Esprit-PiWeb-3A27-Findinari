@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\user\Utilisateur;
-use App\form\RegisterType;
+use App\Form\RegisterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
