@@ -31,7 +31,7 @@ class AdminController extends AbstractController
         FeedbackRepository $feedbackRepository,
         ObjectifRepository $objectifRepository
     ): Response {
-        $q = trim((string) $request->query->get('q', ''));
+        $q    = trim((string) $request->query->get('q', ''));
         $sort = trim((string) $request->query->get('sort', 'name_asc'));
 
         $qb = $utilisateurRepository->createQueryBuilder('u');
@@ -102,7 +102,7 @@ class AdminController extends AbstractController
             'inactiveUsersCount' => $inactiveUsersCount,
             'search'             => $q,
             'sort'               => $sort,
-            'objectifs'          => $objectifRepository->findAll(), // ← ajouté
+            'objectifs'          => $objectifRepository->findAll(),
         ]);
     }
 
@@ -416,8 +416,12 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $selectedWalletId = $request->query->get('wallet_id');
+        // ── Filtres ──────────────────────────────────────────
+        $filterWalletId = $request->query->get('wallet_id');
+        $filterStatut   = $request->query->get('statut');
+        $searchObjectif = trim((string) $request->query->get('q', ''));
 
+        // ── Wallets pour le select ────────────────────────────
         $wallets = [];
         foreach ($walletRepository->findAll() as $w) {
             $wallets[$w->getId()] = [
@@ -427,16 +431,33 @@ class AdminController extends AbstractController
             ];
         }
 
-        if ($selectedWalletId) {
-            $objectifs = $objectifRepository->findBy(['walletId' => (int) $selectedWalletId]);
-        } else {
-            $objectifs = $objectifRepository->findAll();
+        // ── QueryBuilder avec filtres ─────────────────────────
+        $qb = $objectifRepository->createQueryBuilder('o');
+
+        if ($filterWalletId) {
+            $qb->andWhere('o.walletId = :walletId')
+               ->setParameter('walletId', (int) $filterWalletId);
         }
+
+        if ($filterStatut) {
+            $qb->andWhere('o.statut = :statut')
+               ->setParameter('statut', $filterStatut);
+        }
+
+        if ($searchObjectif !== '') {
+            $qb->andWhere('o.titre LIKE :q')
+               ->setParameter('q', '%'.$searchObjectif.'%');
+        }
+
+        $objectifs = $qb->orderBy('o.id', 'DESC')->getQuery()->getResult();
 
         return $this->render('admin/objectifs.html.twig', [
             'objectifs'        => $objectifs,
             'wallets'          => $wallets,
-            'selectedWalletId' => $selectedWalletId,
+            'selectedWalletId' => $filterWalletId,
+            'filterWalletId'   => $filterWalletId,
+            'filterStatut'     => $filterStatut,
+            'searchObjectif'   => $searchObjectif,
         ]);
     }
 
