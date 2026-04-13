@@ -1,8 +1,6 @@
 <?php
 namespace App\Form;
 
-
-use App\Entity\objective\Contributiongoal;
 use App\Entity\objective\Objectif;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -27,8 +25,9 @@ class ObjectifType extends AbstractType
                 'attr'  => ['placeholder' => 'Ex: 5000'],
             ])
             ->add('dateDebut', DateType::class, [
-                'label'  => 'Date de début',
-                'widget' => 'single_text',
+                'label'    => 'Date de début',
+                'widget'   => 'single_text',
+                'required' => false,
             ])
             ->add('duree', IntegerType::class, [
                 'label' => 'Durée (mois)',
@@ -41,7 +40,6 @@ class ObjectifType extends AbstractType
                     'Terminé'  => 'TERMINE',
                 ],
             ]);
-        // wallet_id est set automatiquement dans le controller via la session
     }
 
     public function configureOptions(OptionsResolver $resolver): void

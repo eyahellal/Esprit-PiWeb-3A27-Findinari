@@ -712,15 +712,37 @@
             </div>
         </div>
 
-        {# ── OBJECTIFS ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                     Objectifs
                 </div>
-                <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ objectifs|length }} total</span>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ objectifs|length }} total</span>
+                    <a href="{{ path('app_admin_objectifs') }}" class="btn btn-primary btn-sm">
+                        Gérer les objectifs →
+                    </a>
+                </div>
             </div>
+
+            {# ── FILTRE RAPIDE SUR LE DASHBOARD ── #}
+            <div class="section-body" style="padding-bottom:0; border-bottom:1px solid var(--border);">
+                <form method="get" action="{{ path('app_admin_dashboard') }}" class="filters-bar">
+                    <div class="form-group fixed-width">
+                        <label>Statut objectif</label>
+                        <select name="obj_statut" onchange="this.form.submit()">
+                            <option value="">Tous les statuts</option>
+                            <option value="EN_COURS" {{ app.request.query.get('obj_statut') == 'EN_COURS' ? 'selected' : '' }}>En cours</option>
+                            <option value="TERMINE"  {{ app.request.query.get('obj_statut') == 'TERMINE'  ? 'selected' : '' }}>Terminé</option>
+                        </select>
+                    </div>
+                    {# Conserver les autres filtres users actifs #}
+                    {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+                    {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                </form>
+            </div>
+
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -729,13 +751,15 @@
                         </tr>
                     </thead>
                     <tbody>
+                    {% set objStatutFilter = app.request.query.get('obj_statut') %}
                     {% for obj in objectifs %}
+                        {% if not objStatutFilter or obj.statut == objStatutFilter %}
                         <tr>
                             <td style="color:var(--text-muted);font-weight:700;">{{ obj.id }}</td>
                             <td>{{ obj.walletId }}</td>
                             <td><strong>{{ obj.titre }}</strong></td>
                             <td>{{ obj.montant|number_format(2, ',', ' ') }}</td>
-                            <td>{{ obj.dateDebut ? obj.dateDebut|date('Y-m-d') : '—' }}</td>
+                            <td>{{ obj.dateDebut ? obj.dateDebut|date('d/m/Y') : '—' }}</td>
                             <td>{{ obj.duree }}</td>
                             <td>
                                 <span class="badge {{ obj.statut == 'TERMINE' ? 'badge-termine' : 'badge-en-cours' }}">
@@ -750,6 +774,7 @@
                                 </form>
                             </td>
                         </tr>
+                        {% endif %}
                     {% else %}
                         <tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>Aucun objectif trouvé.</p></div></td></tr>
                     {% endfor %}
