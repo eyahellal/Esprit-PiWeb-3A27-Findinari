@@ -9,7 +9,7 @@ use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
 use App\Entity\user\Feedback;
 use App\Entity\user\Utilisateur;
-use App\form\MessageType;
+use App\Form\MessageType;
 use App\Repository\FeedbackRepository;
 use App\Repository\ObjectifRepository;
 use App\Repository\TicketRepository;

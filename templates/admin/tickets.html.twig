@@ -540,7 +540,6 @@
                 <table id="ticketsTable">
                     <thead>
                         <tr>
-                            <th>#</th>
                             <th>User</th>
                             <th>Image</th>
                             <th>Title</th>
@@ -552,7 +551,6 @@
                     <tbody>
                     {% for ticket in tickets %}
                         <tr>
-                            <td style="color:var(--text-muted);font-weight:700;">{{ ticket.id }}</td>
                             <td>
                                 {% if ticket.utilisateur %}
                                     <div class="user-chip">

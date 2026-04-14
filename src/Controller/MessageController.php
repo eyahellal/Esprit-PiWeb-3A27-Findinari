@@ -41,7 +41,7 @@ class MessageController extends AbstractController
             $entityManager->persist($message);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Message sent successfully.');
+          
         }
 
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
@@ -124,7 +124,6 @@ class MessageController extends AbstractController
             $entityManager->persist($message);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Message sent successfully.');
         }
 
         return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
