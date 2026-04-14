@@ -179,8 +179,8 @@ class Ticket
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'ticket')]
-    private Collection $messages;
+#[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'ticket', cascade: ['remove'])]  
+  private Collection $messages;
 
     public function __construct()
     {
