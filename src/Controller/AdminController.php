@@ -324,12 +324,16 @@ class AdminController extends AbstractController
 
     #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
-        Ticket $ticket,
+        int $id,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
+        $ticket = $entityManager->getRepository(Ticket::class)->find($id);
+        if (!$ticket) {
+            $this->addFlash('warning', 'This ticket no longer exists.');
+            return $this->redirectToRoute('app_admin_tickets');
+        }
         if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
             $newStatut   = $request->request->get('statut');
             $newPriorite = $request->request->get('priorite');
