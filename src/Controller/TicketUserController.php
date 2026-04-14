@@ -97,7 +97,7 @@ class TicketUserController extends AbstractController
         }
 
         $message = new Message();
-        $form = $this->createForm(\App\form\MessageType::class, $message);
+        $form = $this->createForm(\App\Form\MessageType::class, $message);
 
         $messages = $ticket->getMessages();
 
