@@ -35,12 +35,9 @@ class AdminController extends AbstractController
         PaginatorInterface $paginator
     ): Response {
         $q = trim((string) $request->query->get('q', ''));
-        $sort = trim((string) $request->query->get('sort', 'name_asc'));
+        $userSort = trim((string) $request->query->get('user_sort', 'name_asc'));
         $objStatut = trim((string) $request->query->get('obj_statut', ''));
 
-        /*
-         * USERS
-         */
         $qb = $utilisateurRepository->createQueryBuilder('u');
 
         if ($q !== '') {
@@ -48,7 +45,7 @@ class AdminController extends AbstractController
                ->setParameter('q', '%' . $q . '%');
         }
 
-        switch ($sort) {
+        switch ($userSort) {
             case 'name_desc':
                 $qb->orderBy('u.nom', 'DESC')->addOrderBy('u.prenom', 'DESC');
                 break;
@@ -81,9 +78,6 @@ class AdminController extends AbstractController
             ['pageParameterName' => 'users_page']
         );
 
-        /*
-         * FEEDBACKS
-         */
         $feedbackQb = $feedbackRepository->createQueryBuilder('f')
             ->orderBy('f.createdAt', 'DESC');
 
@@ -94,9 +88,6 @@ class AdminController extends AbstractController
             ['pageParameterName' => 'feedbacks_page']
         );
 
-        /*
-         * OBJECTIFS
-         */
         $objectifsQb = $objectifRepository->createQueryBuilder('o')
             ->orderBy('o.id', 'DESC');
 
@@ -112,9 +103,6 @@ class AdminController extends AbstractController
             ['pageParameterName' => 'objectifs_page']
         );
 
-        /*
-         * COUNTS
-         */
         $allUsers = $utilisateurRepository->findAll();
 
         $adminCount = 0;
@@ -132,7 +120,7 @@ class AdminController extends AbstractController
                 ++$userCount;
             }
 
-            if (\in_array($u->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
+            if (in_array($u->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
                 ++$activeUsersCount;
             } else {
                 ++$inactiveUsersCount;
@@ -152,7 +140,7 @@ class AdminController extends AbstractController
             'activeUsersCount' => $activeUsersCount,
             'inactiveUsersCount' => $inactiveUsersCount,
             'search' => $q,
-            'sort' => $sort,
+            'userSort' => $userSort,
             'objStatut' => $objStatut,
         ]);
     }
@@ -182,7 +170,7 @@ class AdminController extends AbstractController
     ): Response {
         $newRole = strtoupper(trim((string) $request->request->get('role')));
 
-        if (\in_array($newRole, ['USER', 'ADMIN', 'INFLUENCER'], true)) {
+        if (in_array($newRole, ['USER', 'ADMIN', 'INFLUENCER'], true)) {
             $utilisateur->setRole($newRole);
             $utilisateur->setDateModification(new \DateTime());
             $entityManager->flush();
@@ -202,7 +190,7 @@ class AdminController extends AbstractController
     ): Response {
         $newStatus = strtoupper(trim((string) $request->request->get('statut')));
 
-        if (\in_array($newStatus, ['ACTIF', 'ACTIVE', 'INACTIF', 'INACTIVE', 'BANNED'], true)) {
+        if (in_array($newStatus, ['ACTIF', 'ACTIVE', 'INACTIF', 'INACTIVE', 'BANNED'], true)) {
             $utilisateur->setStatut($newStatus);
             $utilisateur->setDateModification(new \DateTime());
             $entityManager->flush();
@@ -283,7 +271,7 @@ class AdminController extends AbstractController
 
         $activeUsersCount = 0;
         foreach ($users as $user) {
-            if (\in_array($user->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
+            if (in_array($user->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
                 ++$activeUsersCount;
             }
         }
@@ -392,7 +380,7 @@ class AdminController extends AbstractController
                 $ticket->setPriorite($newPriorite);
             }
 
-            if (\in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
+            if (in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
                 $ticket->setDateFermeture(new \DateTime());
             }
 
