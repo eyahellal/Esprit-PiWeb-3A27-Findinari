@@ -471,6 +471,13 @@
 			color: var(--warning);
 		}
 
+		.bg-success { background: var(--success) !important; color: #fff !important; }
+		.bg-danger { background: var(--danger) !important; color: #fff !important; }
+		.bg-warning { background: var(--warning) !important; color: #fff !important; }
+		.bg-info { background: var(--info) !important; color: #fff !important; }
+		.bg-secondary { background: var(--text-muted) !important; color: #fff !important; }
+		.bg-dark { background: var(--text-primary) !important; color: #fff !important; }
+
 		.currency-badge {
 			display: inline-flex;
 			align-items: center;
@@ -579,43 +586,20 @@
 			flex-shrink: 0;
 		}
 
-		.bg-success { background: var(--success); color: #fff; }
-		.bg-danger { background: var(--danger); color: #fff; }
-		.bg-warning { background: var(--warning); color: #212529; }
-		.bg-info { background: var(--info); color: #fff; }
-		.bg-secondary { background: var(--text-muted); color: #fff; }
-		.bg-dark { background: var(--text-primary); color: #fff; }
-		.bg-light { background: var(--bg); color: var(--text-secondary); }
-        .sla-text {
-	font-weight: 700;
-	font-size: 13px;
-	letter-spacing: 0.2px;
-	transition: color 0.25s ease;
-}
-
-.sla-none {
-	color: var(--text-muted);
-}
-
-.sla-closed {
-	color: var(--success);
-}
-
-.sla-safe {
-	color: var(--success);
-}
-
-.sla-warning {
-	color: #a16207;
-}
-
-.sla-alert {
-	color: #ea580c;
-}
-
-.sla-breached {
-	color: var(--danger);
-}
+		::-webkit-scrollbar {
+			width: 6px;
+			height: 6px;
+		}
+		::-webkit-scrollbar-track {
+			background: transparent;
+		}
+		::-webkit-scrollbar-thumb {
+			background: var(--border);
+			border-radius: 99px;
+		}
+		::-webkit-scrollbar-thumb:hover {
+			background: var(--text-muted);
+		}
 	</style>
 </head>
 <body>
@@ -789,26 +773,19 @@
 										</div>
 									</td>
 									<td>
-	{% if ticket.deadline %}
-		{% set isClosed = ticket.statut in ['Fermé', 'Closed', 'CLOSED'] %}
+										{% if ticket.deadline %}
+											{% set isClosed = ticket.statut in ['Fermé', 'Closed', 'CLOSED'] %}
 
-		{% if isClosed %}
-			<span class="sla-text sla-closed">
-				Closed
-			</span>
-		{% else %}
-			<span
-				class="sla-timer sla-text"
-				data-deadline="{{ ticket.deadline|date('c') }}"
-				data-ticket-id="{{ ticket.id }}"
-			>
-				Loading...
-			</span>
-		{% endif %}
-	{% else %}
-		<span class="sla-text sla-none">No SLA</span>
-	{% endif %}
-</td>
+											{% if isClosed %}
+												<span class="badge bg-success">Closed</span>
+											{% else %}
+												<span class="sla-timer badge" data-deadline="{{ ticket.deadline|date('c') }}" data-ticket-id="{{ ticket.id }}">
+													Loading...
+												</span>
+											{% endif %}
+										{% else %}
+											<span class="badge bg-light text-dark">No SLA</span>
+										{% endif %}
 									</td>
 									<td>
 										<div style="display: flex; gap: 8px;">
@@ -851,7 +828,7 @@
 	</div>
 
 	<script>
-function filterTable(query) {
+		function filterTable(query) {
 const rows = document.querySelectorAll('#ticketsTable tbody tr');
 const q = query.toLowerCase().trim();
 rows.forEach(row => {
@@ -860,7 +837,7 @@ row.style.display = (! q || text.includes(q)) ? '' : 'none';
 });
 }
 	</script>
-   <script>
+    <script>
 document.addEventListener('DOMContentLoaded', function () {
     const timers = document.querySelectorAll('.sla-timer');
 
@@ -868,19 +845,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const deadlineString = element.dataset.deadline;
         const deadline = new Date(deadlineString);
         const now = new Date();
-        const diff = deadline - now;
 
-        element.classList.remove('sla-safe', 'sla-warning', 'sla-alert', 'sla-breached');
+        const diff = deadline - now;
 
         if (isNaN(deadline.getTime())) {
             element.textContent = 'Invalid SLA';
-            element.classList.add('sla-breached');
+            element.className = 'sla-timer badge bg-dark';
             return;
         }
 
         if (diff <= 0) {
             element.textContent = 'Breached';
-            element.classList.add('sla-breached');
+            element.className = 'sla-timer badge bg-danger';
             return;
         }
 
@@ -901,12 +877,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         element.textContent = text;
 
-        if (diff < 4 * 3600 * 1000) {
-            element.classList.add('sla-alert');
-        } else if (diff < 24 * 3600 * 1000) {
-            element.classList.add('sla-warning');
+        if (diff <= 3600 * 1000) {
+            // Less than 1 hour remains - URGENT (Red)
+            element.className = 'sla-timer badge bg-danger';
+        } else if (diff <= 4 * 3600 * 1000) {
+            // Less than 4 hours - Warning (Yellow)
+            element.className = 'sla-timer badge bg-warning text-dark';
+        } else if (diff <= 24 * 3600 * 1000) {
+            // Less than 24 hours - Info (Blue)
+            element.className = 'sla-timer badge bg-info';
         } else {
-            element.classList.add('sla-safe');
+            // More than 24 hours - OK (Green)
+            element.className = 'sla-timer badge bg-success';
         }
     }
 

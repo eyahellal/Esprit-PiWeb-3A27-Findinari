@@ -4,12 +4,15 @@ namespace App\Controller;
 
 use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
+use App\Entity\user\Utilisateur;
 use App\Form\MessageType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+
 
 class MessageController extends AbstractController
 {
@@ -17,7 +20,8 @@ class MessageController extends AbstractController
     public function userNewMessage(
         Ticket $ticket,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
     ): Response {
         $user = $this->getUser();
         if (!$user) {
@@ -38,10 +42,30 @@ class MessageController extends AbstractController
             $message->setTypeSender('USER');
             $message->setUtilisateur($user);
 
+            $attachmentFile = $form->get('attachment')->getData();
+
+            if ($attachmentFile) {
+                $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $extension = $attachmentFile->guessExtension() ?: 'bin';
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
+
+                try {
+                    $attachmentFile->move(
+                        $this->getParameter('messages_directory'),
+                        $newFilename
+                    );
+                    $message->setUrlPieceJointe($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Attachment upload failed.');
+                    return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
+                }
+            }
+
             $entityManager->persist($message);
             $entityManager->flush();
 
-          
+            $this->addFlash('success', 'Message sent successfully.');
         }
 
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
@@ -103,31 +127,58 @@ class MessageController extends AbstractController
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
     }
 
-    #[Route('/admin/message/new/{id}', name: 'app_admin_message_new', methods: ['POST'])]
-    public function adminNewMessage(
-        Ticket $ticket,
-        Request $request,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+    #[Route('/admin/ticket/{id}/message/new', name: 'app_admin_message_new', methods: ['POST'])]
+public function newMessage(
+    Ticket $ticket,
+    Request $request,
+    EntityManagerInterface $entityManager,
+    SluggerInterface $slugger
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $message = new Message();
-        $form = $this->createForm(MessageType::class, $message);
-        $form->handleRequest($request);
+    $message = new Message();
+    $form = $this->createForm(MessageType::class, $message);
+    $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $message->setTicket($ticket);
-            $message->setDate(new \DateTime());
-            $message->setTypeSender('ADMIN');
-            $message->setUtilisateur($this->getUser());
+    if ($form->isSubmitted() && $form->isValid()) {
+        $message->setTicket($ticket);
+        $message->setDate(new \DateTime());
+        $message->setTypeSender('ADMIN');
 
-            $entityManager->persist($message);
-            $entityManager->flush();
-
+        $user = $this->getUser();
+        if ($user instanceof Utilisateur) {
+            $message->setUtilisateur($user);
         }
 
-        return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+        $attachmentFile = $form->get('attachment')->getData();
+
+        if ($attachmentFile) {
+            $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeFilename = $slugger->slug($originalFilename);
+            $extension = $attachmentFile->guessExtension() ?: 'bin';
+            $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
+
+            try {
+                $attachmentFile->move(
+                    $this->getParameter('messages_directory'),
+                    $newFilename
+                );
+                $message->setUrlPieceJointe($newFilename);
+            } catch (FileException $e) {
+                $this->addFlash('danger', 'Attachment upload failed.');
+                return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+            }
+        }
+
+        $entityManager->persist($message);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Message sent successfully.');
     }
+
+    return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+}
+    
 
     #[Route('/admin/message/{id}/delete', name: 'app_admin_message_delete', methods: ['POST'])]
     public function adminDeleteMessage(

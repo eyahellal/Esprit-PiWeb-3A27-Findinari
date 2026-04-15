@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\reclamation\Ticket;
 use App\Entity\reclamation\Message;
 use App\Form\TicketType;
+use App\Form\MessageType;
 use App\Service\TicketSlaCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -94,30 +95,68 @@ public function createTicket(
         ]);
     }
 
-    #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET'])]
+   
+    #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
         Ticket $ticket,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
     ): Response {
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
 
-        // Security check: ensure the ticket belongs to the connected user
         if ($ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException('You do not have access to this ticket.');
         }
 
         $message = new Message();
-        $form = $this->createForm(\App\Form\MessageType::class, $message);
+        $form = $this->createForm(MessageType::class, $message);
+        $form->handleRequest($request);
 
-        $messages = $ticket->getMessages();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message->setTicket($ticket);
+            $message->setUtilisateur($user);
+            $message->setDate(new \DateTime());
+            $message->setTypeSender('User');
+
+            $attachmentFile = $form->get('attachment')->getData();
+
+            if ($attachmentFile) {
+                $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $attachmentFile->guessExtension();
+
+                try {
+                    $attachmentFile->move(
+                        $this->getParameter('messages_directory'),
+                        $newFilename
+                    );
+
+                    $message->setUrlPieceJointe($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Attachment upload failed.');
+                    return $this->redirectToRoute('app_user_ticket_details', [
+                        'id' => $ticket->getId(),
+                    ]);
+                }
+            }
+
+            $entityManager->persist($message);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Message sent successfully.');
+
+            return $this->redirectToRoute('app_user_ticket_details', [
+                'id' => $ticket->getId(),
+            ]);
+        }
 
         return $this->render('reclamation/my_ticket_details.html.twig', [
             'ticket' => $ticket,
-            'messages' => $messages,
+            'messages' => $ticket->getMessages(),
             'form' => $form->createView(),
         ]);
     }
