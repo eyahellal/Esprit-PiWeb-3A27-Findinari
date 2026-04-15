@@ -396,6 +396,37 @@
             transition: background var(--transition);
         }
         .action-icons a:hover, .action-icons button:hover { background: var(--brand-light); }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination span,
+        .pagination a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+
+        .pagination .current {
+            background: var(--brand);
+            color: #fff;
+            border-color: var(--brand);
+        }
     </style>
 </head>
 <body>
@@ -472,7 +503,6 @@
             </div>
         {% endfor %}
 
-        {# ── STAT CARDS ── #}
         <div class="cards">
             <div class="card c-purple">
                 <div class="card-icon">
@@ -525,7 +555,6 @@
             </a>
         </div>
 
-        {# ── CREATE ADMIN ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
@@ -564,7 +593,6 @@
             </div>
         </div>
 
-        {# ── ALL USERS ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
@@ -572,7 +600,7 @@
                     All Users
                 </div>
                 <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
-                    {{ filteredUsersCount|default(users|length) }} shown / {{ totalUsers }} total
+                    {{ users.getTotalItemCount }} shown / {{ totalUsers }} total
                 </span>
             </div>
 
@@ -661,9 +689,12 @@
                     </tbody>
                 </table>
             </div>
+
+            <div style="padding: 18px 26px;">
+                {{ knp_pagination_render(users) }}
+            </div>
         </div>
 
-        {# ── FEEDBACKS ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
@@ -710,6 +741,10 @@
                     </tbody>
                 </table>
             </div>
+
+            <div style="padding: 18px 26px;">
+                {{ knp_pagination_render(feedbacks) }}
+            </div>
         </div>
 
         <div class="section">
@@ -719,14 +754,13 @@
                     Objectifs
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;">
-                    <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ objectifs|length }} total</span>
+                    <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ objectifs.getTotalItemCount }} total</span>
                     <a href="{{ path('app_admin_objectifs') }}" class="btn btn-primary btn-sm">
                         Gérer les objectifs →
                     </a>
                 </div>
             </div>
 
-            {# ── FILTRE RAPIDE SUR LE DASHBOARD ── #}
             <div class="section-body" style="padding-bottom:0; border-bottom:1px solid var(--border);">
                 <form method="get" action="{{ path('app_admin_dashboard') }}" class="filters-bar">
                     <div class="form-group fixed-width">
@@ -734,10 +768,9 @@
                         <select name="obj_statut" onchange="this.form.submit()">
                             <option value="">Tous les statuts</option>
                             <option value="EN_COURS" {{ app.request.query.get('obj_statut') == 'EN_COURS' ? 'selected' : '' }}>En cours</option>
-                            <option value="TERMINE"  {{ app.request.query.get('obj_statut') == 'TERMINE'  ? 'selected' : '' }}>Terminé</option>
+                            <option value="TERMINE"  {{ app.request.query.get('obj_statut') == 'TERMINE' ? 'selected' : '' }}>Terminé</option>
                         </select>
                     </div>
-                    {# Conserver les autres filtres users actifs #}
                     {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
                     {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
                 </form>
@@ -751,9 +784,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                    {% set objStatutFilter = app.request.query.get('obj_statut') %}
                     {% for obj in objectifs %}
-                        {% if not objStatutFilter or obj.statut == objStatutFilter %}
                         <tr>
                             <td style="color:var(--text-muted);font-weight:700;">{{ obj.id }}</td>
                             <td>{{ obj.walletId }}</td>
@@ -769,17 +800,20 @@
                             <td class="action-icons">
                                 <a href="{{ path('objectif_edit', {id: obj.id}) }}" title="Modifier">✏️</a>
                                 <form method="post" action="{{ path('objectif_delete', {id: obj.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer cet objectif ?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete'~obj.id) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ obj.id) }}">
                                     <button type="submit" title="Supprimer">🗑️</button>
                                 </form>
                             </td>
                         </tr>
-                        {% endif %}
                     {% else %}
                         <tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><p>Aucun objectif trouvé.</p></div></td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <div style="padding: 18px 26px;">
+                {{ knp_pagination_render(objectifs) }}
             </div>
         </div>
 
