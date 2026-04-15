@@ -86,11 +86,112 @@
     .msg-wrapper.user .msg-bubble { background: #22c55e; color: white; border-bottom-right-radius: 0; }
     .msg-wrapper.admin .msg-bubble { background: #ffffff; color: #1f2937; border: 1px solid #e5e7eb; border-bottom-left-radius: 0; }
 
-    .chat-form { padding: 20px 24px; border-top: 1px solid #e5e7eb; background: #ffffff; display: flex; gap: 12px; align-items: flex-end; }
-    .chat-form textarea { flex: 1; height: 48px; padding: 13px 16px; border-radius: 12px; border: 1.5px solid #e5e7eb; font-family: inherit; font-size: 14px; resize: vertical; outline: none; }
-    .chat-form textarea:focus { border-color: #22c55e; }
-    .chat-form button { background-color: #22c55e; color: white; border: none; height: 48px; padding: 0 24px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
     .chat-form button:hover { background-color: #16a34a; }
+
+    /* Redesigned Reply Form */
+    .reply-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 24px;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .reply-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 20px;
+    }
+
+    .modern-textarea-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .modern-textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 16px 20px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 16px;
+        font-family: inherit;
+        font-size: 14.5px;
+        outline: none;
+        transition: all 0.2s;
+        background: #ffffff;
+        resize: vertical;
+    }
+
+    .modern-textarea:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.08);
+    }
+
+    .reply-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .attach-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: none;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .attach-btn:hover {
+        color: #22c55e;
+        background: #f0fdf4;
+    }
+
+    .attach-btn i {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .send-reply-btn {
+        background: #22c55e;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 15px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .send-reply-btn:hover {
+        background: #16a34a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+    }
+
+    .file-preview {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #22c55e;
+        font-weight: 700;
+        display: none;
+    }
 </style>
 
 {# Custom Support Header removed to show default navbar #}
@@ -193,7 +294,16 @@
                         
                         <div style="display: flex; gap: 8px; align-items: center; {{ isUser ? 'flex-direction: row-reverse;' : '' }}">
                             <div class="msg-bubble" id="msg-content-{{ message.id }}">
-                                {{ message.contenu|nl2br }}
+                                <div>{{ message.contenu|nl2br }}</div>
+                                
+                                {% if message.urlPieceJointe %}
+                                    <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(0,0,0,0.05);">
+                                        <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; color:inherit; font-weight:700; text-decoration:none; opacity:.85; font-size:12px;">
+                                            <i class="fas fa-paperclip"></i>
+                                            Attachment
+                                        </a>
+                                    </div>
+                                {% endif %}
                             </div>
 
                             {% if isUser %}
@@ -236,15 +346,47 @@
                 {% endfor %}
             </div>
 
-            {{ form_start(form, {'action': path('app_user_message_new', {id: ticket.id}), 'attr': {'class': 'chat-form', 'novalidate': 'novalidate'}}) }}
-                <div style="flex: 1; display: flex; flex-direction: column;">
-                    {{ form_widget(form.contenu) }}
-                    <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
-                </div>
-                <button type="submit">
-                    <i class="fas fa-paper-plane"></i> Send
-                </button>
-            {{ form_end(form) }}
+            <div class="reply-card">
+                <div class="reply-title">Add a reply</div>
+                
+                {{ form_start(form, {
+                    'action': path('app_user_message_new', {id: ticket.id}),
+                    'attr': {
+                        'novalidate': 'novalidate',
+                        'id': 'replyForm'
+                    },
+                    'multipart': true
+                }) }}
+                    <div class="modern-textarea-wrapper">
+                        {{ form_widget(form.contenu, {
+                            'attr': {
+                                'class': 'modern-textarea',
+                                'placeholder': 'Type your message here...'
+                            }
+                        }) }}
+                        <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
+                    </div>
+
+                    <div class="reply-actions">
+                        <label class="attach-btn" for="{{ form.attachment.vars.id }}" title="Attach a file">
+                            <i class="fas fa-paperclip"></i>
+                            <span>Attach file</span>
+                        </label>
+                        
+                        <div style="display:none !important;">
+                            {{ form_widget(form.attachment) }}
+                        </div>
+
+                        <button type="submit" class="send-reply-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Send Reply
+                        </button>
+                    </div>
+                    
+                    <div id="fileNameDisplay" class="file-preview"></div>
+                    <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.attachment) }}</div>
+                {{ form_end(form) }}
+            </div>
         </div>
 
     </div>
@@ -285,6 +427,21 @@
     function cancelEdit(id) {
         document.getElementById('msg-content-' + id).style.visibility = 'visible';
         document.getElementById('edit-form-' + id).style.display = 'none';
+    }
+
+    // Handle file selection display
+    const fileInputElement = document.getElementById('{{ form.attachment.vars.id }}');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    
+    if (fileInputElement) {
+        fileInputElement.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
+                fileNameDisplay.style.display = 'block';
+            } else {
+                fileNameDisplay.style.display = 'none';
+            }
+        });
     }
 </script>
 {% endblock %}
