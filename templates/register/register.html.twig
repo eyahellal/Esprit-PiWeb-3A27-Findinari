@@ -18,30 +18,32 @@
                         <div class="alert alert-danger">{{ message }}</div>
                     {% endfor %}
 
-                    {{ form_start(registrationForm) }}
+                    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+                    {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
 
                         <div class="mb-3">
                             {{ form_label(registrationForm.nom) }}
                             {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.nom) }}
                         </div>
 
                         <div class="mb-3">
                             {{ form_label(registrationForm.prenom) }}
                             {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.prenom) }}
                         </div>
 
                         <div class="mb-3">
                             {{ form_label(registrationForm.gmail) }}
                             {{ form_widget(registrationForm.gmail, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.gmail) }}
                         </div>
 
                         <div class="mb-4">
                             {{ form_label(registrationForm.plainPassword) }}
                             {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.plainPassword) }}
+                        </div>
+
+                        <div class="mb-4 text-center">
+                            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">
