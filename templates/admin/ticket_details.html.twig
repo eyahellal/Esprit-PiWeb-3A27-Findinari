@@ -340,6 +340,110 @@
             flex-shrink: 0;
         }
 
+        /* Voice Recorder Styles */
+        .recorder-controls {
+            display: none;
+            align-items: center;
+            gap: 15px;
+            background: #f0fdf4;
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid #bbf7d0;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .timer {
+            font-family: monospace;
+            font-weight: 700;
+            color: #166534;
+            font-size: 14px;
+        }
+
+        .mic-btn {
+            color: #64748b;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .mic-btn.recording {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        /* Audio Player Styles */
+        .voice-message-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.03);
+            padding: 10px 16px;
+            border-radius: 12px;
+            min-width: 240px;
+            margin-top: 8px;
+        }
+
+        .user .voice-message-player {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #22c55e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s;
+        }
+
+        .play-btn:active { transform: scale(0.9); }
+
+        .waveform-mock {
+            flex: 1;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            height: 60%;
+            background: currentColor;
+            opacity: 0.4;
+            border-radius: 2px;
+        }
+
         .send-reply-btn:hover {
             background: #16a34a;
             transform: translateY(-1px);
@@ -505,8 +609,30 @@
 
                                             {% if message.urlPieceJointe %}
                                                 <div style="margin-top:12px; padding-top:12px; border-top: 1px solid {{ not isAdmin ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.2)' }};">
-                                                    {% set extension = message.urlPieceJointe|split('.')|last|lower %}
-                                                    {% if extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
+                                                    {% set isUrl = message.urlPieceJointe starts with 'http' %}
+                                                    {% set extension = isUrl ? 'm4a' : message.urlPieceJointe|split('.')|last|lower %}
+                                                    
+                                                    {% if isUrl or extension in ['m4a', 'mp3', 'wav', 'ogg'] %}
+                                                        {# Voice Message Player #}
+                                                        <div class="voice-message-player">
+                                                            <button class="play-btn" onclick="toggleAudio(this, '{{ isUrl ? message.urlPieceJointe : asset('uploads/messages/' ~ message.urlPieceJointe) }}')">
+                                                                <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M8 5v14l11-7z"/></svg>
+                                                            </button>
+                                                            <div class="waveform-mock">
+                                                                <div class="wave-bar" style="height:40%"></div>
+                                                                <div class="wave-bar" style="height:70%"></div>
+                                                                <div class="wave-bar" style="height:50%"></div>
+                                                                <div class="wave-bar" style="height:80%"></div>
+                                                                <div class="wave-bar" style="height:30%"></div>
+                                                                <div class="wave-bar" style="height:60%"></div>
+                                                                <div class="wave-bar" style="height:40%"></div>
+                                                                <div class="wave-bar" style="height:70%"></div>
+                                                                <div class="wave-bar" style="height:50%"></div>
+                                                                <div class="wave-bar" style="height:80%"></div>
+                                                            </div>
+                                                            <span class="timer" style="font-size:11px; opacity:0.8; color: inherit;">Voice</span>
+                                                        </div>
+                                                    {% elseif extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
                                                         <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" class="image-attachment-link">
                                                             <img src="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                                                         </a>
@@ -581,18 +707,37 @@
                                 </div>
 
                                 <div class="reply-actions">
-                                    <label class="attach-btn" for="{{ form.attachment.vars.id }}" title="Attach a file">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.5 8.49a1.5 1.5 0 0 1-2.12-2.12l7.78-7.78"/>
-                                        </svg>
-                                        <span>Attach file</span>
-                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <label class="attach-btn" for="{{ form.attachment.vars.id }}" title="Attach a file">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.5 8.49a1.5 1.5 0 0 1-2.12-2.12l7.78-7.78"/>
+                                            </svg>
+                                            <span>Attach file</span>
+                                        </label>
+
+                                        <div class="mic-btn" id="micBtn" title="Record voice message">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
+                                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div id="recorderPanel" class="recorder-controls">
+                                        <div class="recording-dot"></div>
+                                        <div class="timer" id="recordTimer">00:00</div>
+                                        <div style="flex:1;"></div>
+                                        <button type="button" id="cancelRecord" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; font-size:13px;">Cancel</button>
+                                        <button type="button" id="stopRecord" style="background:#22c55e; border:none; color:white; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;">Send Voice</button>
+                                    </div>
                                     
                                     <div style="display:none !important;">
                                         {{ form_widget(form.attachment) }}
                                     </div>
 
-                                    <button type="submit" class="send-reply-btn">
+                                    <button type="submit" class="send-reply-btn" id="standardSendBtn">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px; height:18px;">
                                             <line x1="22" y1="2" x2="11" y2="13"></line>
                                             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -636,20 +781,125 @@
         form.querySelector('textarea').value = content;
     }
 
-    // Handle file selection display
-    const fileInputElement = document.getElementById('{{ form.attachment.vars.id }}');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    
-    if (fileInputElement) {
-        fileInputElement.addEventListener('change', function() {
-            if (this.files && this.files.length > 0) {
-                fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
-                fileNameDisplay.style.display = 'block';
+    // Voice Recording Logic
+    let mediaRecorder;
+    let audioChunks = [];
+    let startTime;
+    let timerInterval;
+
+    const micBtn = document.getElementById('micBtn');
+    const recorderPanel = document.getElementById('recorderPanel');
+    const standardSendBtn = document.getElementById('standardSendBtn');
+    const stopRecordBtn = document.getElementById('stopRecord');
+    const cancelRecordBtn = document.getElementById('cancelRecord');
+    const timerDisplay = document.getElementById('recordTimer');
+
+    micBtn.onclick = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'voice_message.webm');
+
+                try {
+                    const response = await fetch("{{ path('app_admin_message_voice', {id: ticket.id}) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+                    
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const result = await response.json();
+                        console.log('Voice upload response:', result);
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Upload failed: ' + (result.error || 'Unknown error'));
+                        }
+                    } else {
+                        // Probably HTML error page from Symfony
+                        const text = await response.text();
+                        console.error('Server returned non-JSON response:', text);
+                        alert('Server error: The server returned an invalid response. Please check your Cloudinary configuration in .env and clear your Symfony cache.');
+                    }
+                } catch (err) {
+                    console.error('Upload process failed:', err);
+                    alert('Could not send voice message: ' + err.message);
+                    
+                    // Reset UI on error
+                    recorderPanel.style.display = 'none';
+                    micBtn.style.display = 'flex';
+                    standardSendBtn.style.display = 'flex';
+                }
+            };
+
+            mediaRecorder.start();
+            micBtn.style.display = 'none';
+            standardSendBtn.style.display = 'none';
+            recorderPanel.style.display = 'flex';
+            
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const seconds = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                timerDisplay.textContent = `${m}:${s}`;
+            }, 1000);
+
+        } catch (err) {
+            console.error('Mic access denied:', err);
+            alert('Mic access denied. Please enable microphone permissions.');
+        }
+    };
+
+    stopRecordBtn.onclick = () => {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        clearInterval(timerInterval);
+    };
+
+    cancelRecordBtn.onclick = () => {
+        mediaRecorder.onstop = null; // Prevent upload
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        clearInterval(timerInterval);
+        recorderPanel.style.display = 'none';
+        micBtn.style.display = 'flex';
+        standardSendBtn.style.display = 'flex';
+        timerDisplay.textContent = '00:00';
+    };
+
+    // Shared Audio Player logic
+    let currentAudio = null;
+    window.toggleAudio = function(btn, url) {
+        if (currentAudio && currentAudio.src === url) {
+            if (currentAudio.paused) {
+                currentAudio.play();
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
             } else {
-                fileNameDisplay.style.display = 'none';
+                currentAudio.pause();
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M8 5v14l11-7z"/></svg>';
             }
-        });
-    }
+        } else {
+            if (currentAudio) currentAudio.pause();
+            currentAudio = new Audio(url);
+            currentAudio.play();
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            
+            currentAudio.onended = () => {
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M8 5v14l11-7z"/></svg>';
+            };
+        }
+    };
 </script>
 </body>
 </html>

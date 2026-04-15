@@ -6,13 +6,15 @@ use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
 use App\Entity\user\Utilisateur;
 use App\Form\MessageType;
+use App\Service\CloudinaryUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
-
 
 class MessageController extends AbstractController
 {
@@ -64,7 +66,6 @@ class MessageController extends AbstractController
 
             $entityManager->persist($message);
             $entityManager->flush();
-
             $this->addFlash('success', 'Message sent successfully.');
         }
 
@@ -128,57 +129,57 @@ class MessageController extends AbstractController
     }
 
     #[Route('/admin/ticket/{id}/message/new', name: 'app_admin_message_new', methods: ['POST'])]
-public function newMessage(
-    Ticket $ticket,
-    Request $request,
-    EntityManagerInterface $entityManager,
-    SluggerInterface $slugger
-): Response {
-    $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-    $message = new Message();
-    $form = $this->createForm(MessageType::class, $message);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $message->setTicket($ticket);
-        $message->setDate(new \DateTime());
-        $message->setTypeSender('ADMIN');
-
-        $user = $this->getUser();
-        if ($user instanceof Utilisateur) {
-            $message->setUtilisateur($user);
+    public function newMessage(
+        Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
+    ): Response {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_login');
         }
 
-        $attachmentFile = $form->get('attachment')->getData();
+        $message = new Message();
+        $form = $this->createForm(MessageType::class, $message);
+        $form->handleRequest($request);
 
-        if ($attachmentFile) {
-            $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
-            $safeFilename = $slugger->slug($originalFilename);
-            $extension = $attachmentFile->guessExtension() ?: 'bin';
-            $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message->setTicket($ticket);
+            $message->setDate(new \DateTime());
+            $message->setTypeSender('ADMIN');
 
-            try {
-                $attachmentFile->move(
-                    $this->getParameter('messages_directory'),
-                    $newFilename
-                );
-                $message->setUrlPieceJointe($newFilename);
-            } catch (FileException $e) {
-                $this->addFlash('danger', 'Attachment upload failed.');
-                return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+            $user = $this->getUser();
+            if ($user instanceof Utilisateur) {
+                $message->setUtilisateur($user);
             }
+
+            $attachmentFile = $form->get('attachment')->getData();
+
+            if ($attachmentFile) {
+                $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $extension = $attachmentFile->guessExtension() ?: 'bin';
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
+
+                try {
+                    $attachmentFile->move(
+                        $this->getParameter('messages_directory'),
+                        $newFilename
+                    );
+                    $message->setUrlPieceJointe($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Attachment upload failed.');
+                    return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+                }
+            }
+
+            $entityManager->persist($message);
+            $entityManager->flush();
+            $this->addFlash('success', 'Message sent successfully.');
         }
 
-        $entityManager->persist($message);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Message sent successfully.');
+        return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
     }
-
-    return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
-}
-    
 
     #[Route('/admin/message/{id}/delete', name: 'app_admin_message_delete', methods: ['POST'])]
     public function adminDeleteMessage(
@@ -186,7 +187,10 @@ public function newMessage(
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $ticketId = $message->getTicket()->getId();
 
         if ($message->getTypeSender() !== 'ADMIN') {
@@ -211,7 +215,10 @@ public function newMessage(
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $ticketId = $message->getTicket()->getId();
 
         if ($message->getTypeSender() !== 'ADMIN') {
@@ -230,5 +237,105 @@ public function newMessage(
         }
 
         return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
+    }
+
+    #[Route('/admin/ticket/{id}/voice', name: 'app_admin_message_voice', methods: ['POST'])]
+    public function adminVoiceMessage(
+        Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        CloudinaryUploader $uploader
+    ): JsonResponse {
+        if (!$this->isGranted('ROLE_ADMIN')) {
+            return $this->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $audioFile = $request->files->get('audio');
+
+            if (!$audioFile) {
+                return $this->json(['error' => 'No audio file found in request'], 400);
+            }
+
+            $cloudinaryUrl = $uploader->uploadAudio($audioFile->getRealPath());
+
+            if (!$cloudinaryUrl) {
+                return $this->json(['error' => 'Cloudinary upload failed'], 500);
+            }
+
+            $message = new Message();
+            $message->setTicket($ticket);
+            $message->setDate(new \DateTime());
+            $message->setTypeSender('ADMIN');
+            $message->setContenu('Voice message');
+            $message->setUrlPieceJointe($cloudinaryUrl);
+
+            $user = $this->getUser();
+            if ($user instanceof Utilisateur) {
+                $message->setUtilisateur($user);
+            }
+
+            $entityManager->persist($message);
+            $entityManager->flush();
+
+            return $this->json([
+                'success' => true,
+                'url' => $cloudinaryUrl,
+                'messageId' => $message->getId(),
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'Server error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    #[Route('/user/ticket/{id}/voice', name: 'app_user_message_voice', methods: ['POST'])]
+    public function userVoiceMessage(
+        Ticket $ticket,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        CloudinaryUploader $uploader
+    ): JsonResponse {
+        $user = $this->getUser();
+
+        if (!$user || $ticket->getUtilisateur() !== $user) {
+            return $this->json(['error' => 'Access denied'], 403);
+        }
+
+        try {
+            $audioFile = $request->files->get('audio');
+
+            if (!$audioFile) {
+                return $this->json(['error' => 'No audio file found in request'], 400);
+            }
+
+            $cloudinaryUrl = $uploader->uploadAudio($audioFile->getRealPath());
+
+            if (!$cloudinaryUrl) {
+                return $this->json(['error' => 'Cloudinary upload failed'], 500);
+            }
+
+            $message = new Message();
+            $message->setTicket($ticket);
+            $message->setDate(new \DateTime());
+            $message->setTypeSender('USER');
+            $message->setContenu('Voice message');
+            $message->setUrlPieceJointe($cloudinaryUrl);
+            $message->setUtilisateur($user);
+
+            $entityManager->persist($message);
+            $entityManager->flush();
+
+            return $this->json([
+                'success' => true,
+                'url' => $cloudinaryUrl,
+                'messageId' => $message->getId(),
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'Server error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
