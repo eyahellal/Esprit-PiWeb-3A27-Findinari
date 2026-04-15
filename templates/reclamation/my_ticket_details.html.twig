@@ -297,11 +297,18 @@
                                 <div>{{ message.contenu|nl2br }}</div>
                                 
                                 {% if message.urlPieceJointe %}
-                                    <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(0,0,0,0.05);">
-                                        <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; color:inherit; font-weight:700; text-decoration:none; opacity:.85; font-size:12px;">
-                                            <i class="fas fa-paperclip"></i>
-                                            Attachment
-                                        </a>
+                                    <div style="margin-top:12px; padding-top:12px; border-top:1px solid {{ isUser ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.06)' }};">
+                                        {% set extension = message.urlPieceJointe|split('.')|last|lower %}
+                                        {% if extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
+                                            <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank">
+                                                <img src="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" style="display:inline-flex; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; opacity:.85; font-size:13px;">
+                                                <i class="fas fa-file-download"></i>
+                                                Download Attachment ({{ extension|upper }})
+                                            </a>
+                                        {% endif %}
                                     </div>
                                 {% endif %}
                             </div>

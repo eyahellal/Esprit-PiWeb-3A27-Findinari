@@ -504,17 +504,24 @@
                                             <div>{{ message.contenu|nl2br }}</div>
 
                                             {% if message.urlPieceJointe %}
-                                                <div style="margin-top:10px; padding-top:10px; border-top: 1px solid {{ not isAdmin ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.2)' }};">
-                                                    <a
-                                                        href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}"
-                                                        target="_blank"
-                                                        style="display:inline-flex; align-items:center; gap:6px; color:inherit; font-weight:700; text-decoration:none; opacity:.95; font-size: 12px;"
-                                                    >
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;">
-                                                            <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.5 8.49a1.5 1.5 0 0 1-2.12-2.12l7.78-7.78"/>
-                                                        </svg>
-                                                        Attachment
-                                                    </a>
+                                                <div style="margin-top:12px; padding-top:12px; border-top: 1px solid {{ not isAdmin ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.2)' }};">
+                                                    {% set extension = message.urlPieceJointe|split('.')|last|lower %}
+                                                    {% if extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
+                                                        <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" class="image-attachment-link">
+                                                            <img src="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                                                        </a>
+                                                    {% else %}
+                                                        <a
+                                                            href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}"
+                                                            target="_blank"
+                                                            style="display:inline-flex; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; opacity:.95; font-size: 13px;"
+                                                        >
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;">
+                                                                <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.5 8.49a1.5 1.5 0 0 1-2.12-2.12l7.78-7.78"/>
+                                                            </svg>
+                                                            Download Attachment ({{ extension|upper }})
+                                                        </a>
+                                                    {% endif %}
                                                 </div>
                                             {% endif %}
                                         </div>
