@@ -6,9 +6,13 @@
 parameters:
     tickets_directory: '%kernel.project_dir%/public/uploads/tickets'
     messages_directory: '%kernel.project_dir%/public/uploads/messages'
+    cloudinary_url: '%env(CLOUDINARY_URL)%'
 
 
 services:
+    App\Service\CloudinaryUploader:
+        arguments:
+            $cloudinaryUrl: '%cloudinary_url%'
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
