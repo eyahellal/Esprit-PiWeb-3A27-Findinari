@@ -60,7 +60,7 @@ function validateWallet() {
                     {# Card Body #}
                     <div class="card-body p-4">
 
-                        {{ form_start(form, {'attr': {'onsubmit': 'return validateWallet()'}}) }}
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
                             <div class="mb-3">
                                 {{ form_label(form.pays, 'Country', {'label_attr': {'class': 'form-label fw-bold', 'style': 'color: #26474E;'}}) }}

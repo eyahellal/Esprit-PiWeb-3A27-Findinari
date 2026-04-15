@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\WalletRepository;
 use App\Entity\user\Utilisateur;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: WalletRepository::class)]
 #[ORM\Table(name: 'wallet')]
@@ -37,7 +38,18 @@ class Wallet
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
+   #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Country is required')]
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'Country must be at least {{ limit }} characters',
+        maxMessage: 'Country cannot exceed {{ limit }} characters'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\-]+$/',
+        message: 'Country must contain only letters'
+    )]
     private ?string $pays = null;
 
     public function getPays(): ?string
@@ -45,13 +57,15 @@ class Wallet
         return $this->pays;
     }
 
-    public function setPays(string $pays): self
-    {
-        $this->pays = $pays;
-        return $this;
-    }
+  public function setPays(?string $pays): self
+{
+    $this->pays = $pays;
+    return $this;
+}
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    #[Assert\NotNull(message: 'Balance is required')]
+    #[Assert\PositiveOrZero(message: 'Balance cannot be negative')]
     private ?float $solde = null;
 
     public function getSolde(): ?float
@@ -66,6 +80,11 @@ class Wallet
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Currency is required')]
+    #[Assert\Choice(
+        choices: ['DT', 'EUR', 'USD', 'GBP'],
+        message: 'Choose a valid currency (DT, EUR, USD, GBP)'
+    )]
     private ?string $devise = null;
 
     public function getDevise(): ?string
@@ -73,11 +92,12 @@ class Wallet
         return $this->devise;
     }
 
-    public function setDevise(string $devise): self
-    {
-        $this->devise = $devise;
-        return $this;
-    }
+   
+    public function setDevise(?string $devise): self
+{
+    $this->devise = $devise;
+    return $this;
+}
 
     #[ORM\OneToMany(targetEntity: Investissementobligation::class, mappedBy: 'wallet')]
     private Collection $investissementobligations;
