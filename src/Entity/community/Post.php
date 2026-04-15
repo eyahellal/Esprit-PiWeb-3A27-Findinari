@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Entity\community;
+
 use App\Entity\user\Utilisateur;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -9,300 +10,180 @@ use Doctrine\Common\Collections\Collection;
 
 use App\Repository\PostRepository;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
+
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Table(name: 'post')]
+#[ORM\HasLifecycleCallbacks]
 class Post
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'idPost', type: 'integer')]
     private ?int $idPost = null;
 
-    public function getIdPost(): ?int
-    {
-        return $this->idPost;
-    }
-
-    public function setIdPost(int $idPost): self
-    {
-        $this->idPost = $idPost;
-        return $this;
-    }
-
     #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'posts')]
-    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id')]
+    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Utilisateur $utilisateur = null;
 
-    public function getUtilisateur(): ?Utilisateur
-    {
-        return $this->utilisateur;
-    }
-
-    public function setUtilisateur(?Utilisateur $utilisateur): self
-    {
-        $this->utilisateur = $utilisateur;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: false)]
+    #[ORM\Column(type: 'string', length: 200)]
     private ?string $titre = null;
 
-    public function getTitre(): ?string
-    {
-        return $this->titre;
-    }
-
-    public function setTitre(string $titre): self
-    {
-        $this->titre = $titre;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(message: 'Le contenu du post est obligatoire.')]
+    #[Assert\Length(min: 2, minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères.', max: 2000, maxMessage: 'Le contenu ne doit pas dépasser {{ limit }} caractères.')]
+    #[ORM\Column(type: 'text')]
     private ?string $contenu = null;
 
-    public function getContenu(): ?string
-    {
-        return $this->contenu;
-    }
+    #[ORM\Column(name: 'typePost', type: 'string', length: 50, options: ['default' => 'STATUT'])]
+    private ?string $typePost = 'STATUT';
 
-    public function setContenu(string $contenu): self
-    {
-        $this->contenu = $contenu;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $typePost = null;
-
-    public function getTypePost(): ?string
-    {
-        return $this->typePost;
-    }
-
-    public function setTypePost(string $typePost): self
-    {
-        $this->typePost = $typePost;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(name: 'dateCreation', type: 'datetime')]
     private ?\DateTimeInterface $dateCreation = null;
 
-    public function getDateCreation(): ?\DateTimeInterface
-    {
-        return $this->dateCreation;
-    }
-
-    public function setDateCreation(\DateTimeInterface $dateCreation): self
-    {
-        $this->dateCreation = $dateCreation;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'datetime', nullable: false)]
+    #[ORM\Column(name: 'dateModification', type: 'datetime')]
     private ?\DateTimeInterface $dateModification = null;
 
-    public function getDateModification(): ?\DateTimeInterface
-    {
-        return $this->dateModification;
-    }
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'ACTIF'])]
+    private ?string $statut = 'ACTIF';
 
-    public function setDateModification(\DateTimeInterface $dateModification): self
-    {
-        $this->dateModification = $dateModification;
-        return $this;
-    }
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'PUBLIC'])]
+    private ?string $visibilite = 'PUBLIC';
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $statut = null;
+    #[ORM\Column(name: 'nombreLikes', type: 'integer', options: ['default' => 0])]
+    private int $nombreLikes = 0;
 
-    public function getStatut(): ?string
-    {
-        return $this->statut;
-    }
+    #[ORM\Column(name: 'nombreCommentaires', type: 'integer', options: ['default' => 0])]
+    private int $nombreCommentaires = 0;
 
-    public function setStatut(string $statut): self
-    {
-        $this->statut = $statut;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $visibilite = null;
-
-    public function getVisibilite(): ?string
-    {
-        return $this->visibilite;
-    }
-
-    public function setVisibilite(string $visibilite): self
-    {
-        $this->visibilite = $visibilite;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $nombreLikes = null;
-
-    public function getNombreLikes(): ?int
-    {
-        return $this->nombreLikes;
-    }
-
-    public function setNombreLikes(?int $nombreLikes): self
-    {
-        $this->nombreLikes = $nombreLikes;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $nombreCommentaires = null;
-
-    public function getNombreCommentaires(): ?int
-    {
-        return $this->nombreCommentaires;
-    }
-
-    public function setNombreCommentaires(?int $nombreCommentaires): self
-    {
-        $this->nombreCommentaires = $nombreCommentaires;
-        return $this;
-    }
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $image_url = null;
-
-    public function getImage_url(): ?string
-    {
-        return $this->image_url;
-    }
-
-    public function setImage_url(?string $image_url): self
-    {
-        $this->image_url = $image_url;
-        return $this;
-    }
-
-    #[ORM\OneToMany(targetEntity: Commentaire::class, mappedBy: 'post')]
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Commentaire::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['dateCreation' => 'DESC'])]
     private Collection $commentaires;
 
-    /**
-     * @return Collection<int, Commentaire>
-     */
-    public function getCommentaires(): Collection
-    {
-        if (!$this->commentaires instanceof Collection) {
-            $this->commentaires = new ArrayCollection();
-        }
-        return $this->commentaires;
-    }
-
-    public function addCommentaire(Commentaire $commentaire): self
-    {
-        if (!$this->getCommentaires()->contains($commentaire)) {
-            $this->getCommentaires()->add($commentaire);
-        }
-        return $this;
-    }
-
-    public function removeCommentaire(Commentaire $commentaire): self
-    {
-        $this->getCommentaires()->removeElement($commentaire);
-        return $this;
-    }
-
-    #[ORM\ManyToMany(targetEntity: Utilisateur::class, inversedBy: 'posts')]
-    #[ORM\JoinTable(
-        name: 'like',
-        joinColumns: [
-            new ORM\JoinColumn(name: 'post_id', referencedColumnName: 'idPost')
-        ],
-        inverseJoinColumns: [
-            new ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id')
-        ]
-    )]
-    private Collection $utilisateurs;
-
-    /**
-     * @return Collection<int, Utilisateur>
-     */
-    public function getUtilisateurs(): Collection
-    {
-        if (!$this->utilisateurs instanceof Collection) {
-            $this->utilisateurs = new ArrayCollection();
-        }
-        return $this->utilisateurs;
-    }
-
-    public function addUtilisateur(Utilisateur $utilisateur): self
-    {
-        if (!$this->getUtilisateurs()->contains($utilisateur)) {
-            $this->getUtilisateurs()->add($utilisateur);
-        }
-        return $this;
-    }
-
-    public function removeUtilisateur(Utilisateur $utilisateur): self
-    {
-        $this->getUtilisateurs()->removeElement($utilisateur);
-        return $this;
-    }
-
-    #[ORM\ManyToMany(targetEntity: Hashtag::class, inversedBy: 'posts')]
-    #[ORM\JoinTable(
-        name: 'post_hashtag',
-        joinColumns: [
-            new ORM\JoinColumn(name: 'post_id', referencedColumnName: 'idPost')
-        ],
-        inverseJoinColumns: [
-            new ORM\JoinColumn(name: 'hashtag_id', referencedColumnName: 'id')
-        ]
-    )]
-    private Collection $hashtags;
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Like::class, orphanRemoval: true)]
+    private Collection $likes;
 
     public function __construct()
     {
         $this->commentaires = new ArrayCollection();
-        $this->utilisateurs = new ArrayCollection();
-        $this->hashtags = new ArrayCollection();
+        $this->likes = new ArrayCollection();
     }
 
-    /**
-     * @return Collection<int, Hashtag>
-     */
-    public function getHashtags(): Collection
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
     {
-        if (!$this->hashtags instanceof Collection) {
-            $this->hashtags = new ArrayCollection();
+        $now = new \DateTime();
+        $this->dateCreation ??= $now;
+        $this->dateModification ??= $now;
+        $this->titre ??= $this->buildAutoTitle();
+        $this->typePost ??= 'STATUT';
+        $this->statut ??= 'ACTIF';
+        $this->visibilite ??= 'PUBLIC';
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        $this->dateModification = new \DateTime();
+        $this->titre ??= $this->buildAutoTitle();
+    }
+
+    private function buildAutoTitle(): string
+    {
+        $text = trim((string) $this->contenu);
+        if ($text === '') {
+            return 'Post';
         }
-        return $this->hashtags;
+
+        $clean = preg_replace('/\s+/', ' ', strip_tags($text)) ?? 'Post';
+        $short = mb_substr($clean, 0, 60);
+
+        return $short === $clean ? $short : $short.'...';
     }
 
-    public function addHashtag(Hashtag $hashtag): self
+    public function getIdPost(): ?int { return $this->idPost; }
+    public function getId(): ?int { return $this->idPost; }
+    public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
+    public function setUtilisateur(?Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
+    public function getTitre(): ?string { return $this->titre; }
+    public function setTitre(?string $titre): self { $this->titre = $titre; return $this; }
+    public function getContenu(): ?string { return $this->contenu; }
+    public function setContenu(string $contenu): self { $this->contenu = trim($contenu); return $this; }
+    public function getTypePost(): ?string { return $this->typePost; }
+    public function setTypePost(?string $typePost): self { $this->typePost = $typePost; return $this; }
+    public function getDateCreation(): ?\DateTimeInterface { return $this->dateCreation; }
+    public function setDateCreation(\DateTimeInterface $dateCreation): self { $this->dateCreation = $dateCreation; return $this; }
+    public function getDateModification(): ?\DateTimeInterface { return $this->dateModification; }
+    public function setDateModification(\DateTimeInterface $dateModification): self { $this->dateModification = $dateModification; return $this; }
+    public function getStatut(): ?string { return $this->statut; }
+    public function setStatut(string $statut): self { $this->statut = $statut; return $this; }
+    public function getVisibilite(): ?string { return $this->visibilite; }
+    public function setVisibilite(string $visibilite): self { $this->visibilite = $visibilite; return $this; }
+    public function getNombreLikes(): int { return $this->nombreLikes; }
+    public function setNombreLikes(int $nombreLikes): self { $this->nombreLikes = max(0, $nombreLikes); return $this; }
+    public function getNombreCommentaires(): int { return $this->nombreCommentaires; }
+    public function setNombreCommentaires(int $nombreCommentaires): self { $this->nombreCommentaires = max(0, $nombreCommentaires); return $this; }
+    public function getCommentaires(): Collection { return $this->commentaires; }
+    public function getLikes(): Collection { return $this->likes; }
+
+    public function getRecentCommentaires(int $limit = 3): array
     {
-        if (!$this->getHashtags()->contains($hashtag)) {
-            $this->getHashtags()->add($hashtag);
+        return array_slice($this->commentaires->toArray(), 0, $limit);
+    }
+
+    public function isOwnedBy(?Utilisateur $utilisateur): bool
+    {
+        return $utilisateur !== null && $this->utilisateur !== null && $utilisateur->getId() === $this->utilisateur->getId();
+    }
+
+    public function isLikedBy(?Utilisateur $utilisateur): bool
+    {
+        if ($utilisateur === null) {
+            return false;
         }
-        return $this;
+
+        foreach ($this->likes as $like) {
+            if ($like->getUtilisateur()?->getId() === $utilisateur->getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public function removeHashtag(Hashtag $hashtag): self
+    public function getRelativeTime(): string
     {
-        $this->getHashtags()->removeElement($hashtag);
-        return $this;
+        $date = $this->dateCreation;
+        if (!$date) {
+            return 'just now';
+        }
+
+        $seconds = max(0, time() - $date->getTimestamp());
+        if ($seconds < 60) {
+            return 'just now';
+        }
+        $minutes = (int) floor($seconds / 60);
+        if ($minutes < 60) {
+            return $minutes.' min ago';
+        }
+        $hours = (int) floor($minutes / 60);
+        if ($hours < 24) {
+            return $hours.' h ago';
+        }
+        $days = (int) floor($hours / 24);
+        if ($days < 7) {
+            return $days.' d ago';
+        }
+        $weeks = (int) floor($days / 7);
+        if ($weeks < 5) {
+            return $weeks.' w ago';
+        }
+        $months = (int) floor($days / 30);
+        if ($months < 12) {
+            return $months.' mo ago';
+        }
+        $years = (int) floor($days / 365);
+
+        return $years.' y ago';
     }
-
-    public function getImageUrl(): ?string
-    {
-        return $this->image_url;
-    }
-
-    public function setImageUrl(?string $image_url): static
-    {
-        $this->image_url = $image_url;
-
-        return $this;
-    }
-
 }
