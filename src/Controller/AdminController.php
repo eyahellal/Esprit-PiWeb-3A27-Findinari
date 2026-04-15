@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Controller;
+
 use App\Entity\Loan\Obligation;
-use App\Repository\ObligationRepository;
-use App\Repository\InvestissementobligationRepository;
 use App\Entity\Loan\Wallet;
 use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
@@ -11,11 +10,14 @@ use App\Entity\user\Feedback;
 use App\Entity\user\Utilisateur;
 use App\form\MessageType;
 use App\Repository\FeedbackRepository;
+use App\Repository\InvestissementobligationRepository;
+use App\Repository\ObligationRepository;
 use App\Repository\ObjectifRepository;
 use App\Repository\TicketRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\WalletRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,16 +31,21 @@ class AdminController extends AbstractController
         Request $request,
         UtilisateurRepository $utilisateurRepository,
         FeedbackRepository $feedbackRepository,
-        ObjectifRepository $objectifRepository
+        ObjectifRepository $objectifRepository,
+        PaginatorInterface $paginator
     ): Response {
-        $q    = trim((string) $request->query->get('q', ''));
+        $q = trim((string) $request->query->get('q', ''));
         $sort = trim((string) $request->query->get('sort', 'name_asc'));
+        $objStatut = trim((string) $request->query->get('obj_statut', ''));
 
+        /*
+         * USERS
+         */
         $qb = $utilisateurRepository->createQueryBuilder('u');
 
         if ($q !== '') {
             $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
-               ->setParameter('q', '%'.$q.'%');
+               ->setParameter('q', '%' . $q . '%');
         }
 
         switch ($sort) {
@@ -46,10 +53,14 @@ class AdminController extends AbstractController
                 $qb->orderBy('u.nom', 'DESC')->addOrderBy('u.prenom', 'DESC');
                 break;
             case 'role_asc':
-                $qb->orderBy('u.role', 'ASC')->addOrderBy('u.nom', 'ASC')->addOrderBy('u.prenom', 'ASC');
+                $qb->orderBy('u.role', 'ASC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
                 break;
             case 'role_desc':
-                $qb->orderBy('u.role', 'DESC')->addOrderBy('u.nom', 'ASC')->addOrderBy('u.prenom', 'ASC');
+                $qb->orderBy('u.role', 'DESC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
                 break;
             case 'id_asc':
                 $qb->orderBy('u.id', 'ASC');
@@ -63,9 +74,48 @@ class AdminController extends AbstractController
                 break;
         }
 
-        $users    = $qb->getQuery()->getResult();
+        $users = $paginator->paginate(
+            $qb,
+            $request->query->getInt('users_page', 1),
+            10,
+            ['pageParameterName' => 'users_page']
+        );
+
+        /*
+         * FEEDBACKS
+         */
+        $feedbackQb = $feedbackRepository->createQueryBuilder('f')
+            ->orderBy('f.createdAt', 'DESC');
+
+        $feedbacks = $paginator->paginate(
+            $feedbackQb,
+            $request->query->getInt('feedbacks_page', 1),
+            8,
+            ['pageParameterName' => 'feedbacks_page']
+        );
+
+        /*
+         * OBJECTIFS
+         */
+        $objectifsQb = $objectifRepository->createQueryBuilder('o')
+            ->orderBy('o.id', 'DESC');
+
+        if ($objStatut !== '') {
+            $objectifsQb->andWhere('o.statut = :statut')
+                ->setParameter('statut', $objStatut);
+        }
+
+        $objectifs = $paginator->paginate(
+            $objectifsQb,
+            $request->query->getInt('objectifs_page', 1),
+            8,
+            ['pageParameterName' => 'objectifs_page']
+        );
+
+        /*
+         * COUNTS
+         */
         $allUsers = $utilisateurRepository->findAll();
-        $feedbacks = $feedbackRepository->findAll();
 
         $adminCount = 0;
         $userCount = 0;
@@ -82,7 +132,7 @@ class AdminController extends AbstractController
                 ++$userCount;
             }
 
-            if (in_array($u->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
+            if (\in_array($u->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
                 ++$activeUsersCount;
             } else {
                 ++$inactiveUsersCount;
@@ -90,19 +140,20 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/dashboard.html.twig', [
-            'users'              => $users,
-            'feedbacks'          => $feedbacks,
-            'totalUsers'         => count($allUsers),
-            'filteredUsersCount' => count($users),
-            'totalFeedbacks'     => count($feedbacks),
-            'adminCount'         => $adminCount,
-            'userCount'          => $userCount,
-            'influencerCount'    => $influencerCount,
-            'activeUsersCount'   => $activeUsersCount,
+            'users' => $users,
+            'feedbacks' => $feedbacks,
+            'objectifs' => $objectifs,
+            'totalUsers' => count($allUsers),
+            'filteredUsersCount' => $users->getTotalItemCount(),
+            'totalFeedbacks' => $feedbackRepository->count([]),
+            'adminCount' => $adminCount,
+            'userCount' => $userCount,
+            'influencerCount' => $influencerCount,
+            'activeUsersCount' => $activeUsersCount,
             'inactiveUsersCount' => $inactiveUsersCount,
-            'search'             => $q,
-            'sort'               => $sort,
-            'objectifs'          => $objectifRepository->findAll(),
+            'search' => $q,
+            'sort' => $sort,
+            'objStatut' => $objStatut,
         ]);
     }
 
@@ -112,7 +163,7 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        if ($this->isCsrfTokenValid('delete_user_'.$utilisateur->getId(), (string) $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_user_' . $utilisateur->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($utilisateur);
             $entityManager->flush();
             $this->addFlash('success', 'User deleted successfully.');
@@ -131,7 +182,7 @@ class AdminController extends AbstractController
     ): Response {
         $newRole = strtoupper(trim((string) $request->request->get('role')));
 
-        if (in_array($newRole, ['USER', 'ADMIN', 'INFLUENCER'], true)) {
+        if (\in_array($newRole, ['USER', 'ADMIN', 'INFLUENCER'], true)) {
             $utilisateur->setRole($newRole);
             $utilisateur->setDateModification(new \DateTime());
             $entityManager->flush();
@@ -151,7 +202,7 @@ class AdminController extends AbstractController
     ): Response {
         $newStatus = strtoupper(trim((string) $request->request->get('statut')));
 
-        if (in_array($newStatus, ['ACTIF', 'ACTIVE', 'INACTIF', 'INACTIVE', 'BANNED'], true)) {
+        if (\in_array($newStatus, ['ACTIF', 'ACTIVE', 'INACTIF', 'INACTIVE', 'BANNED'], true)) {
             $utilisateur->setStatut($newStatus);
             $utilisateur->setDateModification(new \DateTime());
             $entityManager->flush();
@@ -169,9 +220,9 @@ class AdminController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
-        $nom      = trim((string) $request->request->get('nom'));
-        $prenom   = trim((string) $request->request->get('prenom'));
-        $gmail    = trim((string) $request->request->get('gmail'));
+        $nom = trim((string) $request->request->get('nom'));
+        $prenom = trim((string) $request->request->get('prenom'));
+        $gmail = trim((string) $request->request->get('gmail'));
         $password = (string) $request->request->get('password');
 
         if (!$nom || !$prenom || !$gmail || !$password) {
@@ -209,7 +260,7 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        if ($this->isCsrfTokenValid('delete_feedback_admin_'.$feedback->getId(), (string) $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_feedback_admin_' . $feedback->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($feedback);
             $entityManager->flush();
             $this->addFlash('success', 'Feedback deleted successfully.');
@@ -228,11 +279,11 @@ class AdminController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $wallets = $walletRepository->findAll();
-        $users   = $utilisateurRepository->findAll();
+        $users = $utilisateurRepository->findAll();
 
         $activeUsersCount = 0;
         foreach ($users as $user) {
-            if (in_array($user->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
+            if (\in_array($user->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
                 ++$activeUsersCount;
             }
         }
@@ -245,9 +296,9 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/wallets.html.twig', [
-            'wallets'          => $wallets,
+            'wallets' => $wallets,
             'activeUsersCount' => $activeUsersCount,
-            'currenciesCount'  => count(array_unique($currencies)),
+            'currenciesCount' => count(array_unique($currencies)),
         ]);
     }
 
@@ -259,7 +310,7 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($this->isCsrfTokenValid('delete_wallet_admin_'.$wallet->getId(), (string) $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_wallet_admin_' . $wallet->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($wallet);
             $entityManager->flush();
             $this->addFlash('success', 'Wallet deleted successfully.');
@@ -278,7 +329,7 @@ class AdminController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $sort = $request->query->get('sort', 'newest');
-        $qb   = $ticketRepository->createQueryBuilder('t');
+        $qb = $ticketRepository->createQueryBuilder('t');
 
         switch ($sort) {
             case 'oldest':
@@ -298,7 +349,7 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/tickets.html.twig', [
-            'tickets'     => $qb->getQuery()->getResult(),
+            'tickets' => $qb->getQuery()->getResult(),
             'currentSort' => $sort,
         ]);
     }
@@ -311,7 +362,7 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($this->isCsrfTokenValid('delete_ticket_admin_'.$ticket->getId(), (string) $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_ticket_admin_' . $ticket->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($ticket);
             $entityManager->flush();
             $this->addFlash('success', 'Ticket deleted successfully.');
@@ -331,13 +382,17 @@ class AdminController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
-            $newStatut   = $request->request->get('statut');
+            $newStatut = $request->request->get('statut');
             $newPriorite = $request->request->get('priorite');
 
-            if ($newStatut)   { $ticket->setStatut($newStatut); }
-            if ($newPriorite) { $ticket->setPriorite($newPriorite); }
+            if ($newStatut) {
+                $ticket->setStatut($newStatut);
+            }
+            if ($newPriorite) {
+                $ticket->setPriorite($newPriorite);
+            }
 
-            if (in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
+            if (\in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
                 $ticket->setDateFermeture(new \DateTime());
             }
 
@@ -348,12 +403,12 @@ class AdminController extends AbstractController
         }
 
         $message = new Message();
-        $form    = $this->createForm(MessageType::class, $message);
+        $form = $this->createForm(MessageType::class, $message);
 
         return $this->render('admin/ticket_details.html.twig', [
-            'ticket'   => $ticket,
+            'ticket' => $ticket,
             'messages' => $ticket->getMessages(),
-            'form'     => $form->createView(),
+            'form' => $form->createView(),
         ]);
     }
 
@@ -378,8 +433,8 @@ class AdminController extends AbstractController
         $totalInvestments = count($investmentRepository->findAll());
 
         return $this->render('admin/obligations.html.twig', [
-            'obligations'      => $obligations,
-            'avgInterestRate'  => $avgRate,
+            'obligations' => $obligations,
+            'avgInterestRate' => $avgRate,
             'totalInvestments' => $totalInvestments,
         ]);
     }
@@ -393,7 +448,7 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($this->isCsrfTokenValid('delete_obligation_admin_'.$obligation->getIdObligation(), (string) $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_obligation_admin_' . $obligation->getIdObligation(), (string) $request->request->get('_token'))) {
             $investments = $investmentRepository->findBy(['obligationId' => $obligation->getIdObligation()]);
             foreach ($investments as $investment) {
                 $entityManager->remove($investment);
@@ -416,22 +471,19 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // ── Filtres ──────────────────────────────────────────
         $filterWalletId = $request->query->get('wallet_id');
-        $filterStatut   = $request->query->get('statut');
+        $filterStatut = $request->query->get('statut');
         $searchObjectif = trim((string) $request->query->get('q', ''));
 
-        // ── Wallets pour le select ────────────────────────────
         $wallets = [];
         foreach ($walletRepository->findAll() as $w) {
             $wallets[$w->getId()] = [
-                'pays'   => $w->getPays(),
+                'pays' => $w->getPays(),
                 'devise' => $w->getDevise(),
-                'solde'  => $w->getSolde(),
+                'solde' => $w->getSolde(),
             ];
         }
 
-        // ── QueryBuilder avec filtres ─────────────────────────
         $qb = $objectifRepository->createQueryBuilder('o');
 
         if ($filterWalletId) {
@@ -446,18 +498,18 @@ class AdminController extends AbstractController
 
         if ($searchObjectif !== '') {
             $qb->andWhere('o.titre LIKE :q')
-               ->setParameter('q', '%'.$searchObjectif.'%');
+               ->setParameter('q', '%' . $searchObjectif . '%');
         }
 
         $objectifs = $qb->orderBy('o.id', 'DESC')->getQuery()->getResult();
 
         return $this->render('admin/objectifs.html.twig', [
-            'objectifs'        => $objectifs,
-            'wallets'          => $wallets,
+            'objectifs' => $objectifs,
+            'wallets' => $wallets,
             'selectedWalletId' => $filterWalletId,
-            'filterWalletId'   => $filterWalletId,
-            'filterStatut'     => $filterStatut,
-            'searchObjectif'   => $searchObjectif,
+            'filterWalletId' => $filterWalletId,
+            'filterStatut' => $filterStatut,
+            'searchObjectif' => $searchObjectif,
         ]);
     }
 
