@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\reclamation\Ticket;
 use App\Entity\reclamation\Message;
 use App\Form\TicketType;
+use App\Service\TicketSlaCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -36,8 +37,12 @@ class TicketUserController extends AbstractController
         ]);
     }
     #[Route('/user/createticket', name: 'app_user_createticket')]
-    public function createTicket(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
-    {
+public function createTicket(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    SluggerInterface $slugger,
+    TicketSlaCalculator $ticketSlaCalculator
+): Response    {
         $ticket = new Ticket();
         $form = $this->createForm(TicketType::class, $ticket);
         $form->handleRequest($request);
@@ -63,9 +68,18 @@ class TicketUserController extends AbstractController
             }
 
             // Set other fields
+         $createdAt = new \DateTime();
+
             $ticket->setUtilisateur($this->getUser());
-            $ticket->setDateCreation(new \DateTime());
+            $ticket->setDateCreation($createdAt);
             $ticket->setStatut('Open');
+
+            $deadline = $ticketSlaCalculator->calculateDeadline(
+                (string) $ticket->getPriorite(),
+                $createdAt
+            );
+
+            $ticket->setDeadline($deadline);
 
             $entityManager->persist($ticket);
             $entityManager->flush();

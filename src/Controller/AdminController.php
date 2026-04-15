@@ -339,7 +339,16 @@ class AdminController extends AbstractController
             $newPriorite = $request->request->get('priorite');
 
             if ($newStatut)   { $ticket->setStatut($newStatut); }
-            if ($newPriorite) { $ticket->setPriorite($newPriorite); }
+            if ($newPriorite) {
+            $ticket->setPriorite($newPriorite);
+
+            $calculator = new \App\Service\TicketSlaCalculator();
+            $newDeadline = $calculator->calculateDeadline(
+                (string) $ticket->getPriorite(),
+                $ticket->getDateCreation()
+            );
+            $ticket->setDeadline($newDeadline);
+}
 
             if (in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
                 $ticket->setDateFermeture(new \DateTime());
