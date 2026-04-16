@@ -2,8 +2,8 @@
 
 namespace App\Controller\Loan;
 
-use App\Entity\Loan\Wallet;
-use App\Form\WalletType;
+use App\Entity\management\Wallet;
+use App\form\WalletType;
 use App\Entity\user\Utilisateur;
 use App\Repository\WalletRepository;
 use Doctrine\ORM\EntityManagerInterface;

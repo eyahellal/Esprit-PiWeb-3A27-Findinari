@@ -3,7 +3,7 @@
 namespace App\Controller\Loan;
 
 use App\Entity\Loan\Obligation;
-use App\Form\ObligationType;
+use App\form\ObligationType;
 use App\Repository\ObligationRepository;
 use App\Repository\InvestissementobligationRepository;
 use Doctrine\ORM\EntityManagerInterface;

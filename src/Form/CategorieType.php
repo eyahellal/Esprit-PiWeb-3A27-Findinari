@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Form;
+namespace App\form;
 
 use App\Entity\management\Categorie;
 use Symfony\Component\Form\AbstractType;
