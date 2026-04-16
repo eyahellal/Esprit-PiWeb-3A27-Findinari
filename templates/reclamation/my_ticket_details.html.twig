@@ -522,10 +522,15 @@
                             {{ form_widget(form.attachment) }}
                         </div>
 
-                        <div style="display:flex; gap:10px;">
-                            <button type="button" class="btn" id="reformulateBtn" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Improve tone and professionalism">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button type="button" class="btn transform-btn" data-mode="formalize" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Formalize & Professionalize">
                                 <i class="fas fa-magic"></i>
-                                Reformulate
+                                Formalize
+                            </button>
+
+                            <button type="button" class="btn transform-btn" data-mode="correct" style="background:#fffcf0; color:#854d0e; border:1px solid #fef08a; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Correct Vocabulary & Grammar">
+                                <i class="fas fa-spell-check"></i>
+                                Correct
                             </button>
 
                             <button type="submit" class="send-reply-btn" id="standardSendBtn">
@@ -760,37 +765,37 @@
 
         loadSuggestions();
 
-        // Reformulation logic
-        const reformulateBtn = document.getElementById('reformulateBtn');
-        if (reformulateBtn) {
-            reformulateBtn.addEventListener('click', async () => {
+        // AI Transformation logic (Formalize & Correct)
+        document.querySelectorAll('.transform-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
                 const currentText = textarea.value.trim();
                 if (!currentText) return;
 
-                const originalContent = reformulateBtn.innerHTML;
-                reformulateBtn.disabled = true;
-                reformulateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
+                const mode = btn.dataset.mode;
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
                 try {
                     const response = await fetch('{{ path('app_message_reformulate') }}', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: currentText })
+                        body: JSON.stringify({ content: currentText, mode: mode })
                     });
                     const data = await response.json();
-                    if (data.reformulated) {
-                        textarea.value = data.reformulated;
+                    if (data.transformed) {
+                        textarea.value = data.transformed;
                         textarea.style.height = 'auto';
                         textarea.style.height = textarea.scrollHeight + 'px';
                     }
                 } catch (e) {
-                    console.error('Reformulation error:', e);
+                    console.error('Transformation error:', e);
                 } finally {
-                    reformulateBtn.disabled = false;
-                    reformulateBtn.innerHTML = originalContent;
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
                 }
             });
-        }
+        });
     });
 </script>
 {% endblock %}

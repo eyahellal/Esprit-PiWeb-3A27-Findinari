@@ -389,16 +389,17 @@ class MessageController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
         $content = $data['content'] ?? '';
+        $mode = $data['mode'] ?? 'formalize';
         
         if (trim($content) === '') {
             return $this->json(['reformulated' => '']);
         }
 
         $role = $this->isGranted('ROLE_ADMIN') ? 'ADMIN' : 'USER';
-        $reformulated = $reformulationService->formalizeMessage($role, $content);
+        $reformulated = $reformulationService->transformMessage($role, $content, $mode);
 
         return $this->json([
-            'reformulated' => $reformulated,
+            'transformed' => $reformulated,
         ]);
     }
 }
