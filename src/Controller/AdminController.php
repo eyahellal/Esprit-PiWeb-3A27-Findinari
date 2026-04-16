@@ -15,12 +15,15 @@ use App\Repository\ObjectifRepository;
 use App\Repository\TicketRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\WalletRepository;
+use App\Service\TicketSlaCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
 class AdminController extends AbstractController
 {
@@ -324,52 +327,92 @@ class AdminController extends AbstractController
 
     #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
-        int $id,
+        Ticket $ticket,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $ticket = $entityManager->getRepository(Ticket::class)->find($id);
-        if (!$ticket) {
-            $this->addFlash('warning', 'This ticket no longer exists.');
-            return $this->redirectToRoute('app_admin_tickets');
-        }
-        if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
-            $newStatut   = $request->request->get('statut');
-            $newPriorite = $request->request->get('priorite');
 
-            if ($newStatut)   { $ticket->setStatut($newStatut); }
-            if ($newPriorite) {
+    if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
+        $oldStatus = $ticket->getStatut();
+
+        $newStatut = $request->request->get('statut');
+        $newPriorite = $request->request->get('priorite');
+
+        if ($newStatut) {
+            $ticket->setStatut($newStatut);
+        }
+
+        if ($newPriorite) {
             $ticket->setPriorite($newPriorite);
-
-            $calculator = new \App\Service\TicketSlaCalculator();
-            $newDeadline = $calculator->calculateDeadline(
-                (string) $ticket->getPriorite(),
-                $ticket->getDateCreation()
-            );
-            $ticket->setDeadline($newDeadline);
-}
-
-            if (in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
-                $ticket->setDateFermeture(new \DateTime());
-            }
-
-            $entityManager->flush();
-            $this->addFlash('success', 'Ticket updated successfully.');
-
-            return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
         }
 
-        $message = new Message();
-        $form    = $this->createForm(MessageType::class, $message);
+        if (in_array($newStatut, ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
+            $ticket->setDateFermeture(new \DateTime());
+        }
 
-        return $this->render('admin/ticket_details.html.twig', [
-            'ticket'   => $ticket,
-            'messages' => $ticket->getMessages(),
-            'form'     => $form->createView(),
+        $resolvedStatuses = ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'];
+
+        $becameResolved =
+            !in_array($oldStatus, $resolvedStatuses, true)
+            && in_array($ticket->getStatut(), $resolvedStatuses, true);
+
+        $entityManager->flush();
+
+        if (
+            $becameResolved &&
+            $ticket->getUtilisateur() &&
+            $ticket->getUtilisateur()->getGmail()
+        ) {
+            try {
+                $recipient = $ticket->getUtilisateur()->getGmail();
+                $sender = $_ENV['MAIL_FROM_ADDRESS'] ?? 'eyahellal8@gmail.com';
+
+                $email = (new TemplatedEmail())
+                    ->from($sender)
+                    ->to($recipient)
+                    ->subject('Your ticket has been resolved')
+                    ->htmlTemplate('emails/ticket_resolved.html.twig')
+                    ->context([
+                        'ticket' => $ticket,
+                        'user' => $ticket->getUtilisateur(),
+                    ]);
+
+                $mailer->send($email);
+                $this->addFlash('info', sprintf('Debug: Mailer->send() logic reached. FROM: %s | TO: %s', $sender, $recipient));
+            } catch (\Throwable $e) {
+                $this->addFlash('danger', sprintf('Debug: Mailer Exception! %s: %s', get_class($e), $e->getMessage()));
+            }
+        } elseif ($becameResolved) {
+            $user = $ticket->getUtilisateur();
+            $this->addFlash('warning', sprintf('Debug: Email block skipped. User: %s | Email: %s', 
+                $user ? $user->getPrenom() : 'NULL', 
+                $user ? $user->getGmail() : 'NULL'
+            ));
+        } else {
+             $this->addFlash('secondary', 'Debug: Ticket status updated but "becameResolved" is FALSE (Email not triggered).');
+        }
+
+        $this->addFlash('success', sprintf('Ticket updated successfully. (Resolution detected: %s | User Found: %s)', 
+            $becameResolved ? 'YES' : 'NO',
+            $ticket->getUtilisateur() ? 'YES' : 'NO'
+        ));
+
+        return $this->redirectToRoute('app_admin_ticket_details', [
+            'id' => $ticket->getId(),
         ]);
     }
 
+    $message = new Message();
+    $form = $this->createForm(MessageType::class, $message);
+
+    return $this->render('admin/ticket_details.html.twig', [
+        'ticket' => $ticket,
+        'messages' => $ticket->getMessages(),
+        'form' => $form->createView(),
+    ]);
+}
     #[Route('/admin/obligations', name: 'app_admin_obligations')]
     public function obligations(
         ObligationRepository $obligationRepository,
