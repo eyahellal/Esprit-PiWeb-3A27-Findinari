@@ -6,6 +6,7 @@ use App\Entity\management\Budget;
 use App\Repository\BudgetRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\WalletRepository;
+use App\Repository\TransactionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,12 +53,12 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
 {
     $user = $this->getUserOrCreate($entityManager);
 
-    // First get all wallet IDs of the current user
     $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
         ->findBy(['utilisateur' => $user]);
 
-    // Then get all budgets that belong to those wallets
     $budgets = [];
+    $budgetsStats = [];
+
     if (!empty($wallets)) {
         $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
             ->createQueryBuilder('b')
@@ -65,10 +66,53 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
             ->setParameter('wallets', $wallets)
             ->getQuery()
             ->getResult();
+
+        foreach ($budgets as $budget) {
+            // Calculate total spent for this budget's category + wallet
+            $totalSpent = $entityManager->getRepository(\App\Entity\management\Transaction::class)
+                ->createQueryBuilder('t')
+                ->select('SUM(t.montant)')
+                ->where('t.wallet = :wallet')
+                ->andWhere('t.categorie = :categorie')
+                ->andWhere('t.type = :type')
+                ->setParameter('wallet', $budget->getWallet())
+                ->setParameter('categorie', $budget->getCategorie())
+                ->setParameter('type', 'depense')
+                ->getQuery()
+                ->getSingleScalarResult() ?? 0;
+
+            $montantMax = $budget->getMontantMax();
+            $remaining = $montantMax - $totalSpent;
+            $spentPercent = $montantMax > 0 ? min(100, ($totalSpent / $montantMax) * 100) : 0;
+
+            // Calculate time progress
+            $startDate = $budget->getDateBudget();
+            $endDate = (clone $startDate)->modify('+' . $budget->getDureeBudget() . ' days');
+            $now = new \DateTime();
+
+            $totalDays = $budget->getDureeBudget();
+            $daysPassed = max(0, $startDate->diff($now)->days);
+            if ($now < $startDate) $daysPassed = 0;
+            $daysLeft = max(0, $totalDays - $daysPassed);
+            $timePercent = $totalDays > 0 ? min(100, ($daysPassed / $totalDays) * 100) : 0;
+            $expired = $now > $endDate;
+
+            $budgetsStats[$budget->getId()] = [
+                'totalSpent' => (float) $totalSpent,
+                'remaining' => (float) $remaining,
+                'spentPercent' => round($spentPercent, 1),
+                'daysPassed' => $daysPassed,
+                'daysLeft' => $daysLeft,
+                'timePercent' => round($timePercent, 1),
+                'expired' => $expired,
+                'endDate' => $endDate,
+            ];
+        }
     }
 
     return $this->render('management/budget/index.html.twig', [
         'budgets' => $budgets,
+        'budgetsStats' => $budgetsStats,
     ]);
 }
     #[Route('/new/step1', name: 'app_budget_new_step1', methods: ['GET', 'POST'])]

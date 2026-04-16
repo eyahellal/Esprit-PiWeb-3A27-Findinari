@@ -150,40 +150,46 @@ public function step3(Request $request, SessionInterface $session, EntityManager
     $budgets = [];
     $budgetsData = [];
 
-    if ($type === 'depense') {
-        $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
-            ->createQueryBuilder('b')
-            ->where('b.wallet = :wallet')
-            ->setParameter('wallet', $wallet)
-            ->getQuery()
-            ->getResult();
+   if ($type === 'depense') {
+    $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
+        ->createQueryBuilder('b')
+        ->where('b.wallet = :wallet')
+        ->setParameter('wallet', $wallet)
+        ->getQuery()
+        ->getResult();
 
-        foreach ($budgets as $budget) {
-            $categorie = $budget->getCategorie();
-            $categories[] = $categorie;
-
-            $totalSpent = $entityManager->getRepository(Transaction::class)
-                ->createQueryBuilder('t')
-                ->select('SUM(t.montant)')
-                ->where('t.wallet = :wallet')
-                ->andWhere('t.categorie = :categorie')
-                ->andWhere('t.type = :type')
-                ->setParameter('wallet', $wallet)
-                ->setParameter('categorie', $categorie)
-                ->setParameter('type', 'depense')
-                ->getQuery()
-                ->getSingleScalarResult() ?? 0;
-
-            $budgetsData[$categorie->getId()] = [
-                'montantMax' => (float) $budget->getMontantMax(),
-                'totalSpent' => (float) $totalSpent,
-                'remaining' => (float) $budget->getMontantMax() - (float) $totalSpent,
-            ];
+    foreach ($budgets as $budget) {
+        // Check if budget is expired
+        $endDate = (clone $budget->getDateBudget())->modify('+' . $budget->getDureeBudget() . ' days');
+        if ($endDate < new \DateTime()) {
+            continue; // Skip expired budgets
         }
-    } else {
-        $categories = $entityManager->getRepository(\App\Entity\management\Categorie::class)
-            ->findBy(['statut' => 'Active']);
+
+        $categorie = $budget->getCategorie();
+        $categories[] = $categorie;
+
+        $totalSpent = $entityManager->getRepository(Transaction::class)
+            ->createQueryBuilder('t')
+            ->select('SUM(t.montant)')
+            ->where('t.wallet = :wallet')
+            ->andWhere('t.categorie = :categorie')
+            ->andWhere('t.type = :type')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('categorie', $categorie)
+            ->setParameter('type', 'depense')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+
+        $budgetsData[$categorie->getId()] = [
+            'montantMax' => (float) $budget->getMontantMax(),
+            'totalSpent' => (float) $totalSpent,
+            'remaining' => (float) $budget->getMontantMax() - (float) $totalSpent,
+        ];
     }
+} else {
+    $categories = $entityManager->getRepository(\App\Entity\management\Categorie::class)
+        ->findBy(['statut' => 'Active']);
+}
 
     if ($request->isMethod('POST')) {
         $transaction = new Transaction();
