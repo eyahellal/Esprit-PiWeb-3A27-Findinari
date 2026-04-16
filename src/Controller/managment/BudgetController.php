@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/budget')]
 class BudgetController extends AbstractController
@@ -122,13 +123,14 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
         ]);
     }
 
-    #[Route('/new/step3', name: 'app_budget_new_step3', methods: ['GET', 'POST'])]
+  #[Route('/new/step3', name: 'app_budget_new_step3', methods: ['GET', 'POST'])]
     public function step3(
         Request $request,
         SessionInterface $session,
         EntityManagerInterface $entityManager,
         WalletRepository $walletRepository,
-        CategorieRepository $categorieRepository
+        CategorieRepository $categorieRepository,
+        ValidatorInterface $validator
     ): Response {
         if (!$session->get('budget_wallet_id') || !$session->get('budget_categorie_id')) {
             return $this->redirectToRoute('app_budget_new_step1');
@@ -141,14 +143,39 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
             $budget = new Budget();
             $budget->setWallet($wallet);
             $budget->setCategorie($categorie);
-            $budget->setMontantMax((float) $request->request->get('montantMax'));
-            $budget->setDureeBudget((int) $request->request->get('dureeBudget'));
-            $budget->setDateBudget(new \DateTime($request->request->get('dateBudget')));
+
+            $montantMax = $request->request->get('montantMax');
+            $budget->setMontantMax($montantMax !== '' && $montantMax !== null ? (float)$montantMax : null);
+
+            $duree = $request->request->get('dureeBudget');
+            $budget->setDureeBudget($duree !== '' && $duree !== null ? (int)$duree : null);
+
+            $date = $request->request->get('dateBudget');
+            $budget->setDateBudget($date ? new \DateTime($date) : null);
+
+            // Validate using @Assert constraints
+            $errors = $validator->validate($budget);
+
+            if (count($errors) > 0) {
+                return $this->render('management/budget/step3.html.twig', [
+                    'wallet' => $wallet,
+                    'categorie' => $categorie,
+                    'errors' => $errors,
+                ]);
+            }
+
+            // Business logic: check if budget amount exceeds wallet balance
+            if ($budget->getMontantMax() > $wallet->getSolde()) {
+                $this->addFlash('error', 'Budget amount (' . $budget->getMontantMax() . ' ' . $wallet->getDevise() . ') exceeds your wallet balance (' . $wallet->getSolde() . ' ' . $wallet->getDevise() . ')!');
+                return $this->render('management/budget/step3.html.twig', [
+                    'wallet' => $wallet,
+                    'categorie' => $categorie,
+                ]);
+            }
 
             $entityManager->persist($budget);
             $entityManager->flush();
 
-            // Clear session
             $session->remove('budget_wallet_id');
             $session->remove('budget_categorie_id');
 
@@ -162,12 +189,26 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
         ]);
     }
 #[Route('/{id}/edit', name: 'app_budget_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, Budget $budget, EntityManagerInterface $entityManager): Response
+public function edit(Request $request, Budget $budget, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
 {
     if ($request->isMethod('POST')) {
-        $budget->setMontantMax((float) $request->request->get('montantMax'));
-        $budget->setDureeBudget((int) $request->request->get('dureeBudget'));
-        $budget->setDateBudget(new \DateTime($request->request->get('dateBudget')));
+        $montantMax = $request->request->get('montantMax');
+        $budget->setMontantMax($montantMax !== '' && $montantMax !== null ? (float)$montantMax : null);
+
+        $duree = $request->request->get('dureeBudget');
+        $budget->setDureeBudget($duree !== '' && $duree !== null ? (int)$duree : null);
+
+        $date = $request->request->get('dateBudget');
+        $budget->setDateBudget($date ? new \DateTime($date) : null);
+
+        $errors = $validator->validate($budget);
+
+        if (count($errors) > 0) {
+            return $this->render('management/budget/edit.html.twig', [
+                'budget' => $budget,
+                'errors' => $errors,
+            ]);
+        }
 
         $entityManager->flush();
 

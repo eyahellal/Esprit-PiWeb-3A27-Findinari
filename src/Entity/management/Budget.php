@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use App\Entity\Loan\Wallet;
 use App\Entity\management\Categorie;
 use App\Repository\BudgetRepository;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BudgetRepository::class)]
 #[ORM\Table(name: 'budget')]
@@ -32,6 +33,7 @@ class Budget
 
     #[ORM\ManyToOne(targetEntity: Wallet::class, inversedBy: 'budgets')]
     #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id')]
+    #[Assert\NotNull(message: 'Wallet is required')]
     private ?Wallet $wallet = null;
 
     public function getWallet(): ?Wallet
@@ -47,6 +49,7 @@ class Budget
 
     #[ORM\ManyToOne(targetEntity: Categorie::class, inversedBy: 'budgets')]
     #[ORM\JoinColumn(name: 'categorie_id', referencedColumnName: 'id')]
+    #[Assert\NotNull(message: 'Category is required')]
     private ?Categorie $categorie = null;
 
     public function getCategorie(): ?Categorie
@@ -60,9 +63,10 @@ class Budget
         return $this;
     }
 
-    #[ORM\Column(type: 'decimal', nullable: false, name: 'montantMax')]
-private ?float $montantMax = null;
-
+   #[ORM\Column(type: 'decimal', nullable: false, name: 'montantMax')]
+    #[Assert\NotNull(message: 'Maximum amount is required')]
+    #[Assert\Positive(message: 'Amount must be greater than 0')]
+    private ?float $montantMax = null;
 
 
 
@@ -71,14 +75,21 @@ private ?float $montantMax = null;
         return $this->montantMax;
     }
 
-    public function setMontantMax(float $montantMax): self
-    {
-        $this->montantMax = $montantMax;
-        return $this;
-    }
+    public function setMontantMax(?float $montantMax): self
+{
+    $this->montantMax = $montantMax;
+    return $this;
+}
 
     #[ORM\Column(type: 'integer', nullable: false, name: 'dureeBudget')]
-private ?int $dureeBudget = null;
+    #[Assert\NotNull(message: 'Duration is required')]
+    #[Assert\Positive(message: 'Duration must be greater than 0')]
+    #[Assert\Range(
+        min: 1,
+        max: 365,
+        notInRangeMessage: 'Duration must be between {{ min }} and {{ max }} days'
+    )]
+    private ?int $dureeBudget = null;
 
 
     public function getDureeBudget(): ?int
@@ -86,24 +97,26 @@ private ?int $dureeBudget = null;
         return $this->dureeBudget;
     }
 
-    public function setDureeBudget(int $dureeBudget): self
-    {
-        $this->dureeBudget = $dureeBudget;
-        return $this;
-    }
+    public function setDureeBudget(?int $dureeBudget): self
+{
+    $this->dureeBudget = $dureeBudget;
+    return $this;
+}
 
-   #[ORM\Column(type: 'date', nullable: false, name: 'dateBudget')]
-private ?\DateTimeInterface $dateBudget = null;
+
+  #[ORM\Column(type: 'date', nullable: false, name: 'dateBudget')]
+    #[Assert\NotNull(message: 'Date is required')]
+    private ?\DateTimeInterface $dateBudget = null;
 
     public function getDateBudget(): ?\DateTimeInterface
     {
         return $this->dateBudget;
     }
 
-    public function setDateBudget(\DateTimeInterface $dateBudget): self
-    {
-        $this->dateBudget = $dateBudget;
-        return $this;
-    }
+    public function setDateBudget(?\DateTimeInterface $dateBudget): self
+{
+    $this->dateBudget = $dateBudget;
+    return $this;
+}
 
 }
