@@ -402,4 +402,23 @@ class MessageController extends AbstractController
             'transformed' => $reformulated,
         ]);
     }
+
+    #[Route('/ticket/{id}/summary', name: 'app_ticket_summary', methods: ['GET'])]
+    public function ticketSummary(
+        Ticket $ticket,
+        \App\Service\GroqSummaryService $summaryService
+    ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $messages = $ticket->getMessages()->toArray();
+        // Sort by date
+        usort($messages, static fn($a, $b) => $a->getDate() <=> $b->getDate());
+
+        $summary = $summaryService->summarizeTicket($messages, $ticket->getStatut() ?? 'OUVERT');
+
+        return $this->json($summary);
+    }
 }
