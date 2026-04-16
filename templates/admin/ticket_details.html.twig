@@ -192,11 +192,14 @@
         .msg-bubble {
             padding: 16px 22px;
             border-radius: 20px;
-            font-size: 14.5px;
+            font-size: 15px;
             line-height: 1.6;
             position: relative;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             transition: transform 0.2s;
+            max-width: 100%;
+            width: fit-content;
+            min-width: 80px;
         }
 
         .admin .msg-bubble {
@@ -403,8 +406,10 @@
             background: rgba(0,0,0,0.03);
             padding: 10px 16px;
             border-radius: 12px;
+            width: 100%;
             min-width: 240px;
             margin-top: 8px;
+            box-sizing: border-box;
         }
 
         .user .voice-message-player {
@@ -526,10 +531,21 @@
             </div>
         </div>
 
-        {% for message in app.flashes('success') %}
-            <div style="background:var(--brand-light); color:var(--brand-dark); padding:14px; border-radius:10px; margin-bottom:20px; font-weight:700;">
-                {{ message }}
-            </div>
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div style="
+                    padding:16px; 
+                    border-radius:12px; 
+                    margin-bottom:24px; 
+                    font-weight:700;
+                    {% if label == 'success' %} background:var(--brand-light); color:var(--brand-dark); border:1px solid rgba(22,163,74,0.2); 
+                    {% elseif label == 'danger' %} background:#fee2e2; color:#b91c1c; border:1px solid rgba(239,68,68,0.2); 
+                    {% elseif label == 'warning' %} background:#fef3c7; color:#92400e; border:1px solid rgba(245,158,11,0.2); 
+                    {% else %} background:#e0f2fe; color:#0369a1; border:1px solid rgba(14,165,233,0.2); {% endif %}
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endfor %}
 
         <div class="section">
