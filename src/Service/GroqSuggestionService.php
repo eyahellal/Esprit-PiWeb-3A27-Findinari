@@ -17,7 +17,10 @@ class GroqSuggestionService
     {
         $conversationText = [];
         foreach ($lastMessages as $message) {
-            $sender = method_exists($message, 'getTypeSender') ? $message->getTypeSender() : 'UNKNOWN';
+            $senderRaw = method_exists($message, 'getTypeSender') ? $message->getTypeSender() : 'USER';
+            // Normalize to ADMIN/USER
+            $sender = (strpos(strtolower($senderRaw), 'admin') !== false) ? 'ADMIN' : 'USER';
+            
             $content = method_exists($message, 'getContenu') ? trim((string) $message->getContenu()) : '';
             if ($content !== '') {
                 $conversationText[] = sprintf('%s: %s', $sender, $content);
@@ -30,6 +33,10 @@ class GroqSuggestionService
             default => 'Formulate highly professional and concise replies for a support ticket interaction.',
         };
 
+        $userPrompt = empty($conversationText) 
+            ? "The conversation has just started. Suggest 3 professional opening greetings or initial help offers for a support chat."
+            : "Conversation context:\n" . implode("\n", $conversationText);
+
         $systemPrompt = <<<PROMPT
 {$roleInstruction}
 
@@ -39,16 +46,14 @@ Return ONLY valid JSON in this exact format:
 {"suggestions":["suggestion 1","suggestion 2","suggestion 3"]}
 
 Rules for Suggestions:
-- exactly 3 suggestions
-- tone must be formal, professional and concise
-- max 15 words per suggestion
-- must be highly relevant to the last messages
-- no markdown, no quotes, no conversational filler
-- DO NOT invent information not present in the context
+- exactly 3 suggestions.
+- tone: formal, extremely professional, and premium.
+- max 15 words per suggestion.
+- relevance: must be the most logical continuation for the {$role}.
+- if the conversation is empty, suggest standard professional openings.
+- no markdown, no quotes, no conversational filler.
 - IMPORTANT: You must suggest what the {$role} should say NEXT.
 PROMPT;
-
-        $userPrompt = "Conversation context:\n" . implode("\n", $conversationText);
 
         $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
             'headers' => [
@@ -65,20 +70,40 @@ PROMPT;
             ],
         ]);
 
+        $statusCode = $response->getStatusCode();
         $data = $response->toArray(false);
 
+        if ($statusCode !== 200) {
+            error_log('Groq API Error: ' . json_encode($data));
+            return [];
+        }
+
         $content = $data['choices'][0]['message']['content'] ?? '';
+        
         if (!is_string($content) || trim($content) === '') {
             return [];
         }
 
         $decoded = json_decode($content, true);
+        
+        // Try regex extraction if direct JSON parsing fails
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
+            preg_match('/\{.*\}/s', $content, $matches);
+            if (isset($matches[0])) {
+                $decoded = json_decode($matches[0], true);
+            }
+        }
+
         if (!is_array($decoded) || !isset($decoded['suggestions']) || !is_array($decoded['suggestions'])) {
+            // Fallback: If AI returned a list instead of JSON
+            if (preg_match_all('/"(.*?)"/', $content, $matches)) {
+                return array_slice($matches[1], 0, 3);
+            }
             return [];
         }
 
         return array_values(array_filter(array_map(
-            static fn ($item) => is_string($item) ? trim($item) : '',
+            static fn ($item) => is_string($item) ? trim($item, " \t\n\r\0\x0B\"'") : '',
             $decoded['suggestions']
         )));
     }
