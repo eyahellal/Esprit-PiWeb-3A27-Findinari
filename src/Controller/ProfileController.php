@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\user\Utilisateur;
 use App\Form\UpdatePasswordType;
 use App\Form\UpdateProfileType;
+use App\Service\FacePlusPlusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -110,5 +111,96 @@ class ProfileController extends AbstractController
         return $this->render('profile/update_password.html.twig', [
             'passwordForm' => $form->createView(),
         ]);
+    }
+
+    #[Route('/profile/face/enroll', name: 'app_profile_face_enroll', methods: ['POST'])]
+    public function enrollFace(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        FacePlusPlusService $faceService
+    ): Response {
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_front_login');
+        }
+
+        $base64Image = (string) $request->request->get('face_image_data');
+
+        if (!$base64Image) {
+            $this->addFlash('danger', 'No face image captured.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        if (!preg_match('/^data:image\/\w+;base64,/', $base64Image)) {
+            $this->addFlash('danger', 'Invalid captured image.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
+        $decodedImage = base64_decode($imageData);
+
+        if ($decodedImage === false) {
+            $this->addFlash('danger', 'Failed to decode image.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/var/uploads/faces';
+
+        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+            throw new \RuntimeException('Unable to create upload directory.');
+        }
+
+        $tempPath = $uploadDir . '/' . uniqid('face_enroll_', true) . '.jpg';
+        file_put_contents($tempPath, $decodedImage);
+
+        try {
+            $faceToken = $faceService->detectFaceToken($tempPath);
+
+            if (!$faceToken) {
+                $this->addFlash('danger', 'No face detected.');
+                return $this->redirectToRoute('app_profile');
+            }
+
+            $user->setFaceToken($faceToken);
+            $user->setFaceEnabled(true);
+            $user->setFaceEnrolledAt(new \DateTime());
+            $user->setDateModification(new \DateTime());
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Face ID enrolled successfully.');
+            return $this->redirectToRoute('app_profile');
+        } catch (\RuntimeException $e) {
+            $this->addFlash('danger', $e->getMessage());
+            return $this->redirectToRoute('app_profile');
+        } finally {
+            if (is_file($tempPath)) {
+                @unlink($tempPath);
+            }
+        }
+    }
+
+    #[Route('/profile/face/disable', name: 'app_profile_face_disable', methods: ['POST'])]
+    public function disableFace(
+        EntityManagerInterface $entityManager
+    ): Response {
+        /** @var Utilisateur|null $user */
+        $user = $this->getUser();
+
+        if (!$user) {
+            return $this->redirectToRoute('app_front_login');
+        }
+
+        $user->setFaceToken(null);
+        $user->setFaceEnabled(false);
+        $user->setFaceEnrolledAt(null);
+        $user->setDateModification(new \DateTime());
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Face ID disabled successfully.');
+        return $this->redirectToRoute('app_profile');
     }
 }
