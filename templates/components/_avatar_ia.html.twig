@@ -1,0 +1,42 @@
+{# templates/components/_avatar_ia.html.twig #}
+{# Usage: {{ include('components/_avatar_ia.html.twig') }} #}
+
+<div class="avatar-ia-wrapper" id="avatar-ia-root">
+
+  <div class="avatar-bubble" id="avatar-bubble">
+    {{ greeting }}
+  </div>
+
+  <svg id="avatar-svg" class="avatar-floater" width="120" height="120"
+       viewBox="190 150 100 110" role="img"
+       onclick="avatarCycleMode()" style="cursor:pointer;">
+    <title>Assistant IA</title>
+    <circle cx="240" cy="195" r="52" fill="#EEEDFE" stroke="#AFA9EC" stroke-width="1"/>
+    <circle id="av-head" cx="240" cy="190" r="38" fill="#534AB7"/>
+    <circle id="av-face" cx="240" cy="193" r="28" fill="#7F77DD"/>
+    <g id="av-eye-l" style="transform-origin:231px 188px;">
+      <ellipse id="av-eyl-shape" cx="231" cy="188" rx="5" ry="5.5" fill="white"/>
+      <circle cx="232" cy="189" r="2.5" fill="#3C3489"/>
+      <circle cx="233" cy="188" r="0.8" fill="white"/>
+    </g>
+    <g id="av-eye-r" style="transform-origin:257px 188px;">
+      <ellipse id="av-eyr-shape" cx="257" cy="188" rx="5" ry="5.5" fill="white"/>
+      <circle cx="258" cy="189" r="2.5" fill="#3C3489"/>
+      <circle cx="259" cy="188" r="0.8" fill="white"/>
+    </g>
+    <path id="av-mouth" d="M229 200 Q240 210 251 200" fill="none"
+          stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="240" y1="152" x2="240" y2="165" stroke="#AFA9EC" stroke-width="2"/>
+    <circle id="av-dot" cx="240" cy="150" r="4" fill="#FAC775"/>
+    <circle cx="202" cy="191" r="5" fill="#3C3489"/>
+    <circle cx="278" cy="191" r="5" fill="#3C3489"/>
+    <circle cx="232" cy="174" r="1.5" fill="#EEEDFE" opacity="0.6"/>
+    <circle cx="240" cy="171" r="1.5" fill="#EEEDFE" opacity="0.6"/>
+    <circle cx="248" cy="174" r="1.5" fill="#EEEDFE" opacity="0.6"/>
+    <line x1="233.5" y1="174" x2="238.5" y2="171.5" stroke="#EEEDFE" stroke-width="0.8" opacity="0.5"/>
+    <line x1="241.5" y1="171.5" x2="246.5" y2="174" stroke="#EEEDFE" stroke-width="0.8" opacity="0.5"/>
+  </svg>
+
+  <p class="avatar-hint">Cliquer pour changer d'humeur</p>
+
+</div>

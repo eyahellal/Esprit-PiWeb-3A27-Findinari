@@ -9,7 +9,7 @@ use App\Entity\user\Feedback;
 use App\Repository\UtilisateurRepository;
 use App\Repository\FeedbackRepository;
 use App\Repository\WalletRepository;
-
+use App\Service\GoalStatisticsService; //
 use App\Repository\ObjectifRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-
+use Doctrine\DBAL\Connection;
 class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'app_admin_dashboard')]
@@ -266,4 +266,6 @@ public function objectifs(
         'selectedWalletId' => $selectedWalletId,
     ]);
 }
+  
 }
+

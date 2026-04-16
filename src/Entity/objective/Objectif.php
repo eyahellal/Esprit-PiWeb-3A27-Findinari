@@ -2,16 +2,11 @@
 
 namespace App\Entity\objective;
 
+use App\Repository\ObjectifRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-
-
-use App\Entity\Loan\Wallet;
-use App\Entity\Categorie;
-
-
-
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ObjectifRepository::class)]
 #[ORM\Table(name: 'objectif')]
@@ -60,7 +55,7 @@ class Objectif
     public function setMontant(float $montant): self { $this->montant = $montant; return $this; }
 
     // ── DATE DÉBUT ─────────────────────────────────────────
-    #[ORM\Column(type: 'date', name: 'dateDebut', nullable: false)]
+    #[ORM\Column(type: 'date', name: 'dateDebut', nullable: true)] // ✅ nullable: true
     #[Assert\NotBlank(message: 'La date de début est obligatoire.')]
     #[Assert\Type(
         type: \DateTimeInterface::class,
@@ -73,7 +68,13 @@ class Objectif
     private ?\DateTimeInterface $dateDebut = null;
 
     public function getDateDebut(): ?\DateTimeInterface { return $this->dateDebut; }
-    public function setDateDebut(\DateTimeInterface $dateDebut): self { $this->dateDebut = $dateDebut; return $this; }
+
+    // ✅ setter unique qui accepte null
+    public function setDateDebut(?\DateTimeInterface $dateDebut): self
+    {
+        $this->dateDebut = $dateDebut;
+        return $this;
+    }
 
     // ── DURÉE ──────────────────────────────────────────────
     #[ORM\Column(type: 'integer', nullable: false)]
@@ -120,7 +121,7 @@ class Objectif
     public function __construct()
     {
         $this->contributiongoals = new ArrayCollection();
-        $this->statut = 'EN_COURS'; // valeur par défaut
+        $this->statut = 'EN_COURS';
     }
 
     public function getContributiongoals(): Collection

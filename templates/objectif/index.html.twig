@@ -12,11 +12,14 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
   .obj-title {
     font-family: 'Syne', sans-serif;
     font-size: 26px;
     font-weight: 600;
+    margin: 0;
   }
   .btn-new {
     background: #1a9e6e;
@@ -28,6 +31,7 @@
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
+    display: inline-block;
   }
   .btn-new:hover { background: #157a55; color: #fff; }
   .btn-new-disabled {
@@ -40,6 +44,21 @@
     font-weight: 500;
     cursor: not-allowed;
     opacity: 0.6;
+  }
+  .btn-top {
+    background: #1a9e6e;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-top:hover {
+    background: #157a55;
+    color: #fff;
   }
 
   .flash-success {
@@ -229,13 +248,19 @@
 
   <div class="obj-header">
     <h1 class="obj-title">Mes objectifs</h1>
-    {% if selectedWalletId %}
-      <a href="{{ path('objectif_new') }}" class="btn-new">+ Nouvel objectif</a>
-    {% else %}
-      <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour créer un objectif">
-        + Nouvel objectif
-      </button>
-    {% endif %}
+    <div style="display: flex; gap: 10px;">
+   {% if selectedWalletId %}
+  <a href="{{ path('objectif_new') }}" class="btn-new">+ Nouvel objectif</a>
+  <a href="{{ path('top_contributions') }}" class="btn-top">🏆 Top contributeurs</a>
+{% else %}
+  <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour créer un objectif">
+    + Nouvel objectif
+  </button>
+  <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour voir le classement">
+    🏆 Top contributeurs
+  </button>
+{% endif %}
+    </div>
   </div>
 
   <div class="wallet-filter">
@@ -255,7 +280,7 @@
 
   {% if not selectedWalletId %}
     <div class="wallet-notice">
-      Sélectionnez un wallet pour pouvoir créer un objectif.
+      Sélectionnez un wallet pour pouvoir créer un objectif ou voir le classement.
     </div>
   {% endif %}
 
@@ -413,5 +438,4 @@ function toggleContribList(id) {
   arrow.textContent = list.classList.contains('open') ? '▲' : '▼';
 }
 </script>
-
 {% endblock %}

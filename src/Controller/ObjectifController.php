@@ -11,7 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
+use App\Service\GoalStatisticsService;
+use App\Repository\UtilisateurRepository;
 #[Route('/objectif')]
 class ObjectifController extends AbstractController
 {
@@ -26,18 +27,17 @@ class ObjectifController extends AbstractController
             $request->getSession()->set('selected_wallet_id', $selectedWalletId);
         }
 
-         if ($this->isGranted('ROLE_ADMIN')) {
-    // ADMIN → tous les wallets
-    $walletsRaw = $connection->fetchAllAssociative(
-        'SELECT id, pays, devise, solde FROM wallet'
-    );
-} else {
-    // USER → seulement ses wallets
-    $walletsRaw = $connection->fetchAllAssociative(
-        'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
-        [$userId]
-    );
-}
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $walletsRaw = $connection->fetchAllAssociative(
+                'SELECT id, pays, devise, solde FROM wallet'
+            );
+        } else {
+            $walletsRaw = $connection->fetchAllAssociative(
+                'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
+                [$userId]
+            );
+        }
+
         $wallets = [];
         foreach ($walletsRaw as $w) {
             $wallets[$w['id']] = $w;
@@ -86,6 +86,107 @@ class ObjectifController extends AbstractController
         ]);
     }
 
+    // ⚠️ DOIT être AVANT /{id} sinon Symfony intercepte "top-contributions" comme un {id}
+   #[Route('/top-contributions', name: 'top_contributions', methods: ['GET'])]
+public function topContributions(
+    ObjectifRepository $objectifRepo,
+    GoalStatisticsService $goalStats,
+    Connection $connection,
+    UtilisateurRepository $utilisateurRepository
+): Response {
+    $user = $this->getUser();
+    if (!$user) {
+        throw $this->createAccessDeniedException('Vous devez être connecté.');
+    }
+
+    // Récupérer tous les objectifs
+    $objectifs = $objectifRepo->findAll();
+
+    // Récupérer tous les utilisateurs (id => nom)
+    $users = [];
+    foreach ($utilisateurRepository->findAll() as $u) {
+        $users[$u->getId()] = [
+            'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
+            'pays' => null, // sera rempli plus tard
+        ];
+    }
+
+    // Récupérer tous les wallets (id, utilisateur_id, pays)
+    $walletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
+    $walletToUser = [];
+    $userPays = []; // pour stocker un pays par utilisateur (le premier rencontré)
+    foreach ($walletsData as $w) {
+        $wid = $w['id'];
+        $uid = $w['utilisateur_id'];
+        $walletToUser[$wid] = $uid;
+        // Si l'utilisateur n'a pas encore de pays, on lui attribue celui de ce wallet
+        if ($uid && !isset($userPays[$uid])) {
+            $userPays[$uid] = $w['pays'] ?: '—';
+        }
+    }
+
+    // Appliquer le pays aux utilisateurs
+    foreach ($users as $uid => &$info) {
+        $info['pays'] = $userPays[$uid] ?? '—';
+    }
+
+    // Grouper par utilisateur
+    $byUser = [];
+    foreach ($objectifs as $objectif) {
+        $wid = $objectif->getWalletId();
+        $uid = $walletToUser[$wid] ?? null;
+        if (!$uid || !isset($users[$uid])) {
+            continue;
+        }
+
+        $stats = $goalStats->compute($objectif);
+        $userInfo = $users[$uid];
+
+        if (!isset($byUser[$uid])) {
+            $byUser[$uid] = [
+                'userName'          => $userInfo['nom'],
+                'pays'              => $userInfo['pays'],
+                'objectifsAtteints' => [],
+                'objectifsEnCours'  => [],
+            ];
+        }
+
+        if ($stats['progressPct'] >= 100) {
+            $byUser[$uid]['objectifsAtteints'][] = [
+                'objectif' => $objectif,
+                'stats'    => $stats,
+            ];
+        } else {
+            $byUser[$uid]['objectifsEnCours'][] = [
+                'objectif' => $objectif,
+                'stats'    => $stats,
+            ];
+        }
+    }
+
+    // Trier : d'abord par nombre d'objectifs atteints, puis par montant total collecté
+    usort($byUser, function ($a, $b) {
+        $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
+        if ($diff !== 0) return $diff;
+        $totalA = array_sum(array_column($a['objectifsAtteints'], 'stats.totalCollected'));
+        $totalB = array_sum(array_column($b['objectifsAtteints'], 'stats.totalCollected'));
+        return $totalB <=> $totalA;
+    });
+
+    return $this->render('objectif/top_contributions.twig', [
+        'byUser' => $byUser,
+    ]);
+}
+    // ⚠️ /{id} doit toujours être en DERNIER parmi les routes GET
+    #[Route('/{id}', name: 'objectif_show', methods: ['GET'])]
+    public function show(Objectif $objectif, GoalStatisticsService $goalStats): Response
+    {
+        return $this->render('objectif/show.html.twig', [
+            'objectif' => $objectif,
+            'stats'    => $goalStats->compute($objectif),
+        ]);
+    }
+
     #[Route('/{id}/edit', name: 'objectif_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Objectif $objectif, EntityManagerInterface $em): Response
     {
@@ -111,7 +212,6 @@ class ObjectifController extends AbstractController
         $walletId = $objectif->getWalletId();
 
         if ($this->isCsrfTokenValid('delete'.$objectif->getId(), $request->request->get('_token'))) {
-            // Rembourse toutes les contributions dans le wallet
             foreach ($objectif->getContributiongoals() as $contrib) {
                 $montant = $contrib->getMontant();
                 $connection->executeStatement(
@@ -150,7 +250,6 @@ class ObjectifController extends AbstractController
                 return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
             }
 
-            // ✅ Condition : montant contribué ne peut pas dépasser le montant cible de l'objectif
             if ($montant > $objectif->getMontant()) {
                 $this->addFlash('error', sprintf(
                     'Le montant de la contribution (%.2f) ne peut pas dépasser le montant cible de l\'objectif (%.2f) !',
@@ -185,7 +284,6 @@ class ObjectifController extends AbstractController
 
         return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
     }
-    
 
     #[Route('/contrib/{id}/delete', name: 'contribution_delete', methods: ['POST'])]
     public function deleteContribution(
@@ -199,7 +297,6 @@ class ObjectifController extends AbstractController
         $montant  = $contribution->getMontant();
 
         if ($this->isCsrfTokenValid('delete_contrib'.$contribution->getId(), $request->request->get('_token'))) {
-
             $connection->executeStatement(
                 'UPDATE wallet SET solde = solde + ? WHERE id = ?',
                 [$montant, $walletId]
@@ -220,4 +317,4 @@ class ObjectifController extends AbstractController
 
         return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
     }
-} 
+}
