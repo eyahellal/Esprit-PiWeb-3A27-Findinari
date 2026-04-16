@@ -8,15 +8,16 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg,#20c997,#28a745);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
 
         .container {
             display: flex;
-            width: 900px;
+            width: 950px;
             background: #fff;
             border-radius: 15px;
             overflow: hidden;
@@ -43,6 +44,13 @@
         h2 {
             margin-bottom: 20px;
             color: #2f4f4f;
+        }
+
+        h3 {
+            margin-top: 24px;
+            margin-bottom: 10px;
+            color: #2f4f4f;
+            font-size: 18px;
         }
 
         input {
@@ -88,6 +96,66 @@
             color: red;
             margin-bottom: 10px;
         }
+
+        .flash {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .flash-danger {
+            background: #fdeaea;
+            color: #b00020;
+        }
+
+        .divider {
+            margin: 22px 0;
+            text-align: center;
+            color: #777;
+            font-size: 14px;
+        }
+
+        .google-btn {
+            display: block;
+            text-align: center;
+            margin-top: 12px;
+            padding: 12px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            color: #222;
+            border-radius: 8px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .face-box {
+            margin-top: 10px;
+            padding: 14px;
+        }
+
+        #camera-container {
+            display: none;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: #000;
+        }
+
+        #captureBtn {
+            margin-top: 10px;
+        }
+
+        .small-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
     </style>
 </head>
 
@@ -104,19 +172,98 @@
                 <div class="error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
             {% endif %}
 
+            {% for message in app.flashes('danger') %}
+                <div class="flash flash-danger">{{ message }}</div>
+            {% endfor %}
+
             <form method="post">
-                <input type="text" name="_username" value="{{ last_username }}" placeholder="Email">
+                <input type="text" id="main_email" name="_username" value="{{ last_username }}" placeholder="Email">
                 <input type="password" name="_password" placeholder="Password">
                 <button type="submit">Login</button>
             </form>
-            <a href="{{ path('app_google_start') }}"
-             style="display:block;text-align:center;margin-top:12px;padding:12px;background:#ffffff;border:1px solid #ddd;color:#222;border-radius:8px;font-weight:bold;text-decoration:none;">
-                    Sign in with Google
-                </a>
+
+            <a href="{{ path('app_google_start') }}" class="google-btn">
+                Sign in with Google
+            </a>
+            <div class="face-box">
+                <form id="faceLoginForm" method="post" action="{{ path('app_face_login') }}">
+                    <input type="hidden" id="face_email" name="email">
+                    <input type="hidden" id="face_image_data" name="face_image_data">
+
+                    <button type="button" id="startFaceBtn">Login with Face ID</button>
+
+                    <div id="camera-container">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas" style="display:none;"></canvas>
+                        <button type="button" id="captureBtn">Capture and Login</button>
+                        <div class="small-text">Allow camera access, then take a quick face photo.</div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="divider">OR</div>
+
+            
+
             <div class="link">
                 <a href="{{ path('app_front_register') }}">Create account</a>
             </div>
         </div>
     </div>
+
+    <script>
+        const startFaceBtn = document.getElementById('startFaceBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const cameraContainer = document.getElementById('camera-container');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const faceImageData = document.getElementById('face_image_data');
+        const faceEmail = document.getElementById('face_email');
+        const mainEmail = document.getElementById('main_email');
+        const faceLoginForm = document.getElementById('faceLoginForm');
+
+        let stream = null;
+
+        startFaceBtn.addEventListener('click', async function () {
+            if (!mainEmail.value.trim()) {
+                alert('Enter your email first.');
+                return;
+            }
+
+            faceEmail.value = mainEmail.value.trim();
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user' },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+                cameraContainer.style.display = 'block';
+            } catch (error) {
+                alert('Unable to access camera.');
+                console.error(error);
+            }
+        });
+
+        captureBtn.addEventListener('click', function () {
+            if (!stream) {
+                alert('Camera is not started.');
+                return;
+            }
+
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            faceImageData.value = canvas.toDataURL('image/jpeg');
+
+            stream.getTracks().forEach(track => track.stop());
+
+            faceLoginForm.submit();
+        });
+    </script>
 </body>
 </html>
