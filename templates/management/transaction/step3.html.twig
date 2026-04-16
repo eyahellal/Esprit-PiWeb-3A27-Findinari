@@ -101,11 +101,22 @@
                                 </div>
                             </div>
                         </div>
-
+{# General errors display #}
+{% if errors is defined %}
+    {% for error in errors %}
+        {% if error.propertyPath not in ['montant', 'categorie'] %}
+            <div class="alert alert-danger small py-2">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                {{ error.propertyPath }}: {{ error.message }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
                         <form method="post"
                               action="{{ path('app_transaction_new_step3') }}"
                               id="transactionForm"
-                              onsubmit="return validateTransaction()">
+                              onsubmit="return validateTransaction()"
+                              novalidate>
 
                             {# Hidden JS data #}
                             <input type="hidden" id="walletSolde" value="{{ wallet.solde }}">
@@ -172,24 +183,37 @@
                                     </div>
                                 </div>
                             {% endif %}
+                            {% if errors is defined %}
+    {% for error in errors %}
+        {% if error.propertyPath == 'categorie' %}
+            <div class="text-danger small mt-1">{{ error.message }}</div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
-                            {# Amount #}
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #26474E;">
-                                    Amount <span class="text-muted fw-normal">({{ wallet.devise }})</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text"
-                                          style="background: #e8f5f5; border-color: #76CDCD; color: #26474E;">
-                                        <i class="fas fa-money-bill-wave"></i>
-                                    </span>
-                                    <input type="number" name="montant" id="montantInput"
-                                           class="form-control"
-                                           placeholder="Enter amount"
-                                           step="0.01" min="0.01" required
-                                           style="border-color: #76CDCD;">
-                                </div>
-                            </div>
+                           {# Amount — FIXED #}
+<div class="mb-3">
+    <label class="form-label fw-bold" style="color: #26474E;">
+        Amount <span class="text-muted fw-normal">({{ wallet.devise }})</span>
+    </label>
+    <div class="input-group">
+        <span class="input-group-text"
+              style="background: #e8f5f5; border-color: #76CDCD; color: #26474E;">
+            <i class="fas fa-money-bill-wave"></i>
+        </span>
+        <input type="number" name="montant" id="montantInput"
+               class="form-control"
+               placeholder="Enter amount"
+               style="border-color: #76CDCD;">
+    </div>
+    {% if errors is defined %}
+        {% for error in errors %}
+            {% if error.propertyPath == 'montant' %}
+                <div class="text-danger small mt-1">{{ error.message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
 
                             {# Description #}
                             <div class="mb-4">

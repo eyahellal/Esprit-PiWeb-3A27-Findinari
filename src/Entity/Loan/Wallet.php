@@ -81,10 +81,6 @@ class Wallet
 
     #[ORM\Column(type: 'string', nullable: false)]
     #[Assert\NotBlank(message: 'Currency is required')]
-    #[Assert\Choice(
-        choices: ['DT', 'EUR', 'USD', 'GBP'],
-        message: 'Choose a valid currency (DT, EUR, USD, GBP)'
-    )]
     private ?string $devise = null;
 
     public function getDevise(): ?string

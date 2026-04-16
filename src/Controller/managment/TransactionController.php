@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/transaction')]
 class TransactionController extends AbstractController
@@ -135,7 +136,7 @@ public function step2(Request $request, SessionInterface $session): Response
 }
 
 #[Route('/new/step3', name: 'app_transaction_new_step3', methods: ['GET', 'POST'])]
-public function step3(Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
+public function step3(Request $request, SessionInterface $session, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
 {
     if (!$session->get('transaction_wallet_id') || !$session->get('transaction_type')) {
         return $this->redirectToRoute('app_transaction_new_step1');
@@ -161,7 +162,6 @@ public function step3(Request $request, SessionInterface $session, EntityManager
             $categorie = $budget->getCategorie();
             $categories[] = $categorie;
 
-            // Calculate total spent for JS validation
             $totalSpent = $entityManager->getRepository(Transaction::class)
                 ->createQueryBuilder('t')
                 ->select('SUM(t.montant)')
@@ -185,50 +185,54 @@ public function step3(Request $request, SessionInterface $session, EntityManager
             ->findBy(['statut' => 'Active']);
     }
 
-   if ($request->isMethod('POST')) {
-    $montant = (float) $request->request->get('montant');
-    $categorieId = $request->request->get('categorie_id');
+    if ($request->isMethod('POST')) {
+        $transaction = new Transaction();
+        $transaction->setWallet($wallet);
+        $transaction->setType($type);
+        $transaction->setDevise($wallet->getDevise());
+        $transaction->setDate(new \DateTime());
+        $transaction->setDescription($request->request->get('description'));
 
-    // Validate categorie for depense
-    if ($type === 'depense' && !$categorieId) {
-        $this->addFlash('error', 'Please select a category!');
-        return $this->render('management/transaction/step3.html.twig', [
-            'wallet' => $wallet,
-            'type' => $type,
-            'categories' => $categories,
-            'budgetsData' => $budgetsData,
-        ]);
+        // Safe value handling
+        $montant = $request->request->get('montant');
+        $transaction->setMontant($montant !== '' && $montant !== null ? (float)$montant : null);
+
+        $categorieId = $request->request->get('categorie_id');
+        if ($categorieId) {
+            $categorie = $entityManager->getRepository(\App\Entity\management\Categorie::class)
+                ->find($categorieId);
+            $transaction->setCategorie($categorie);
+        }
+
+        // Validate using @Assert constraints
+        $errors = $validator->validate($transaction);
+
+        if (count($errors) > 0) {
+            return $this->render('management/transaction/step3.html.twig', [
+                'wallet' => $wallet,
+                'type' => $type,
+                'categories' => $categories,
+                'budgetsData' => $budgetsData,
+                'errors' => $errors,
+            ]);
+        }
+
+        // Balance update
+        if ($type === 'income') {
+            $wallet->setSolde($wallet->getSolde() + $transaction->getMontant());
+        } else {
+            $wallet->setSolde($wallet->getSolde() - $transaction->getMontant());
+        }
+
+        $entityManager->persist($transaction);
+        $entityManager->flush();
+
+        $session->remove('transaction_wallet_id');
+        $session->remove('transaction_type');
+
+        $this->addFlash('success', 'Transaction added successfully!');
+        return $this->redirectToRoute('app_transaction_index');
     }
-
-    $transaction = new Transaction();
-    $transaction->setWallet($wallet);
-    $transaction->setType($type);
-    $transaction->setMontant($montant);
-    $transaction->setDevise($wallet->getDevise());
-    $transaction->setDate(new \DateTime());
-    $transaction->setDescription($request->request->get('description'));
-
-    if ($categorieId) {
-        $categorie = $entityManager->getRepository(\App\Entity\management\Categorie::class)
-            ->find($categorieId);
-        $transaction->setCategorie($categorie);
-    }
-
-    if ($type === 'income') {
-        $wallet->setSolde($wallet->getSolde() + $montant);
-    } else {
-        $wallet->setSolde($wallet->getSolde() - $montant);
-    }
-
-    $entityManager->persist($transaction);
-    $entityManager->flush();
-
-    $session->remove('transaction_wallet_id');
-    $session->remove('transaction_type');
-
-    $this->addFlash('success', 'Transaction added successfully!');
-    return $this->redirectToRoute('app_transaction_index');
-}
 
     return $this->render('management/transaction/step3.html.twig', [
         'wallet' => $wallet,
