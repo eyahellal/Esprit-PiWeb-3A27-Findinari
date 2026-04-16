@@ -487,6 +487,7 @@
                     },
                     'multipart': true
                 }) }}
+                    <div id="suggestionsBox" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; min-height:36px; align-items:center;"></div>
                     <div class="modern-textarea-wrapper">
                         {{ form_widget(form.contenu, {
                             'attr': {
@@ -521,10 +522,17 @@
                             {{ form_widget(form.attachment) }}
                         </div>
 
-                        <button type="submit" class="send-reply-btn" id="standardSendBtn">
-                            <i class="fas fa-paper-plane"></i>
-                            Send Reply
-                        </button>
+                        <div style="display:flex; gap:10px;">
+                            <button type="button" class="btn" id="reformulateBtn" style="background:#f0f9ff; color:#0284c7; border:1px solid #bae6fd; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Improve tone and professionalism">
+                                <i class="fas fa-magic"></i>
+                                Reformulate
+                            </button>
+
+                            <button type="submit" class="send-reply-btn" id="standardSendBtn">
+                                <i class="fas fa-paper-plane"></i>
+                                Send Reply
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="fileNameDisplay" class="file-preview"></div>
@@ -705,5 +713,84 @@
             }
         });
     }
+
+    // AI Suggestions Logic
+    document.addEventListener('DOMContentLoaded', function () {
+        const suggestionsBox = document.getElementById('suggestionsBox');
+        const textarea = document.getElementById('{{ form.contenu.vars.id }}');
+        const suggestionsUrl = '{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}';
+
+        async function loadSuggestions() {
+            if (!suggestionsBox || !textarea) return;
+
+            suggestionsBox.innerHTML = '<span style="color:#64748b;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;"><i class="fas fa-spinner fa-spin"></i> Getting AI suggestions...</span>';
+
+            try {
+                const response = await fetch(suggestionsUrl);
+                const data = await response.json();
+                console.log('Detected Role:', data.detected_role);
+                console.log('Groq Suggestions Response:', data);
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    suggestionsBox.innerHTML = '';
+                    data.suggestions.forEach(suggestion => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'suggestion-chip';
+                        btn.textContent = suggestion;
+                        btn.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap; border: 1px solid #22c55e33;';
+                        
+                        btn.onmouseover = () => { btn.style.background = '#dcfce7'; btn.style.transform = 'translateY(-1px)'; };
+                        btn.onmouseout = () => { btn.style.background = '#f0fdf4'; btn.style.transform = 'none'; };
+                        
+                        btn.onclick = () => {
+                            textarea.value = suggestion;
+                            textarea.focus();
+                        };
+                        suggestionsBox.appendChild(btn);
+                    });
+                } else {
+                    suggestionsBox.innerHTML = '<span style="color:#94a3b8;font-size:12px;font-style:italic;">No suggestions available</span>';
+                }
+            } catch (e) {
+                console.error('Groq Error:', e);
+                suggestionsBox.innerHTML = '';
+            }
+        }
+
+        loadSuggestions();
+
+        // Reformulation logic
+        const reformulateBtn = document.getElementById('reformulateBtn');
+        if (reformulateBtn) {
+            reformulateBtn.addEventListener('click', async () => {
+                const currentText = textarea.value.trim();
+                if (!currentText) return;
+
+                const originalContent = reformulateBtn.innerHTML;
+                reformulateBtn.disabled = true;
+                reformulateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>...';
+
+                try {
+                    const response = await fetch('{{ path('app_message_reformulate') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: currentText })
+                    });
+                    const data = await response.json();
+                    if (data.reformulated) {
+                        textarea.value = data.reformulated;
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                    }
+                } catch (e) {
+                    console.error('Reformulation error:', e);
+                } finally {
+                    reformulateBtn.disabled = false;
+                    reformulateBtn.innerHTML = originalContent;
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

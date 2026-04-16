@@ -7,6 +7,9 @@ parameters:
     tickets_directory: '%kernel.project_dir%/public/uploads/tickets'
     messages_directory: '%kernel.project_dir%/public/uploads/messages'
     cloudinary_url: '%env(CLOUDINARY_URL)%'
+    groq_api_key: '%env(GROQ_API_KEY)%'
+    groq_model: '%env(GROQ_MODEL)%'
+
 
 
 services:
@@ -25,6 +28,15 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Service\GroqSuggestionService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
+
+    App\Service\GroqReformulationService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

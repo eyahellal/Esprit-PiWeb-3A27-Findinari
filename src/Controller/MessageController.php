@@ -15,6 +15,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use App\Repository\TicketRepository;
+use App\Service\GroqSuggestionService;
 
 class MessageController extends AbstractController
 {
@@ -337,5 +339,66 @@ class MessageController extends AbstractController
                 'error' => 'Server error: ' . $e->getMessage(),
             ], 500);
         }
+    }
+    #[Route('/ticket/{id}/suggestions', name: 'app_ticket_message_suggestions', methods: ['GET'])]
+    public function messageSuggestions(
+        Ticket $ticket,
+        GroqSuggestionService $groqSuggestionService
+    ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Determine role based on Symfony security
+        $role = $this->isGranted('ROLE_ADMIN') ? 'ADMIN' : 'USER';
+
+        $messages = $ticket->getMessages()->toArray();
+
+        // Sort by date to get chronological order
+        usort($messages, static function ($a, $b) {
+            return ($a->getDate() <=> $b->getDate());
+        });
+
+        // Get the last 5 messages for context
+        $lastMessages = array_slice($messages, -5);
+
+        try {
+            $suggestions = $groqSuggestionService->suggestReplies($role, $lastMessages);
+            return $this->json([
+                'suggestions' => $suggestions,
+                'detected_role' => $role
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'Failed to fetch suggestions',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/message/reformulate', name: 'app_message_reformulate', methods: ['POST'])]
+    public function messageReformulate(
+        Request $request,
+        \App\Service\GroqReformulationService $reformulationService
+    ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $content = $data['content'] ?? '';
+        
+        if (trim($content) === '') {
+            return $this->json(['reformulated' => '']);
+        }
+
+        $role = $this->isGranted('ROLE_ADMIN') ? 'ADMIN' : 'USER';
+        $reformulated = $reformulationService->formalizeMessage($role, $content);
+
+        return $this->json([
+            'reformulated' => $reformulated,
+        ]);
     }
 }
