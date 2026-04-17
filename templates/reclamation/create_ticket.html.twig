@@ -180,6 +180,74 @@
         color: #22c55e;
         font-weight: 900;
     }
+
+    /* AI Priority Medal Styles */
+    .ai-priority-badge {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 12px;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 10px;
+        animation: slideInBadge 0.4s ease-out;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    @keyframes slideInBadge {
+        from { opacity: 0; transform: translateX(-10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .ai-priority-badge i {
+        font-size: 0.9rem;
+    }
+
+    .priority-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .priority-header label {
+        margin-bottom: 0 !important;
+    }
+
+    .loading-spinner-ai {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .detected-text {
+        color: #6366f1;
+        font-style: italic;
+        font-size: 0.85rem;
+        display: none;
+        margin-top: 5px;
+    }
+
+    /* Debugger Source Badge */
+    .source-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+        margin-left: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 </style>
 
 {# Custom Support Header removed to show default navbar #}
@@ -210,7 +278,14 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Priority</label>
+                    <div class="priority-header">
+                        <label class="form-label">Priority</label>
+                        <div id="ai-detected-badge" class="ai-priority-badge">
+                            <i class="fas fa-robot"></i>
+                            <span id="ai-detected-label">AI Detected</span>
+                            <div id="ai-loading" class="loading-spinner-ai"></div>
+                        </div>
+                    </div>
                     <div class="priority-options">
                         <div class="priority-item">
                             <input type="radio" id="ticket_priorite_1" name="ticket[priorite]" value="Low">
@@ -226,6 +301,7 @@
                         </div>
                     </div>
                     {% do form.priorite.setRendered() %}
+                    <div id="detected-explainer" class="detected-text">Intelligence optimized: Matching priority auto-selected.</div>
                     <div class="form-error">{{ form_errors(form.priorite) }}</div>
                 </div>
                 
@@ -331,6 +407,114 @@
         if(textarea) {
             updateCharCount(textarea);
         }
+
+        // --- AI Priority Detection ---
+        const titreInput = document.getElementById('{{ form.titre.vars.id }}');
+        const descInput = document.getElementById('{{ form.description.vars.id }}');
+        const aiBadge = document.getElementById('ai-detected-badge');
+        const aiLabel = document.getElementById('ai-detected-label');
+        const aiLoading = document.getElementById('ai-loading');
+        const detectedExplainer = document.getElementById('detected-explainer');
+        
+        let detectionTimeout;
+
+        function detectPriority() {
+            const title = titreInput.value.trim();
+            const description = descInput.value.trim();
+
+            if (title.length < 5 || description.length < 10) {
+                return;
+            }
+
+            // Show loading state
+            aiBadge.style.display = 'inline-flex';
+            aiLoading.style.display = 'block';
+            aiLabel.textContent = 'Analyzing...';
+            
+            fetch("{{ path('app_user_ticket_classify_priority') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ title, description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("[DEBUG] AI classification result:", data);
+                aiLoading.style.display = 'none';
+                
+                if (data.is_error) {
+                    aiBadge.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                    aiBadge.querySelector('i').className = 'fas fa-exclamation-triangle';
+                    aiLabel.innerHTML = `<span style="color: white">Connection Error</span>`;
+                    detectedExplainer.style.display = 'block';
+                    detectedExplainer.style.color = '#ef4444';
+                    detectedExplainer.textContent = "AI unreachable: " + data.raw;
+                    return;
+                }
+
+                detectedExplainer.style.color = '#6366f1';
+                // ... rest of the logic ...
+                let sourceLabel = '';
+                let iconClass = 'fas fa-robot';
+                
+                if (data.source === 'remote_ai') {
+                    sourceLabel = 'Remote AI';
+                    iconClass = 'fas fa-brain';
+                    aiBadge.style.background = 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)';
+                } else if (data.source === 'local_keywords') {
+                    sourceLabel = 'Keywords';
+                    iconClass = 'fas fa-search';
+                    aiBadge.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                }
+
+                aiLabel.innerHTML = `AI Detected: ${data.priority} <span class="source-badge">${sourceLabel}</span>`;
+                aiBadge.querySelector('i').className = iconClass;
+                
+                detectedExplainer.style.display = 'block';
+                detectedExplainer.textContent = data.source === 'remote_ai' 
+                    ? "Intelligence optimized: Deep analysis complete." 
+                    : "Pattern recognized: Auto-selected based on keywords.";
+
+                // Find and check the matching radio button
+                const radioButtons = document.getElementsByName('ticket[priorite]');
+                for (let rb of radioButtons) {
+                    if (rb.value === data.priority) {
+                        rb.checked = true;
+                        break;
+                    }
+                }
+
+                // Add a little glow effect or pulse to the selected label if needed
+                // For now, the checked state CSS handles it.
+            })
+            .catch(error => {
+                console.error('Error detecting priority:', error);
+                aiBadge.style.display = 'none';
+            });
+        }
+
+        const debouncedDetect = () => {
+            if (userManuallyChanged) return; // Respect manual choice
+            clearTimeout(detectionTimeout);
+            detectionTimeout = setTimeout(detectPriority, 1000);
+        };
+
+        titreInput.addEventListener('input', debouncedDetect);
+        descInput.addEventListener('input', debouncedDetect);
+
+        // Track manual changes
+        const radioButtons = document.getElementsByName('ticket[priorite]');
+        let userManuallyChanged = false;
+        radioButtons.forEach(rb => {
+            rb.addEventListener('click', () => {
+                userManuallyChanged = true;
+                aiBadge.style.opacity = '0.5';
+                aiLabel.textContent = 'AI Detection paused (Manual override)';
+                detectedExplainer.textContent = 'Manual selection active. AI will no longer auto-update.';
+            });
+        });
     });
 </script>
 {% endblock %}

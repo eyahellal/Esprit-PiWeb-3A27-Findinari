@@ -9,6 +9,8 @@ parameters:
     cloudinary_url: '%env(CLOUDINARY_URL)%'
     groq_api_key: '%env(GROQ_API_KEY)%'
     groq_model: '%env(GROQ_MODEL)%'
+    hf_api_token: '%env(HF_API_TOKEN)%'
+    hf_api_url: '%env(HF_API_URL)%'
 
 
 
@@ -39,6 +41,10 @@ services:
             $groqModel: '%groq_model%'
 
     App\Service\GroqSummaryService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
+    App\Service\TicketPriorityClassifierService:
         arguments:
             $groqApiKey: '%groq_api_key%'
             $groqModel: '%groq_model%'

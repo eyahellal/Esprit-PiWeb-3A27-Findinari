@@ -17,10 +17,7 @@ class GroqSuggestionService
     {
         $conversationText = [];
         foreach ($lastMessages as $message) {
-            $senderRaw = method_exists($message, 'getTypeSender') ? $message->getTypeSender() : 'USER';
-            // Normalize to ADMIN/USER
-            $sender = (strpos(strtolower($senderRaw), 'admin') !== false) ? 'ADMIN' : 'USER';
-            
+            $sender = method_exists($message, 'getTypeSender') ? $message->getTypeSender() : 'UNKNOWN';
             $content = method_exists($message, 'getContenu') ? trim((string) $message->getContenu()) : '';
             if ($content !== '') {
                 $conversationText[] = sprintf('%s: %s', $sender, $content);
@@ -53,7 +50,11 @@ Rules for Suggestions:
 - if the conversation is empty, suggest standard professional openings.
 - no markdown, no quotes, no conversational filler.
 - IMPORTANT: You must suggest what the {$role} should say NEXT.
+- DO NOT invent information not present in the context
+-Provide meaningfull suggestions not just one words
 PROMPT;
+
+        $userPrompt = "Conversation context:\n" . implode("\n", $conversationText);
 
         $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
             'headers' => [
@@ -70,14 +71,7 @@ PROMPT;
             ],
         ]);
 
-        $statusCode = $response->getStatusCode();
         $data = $response->toArray(false);
-
-        if ($statusCode !== 200) {
-            error_log('Groq API Error: ' . json_encode($data));
-            return [];
-        }
-
         $content = $data['choices'][0]['message']['content'] ?? '';
         
         if (!is_string($content) || trim($content) === '') {
@@ -87,7 +81,7 @@ PROMPT;
         $decoded = json_decode($content, true);
         
         // Try regex extraction if direct JSON parsing fails
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
+        if (json_last_error() !== JSON_ERROR_NONE) {
             preg_match('/\{.*\}/s', $content, $matches);
             if (isset($matches[0])) {
                 $decoded = json_decode($matches[0], true);
@@ -95,15 +89,11 @@ PROMPT;
         }
 
         if (!is_array($decoded) || !isset($decoded['suggestions']) || !is_array($decoded['suggestions'])) {
-            // Fallback: If AI returned a list instead of JSON
-            if (preg_match_all('/"(.*?)"/', $content, $matches)) {
-                return array_slice($matches[1], 0, 3);
-            }
             return [];
         }
 
         return array_values(array_filter(array_map(
-            static fn ($item) => is_string($item) ? trim($item, " \t\n\r\0\x0B\"'") : '',
+            static fn ($item) => is_string($item) ? trim($item) : '',
             $decoded['suggestions']
         )));
     }

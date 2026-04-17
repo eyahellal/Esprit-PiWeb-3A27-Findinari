@@ -16,9 +16,30 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 use App\Repository\TicketRepository;
+use App\Service\TicketPriorityClassifierService;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class TicketUserController extends AbstractController
 {
+    #[Route('/user/ticket/classify-priority', name: 'app_user_ticket_classify_priority', methods: ['POST'])]
+    public function classifyPriorityAction(Request $request, TicketPriorityClassifierService $classifier): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $title = $data['title'] ?? '';
+        $description = $data['description'] ?? '';
+
+        $result = $classifier->classifyPriority($title, $description);
+        $projectPriority = $classifier->mapToProjectPriority($result['priority']);
+
+        return new JsonResponse([
+            'priority' => $projectPriority,
+            'code' => $result['priority'],
+            'source' => $result['source'],
+            'raw' => $result['raw'],
+            'is_error' => $result['is_error'] ?? false
+        ]);
+    }
+
     #[Route('/user/tickets', name: 'app_user_tickets')]
     public function myTickets(TicketRepository $ticketRepository): Response
     {
