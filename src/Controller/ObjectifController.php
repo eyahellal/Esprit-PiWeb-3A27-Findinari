@@ -8,11 +8,13 @@ use App\Repository\ObjectifRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\GoalStatisticsService;
 use App\Repository\UtilisateurRepository;
+
 #[Route('/objectif')]
 class ObjectifController extends AbstractController
 {
@@ -86,98 +88,183 @@ class ObjectifController extends AbstractController
         ]);
     }
 
-    // ⚠️ DOIT être AVANT /{id} sinon Symfony intercepte "top-contributions" comme un {id}
-   #[Route('/top-contributions', name: 'top_contributions', methods: ['GET'])]
-public function topContributions(
-    ObjectifRepository $objectifRepo,
-    GoalStatisticsService $goalStats,
-    Connection $connection,
-    UtilisateurRepository $utilisateurRepository
-): Response {
-    $user = $this->getUser();
-    if (!$user) {
-        throw $this->createAccessDeniedException('Vous devez être connecté.');
-    }
+    // ── Static routes MUST come before /{id} ──────────────────────────────
 
-    // Récupérer tous les objectifs
-    $objectifs = $objectifRepo->findAll();
-
-    // Récupérer tous les utilisateurs (id => nom)
-    $users = [];
-    foreach ($utilisateurRepository->findAll() as $u) {
-        $users[$u->getId()] = [
-            'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
-            'pays' => null, // sera rempli plus tard
-        ];
-    }
-
-    // Récupérer tous les wallets (id, utilisateur_id, pays)
-    $walletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
-    $walletToUser = [];
-    $userPays = []; // pour stocker un pays par utilisateur (le premier rencontré)
-    foreach ($walletsData as $w) {
-        $wid = $w['id'];
-        $uid = $w['utilisateur_id'];
-        $walletToUser[$wid] = $uid;
-        // Si l'utilisateur n'a pas encore de pays, on lui attribue celui de ce wallet
-        if ($uid && !isset($userPays[$uid])) {
-            $userPays[$uid] = $w['pays'] ?: '—';
-        }
-    }
-
-    // Appliquer le pays aux utilisateurs
-    foreach ($users as $uid => &$info) {
-        $info['pays'] = $userPays[$uid] ?? '—';
-    }
-
-    // Grouper par utilisateur
-    $byUser = [];
-    foreach ($objectifs as $objectif) {
-        $wid = $objectif->getWalletId();
-        $uid = $walletToUser[$wid] ?? null;
-        if (!$uid || !isset($users[$uid])) {
-            continue;
+    #[Route('/top-contributions', name: 'top_contributions', methods: ['GET'])]
+    public function topContributions(
+        ObjectifRepository $objectifRepo,
+        GoalStatisticsService $goalStats,
+        Connection $connection,
+        UtilisateurRepository $utilisateurRepository
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
         }
 
-        $stats = $goalStats->compute($objectif);
-        $userInfo = $users[$uid];
+        $objectifs = $objectifRepo->findAll();
 
-        if (!isset($byUser[$uid])) {
-            $byUser[$uid] = [
-                'userName'          => $userInfo['nom'],
-                'pays'              => $userInfo['pays'],
-                'objectifsAtteints' => [],
-                'objectifsEnCours'  => [],
+        $users = [];
+        foreach ($utilisateurRepository->findAll() as $u) {
+            $users[$u->getId()] = [
+                'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
+                'pays' => null,
             ];
         }
 
-        if ($stats['progressPct'] >= 100) {
-            $byUser[$uid]['objectifsAtteints'][] = [
-                'objectif' => $objectif,
-                'stats'    => $stats,
-            ];
+        $walletsData  = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
+        $walletToUser = [];
+        $userPays     = [];
+        foreach ($walletsData as $w) {
+            $walletToUser[$w['id']] = $w['utilisateur_id'];
+            if ($w['utilisateur_id'] && !isset($userPays[$w['utilisateur_id']])) {
+                $userPays[$w['utilisateur_id']] = $w['pays'] ?: '—';
+            }
+        }
+
+        foreach ($users as $uid => &$info) {
+            $info['pays'] = $userPays[$uid] ?? '—';
+        }
+        unset($info);
+
+        $byUser = [];
+        foreach ($objectifs as $objectif) {
+            $wid = $objectif->getWalletId();
+            $uid = $walletToUser[$wid] ?? null;
+            if (!$uid || !isset($users[$uid])) {
+                continue;
+            }
+
+            $stats    = $goalStats->compute($objectif);
+            $userInfo = $users[$uid];
+
+            if (!isset($byUser[$uid])) {
+                $byUser[$uid] = [
+                    'userName'          => $userInfo['nom'],
+                    'pays'              => $userInfo['pays'],
+                    'objectifsAtteints' => [],
+                    'objectifsEnCours'  => [],
+                ];
+            }
+
+            if ($stats['progressPct'] >= 100) {
+                $byUser[$uid]['objectifsAtteints'][] = ['objectif' => $objectif, 'stats' => $stats];
+            } else {
+                $byUser[$uid]['objectifsEnCours'][]  = ['objectif' => $objectif, 'stats' => $stats];
+            }
+        }
+
+        usort($byUser, function ($a, $b) {
+            $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
+            if ($diff !== 0) return $diff;
+            $totalA = array_sum(array_map(fn($item) => $item['stats']['totalCollected'], $a['objectifsAtteints']));
+            $totalB = array_sum(array_map(fn($item) => $item['stats']['totalCollected'], $b['objectifsAtteints']));
+            return $totalB <=> $totalA;
+        });
+
+        return $this->render('objectif/top_contributions.twig', [
+            'byUser' => $byUser,
+        ]);
+    }
+
+    #[Route('/historique', name: 'objectif_historique', methods: ['GET'])]
+    public function historique(
+        ObjectifRepository $repo,
+        GoalStatisticsService $goalStats,
+        Connection $connection,
+        Request $request
+    ): Response {
+        $user   = $this->getUser();
+        $userId = $user?->getId() ?? 1;
+
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $walletsRaw = $connection->fetchAllAssociative(
+                'SELECT id, pays, devise, solde FROM wallet'
+            );
         } else {
-            $byUser[$uid]['objectifsEnCours'][] = [
-                'objectif' => $objectif,
-                'stats'    => $stats,
-            ];
+            $walletsRaw = $connection->fetchAllAssociative(
+                'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
+                [$userId]
+            );
         }
+
+        $walletIds = array_column($walletsRaw, 'id');
+        $objectifs = $walletIds ? $repo->findBy(['walletId' => $walletIds]) : [];
+
+        $historique = [];
+        $enCours    = [];
+
+        foreach ($objectifs as $objectif) {
+            $stats = $goalStats->compute($objectif);
+
+            if ($objectif->getStatut() === 'TERMINE') {
+                // Find the most recent contribution date as the completion date
+                $contribs = $objectif->getContributiongoals()->toArray();
+                usort($contribs, fn($a, $b) => $b->getDate() <=> $a->getDate());
+                $dateAtteinte = count($contribs) > 0 ? $contribs[0]->getDate() : null;
+
+                // Compute real duration in days
+                $dureeReelle = null;
+                if ($dateAtteinte && $objectif->getDateDebut()) {
+                    $dureeReelle = (int) $objectif->getDateDebut()->diff($dateAtteinte)->days;
+                }
+
+                $historique[] = [
+                    'objectif'     => $objectif,
+                    'stats'        => $stats,
+                    'dateAtteinte' => $dateAtteinte,
+                    'dureeReelle'  => $dureeReelle,
+                ];
+            } else {
+                $enCours[] = [
+                    'objectif' => $objectif,
+                    'stats'    => $stats,
+                ];
+            }
+        }
+
+        // Sort history: most recent first
+        usort($historique, function ($a, $b) {
+            if (!$a['dateAtteinte'] || !$b['dateAtteinte']) return 0;
+            return $b['dateAtteinte'] <=> $a['dateAtteinte'];
+        });
+
+        return $this->render('objectif/historique.html.twig', [
+            'historique' => $historique,
+            'enCours'    => $enCours,
+        ]);
     }
 
-    // Trier : d'abord par nombre d'objectifs atteints, puis par montant total collecté
-    usort($byUser, function ($a, $b) {
-        $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
-        if ($diff !== 0) return $diff;
-        $totalA = array_sum(array_column($a['objectifsAtteints'], 'stats.totalCollected'));
-        $totalB = array_sum(array_column($b['objectifsAtteints'], 'stats.totalCollected'));
-        return $totalB <=> $totalA;
-    });
+    // ── AI Advisor: simulate "what if I contribute X/day?" ──────────────
+    #[Route('/{id}/simuler', name: 'objectif_simuler', methods: ['POST'])]
+    public function simuler(
+        Request $request,
+        Objectif $objectif,
+        GoalStatisticsService $goalStats
+    ): JsonResponse {
+        $dailyAmount = (float) $request->request->get('montant_quotidien', 0);
 
-    return $this->render('objectif/top_contributions.twig', [
-        'byUser' => $byUser,
-    ]);
-}
-    // ⚠️ /{id} doit toujours être en DERNIER parmi les routes GET
+        if ($dailyAmount <= 0) {
+            return $this->json(['error' => 'Le montant journalier doit être positif.'], 400);
+        }
+
+        $simulation = $goalStats->simulateDailyContribution($objectif, $dailyAmount);
+
+        if (!$simulation) {
+            return $this->json(['message' => 'Cet objectif est déjà atteint !']);
+        }
+
+        return $this->json([
+            'predictedDate'  => $simulation['predictedDate']->format('d/m/Y'),
+            'daysNeeded'     => $simulation['daysNeeded'],
+            'velocityPerDay' => $simulation['velocityPerDay'],
+            'remaining'      => $simulation['remaining'],
+            'confidence'     => $simulation['confidence'],
+        ]);
+    }
+
+    // ── /{id} routes last ─────────────────────────────────────────────────
+
     #[Route('/{id}', name: 'objectif_show', methods: ['GET'])]
     public function show(Objectif $objectif, GoalStatisticsService $goalStats): Response
     {
@@ -213,16 +300,14 @@ public function topContributions(
 
         if ($this->isCsrfTokenValid('delete'.$objectif->getId(), $request->request->get('_token'))) {
             foreach ($objectif->getContributiongoals() as $contrib) {
-                $montant = $contrib->getMontant();
                 $connection->executeStatement(
                     'UPDATE wallet SET solde = solde + ? WHERE id = ?',
-                    [$montant, $walletId]
+                    [$contrib->getMontant(), $walletId]
                 );
             }
 
             $em->remove($objectif);
             $em->flush();
-
             $this->addFlash('success', 'Objectif supprimé et contributions remboursées dans le wallet.');
         }
 
@@ -240,10 +325,7 @@ public function topContributions(
         $walletId = $objectif->getWalletId();
 
         if ($montant > 0) {
-            $wallet = $connection->fetchAssociative(
-                'SELECT * FROM wallet WHERE id = ?',
-                [$walletId]
-            );
+            $wallet = $connection->fetchAssociative('SELECT * FROM wallet WHERE id = ?', [$walletId]);
 
             if (!$wallet || $wallet['solde'] < $montant) {
                 $this->addFlash('error', 'Solde insuffisant dans ce wallet !');
@@ -252,9 +334,8 @@ public function topContributions(
 
             if ($montant > $objectif->getMontant()) {
                 $this->addFlash('error', sprintf(
-                    'Le montant de la contribution (%.2f) ne peut pas dépasser le montant cible de l\'objectif (%.2f) !',
-                    $montant,
-                    $objectif->getMontant()
+                    'Le montant de la contribution (%.2f) ne peut pas dépasser le montant cible (%.2f) !',
+                    $montant, $objectif->getMontant()
                 ));
                 return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
             }
@@ -270,11 +351,10 @@ public function topContributions(
                 [$montant, $walletId]
             );
 
-            $totalContrib = 0;
+            $totalContrib = $montant;
             foreach ($objectif->getContributiongoals() as $c) {
                 $totalContrib += $c->getMontant();
             }
-            $totalContrib += $montant;
 
             $objectif->setStatut($totalContrib >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
             $em->flush();
