@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}Mon App{% endblock %}</title>
+  <link rel="stylesheet" href="{{ asset('styles/app.css') }}"/>
+  {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+{# ══════════════════════════════════════════════════════════
+   NAVBAR — copiez/collez votre navbar existante ici
+   et ajoutez juste le bloc "notif-bell-wrap" dedans
+══════════════════════════════════════════════════════════ #}
+<nav class="navbar">
+
+  {# ... votre logo, liens, etc. ... #}
+
+  {# ── 🔔 CLOCHE NOTIFICATION — coller ici dans votre navbar ── #}
+  <div class="notif-bell-wrap" id="notifWrap">
+
+    {# Bouton cloche #}
+    <button class="notif-bell-btn" id="notifBell"
+            onclick="toggleNotifPanel()" title="Notifications">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      {# Badge rouge — caché si 0 notif #}
+      <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+    </button>
+
+    {# Panneau déroulant #}
+    <div class="notif-panel" id="notifPanel" style="display:none">
+      <div class="notif-panel-head">
+        <span>Notifications</span>
+        <button class="notif-read-all" onclick="markAllRead()">
+          Tout marquer lu
+        </button>
+      </div>
+      <div class="notif-panel-body" id="notifPanelBody">
+        <p class="notif-empty">Chargement…</p>
+      </div>
+    </div>
+
+  </div>
+  {# ── FIN CLOCHE ── #}
+
+</nav>
+
+{# ══════════════════════════════════════════════════════════
+   STYLES NOTIFICATION
+══════════════════════════════════════════════════════════ #}
+<style>
+/* ── Wrap positionné ── */
+.notif-bell-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+/* ── Bouton cloche ── */
+.notif-bell-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.notif-bell-btn:hover { background: rgba(0,0,0,.06); }
+
+/* ── Badge rouge 🔴 ── */
+.notif-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  background: #E24B4A;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border: 2px solid #fff;
+  line-height: 1;
+  animation: badge-pop .25s ease;
+}
+@keyframes badge-pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── Panneau déroulant ── */
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  background: #fff;
+  border: 0.5px solid #e0e0dc;
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.12);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* ── En-tête panneau ── */
+.notif-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .875rem 1rem;
+  border-bottom: 0.5px solid #e0e0dc;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+.notif-read-all {
+  font-size: 11px;
+  color: #1a9e6e;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+.notif-read-all:hover { text-decoration: underline; }
+
+/* ── Corps panneau ── */
+.notif-panel-body {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 8px;
+}
+.notif-empty {
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+  padding: 2rem 0;
+  margin: 0;
+}
+
+/* ── Item notification ── */
+.notif-item {
+  display: flex;
+  gap: 10px;
+  padding: .75rem .875rem;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: background .15s;
+  border-left: 3px solid transparent;
+  animation: slide-in .2s ease;
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+.notif-item:hover { background: #f9f9f7; }
+
+/* Couleur bordure gauche selon le type */
+.notif-item.BIENTOT_ATTEINT { border-left-color: #EF9F27; }
+.notif-item.RAPPEL           { border-left-color: #378ADD; }
+
+.notif-item-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  width: 22px;
+  text-align: center;
+}
+.notif-item-content { flex: 1; }
+.notif-item-msg  {
+  font-size: 12px;
+  color: #1a1a1a;
+  line-height: 1.5;
+  margin-bottom: 3px;
+}
+.notif-item-time { font-size: 11px; color: #aaa; }
+
+/* Item lu = grisé */
+.notif-item.is-read {
+  opacity: .4;
+  pointer-events: none;
+}
+</style>
+
+{# ══════════════════════════════════════════════════════════
+   SCRIPT NOTIFICATION — session PHP via AJAX
+   Aucune base de données utilisée
+══════════════════════════════════════════════════════════ #}
+<script>
+(function () {
+
+  /* ── Icônes par type ── */
+  const ICONS = {
+    BIENTOT_ATTEINT : '⚡',
+    RAPPEL          : '🔔',
+  };
+
+  /* ── Échappement HTML ── */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+    );
+  }
+
+  /* ── Temps relatif ── */
+  function timeAgo(ts) {
+    const diff = Math.floor(Date.now() / 1000 - ts);
+    if (diff < 60)    return "À l'instant";
+    if (diff < 3600)  return `Il y a ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
+    return `Il y a ${Math.floor(diff / 86400)} j`;
+  }
+
+  /* ── Fetch + rendu ── */
+  async function fetchAndRender() {
+    try {
+      const r    = await fetch('/objectif/notifications', { credentials: 'same-origin' });
+      const list = await r.json();
+
+      /* Badge 🔴 */
+      const badge = document.getElementById('notifBadge');
+      if (list.length > 0) {
+        badge.textContent   = list.length > 99 ? '99+' : list.length;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      /* Panneau */
+      const body = document.getElementById('notifPanelBody');
+      if (!list.length) {
+        body.innerHTML = '<p class="notif-empty">Aucune nouvelle notification ✓</p>';
+        return;
+      }
+
+      body.innerHTML = list.map(n => `
+        <div class="notif-item ${esc(n.type)}"
+             id="notif-${esc(n.key)}"
+             onclick="markOne('${esc(n.key)}', this)">
+          <div class="notif-item-icon">${ICONS[n.type] || '•'}</div>
+          <div class="notif-item-content">
+            <div class="notif-item-msg">${esc(n.message)}</div>
+            <div class="notif-item-time">${timeAgo(n.time)}</div>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (e) {
+      /* Silencieux — pas de crash si la route n'est pas encore dispo */
+    }
+  }
+
+  /* ── Ouvrir / fermer le panneau ── */
+  window.toggleNotifPanel = function () {
+    const panel = document.getElementById('notifPanel');
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) fetchAndRender();
+  };
+
+  /* ── Marquer une notif lue au clic ── */
+  window.markOne = async function (key, el) {
+    el.classList.add('is-read');
+    await fetch(
+      `/objectif/notifications/${encodeURIComponent(key)}/read`,
+      { method: 'POST', credentials: 'same-origin' }
+    );
+    setTimeout(fetchAndRender, 350);
+  };
+
+  /* ── Tout marquer lu ── */
+  window.markAllRead = async function () {
+    await fetch('/objectif/notifications/read-all', {
+      method: 'POST',
+      credentials: 'same-origin'
+    });
+    fetchAndRender();
+  };
+
+  /* ── Fermer si clic hors panneau ── */
+  document.addEventListener('click', function (e) {
+    const wrap = document.getElementById('notifWrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('notifPanel').style.display = 'none';
+    }
+  });
+
+  /* ── Chargement initial du badge + polling toutes les 60s ── */
+  fetchAndRender();
+  setInterval(fetchAndRender, 60_000);
+
+})();
+</script>
+
+{# ══════════════════════════════════════════════════════════
+   CONTENU DE LA PAGE
+══════════════════════════════════════════════════════════ #}
+<main>
+  {% block body %}{% endblock %}
+</main>
+
+{% block javascripts %}{% endblock %}
+</body>
+</html>

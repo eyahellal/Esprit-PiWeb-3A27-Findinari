@@ -5,6 +5,9 @@ use App\Entity\objective\Objectif;
 use App\Entity\objective\Contributiongoal;
 use App\Form\ObjectifType;
 use App\Repository\ObjectifRepository;
+use App\Service\GoalStatisticsService;
+use App\Service\NotificationService;
+use App\Repository\UtilisateurRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,15 +15,18 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Service\GoalStatisticsService;
-use App\Repository\UtilisateurRepository;
 
 #[Route('/objectif')]
 class ObjectifController extends AbstractController
 {
+    // ── INDEX ─────────────────────────────────────────────────────────────
     #[Route('', name: 'objectif_index', methods: ['GET'])]
-    public function index(ObjectifRepository $repo, Connection $connection, Request $request): Response
-    {
+    public function index(
+        ObjectifRepository  $repo,
+        Connection          $connection,
+        Request             $request,
+        NotificationService $notifService
+    ): Response {
         $user             = $this->getUser();
         $userId           = $user?->getId() ?? 1;
         $selectedWalletId = $request->query->get('wallet_id');
@@ -52,13 +58,18 @@ class ObjectifController extends AbstractController
             $objectifs = $walletIds ? $repo->findBy(['walletId' => $walletIds]) : [];
         }
 
+        // ── Génère / rafraîchit les notifications en session ──
+        $notifService->generateForObjectifs($objectifs);
+
         return $this->render('objectif/index.html.twig', [
             'objectifs'        => $objectifs,
             'wallets'          => $wallets,
             'selectedWalletId' => $selectedWalletId,
+            'notifCount'       => $notifService->countUnread(),
         ]);
     }
 
+    // ── NEW ───────────────────────────────────────────────────────────────
     #[Route('/new', name: 'objectif_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
@@ -88,13 +99,40 @@ class ObjectifController extends AbstractController
         ]);
     }
 
-    // ── Static routes MUST come before /{id} ──────────────────────────────
+    // ── STATIC ROUTES BEFORE /{id} ────────────────────────────────────────
 
+    // ── NOTIFICATIONS : liste (AJAX) ──────────────────────────────────────
+    #[Route('/notifications', name: 'notifications_list', methods: ['GET'])]
+    public function notificationsList(NotificationService $notifService): JsonResponse
+    {
+        return $this->json($notifService->getUnread());
+    }
+
+    // ── NOTIFICATIONS : marquer une lue (AJAX) ────────────────────────────
+    #[Route('/notifications/read-all', name: 'notifications_read_all', methods: ['POST'])]
+    public function notificationsReadAll(NotificationService $notifService): JsonResponse
+    {
+        $notifService->markAllRead();
+        return $this->json(['ok' => true]);
+    }
+
+    // ── NOTIFICATIONS : marquer une lue par clé (AJAX) ───────────────────
+    // DOIT être APRÈS /notifications/read-all pour éviter que {key}="read-all"
+    #[Route('/notifications/{key}/read', name: 'notification_mark_read', methods: ['POST'])]
+    public function notificationMarkRead(
+        string              $key,
+        NotificationService $notifService
+    ): JsonResponse {
+        $notifService->markRead($key);
+        return $this->json(['ok' => true]);
+    }
+
+    // ── TOP CONTRIBUTIONS ─────────────────────────────────────────────────
     #[Route('/top-contributions', name: 'top_contributions', methods: ['GET'])]
     public function topContributions(
-        ObjectifRepository $objectifRepo,
+        ObjectifRepository    $objectifRepo,
         GoalStatisticsService $goalStats,
-        Connection $connection,
+        Connection            $connection,
         UtilisateurRepository $utilisateurRepository
     ): Response {
         $user = $this->getUser();
@@ -167,12 +205,14 @@ class ObjectifController extends AbstractController
         ]);
     }
 
+    // ── HISTORIQUE ────────────────────────────────────────────────────────
     #[Route('/historique', name: 'objectif_historique', methods: ['GET'])]
     public function historique(
-        ObjectifRepository $repo,
+        ObjectifRepository    $repo,
         GoalStatisticsService $goalStats,
-        Connection $connection,
-        Request $request
+        Connection            $connection,
+        Request               $request,
+        NotificationService   $notifService
     ): Response {
         $user   = $this->getUser();
         $userId = $user?->getId() ?? 1;
@@ -198,12 +238,10 @@ class ObjectifController extends AbstractController
             $stats = $goalStats->compute($objectif);
 
             if ($objectif->getStatut() === 'TERMINE') {
-                // Find the most recent contribution date as the completion date
                 $contribs = $objectif->getContributiongoals()->toArray();
                 usort($contribs, fn($a, $b) => $b->getDate() <=> $a->getDate());
                 $dateAtteinte = count($contribs) > 0 ? $contribs[0]->getDate() : null;
 
-                // Compute real duration in days
                 $dureeReelle = null;
                 if ($dateAtteinte && $objectif->getDateDebut()) {
                     $dureeReelle = (int) $objectif->getDateDebut()->diff($dateAtteinte)->days;
@@ -223,23 +261,26 @@ class ObjectifController extends AbstractController
             }
         }
 
-        // Sort history: most recent first
         usort($historique, function ($a, $b) {
             if (!$a['dateAtteinte'] || !$b['dateAtteinte']) return 0;
             return $b['dateAtteinte'] <=> $a['dateAtteinte'];
         });
 
+        // Rafraîchir les notifications depuis la page historique aussi
+        $notifService->generateForObjectifs($objectifs);
+
         return $this->render('objectif/historique.html.twig', [
             'historique' => $historique,
             'enCours'    => $enCours,
+            'notifCount' => $notifService->countUnread(),
         ]);
     }
 
-    // ── AI Advisor: simulate "what if I contribute X/day?" ──────────────
+    // ── SIMULER (AI Advisor) ──────────────────────────────────────────────
     #[Route('/{id}/simuler', name: 'objectif_simuler', methods: ['POST'])]
     public function simuler(
-        Request $request,
-        Objectif $objectif,
+        Request               $request,
+        Objectif              $objectif,
         GoalStatisticsService $goalStats
     ): JsonResponse {
         $dailyAmount = (float) $request->request->get('montant_quotidien', 0);
@@ -263,7 +304,7 @@ class ObjectifController extends AbstractController
         ]);
     }
 
-    // ── /{id} routes last ─────────────────────────────────────────────────
+    // ── /{id} ROUTES EN DERNIER ───────────────────────────────────────────
 
     #[Route('/{id}', name: 'objectif_show', methods: ['GET'])]
     public function show(Objectif $objectif, GoalStatisticsService $goalStats): Response
@@ -275,8 +316,11 @@ class ObjectifController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'objectif_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Objectif $objectif, EntityManagerInterface $em): Response
-    {
+    public function edit(
+        Request                $request,
+        Objectif               $objectif,
+        EntityManagerInterface $em
+    ): Response {
         $walletId = $objectif->getWalletId();
         $form = $this->createForm(ObjectifType::class, $objectif);
         $form->handleRequest($request);
@@ -294,11 +338,15 @@ class ObjectifController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'objectif_delete', methods: ['POST'])]
-    public function delete(Request $request, Objectif $objectif, EntityManagerInterface $em, Connection $connection): Response
-    {
+    public function delete(
+        Request                $request,
+        Objectif               $objectif,
+        EntityManagerInterface $em,
+        Connection             $connection
+    ): Response {
         $walletId = $objectif->getWalletId();
 
-        if ($this->isCsrfTokenValid('delete'.$objectif->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $objectif->getId(), $request->request->get('_token'))) {
             foreach ($objectif->getContributiongoals() as $contrib) {
                 $connection->executeStatement(
                     'UPDATE wallet SET solde = solde + ? WHERE id = ?',
@@ -316,16 +364,20 @@ class ObjectifController extends AbstractController
 
     #[Route('/{id}/contribuer', name: 'objectif_contribuer', methods: ['POST'])]
     public function contribuer(
-        Request $request,
-        Objectif $objectif,
+        Request                $request,
+        Objectif               $objectif,
         EntityManagerInterface $em,
-        Connection $connection
+        Connection             $connection,
+        NotificationService    $notifService
     ): Response {
         $montant  = (float) $request->request->get('montant');
         $walletId = $objectif->getWalletId();
 
         if ($montant > 0) {
-            $wallet = $connection->fetchAssociative('SELECT * FROM wallet WHERE id = ?', [$walletId]);
+            $wallet = $connection->fetchAssociative(
+                'SELECT * FROM wallet WHERE id = ?',
+                [$walletId]
+            );
 
             if (!$wallet || $wallet['solde'] < $montant) {
                 $this->addFlash('error', 'Solde insuffisant dans ce wallet !');
@@ -335,7 +387,8 @@ class ObjectifController extends AbstractController
             if ($montant > $objectif->getMontant()) {
                 $this->addFlash('error', sprintf(
                     'Le montant de la contribution (%.2f) ne peut pas dépasser le montant cible (%.2f) !',
-                    $montant, $objectif->getMontant()
+                    $montant,
+                    $objectif->getMontant()
                 ));
                 return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
             }
@@ -359,6 +412,9 @@ class ObjectifController extends AbstractController
             $objectif->setStatut($totalContrib >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
             $em->flush();
 
+            // ── Régénérer les notifications après la contribution ──
+            $notifService->generateForObjectifs([$objectif]);
+
             $this->addFlash('success', 'Contribution de ' . $montant . ' ajoutée !');
         }
 
@@ -367,16 +423,17 @@ class ObjectifController extends AbstractController
 
     #[Route('/contrib/{id}/delete', name: 'contribution_delete', methods: ['POST'])]
     public function deleteContribution(
-        Request $request,
-        Contributiongoal $contribution,
+        Request                $request,
+        Contributiongoal       $contribution,
         EntityManagerInterface $em,
-        Connection $connection
+        Connection             $connection,
+        NotificationService    $notifService
     ): Response {
         $objectif = $contribution->getObjectif();
         $walletId = $objectif->getWalletId();
         $montant  = $contribution->getMontant();
 
-        if ($this->isCsrfTokenValid('delete_contrib'.$contribution->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete_contrib' . $contribution->getId(), $request->request->get('_token'))) {
             $connection->executeStatement(
                 'UPDATE wallet SET solde = solde + ? WHERE id = ?',
                 [$montant, $walletId]
@@ -391,6 +448,9 @@ class ObjectifController extends AbstractController
             }
             $objectif->setStatut($totalContrib >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
             $em->flush();
+
+            // ── Régénérer après suppression de contribution ──
+            $notifService->generateForObjectifs([$objectif]);
 
             $this->addFlash('success', 'Contribution supprimée, ' . $montant . ' remboursé dans le wallet !');
         }

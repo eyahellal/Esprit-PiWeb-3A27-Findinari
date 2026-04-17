@@ -22,83 +22,120 @@
     margin: 0;
   }
   .btn-new {
-    background: #1a9e6e;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    display: inline-block;
+    background: #1a9e6e; color: #fff; border: none;
+    padding: 10px 20px; border-radius: 12px; font-size: 14px;
+    font-weight: 500; text-decoration: none; cursor: pointer; display: inline-block;
   }
   .btn-new:hover { background: #157a55; color: #fff; }
   .btn-new-disabled {
-    background: #ccc;
-    color: #888;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: not-allowed;
-    opacity: 0.6;
+    background: #ccc; color: #888; border: none;
+    padding: 10px 20px; border-radius: 12px; font-size: 14px;
+    font-weight: 500; cursor: not-allowed; opacity: 0.6;
   }
   .btn-top {
-    background: #1a9e6e;
-    color: #fff;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    background: #1a9e6e; color: #fff; text-decoration: none;
+    padding: 8px 16px; border-radius: 8px; font-size: 13px;
+    display: inline-flex; align-items: center; gap: 6px;
   }
-  .btn-top:hover {
-    background: #157a55;
-    color: #fff;
+  .btn-top:hover { background: #157a55; color: #fff; }
+
+  /* ══════════════════════════════════════
+     🔔 CLOCHE NOTIFICATION
+  ══════════════════════════════════════ */
+  .notif-bell-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .notif-bell-btn {
+    position: relative; background: #fff;
+    border: 0.5px solid #e0e0dc; cursor: pointer;
+    padding: 8px 10px; border-radius: 10px; color: #333;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s; gap: 6px;
+  }
+  .notif-bell-btn:hover { background: #f5f5f3; border-color: #ccc; }
+  .notif-bell-label { font-size: 13px; font-weight: 500; }
+
+  /* Badge rouge 🔴 */
+  .notif-badge {
+    position: absolute; top: -6px; right: -6px;
+    background: #E24B4A; color: #fff;
+    font-size: 10px; font-weight: 700;
+    min-width: 18px; height: 18px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 4px; border: 2px solid #fff;
+    animation: badge-pop .25s ease;
+  }
+  @keyframes badge-pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
   }
 
+  /* Panneau déroulant */
+  .notif-panel {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    width: 330px; background: #fff;
+    border: 0.5px solid #e0e0dc; border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12);
+    z-index: 9999; overflow: hidden;
+  }
+  .notif-panel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .875rem 1rem; border-bottom: 0.5px solid #e0e0dc;
+    font-size: 13px; font-weight: 600; color: #1a1a1a;
+  }
+  .notif-read-all {
+    font-size: 11px; color: #1a9e6e; background: none;
+    border: none; cursor: pointer; font-weight: 500; padding: 0;
+  }
+  .notif-read-all:hover { text-decoration: underline; }
+  .notif-panel-body { max-height: 380px; overflow-y: auto; padding: 8px; }
+  .notif-empty {
+    text-align: center; color: #aaa; font-size: 13px;
+    padding: 2rem 0; margin: 0;
+  }
+  .notif-item {
+    display: flex; gap: 10px; padding: .75rem .875rem;
+    border-radius: 10px; margin-bottom: 4px; cursor: pointer;
+    transition: background .15s; border-left: 3px solid transparent;
+    animation: notif-slide .2s ease;
+  }
+  @keyframes notif-slide {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .notif-item:hover { background: #f9f9f7; }
+  .notif-item.BIENTOT_ATTEINT { border-left-color: #EF9F27; }
+  .notif-item.RAPPEL           { border-left-color: #378ADD; }
+  .notif-item.is-read          { opacity: .35; pointer-events: none; }
+  .notif-item-icon  { font-size: 16px; flex-shrink: 0; width: 22px; text-align: center; margin-top: 1px; }
+  .notif-item-msg   { font-size: 12px; color: #1a1a1a; line-height: 1.5; margin-bottom: 3px; }
+  .notif-item-time  { font-size: 11px; color: #aaa; }
+  /* ══ FIN CLOCHE ══ */
+
   .flash-success {
-    background: #e1f5ee;
-    color: #0f6e56;
-    border: 0.5px solid #9fe1cb;
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin-bottom: 1.5rem;
-    font-size: 14px;
+    background: #e1f5ee; color: #0f6e56;
+    border: 0.5px solid #9fe1cb; border-radius: 8px;
+    padding: 10px 16px; margin-bottom: 1.5rem; font-size: 14px;
   }
   .flash-error {
-    background: #fcebeb;
-    color: #a32d2d;
-    border: 0.5px solid #f09595;
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin-bottom: 1.5rem;
-    font-size: 14px;
+    background: #fcebeb; color: #a32d2d;
+    border: 0.5px solid #f09595; border-radius: 8px;
+    padding: 10px 16px; margin-bottom: 1.5rem; font-size: 14px;
   }
 
   .wallet-filter { margin-bottom: 1.5rem; }
   .wallet-select {
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 0.5px solid #ccc;
-    font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    background: #fff;
-    color: #333;
-    cursor: pointer;
-    min-width: 280px;
+    padding: 8px 14px; border-radius: 10px;
+    border: 0.5px solid #ccc; font-size: 13px;
+    font-family: 'DM Sans', sans-serif; background: #fff;
+    color: #333; cursor: pointer; min-width: 280px;
   }
   .wallet-select:focus { outline: none; border-color: #1a9e6e; }
 
   .obj-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 2rem;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 2rem;
   }
   .stat-box { background: #f5f5f3; border-radius: 8px; padding: 1rem; text-align: center; }
   .stat-num { font-size: 22px; font-weight: 500; }
@@ -110,38 +147,66 @@
     gap: 1rem;
   }
   .obj-card {
-    background: #fff;
-    border: 0.5px solid #e0e0dc;
-    border-radius: 12px;
-    padding: 1.25rem;
-    position: relative;
-    overflow: hidden;
+    background: #fff; border: 0.5px solid #e0e0dc;
+    border-radius: 12px; padding: 1.25rem;
+    position: relative; overflow: hidden; transition: box-shadow .2s;
   }
+  .obj-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+  .obj-card.nearly-done {
+    border-color: #f0c06e;
+    box-shadow: 0 0 0 2px rgba(239,159,39,.15);
+  }
+  .obj-card.nearly-done:hover {
+    box-shadow: 0 0 0 2px rgba(239,159,39,.25), 0 4px 16px rgba(0,0,0,.06);
+  }
+
   .card-accent { position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
   .accent-termine  { background: #1a9e6e; }
   .accent-en_cours { background: #e9a000; }
   .accent-echoue   { background: #c0392b; }
 
   .card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 12px; gap: 8px;
   }
   .card-title { font-weight: 500; font-size: 15px; padding-left: 12px; flex: 1; }
+  .card-badges { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; flex-shrink: 0; }
+
   .badge-statut { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
   .badge-termine  { background: #e1f5ee; color: #0f6e56; }
   .badge-en_cours { background: #faeeda; color: #854f0b; }
   .badge-echoue   { background: #fcebeb; color: #a32d2d; }
 
-  .card-body { padding-left: 12px; }
+  .badge-card-notif {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .badge-card-warn   { background: #faeeda; color: #854f0b; border: 0.5px solid #f0c06e; }
+  .badge-card-rappel { background: #e6f1fb; color: #185fa5; border: 0.5px solid #b5d4f4; }
 
+  .card-body { padding-left: 12px; }
   .progress-bg { height: 6px; background: #f0f0ee; border-radius: 3px; overflow: hidden; margin: 10px 0 4px; }
-  .progress-fill { height: 100%; border-radius: 3px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
   .fill-termine  { background: #1a9e6e; }
   .fill-en_cours { background: #e9a000; }
   .fill-echoue   { background: #c0392b; }
-  .progress-pct { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .progress-pct  { font-size: 12px; color: #888; margin-bottom: 4px; }
+
+  .nearly-banner {
+    display: flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #faeeda, #fff8ec);
+    border: 0.5px solid #f0c06e; border-radius: 8px;
+    padding: 7px 10px; margin-top: 8px;
+    font-size: 12px; color: #854f0b; font-weight: 500;
+  }
+  .nearly-banner-pct { margin-left: auto; font-size: 11px; color: #a06010; font-weight: 700; }
+  .rappel-banner {
+    display: flex; align-items: center; gap: 6px;
+    background: #e6f1fb; border: 0.5px solid #b5d4f4;
+    border-radius: 8px; padding: 7px 10px; margin-top: 6px;
+    font-size: 12px; color: #185fa5; font-weight: 500;
+  }
 
   .card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
   .meta-label { font-size: 12px; color: #888; }
@@ -152,8 +217,8 @@
     margin-top: 10px; padding: 8px 10px;
     background: #f5f5f3; border-radius: 8px; font-size: 12px;
   }
-  .wallet-pays  { font-weight: 500; color: #333; }
-  .wallet-solde { color: #1a9e6e; font-weight: 500; margin-left: auto; }
+  .wallet-pays   { font-weight: 500; color: #333; }
+  .wallet-solde  { color: #1a9e6e; font-weight: 500; margin-left: auto; }
   .wallet-devise { color: #888; }
 
   .contrib-list { margin-top: 12px; padding-left: 12px; }
@@ -173,8 +238,7 @@
   .contrib-date    { color: #aaa; font-size: 11px; }
   .btn-del-contrib {
     background: none; border: none; color: #c0392b;
-    font-size: 14px; cursor: pointer; padding: 2px 6px;
-    border-radius: 5px; line-height: 1;
+    font-size: 14px; cursor: pointer; padding: 2px 6px; border-radius: 5px; line-height: 1;
   }
   .btn-del-contrib:hover { background: #fcebeb; }
 
@@ -227,13 +291,9 @@
     grid-column: 1 / -1; font-size: 15px;
   }
   .wallet-notice {
-    background: #faeeda;
-    color: #854f0b;
-    border: 0.5px solid #f0c06e;
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin-bottom: 1.5rem;
-    font-size: 14px;
+    background: #faeeda; color: #854f0b;
+    border: 0.5px solid #f0c06e; border-radius: 8px;
+    padding: 10px 16px; margin-bottom: 1.5rem; font-size: 14px;
   }
 </style>
 
@@ -246,21 +306,63 @@
     <div class="flash-error">{{ msg }}</div>
   {% endfor %}
 
+  {# ══════════════════════════════════════════
+     EN-TÊTE — titre + boutons + 🔔 CLOCHE ICI
+  ══════════════════════════════════════════ #}
   <div class="obj-header">
     <h1 class="obj-title">Mes objectifs</h1>
-    <div style="display: flex; gap: 10px;">
-   {% if selectedWalletId %}
-  <a href="{{ path('objectif_new') }}" class="btn-new">+ Nouvel objectif</a>
-  <a href="{{ path('top_contributions') }}" class="btn-top">🏆 Top contributeurs</a>
-  <a href="{{ path('objectif_historique') }}" class="btn-top">📈 Historique</a>
-{% else %}
-  <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour créer un objectif">
-    + Nouvel objectif
-  </button>
-  <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour voir le classement">
-    🏆 Top contributeurs
-  </button>
-{% endif %}
+
+    <div style="display: flex; gap: 10px; align-items: center;">
+
+      {% if selectedWalletId %}
+        <a href="{{ path('objectif_new') }}" class="btn-new">+ Nouvel objectif</a>
+        <a href="{{ path('top_contributions') }}" class="btn-top">🏆 Top contributeurs</a>
+        <a href="{{ path('objectif_historique') }}" class="btn-top">📈 Historique</a>
+      {% else %}
+        <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour créer un objectif">
+          + Nouvel objectif
+        </button>
+        <button class="btn-new-disabled" disabled title="Sélectionnez un wallet pour voir le classement">
+          🏆 Top contributeurs
+        </button>
+      {% endif %}
+
+      {# ══════════════════════════════════
+         🔔 BOUTON CLOCHE NOTIFICATION
+         Visible ici dans le header de page
+      ══════════════════════════════════ #}
+      <div class="notif-bell-wrap" id="notifWrap">
+
+        <button class="notif-bell-btn" id="notifBell"
+                onclick="toggleNotifPanel()" title="Notifications">
+          {# Icône cloche SVG #}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="notif-bell-label">Alertes</span>
+          {# Badge rouge 🔴 — masqué si 0 #}
+          <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+        </button>
+
+        {# Panneau déroulant #}
+        <div class="notif-panel" id="notifPanel" style="display:none">
+          <div class="notif-panel-head">
+            <span>🔔 Notifications</span>
+            <button class="notif-read-all" onclick="markAllRead()">
+              Tout marquer lu
+            </button>
+          </div>
+          <div class="notif-panel-body" id="notifPanelBody">
+            <p class="notif-empty">Chargement…</p>
+          </div>
+        </div>
+
+      </div>
+      {# ══ FIN CLOCHE ══ #}
+
     </div>
   </div>
 
@@ -297,7 +399,7 @@
   <div class="obj-cards">
     {% for obj in objectifs %}
 
-      {% set statutClass = obj.statut|lower %}
+      {% set statutClass  = obj.statut|lower %}
       {% set totalContrib = 0 %}
       {% for c in obj.contributiongoals %}
         {% set totalContrib = totalContrib + c.montant %}
@@ -306,12 +408,31 @@
       {% set pct = pct > 100 ? 100 : pct %}
       {% set walletInfo = wallets[obj.walletId] is defined ? wallets[obj.walletId] : null %}
 
-      <div class="obj-card">
+      {# Calcul jours sans contribution #}
+      {% set dernierContribJours = null %}
+      {% if obj.contributiongoals|length > 0 %}
+        {% set contribsSorted    = obj.contributiongoals|sort((a, b) => b.date <=> a.date) %}
+        {% set derniereDate      = contribsSorted|first.date %}
+        {% set dernierContribJours = ((date('now')|date('U') - derniereDate|date('U')) / 86400)|round(0, 'floor') %}
+      {% endif %}
+
+      {% set isBientotAtteint = (obj.statut == 'EN_COURS' and pct >= 70 and pct < 100) %}
+      {% set isRappel         = (obj.statut == 'EN_COURS' and dernierContribJours is not null and dernierContribJours >= 7) %}
+
+      <div class="obj-card{% if isBientotAtteint %} nearly-done{% endif %}">
         <div class="card-accent accent-{{ statutClass }}"></div>
 
         <div class="card-head">
           <span class="card-title">{{ obj.titre }}</span>
-          <span class="badge-statut badge-{{ statutClass }}">{{ obj.statut }}</span>
+          <div class="card-badges">
+            <span class="badge-statut badge-{{ statutClass }}">{{ obj.statut }}</span>
+            {% if isBientotAtteint %}
+              <span class="badge-card-notif badge-card-warn">⚡ {{ pct }}%</span>
+            {% endif %}
+            {% if isRappel and not isBientotAtteint %}
+              <span class="badge-card-notif badge-card-rappel">🔔 {{ dernierContribJours }}j</span>
+            {% endif %}
+          </div>
         </div>
 
         <div class="card-body">
@@ -322,6 +443,19 @@
             {{ totalContrib|number_format(0, ',', ' ') }} /
             {{ obj.montant|number_format(0, ',', ' ') }} — {{ pct }}%
           </div>
+
+          {% if isBientotAtteint %}
+            <div class="nearly-banner">
+              ⚡ Plus que {{ (obj.montant - totalContrib)|number_format(0, ',', ' ') }} à collecter !
+              <span class="nearly-banner-pct">{{ pct }}%</span>
+            </div>
+          {% endif %}
+
+          {% if isRappel %}
+            <div class="rappel-banner">
+              🔔 Aucune contribution depuis {{ dernierContribJours }} jour{{ dernierContribJours > 1 ? 's' : '' }}
+            </div>
+          {% endif %}
 
           <div class="card-meta">
             <div>
@@ -369,14 +503,16 @@
               </div>
             </div>
           {% endif %}
-
         </div>
 
         <div class="card-actions">
           <a href="{{ path('objectif_edit', {id: obj.id}) }}" class="btn-edit">Modifier</a>
           <form method="POST" action="{{ path('objectif_delete', {id: obj.id}) }}" style="display:inline">
             <input type="hidden" name="_token" value="{{ csrf_token('delete'~obj.id) }}">
-            <button class="btn-del" onclick="return confirm('Supprimer cet objectif ? Toutes les contributions seront remboursées.')">Supprimer</button>
+            <button class="btn-del"
+                    onclick="return confirm('Supprimer cet objectif ? Toutes les contributions seront remboursées.')">
+              Supprimer
+            </button>
           </form>
         </div>
 
@@ -395,14 +531,9 @@
               {% endif %}
               Max contributible : {{ resteAAtteindre|number_format(2, ',', ' ') }}
             </small>
-            <input type="number"
-                   name="montant"
-                   class="contrib-input"
+            <input type="number" name="montant" class="contrib-input"
                    placeholder="Montant à contribuer"
-                   min="0.01"
-                   step="0.01"
-                   max="{{ resteAAtteindre }}"
-                   required>
+                   min="0.01" step="0.01" max="{{ resteAAtteindre }}" required>
             <button type="submit" class="btn-submit-contrib">Confirmer</button>
           </form>
         {% else %}
@@ -423,6 +554,98 @@
   </div>
 
 </div>
+
+{# ══════════════════════════════════════════════════════
+   SCRIPT NOTIFICATION — session PHP, zéro base de données
+══════════════════════════════════════════════════════ #}
+<script>
+(function () {
+  const ICONS = { BIENTOT_ATTEINT: '⚡', RAPPEL: '🔔' };
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g,
+      c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+    );
+  }
+
+  function timeAgo(ts) {
+    const diff = Math.floor(Date.now() / 1000 - ts);
+    if (diff < 60)    return "À l'instant";
+    if (diff < 3600)  return `Il y a ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
+    return `Il y a ${Math.floor(diff / 86400)} j`;
+  }
+
+  async function fetchAndRender() {
+    try {
+      const r    = await fetch('/objectif/notifications', { credentials: 'same-origin' });
+      const list = await r.json();
+
+      /* ── Badge rouge 🔴 ── */
+      const badge = document.getElementById('notifBadge');
+      if (list.length > 0) {
+        badge.textContent   = list.length > 99 ? '99+' : list.length;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      /* ── Panneau ── */
+      const body = document.getElementById('notifPanelBody');
+      if (!list.length) {
+        body.innerHTML = '<p class="notif-empty">Aucune nouvelle notification ✓</p>';
+        return;
+      }
+
+      body.innerHTML = list.map(n => `
+        <div class="notif-item ${esc(n.type)}"
+             onclick="markOne('${esc(n.key)}', this)">
+          <div class="notif-item-icon">${ICONS[n.type] || '•'}</div>
+          <div>
+            <div class="notif-item-msg">${esc(n.message)}</div>
+            <div class="notif-item-time">${timeAgo(n.time)}</div>
+          </div>
+        </div>
+      `).join('');
+
+    } catch (e) { /* silencieux */ }
+  }
+
+  window.toggleNotifPanel = function () {
+    const panel  = document.getElementById('notifPanel');
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) fetchAndRender();
+  };
+
+  window.markOne = async function (key, el) {
+    el.classList.add('is-read');
+    await fetch(`/objectif/notifications/${encodeURIComponent(key)}/read`, {
+      method: 'POST', credentials: 'same-origin'
+    });
+    setTimeout(fetchAndRender, 350);
+  };
+
+  window.markAllRead = async function () {
+    await fetch('/objectif/notifications/read-all', {
+      method: 'POST', credentials: 'same-origin'
+    });
+    fetchAndRender();
+  };
+
+  /* Fermer si clic hors panneau */
+  document.addEventListener('click', function (e) {
+    const wrap = document.getElementById('notifWrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('notifPanel').style.display = 'none';
+    }
+  });
+
+  /* Chargement initial + polling 60s */
+  fetchAndRender();
+  setInterval(fetchAndRender, 60_000);
+})();
+</script>
 
 <script>
 function toggleContrib(id) {
