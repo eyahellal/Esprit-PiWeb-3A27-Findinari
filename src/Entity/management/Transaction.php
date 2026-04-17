@@ -142,5 +142,35 @@ private ?string $description = null;
         $this->description = $description;
         return $this;
     }
+// Add these properties to your existing Transaction entity
 
+#[ORM\Column(type: 'boolean')]
+private bool $isRecurring = false;
+
+#[ORM\Column(type: 'string', nullable: true)]
+#[Assert\Choice(
+    choices: ['daily', 'weekly', 'monthly', 'yearly'],
+    message: 'Frequency must be daily, weekly, monthly, or yearly'
+)]
+private ?string $frequency = null;
+
+#[ORM\Column(type: 'date', nullable: true)]
+private ?\DateTimeInterface $nextExecutionDate = null;
+
+#[ORM\Column(type: 'date', nullable: true)]
+private ?\DateTimeInterface $endDate = null;
+
+// Getters & Setters
+
+public function isRecurring(): bool { return $this->isRecurring; }
+public function setIsRecurring(bool $isRecurring): self { $this->isRecurring = $isRecurring; return $this; }
+
+public function getFrequency(): ?string { return $this->frequency; }
+public function setFrequency(?string $frequency): self { $this->frequency = $frequency; return $this; }
+
+public function getNextExecutionDate(): ?\DateTimeInterface { return $this->nextExecutionDate; }
+public function setNextExecutionDate(?\DateTimeInterface $nextExecutionDate): self { $this->nextExecutionDate = $nextExecutionDate; return $this; }
+
+public function getEndDate(): ?\DateTimeInterface { return $this->endDate; }
+public function setEndDate(?\DateTimeInterface $endDate): self { $this->endDate = $endDate; return $this; }
 }

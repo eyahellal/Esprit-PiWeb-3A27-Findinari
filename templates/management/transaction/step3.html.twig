@@ -226,7 +226,47 @@
                                           rows="2"
                                           style="border-color: #76CDCD;"></textarea>
                             </div>
+{# Recurring Options — add after Description #}
+<div class="mb-4">
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="recurringToggle"
+               name="isRecurring" value="1" onchange="toggleRecurringOptions()">
+        <label class="form-check-label fw-bold" for="recurringToggle" style="color: #26474E;">
+            <i class="fas fa-sync-alt me-1" style="color: #F27438;"></i>Make this recurring
+        </label>
+    </div>
 
+    <div id="recurringOptions" style="display: none;">
+        <div class="rounded-4 p-3" style="background: #fff3ee; border: 1px solid #F27438;">
+            {# Frequency #}
+            <div class="mb-3">
+                <label class="form-label fw-bold small" style="color: #26474E;">Frequency</label>
+                <div class="d-flex gap-2 flex-wrap">
+                    {% set frequencies = {daily: 'fa-sun', weekly: 'fa-calendar-week', monthly: 'fa-calendar-alt', yearly: 'fa-calendar'} %}
+                    {% for freq, icon in frequencies %}
+                        <div class="flex-fill">
+                            <input type="radio" name="frequency" id="freq_{{ freq }}" value="{{ freq }}" class="d-none freq-radio">
+                            <label for="freq_{{ freq }}" class="freq-option w-100 text-center p-2 rounded-3"
+                                   style="border: 2px solid #e0e0e0; cursor: pointer; background: white;">
+                                <i class="fas {{ icon }} small" style="color: #26474E;"></i>
+                                <p class="mb-0 fw-bold small" style="color: #26474E;">{{ freq | capitalize }}</p>
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# End Date #}
+            <div class="mb-0">
+                <label class="form-label fw-bold small" style="color: #26474E;">
+                    End Date <span class="text-muted fw-normal">(optional)</span>
+                </label>
+                <input type="date" name="endDate" class="form-control form-control-sm" style="border-color: #76CDCD;">
+                <small class="text-muted">Leave empty for no end date</small>
+            </div>
+        </div>
+    </div>
+</div>
                             <hr class="my-3">
 
                             <div class="d-flex justify-content-between">
@@ -264,6 +304,14 @@
         border-color: #F27438 !important;
         box-shadow: 0 0 0 0.2rem rgba(242,116,56,0.2) !important;
     }
+    .freq-radio:checked + .freq-option {
+        border-color: #F27438 !important;
+        background: #fff3ee !important;
+    }
+    .freq-option:hover {
+        border-color: #F27438 !important;
+    }
+
 </style>
 <script>
 function validateTransaction() {
@@ -317,6 +365,11 @@ function validateTransaction() {
     }
 
     return true;
+}
+function toggleRecurringOptions() {
+    const toggle = document.getElementById('recurringToggle');
+    const options = document.getElementById('recurringOptions');
+    options.style.display = toggle.checked ? 'block' : 'none';
 }
 </script>
 
