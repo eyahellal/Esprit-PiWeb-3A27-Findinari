@@ -50,7 +50,7 @@ class TransactionController extends AbstractController
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
         $user = $this->getUserOrCreate($entityManager);
-
+$this->executeRecurringTransactions($entityManager, $user);
         // Get wallets of current user
         $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
             ->findBy(['utilisateur' => $user]);
@@ -209,7 +209,28 @@ public function step3(Request $request, SessionInterface $session, EntityManager
                 ->find($categorieId);
             $transaction->setCategorie($categorie);
         }
+// After setting description, before validation:
 
+$isRecurring = $request->request->get('isRecurring');
+$transaction->setIsRecurring($isRecurring ? true : false);
+
+if ($isRecurring) {
+    $transaction->setFrequency($request->request->get('frequency'));
+
+    $endDate = $request->request->get('endDate');
+    $transaction->setEndDate($endDate ? new \DateTime($endDate) : null);
+
+    // Next execution = today + frequency
+    $next = new \DateTime();
+    match ($request->request->get('frequency')) {
+        'daily' => $next->modify('+1 day'),
+        'weekly' => $next->modify('+1 week'),
+        'monthly' => $next->modify('+1 month'),
+        'yearly' => $next->modify('+1 year'),
+        default => null,
+    };
+    $transaction->setNextExecutionDate($next);
+}
         // Validate using @Assert constraints
         $errors = $validator->validate($transaction);
 
@@ -265,4 +286,72 @@ public function step3(Request $request, SessionInterface $session, EntityManager
         }
         return $this->redirectToRoute('app_transaction_index');
     }
+    private function executeRecurringTransactions(EntityManagerInterface $entityManager, $user): void
+{
+    $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
+        ->findBy(['utilisateur' => $user]);
+
+    if (empty($wallets)) return;
+
+    $today = new \DateTime('today');
+
+    $dueTransactions = $entityManager->getRepository(Transaction::class)
+        ->createQueryBuilder('t')
+        ->where('t.isRecurring = :recurring')
+        ->andWhere('t.nextExecutionDate <= :today')
+        ->andWhere('t.wallet IN (:wallets)')
+        ->andWhere('t.endDate IS NULL OR t.endDate >= :today')
+        ->setParameter('recurring', true)
+        ->setParameter('today', $today)
+        ->setParameter('wallets', $wallets)
+        ->getQuery()
+        ->getResult();
+
+    foreach ($dueTransactions as $recurring) {
+        $wallet = $recurring->getWallet();
+
+        // Skip if insufficient balance for expense
+        if ($recurring->getType() === 'depense' && $recurring->getMontant() > $wallet->getSolde()) {
+            continue;
+        }
+
+        // Create the actual transaction
+        $transaction = new Transaction();
+        $transaction->setWallet($wallet);
+        $transaction->setCategorie($recurring->getCategorie());
+        $transaction->setType($recurring->getType());
+        $transaction->setMontant($recurring->getMontant());
+        $transaction->setDevise($wallet->getDevise());
+        $transaction->setDate(new \DateTime());
+        $transaction->setDescription('[Auto] ' . ($recurring->getDescription() ?? 'Recurring'));
+        $transaction->setIsRecurring(false);
+
+        // Update wallet balance
+        if ($recurring->getType() === 'income') {
+            $wallet->setSolde($wallet->getSolde() + $recurring->getMontant());
+        } else {
+            $wallet->setSolde($wallet->getSolde() - $recurring->getMontant());
+        }
+
+        $entityManager->persist($transaction);
+
+        // Calculate next execution date
+        $next = clone $recurring->getNextExecutionDate();
+        match ($recurring->getFrequency()) {
+            'daily' => $next->modify('+1 day'),
+            'weekly' => $next->modify('+1 week'),
+            'monthly' => $next->modify('+1 month'),
+            'yearly' => $next->modify('+1 year'),
+            default => null,
+        };
+        $recurring->setNextExecutionDate($next);
+
+        // Auto-disable if past end date
+        if ($recurring->getEndDate() && $next > $recurring->getEndDate()) {
+            $recurring->setIsRecurring(false);
+        }
+    }
+
+    $entityManager->flush();
+}
 }
