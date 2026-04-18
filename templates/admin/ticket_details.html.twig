@@ -798,6 +798,21 @@
         document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
     });
 
+    // Handle file selection display
+    const fileInput = document.getElementById('{{ form.attachment.vars.id }}');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
+                fileNameDisplay.style.display = 'block';
+            } else {
+                fileNameDisplay.style.display = 'none';
+            }
+        });
+    }
+
     function editMsg(id, content) {
         document.getElementById('bubble-' + id).style.display = 'none';
         const form = document.getElementById('edit-form-' + id);
