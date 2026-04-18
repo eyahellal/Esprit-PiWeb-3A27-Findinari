@@ -22,126 +22,125 @@ class ObjectifController extends AbstractController
 {
     // ── INDEX ─────────────────────────────────────────────────────────────
     
-    
-#[Route('', name: 'objectif_index', methods: ['GET'])]
-public function index(
-    ObjectifRepository    $repo,
-    Connection            $connection,
-    Request               $request,
-    NotificationService   $notifService,
-    GoalStatisticsService $goalStats,          // ← ajouter ce paramètre
-    UtilisateurRepository $utilisateurRepository, // ← ajouter ce paramètre
-    PaginatorInterface    $paginator
-): Response {
-    $user             = $this->getUser();
-    $userId           = $user?->getId() ?? 1;
-    $selectedWalletId = $request->query->get('wallet_id');
- 
-    if ($selectedWalletId) {
-        $request->getSession()->set('selected_wallet_id', $selectedWalletId);
-    }
- 
-    if ($this->isGranted('ROLE_ADMIN')) {
-        $walletsRaw = $connection->fetchAllAssociative(
-            'SELECT id, pays, devise, solde FROM wallet'
-        );
-    } else {
-        $walletsRaw = $connection->fetchAllAssociative(
-            'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
-            [$userId]
-        );
-    }
- 
-    $wallets = [];
-    foreach ($walletsRaw as $w) {
-        $wallets[$w['id']] = $w;
-    }
- 
-    $qb = $repo->createQueryBuilder('o');
-    if ($selectedWalletId) {
-        $qb->where('o.walletId = :wid')->setParameter('wid', $selectedWalletId);
-    } else {
-        $walletIds = array_keys($wallets);
-        if ($walletIds) {
-            $qb->where('o.walletId IN (:wids)')->setParameter('wids', $walletIds);
+    #[Route('', name: 'objectif_index', methods: ['GET'])]
+    public function index(
+        ObjectifRepository    $repo,
+        Connection            $connection,
+        Request               $request,
+        NotificationService   $notifService,
+        GoalStatisticsService $goalStats,
+        UtilisateurRepository $utilisateurRepository,
+        PaginatorInterface    $paginator
+    ): Response {
+        $user             = $this->getUser();
+        $userId           = $user?->getId() ?? 1;
+        $selectedWalletId = $request->query->get('wallet_id');
+     
+        if ($selectedWalletId) {
+            $request->getSession()->set('selected_wallet_id', $selectedWalletId);
+        }
+     
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $walletsRaw = $connection->fetchAllAssociative(
+                'SELECT id, pays, devise, solde FROM wallet'
+            );
         } else {
-            $qb->where('1 = 0');
+            $walletsRaw = $connection->fetchAllAssociative(
+                'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
+                [$userId]
+            );
         }
-    }
- 
-    $objectifsPaginated = $paginator->paginate(
-        $qb->getQuery(),
-        $request->query->getInt('page', 1),
-        3
-    );
- 
-    $notifService->generateForObjectifs(
-        iterator_to_array($objectifsPaginated->getItems())
-    );
- 
-    // ══ TOP CONTRIBUTEURS pour la section magazine ══
-    $allObjectifs   = $repo->findAll();
-    $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
-    $walletToUser   = [];
-    $userPays       = [];
-    foreach ($allWalletsData as $w) {
-        $walletToUser[$w['id']] = $w['utilisateur_id'];
-        if ($w['utilisateur_id'] && !isset($userPays[$w['utilisateur_id']])) {
-            $userPays[$w['utilisateur_id']] = $w['pays'] ?: '—';
+     
+        $wallets = [];
+        foreach ($walletsRaw as $w) {
+            $wallets[$w['id']] = $w;
         }
-    }
- 
-    $usersMap = [];
-    foreach ($utilisateurRepository->findAll() as $u) {
-        $usersMap[$u->getId()] = [
-            'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
-            'pays' => $userPays[$u->getId()] ?? '—',
-        ];
-    }
- 
-    $byUser = [];
-    foreach ($allObjectifs as $objectif) {
-        $wid   = $objectif->getWalletId();
-        $uid   = $walletToUser[$wid] ?? null;
-        if (!$uid || !isset($usersMap[$uid])) continue;
- 
-        $stats = $goalStats->compute($objectif);
-        if (!isset($byUser[$uid])) {
-            $byUser[$uid] = [
-                'userId'            => $uid,
-                'userName'          => $usersMap[$uid]['nom'],
-                'pays'              => $usersMap[$uid]['pays'],
-                'objectifsAtteints' => [],
+     
+        $qb = $repo->createQueryBuilder('o');
+        if ($selectedWalletId) {
+            $qb->where('o.walletId = :wid')->setParameter('wid', $selectedWalletId);
+        } else {
+            $walletIds = array_keys($wallets);
+            if ($walletIds) {
+                $qb->where('o.walletId IN (:wids)')->setParameter('wids', $walletIds);
+            } else {
+                $qb->where('1 = 0');
+            }
+        }
+     
+        $objectifsPaginated = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            3
+        );
+     
+        $notifService->generateForObjectifs(
+            iterator_to_array($objectifsPaginated->getItems())
+        );
+     
+        // ══ TOP CONTRIBUTEURS pour la section magazine ══
+        $allObjectifs   = $repo->findAll();
+        $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
+        $walletToUser   = [];
+        $userPays       = [];
+        foreach ($allWalletsData as $w) {
+            $walletToUser[$w['id']] = $w['utilisateur_id'];
+            if ($w['utilisateur_id'] && !isset($userPays[$w['utilisateur_id']])) {
+                $userPays[$w['utilisateur_id']] = $w['pays'] ?: '—';
+            }
+        }
+     
+        $usersMap = [];
+        foreach ($utilisateurRepository->findAll() as $u) {
+            $usersMap[$u->getId()] = [
+                'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
+                'pays' => $userPays[$u->getId()] ?? '—',
             ];
         }
-        if ($stats['progressPct'] >= 100) {
-            $byUser[$uid]['objectifsAtteints'][] = ['objectif' => $objectif, 'stats' => $stats];
+     
+        $byUser = [];
+        foreach ($allObjectifs as $objectif) {
+            $wid   = $objectif->getWalletId();
+            $uid   = $walletToUser[$wid] ?? null;
+            if (!$uid || !isset($usersMap[$uid])) continue;
+     
+            $stats = $goalStats->compute($objectif);
+            if (!isset($byUser[$uid])) {
+                $byUser[$uid] = [
+                    'userId'            => $uid,
+                    'userName'          => $usersMap[$uid]['nom'],
+                    'pays'              => $usersMap[$uid]['pays'],
+                    'objectifsAtteints' => [],
+                ];
+            }
+            if ($stats['progressPct'] >= 100) {
+                $byUser[$uid]['objectifsAtteints'][] = ['objectif' => $objectif, 'stats' => $stats];
+            }
         }
+     
+        // Trier par nombre d'objectifs atteints desc, puis montant collecté desc
+        usort($byUser, function ($a, $b) {
+            $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
+            if ($diff !== 0) return $diff;
+            $ta = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $a['objectifsAtteints']));
+            $tb = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $b['objectifsAtteints']));
+            return $tb <=> $ta;
+        });
+     
+        // Garder uniquement ceux qui ont au moins 1 objectif atteint, top 3
+        $topContributeurs = array_slice(
+            array_values(array_filter($byUser, fn($u) => count($u['objectifsAtteints']) > 0)),
+            0, 3
+        );
+     
+        return $this->render('objectif/index.html.twig', [
+            'objectifs'         => $objectifsPaginated,
+            'wallets'           => $wallets,
+            'selectedWalletId'  => $selectedWalletId,
+            'notifCount'        => $notifService->countUnread(),
+            'topContributeurs'  => $topContributeurs,
+        ]);
     }
- 
-    // Trier par nombre d'objectifs atteints desc, puis montant collecté desc
-    usort($byUser, function ($a, $b) {
-        $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
-        if ($diff !== 0) return $diff;
-        $ta = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $a['objectifsAtteints']));
-        $tb = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $b['objectifsAtteints']));
-        return $tb <=> $ta;
-    });
- 
-    // Garder uniquement ceux qui ont au moins 1 objectif atteint, top 3
-    $topContributeurs = array_slice(
-        array_values(array_filter($byUser, fn($u) => count($u['objectifsAtteints']) > 0)),
-        0, 3
-    );
- 
-    return $this->render('objectif/index.html.twig', [
-        'objectifs'         => $objectifsPaginated,
-        'wallets'           => $wallets,
-        'selectedWalletId'  => $selectedWalletId,
-        'notifCount'        => $notifService->countUnread(),
-        'topContributeurs'  => $topContributeurs,   // ← nouveau
-    ]);
-}
 
     // ── NEW ───────────────────────────────────────────────────────────────
     #[Route('/new', name: 'objectif_new', methods: ['GET', 'POST'])]
@@ -173,16 +172,13 @@ public function index(
         ]);
     }
 
-    // ── STATIC ROUTES BEFORE /{id} ────────────────────────────────────────
-
-    // ── NOTIFICATIONS : liste (AJAX) ──────────────────────────────────────
+    // ── NOTIFICATIONS ─────────────────────────────────────────────────────
     #[Route('/notifications', name: 'notifications_list', methods: ['GET'])]
     public function notificationsList(NotificationService $notifService): JsonResponse
     {
         return $this->json($notifService->getUnread());
     }
 
-    // ── NOTIFICATIONS : marquer toutes lues (AJAX) ────────────────────────
     #[Route('/notifications/read-all', name: 'notifications_read_all', methods: ['POST'])]
     public function notificationsReadAll(NotificationService $notifService): JsonResponse
     {
@@ -190,7 +186,6 @@ public function index(
         return $this->json(['ok' => true]);
     }
 
-    // ── NOTIFICATIONS : marquer une lue par clé (AJAX) ───────────────────
     #[Route('/notifications/{key}/read', name: 'notification_mark_read', methods: ['POST'])]
     public function notificationMarkRead(
         string              $key,
@@ -201,93 +196,93 @@ public function index(
     }
 
     // ── TOP CONTRIBUTIONS ─────────────────────────────────────────────────
-   #[Route('/top-contributions/detail/{userId}', name: 'top_contributions', methods: ['GET'])]
-public function topContributionsDetail(
-    int                   $userId,
-    ObjectifRepository    $objectifRepo,
-    GoalStatisticsService $goalStats,
-    Connection            $connection,
-    UtilisateurRepository $utilisateurRepository
-): Response {
-    $user = $this->getUser();
-    if (!$user) {
-        throw $this->createAccessDeniedException('Vous devez être connecté.');
-    }
-
-    $utilisateur = $utilisateurRepository->find($userId);
-    if (!$utilisateur) {
-        throw $this->createNotFoundException('Utilisateur introuvable.');
-    }
-
-    // Récupérer les wallets de cet utilisateur
-    $walletsData  = $connection->fetchAllAssociative(
-        'SELECT id, pays FROM wallet WHERE utilisateur_id = ?', [$userId]
-    );
-    $walletIds    = array_column($walletsData, 'id');
-    $pays         = $walletsData[0]['pays'] ?? '—';
-
-    // Calculer le rang de cet utilisateur
-    $allObjectifs   = $objectifRepo->findAll();
-    $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id FROM wallet');
-    $walletToUser   = [];
-    foreach ($allWalletsData as $w) {
-        $walletToUser[$w['id']] = $w['utilisateur_id'];
-    }
-
-    $byUser = [];
-    foreach ($allObjectifs as $objectif) {
-        $wid = $objectif->getWalletId();
-        $uid = $walletToUser[$wid] ?? null;
-        if (!$uid) continue;
-
-        $stats = $goalStats->compute($objectif);
-        if (!isset($byUser[$uid])) {
-            $byUser[$uid] = ['objectifsAtteints' => [], 'totalCollected' => 0];
+    #[Route('/top-contributions/detail/{userId}', name: 'top_contributions', methods: ['GET'])]
+    public function topContributionsDetail(
+        int                   $userId,
+        ObjectifRepository    $objectifRepo,
+        GoalStatisticsService $goalStats,
+        Connection            $connection,
+        UtilisateurRepository $utilisateurRepository
+    ): Response {
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté.');
         }
-        if ($stats['progressPct'] >= 100) {
-            $byUser[$uid]['objectifsAtteints'][] = true;
-            $byUser[$uid]['totalCollected'] += $stats['totalCollected'];
+
+        $utilisateur = $utilisateurRepository->find($userId);
+        if (!$utilisateur) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
         }
-    }
 
-    usort($byUser, fn($a, $b) => count($b['objectifsAtteints']) - count($a['objectifsAtteints'])
-        ?: $b['totalCollected'] <=> $a['totalCollected']
-    );
+        // Récupérer les wallets de cet utilisateur
+        $walletsData  = $connection->fetchAllAssociative(
+            'SELECT id, pays FROM wallet WHERE utilisateur_id = ?', [$userId]
+        );
+        $walletIds    = array_column($walletsData, 'id');
+        $pays         = $walletsData[0]['pays'] ?? '—';
 
-    $rank = 1;
-    foreach (array_keys($byUser) as $uid) {
-        if ((int)$uid === $userId) break;
-        $rank++;
-    }
+        // Calculer le rang de cet utilisateur
+        $allObjectifs   = $objectifRepo->findAll();
+        $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id FROM wallet');
+        $walletToUser   = [];
+        foreach ($allWalletsData as $w) {
+            $walletToUser[$w['id']] = $w['utilisateur_id'];
+        }
 
-    // Construire les données détaillées pour cet utilisateur
-    $objectifsAtteints = [];
-    if ($walletIds) {
-        $objectifs = $objectifRepo->findBy(['walletId' => $walletIds]);
-        foreach ($objectifs as $objectif) {
+        $byUser = [];
+        foreach ($allObjectifs as $objectif) {
+            $wid = $objectif->getWalletId();
+            $uid = $walletToUser[$wid] ?? null;
+            if (!$uid) continue;
+
             $stats = $goalStats->compute($objectif);
+            if (!isset($byUser[$uid])) {
+                $byUser[$uid] = ['objectifsAtteints' => [], 'totalCollected' => 0];
+            }
             if ($stats['progressPct'] >= 100) {
-                $objectifsAtteints[] = [
-                    'objectif'      => $objectif,
-                    'stats'         => $stats,
-                    'contributions' => $objectif->getContributiongoals()->toArray(),
-                ];
+                $byUser[$uid]['objectifsAtteints'][] = true;
+                $byUser[$uid]['totalCollected'] += $stats['totalCollected'];
             }
         }
+
+        usort($byUser, fn($a, $b) => count($b['objectifsAtteints']) - count($a['objectifsAtteints'])
+            ?: $b['totalCollected'] <=> $a['totalCollected']
+        );
+
+        $rank = 1;
+        foreach (array_keys($byUser) as $uid) {
+            if ((int)$uid === $userId) break;
+            $rank++;
+        }
+
+        // Construire les données détaillées pour cet utilisateur
+        $objectifsAtteints = [];
+        if ($walletIds) {
+            $objectifs = $objectifRepo->findBy(['walletId' => $walletIds]);
+            foreach ($objectifs as $objectif) {
+                $stats = $goalStats->compute($objectif);
+                if ($stats['progressPct'] >= 100) {
+                    $objectifsAtteints[] = [
+                        'objectif'      => $objectif,
+                        'stats'         => $stats,
+                        'contributions' => $objectif->getContributiongoals()->toArray(),
+                    ];
+                }
+            }
+        }
+
+        $userData = [
+            'userId'            => $userId,
+            'userName'          => $utilisateur->getPrenom() . ' ' . $utilisateur->getNom(),
+            'pays'              => $pays,
+            'rank'              => $rank,
+            'objectifsAtteints' => $objectifsAtteints,
+        ];
+
+        return $this->render('objectif/top_contributions_detail.html.twig', [
+            'userData' => $userData,
+        ]);
     }
-
-    $userData = [
-        'userId'            => $userId,
-        'userName'          => $utilisateur->getPrenom() . ' ' . $utilisateur->getNom(),
-        'pays'              => $pays,
-        'rank'              => $rank,
-        'objectifsAtteints' => $objectifsAtteints,
-    ];
-
-    return $this->render('objectif/top_contributions_detail.html.twig', [
-        'userData' => $userData,
-    ]);
-}
 
     // ── HISTORIQUE ────────────────────────────────────────────────────────
     #[Route('/historique', name: 'objectif_historique', methods: ['GET'])]
@@ -355,14 +350,14 @@ public function topContributionsDetail(
         $historiquePaginated = $paginator->paginate(
             $historique,
             $request->query->getInt('pageH', 1),
-            5,   // objectifs atteints par page
+            5,
             ['pageParameterName' => 'pageH']
         );
 
         $enCoursPaginated = $paginator->paginate(
             $enCours,
             $request->query->getInt('pageE', 1),
-            4,   // objectifs en cours par page
+            4,
             ['pageParameterName' => 'pageE']
         );
 
@@ -403,14 +398,49 @@ public function topContributionsDetail(
         ]);
     }
 
-    // ── /{id} ROUTES EN DERNIER ───────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════
+    // NOUVELLE ROUTE : Événements pour le calendrier (FullCalendar)
+    // ══════════════════════════════════════════════════════════════════════
+    #[Route('/{id}/events', name: 'objectif_events', methods: ['GET'])]
+    public function events(Objectif $objectif): JsonResponse
+    {
+        $events = [];
 
+        // 1. Contributions
+        foreach ($objectif->getContributiongoals() as $contrib) {
+            $events[] = [
+                'title' => number_format($contrib->getMontant(), 2, ',', ' ') . ' €',
+                'start' => $contrib->getDate()->format('Y-m-d'),
+                'color' => '#1a9e6e',
+                'textColor' => '#fff',
+                'extendedProps' => ['montant' => $contrib->getMontant()],
+            ];
+        }
+
+        // 2. Date d'atteinte réelle (si objectif terminé)
+        if ($objectif->getStatut() === 'TERMINE') {
+            $last = $objectif->getContributiongoals()->last();
+            if ($last) {
+                $events[] = [
+                    'title' => '🏆 Objectif atteint',
+                    'start' => $last->getDate()->format('Y-m-d'),
+                    'color' => '#f39c12',
+                    'textColor' => '#fff',
+                ];
+            }
+        }
+
+        return $this->json($events);
+    }
+
+    // ── /{id} ROUTES EN DERNIER ───────────────────────────────────────────
     #[Route('/{id}', name: 'objectif_show', methods: ['GET'])]
     public function show(Objectif $objectif, GoalStatisticsService $goalStats): Response
     {
+        $stats = $goalStats->compute($objectif);
         return $this->render('objectif/show.html.twig', [
             'objectif' => $objectif,
-            'stats'    => $goalStats->compute($objectif),
+            'stats'    => $stats,
         ]);
     }
 

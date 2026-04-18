@@ -1,42 +1,279 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Objectif{% endblock %}
+{% block title %}Objectif : {{ objectif.titre }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <style>
+        .obj-container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef9c3; color: #a16207; }
+        .badge-danger  { background: #fee2e2; color: #991b1b; }
+
+        .btn-group { margin-top: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+        .btn {
+            padding: 0.5rem 1.25rem; border-radius: 30px;
+            text-decoration: none; font-weight: 500;
+            display: inline-block; border: none;
+            cursor: pointer; font-size: 0.9rem;
+        }
+        .btn-secondary { background: #f1f5f9; color: #1e293b; }
+        .btn-primary   { background: #1a9e6e; color: white; }
+        .btn-danger    { background: #fee2e2; color: #991b1b; }
+
+        h1, h2 { margin-top: 0; }
+
+        /* ── Calendrier ── */
+        #calendar {
+            min-height: 520px;
+        }
+        .fc {
+            font-family: 'DM Sans', sans-serif;
+        }
+        .fc .fc-button-primary {
+            background: #1a9e6e !important;
+            border-color: #1a9e6e !important;
+        }
+        .fc .fc-button-primary:hover {
+            background: #157a55 !important;
+            border-color: #157a55 !important;
+        }
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background: #0f6e56 !important;
+            border-color: #0f6e56 !important;
+        }
+        .fc-daygrid-event {
+            border-radius: 6px !important;
+            font-size: 11px !important;
+            padding: 2px 5px !important;
+        }
+        .fc-toolbar-title {
+            font-size: 1.1rem !important;
+            font-weight: 700 !important;
+        }
+
+        /* Légende */
+        .cal-legend {
+            display: flex; gap: 16px; flex-wrap: wrap;
+            margin-top: 1rem; font-size: 12px; color: #555;
+        }
+        .cal-legend-item { display: flex; align-items: center; gap: 6px; }
+        .cal-legend-dot  { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    </style>
+{% endblock %}
 
 {% block body %}
-    <h1>Objectif</h1>
+<div class="obj-container">
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Id</th>
-                <td>{{ objectif.id }}</td>
-            </tr>
-            <tr>
-                <th>Titre</th>
-                <td>{{ objectif.titre }}</td>
-            </tr>
-            <tr>
-                <th>Montant</th>
-                <td>{{ objectif.montant }}</td>
-            </tr>
-            <tr>
-                <th>DateDebut</th>
-                <td>{{ objectif.dateDebut ? objectif.dateDebut|date('Y-m-d') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Duree</th>
-                <td>{{ objectif.duree }}</td>
-            </tr>
-            <tr>
-                <th>Statut</th>
-                <td>{{ objectif.statut }}</td>
-            </tr>
-        </tbody>
-    </table>
+    {# ══ INFOS OBJECTIF ══ #}
+    <div class="card">
+        <h1>📌 {{ objectif.titre }}</h1>
 
-    <a href="{{ path('app_obj_index') }}">back to list</a>
+        <div class="info-row">
+            <span>💰 Montant cible</span>
+            <strong>{{ objectif.montant|number_format(2, ',', ' ') }} €</strong>
+        </div>
+        <div class="info-row">
+            <span>📅 Date de début</span>
+            <strong>{{ objectif.dateDebut|date('d/m/Y') }}</strong>
+        </div>
+        <div class="info-row">
+            <span>⏱️ Durée</span>
+            <strong>{{ objectif.duree }} mois</strong>
+        </div>
+        <div class="info-row">
+            <span>🏷️ Statut</span>
+            <strong>
+                {% if objectif.statut == 'TERMINE' %}
+                    <span class="badge badge-success">✅ Terminé</span>
+                {% elseif objectif.statut == 'EN_COURS' %}
+                    <span class="badge badge-warning">⏳ En cours</span>
+                {% else %}
+                    <span class="badge badge-danger">❌ Échoué</span>
+                {% endif %}
+            </strong>
+        </div>
+        <div class="info-row">
+            <span>📊 Progression</span>
+            <strong>
+                {{ stats.progressPct|round }}%
+                ({{ stats.totalCollected|number_format(2, ',', ' ') }}
+                / {{ stats.targetAmount|number_format(2, ',', ' ') }} €)
+            </strong>
+        </div>
 
-    <a href="{{ path('app_obj_edit', {'id': objectif.id}) }}">edit</a>
+        {% if objectif.statut == 'TERMINE' and stats.progressPct >= 100 %}
+            <div class="info-row">
+                <span>🏆 Date d'atteinte</span>
+                <strong>
+                    {% set lastContrib = objectif.contributiongoals|last %}
+                    {% if lastContrib %}{{ lastContrib.date|date('d/m/Y') }}{% else %}—{% endif %}
+                </strong>
+            </div>
+        {% elseif objectif.statut == 'EN_COURS' and stats.prediction is defined and stats.prediction %}
+            <div class="info-row">
+                <span>🔮 Date estimée d'atteinte</span>
+                <strong>
+                    {{ stats.prediction.predictedDate|date('d/m/Y') }}
+                    <span class="badge badge-warning" style="margin-left:8px;">
+                        confiance {{ stats.prediction.confidence }}
+                    </span>
+                </strong>
+            </div>
+        {% endif %}
+    </div>
 
-    {{ include('obj/_delete_form.html.twig') }}
+    {# ══ CALENDRIER ══ #}
+    <div class="card">
+        <h2>📅 Calendrier des contributions</h2>
+
+        <div id="calendar"></div>
+
+        <div class="cal-legend">
+            <div class="cal-legend-item">
+                <div class="cal-legend-dot" style="background:#1a9e6e;"></div>
+                Contribution
+            </div>
+            {% if objectif.statut == 'TERMINE' %}
+            <div class="cal-legend-item">
+                <div class="cal-legend-dot" style="background:#f39c12;"></div>
+                Objectif atteint 🏆
+            </div>
+            {% endif %}
+            {% if objectif.statut == 'EN_COURS' and stats.prediction is defined and stats.prediction %}
+            <div class="cal-legend-item">
+                <div class="cal-legend-dot" style="background:#8b5cf6;"></div>
+                Date prédite 🔮
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <a href="{{ path('objectif_index') }}" class="btn btn-secondary">← Retour à la liste</a>
+        <a href="{{ path('objectif_edit', {'id': objectif.id}) }}" class="btn btn-primary">✏️ Modifier</a>
+        {{ include('objectif/_delete_form.html.twig') }}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // ── Événements injectés directement depuis Twig (pas d'AJAX) ──
+        // Cela évite tout problème de route ou de bundle
+        var events = [
+
+            // 1. Contributions
+            {% for contrib in objectif.contributiongoals %}
+            {
+                title: '💰 {{ contrib.montant|number_format(2, ',', ' ') }} €',
+                start: '{{ contrib.date|date('Y-m-d') }}',
+                backgroundColor: '#1a9e6e',
+                borderColor: '#1a9e6e',
+                textColor: '#fff',
+                extendedProps: {
+                    type: 'contribution',
+                    montant: {{ contrib.montant }}
+                }
+            },
+            {% endfor %}
+
+            // 2. Date d'atteinte réelle (objectif terminé)
+            {% if objectif.statut == 'TERMINE' %}
+                {% set lastContrib = objectif.contributiongoals|last %}
+                {% if lastContrib %}
+                {
+                    title: '🏆 Objectif atteint !',
+                    start: '{{ lastContrib.date|date('Y-m-d') }}',
+                    backgroundColor: '#f39c12',
+                    borderColor: '#e67e22',
+                    textColor: '#fff',
+                    extendedProps: { type: 'atteint' }
+                },
+                {% endif %}
+            {% endif %}
+
+            // 3. Date prédite (objectif en cours)
+            {% if objectif.statut == 'EN_COURS' and stats.prediction is defined and stats.prediction %}
+            {
+                title: '🔮 Date estimée',
+                start: '{{ stats.prediction.predictedDate|date('Y-m-d') }}',
+                backgroundColor: '#8b5cf6',
+                borderColor: '#7c3aed',
+                textColor: '#fff',
+                extendedProps: { type: 'prediction' }
+            },
+            {% endif %}
+
+        ];
+
+        // ── Aller au mois de la première contribution (ou mois actuel) ──
+        var initialDate = '{{ objectif.dateDebut|date('Y-m-d') }}';
+        {% if objectif.contributiongoals|length > 0 %}
+            {% set firstContrib = objectif.contributiongoals|first %}
+            initialDate = '{{ firstContrib.date|date('Y-m-d') }}';
+        {% endif %}
+
+        var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            initialView:  'dayGridMonth',
+            locale:       'fr',
+            initialDate:  initialDate,
+            height:       520,
+            headerToolbar: {
+                left:   'prev,next today',
+                center: 'title',
+                right:  'dayGridMonth,listMonth'
+            },
+            events: events,
+
+            // Tooltip au survol
+            eventDidMount: function(info) {
+                if (info.event.extendedProps.type === 'contribution') {
+                    info.el.title = 'Contribution : ' + info.event.extendedProps.montant + ' €';
+                } else if (info.event.extendedProps.type === 'atteint') {
+                    info.el.title = 'Objectif atteint ce jour !';
+                } else if (info.event.extendedProps.type === 'prediction') {
+                    info.el.title = 'Date estimée d\'atteinte de l\'objectif';
+                }
+            },
+
+            // Désactiver le clic (pas de navigation)
+            eventClick: function(info) {
+                info.jsEvent.preventDefault();
+            }
+        });
+
+        calendar.render();
+    });
+    </script>
 {% endblock %}

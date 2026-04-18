@@ -1,1360 +1,1426 @@
 {% extends 'base.html.twig' %}
 {% block title %}Mes objectifs{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <style>
+        /* ── TOUS VOS STYLES EXISTANTS ── */
+        /* (copiez ici l'intégralité de votre CSS actuel, y compris les règles pour .topbar, .flash, .obj-page, etc.) */
+        /* Afin de ne pas alourdir, je les résume, mais vous devez les conserver */
+
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+        :root {
+            --green: #1a9e6e;
+            --green-dark: #0f6e4e;
+            --green-deep: #094d37;
+            --green-light: #e2f5ee;
+            --gold: #c9920a;
+            --gold-light: #faeeda;
+            --red: #b83030;
+            --red-light: #fcebeb;
+            --blue: #2a72c3;
+            --blue-light: #e6f1fb;
+            --border: #e6e6e2;
+            --border-soft: #f0f0ec;
+            --bg: #f4f4f0;
+            --surface: #ffffff;
+            --surface-2: #fafaf8;
+            --text: #0e1410;
+            --text-2: #3a3f3c;
+            --muted: #8a8e8b;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+            --shadow-md: 0 8px 28px rgba(0,0,0,.1);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,.14);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
+
+        /* Topbar */
+        .topbar {
+            position: sticky; top: 0; z-index: 200;
+            background: var(--green-deep);
+            border-bottom: 1px solid rgba(255,255,255,.06);
+            backdrop-filter: blur(16px);
+        }
+        .topbar-inner {
+            max-width: 1280px; margin: 0 auto;
+            padding: 0 2rem;
+            height: 58px;
+            display: flex; align-items: center; gap: 1.5rem;
+        }
+        .topbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px; font-weight: 900;
+            color: #fff; letter-spacing: -.02em;
+            text-decoration: none; flex-shrink: 0;
+        }
+        .topbar-brand em { color: #5dcaa5; font-style: normal; }
+        .topbar-sep { width: 1px; height: 20px; background: rgba(255,255,255,.12); flex-shrink: 0; }
+        .topbar-crumb {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; color: rgba(255,255,255,.45); letter-spacing: .02em;
+        }
+        .topbar-crumb a { color: rgba(255,255,255,.45); text-decoration: none; transition: color .15s; }
+        .topbar-crumb a:hover { color: rgba(255,255,255,.8); }
+        .topbar-crumb-sep { color: rgba(255,255,255,.2); }
+        .topbar-crumb-cur { color: rgba(255,255,255,.75); }
+        .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+        .tb-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            height: 34px; padding: 0 16px;
+            font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+            border-radius: 8px; cursor: pointer; text-decoration: none;
+            letter-spacing: .02em; transition: all .2s; white-space: nowrap;
+        }
+        .tb-btn--ghost {
+            border: 1px solid rgba(255,255,255,.14); background: transparent; color: rgba(255,255,255,.7);
+        }
+        .tb-btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.3); }
+        .tb-btn--primary {
+            border: none; background: var(--green); color: #fff;
+            box-shadow: 0 2px 12px rgba(26,158,110,.4);
+        }
+        .tb-btn--primary:hover { background: #14825a; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(26,158,110,.5); }
+        .tb-btn--disabled {
+            border: 1px solid rgba(255,255,255,.06); background: transparent;
+            color: rgba(255,255,255,.2); cursor: not-allowed; pointer-events: none;
+        }
+        .tb-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; flex-shrink: 0; }
+        .tb-notif {
+            position: relative; width: 34px; height: 34px;
+            border: 1px solid rgba(255,255,255,.14); border-radius: 8px;
+            background: transparent; cursor: pointer; color: rgba(255,255,255,.65);
+            display: flex; align-items: center; justify-content: center; transition: all .2s;
+        }
+        .tb-notif:hover { background: rgba(255,255,255,.1); color: #fff; }
+        .tb-notif svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .tb-notif-dot {
+            position: absolute; top: 6px; right: 6px;
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #e24b4a; border: 1.5px solid var(--green-deep);
+            display: none;
+        }
+        .tb-notif-dot.on { display: block; animation: pulse-dot 2s infinite; }
+        @keyframes pulse-dot {
+            0%,100% { box-shadow: 0 0 0 0 rgba(226,75,74,.5); }
+            50% { box-shadow: 0 0 0 4px rgba(226,75,74,0); }
+        }
+
+        /* Flash messages */
+        .flash {
+            display: flex; align-items: stretch;
+            border-radius: 14px; margin-top: 1.5rem;
+            overflow: hidden;
+            animation: flash-in .4s cubic-bezier(.16,1,.3,1) both;
+            position: relative;
+        }
+        @keyframes flash-in { from { opacity:0; transform: translateY(-10px) scale(.98); } to { opacity:1; transform:none; } }
+        .flash-stripe { width: 4px; flex-shrink: 0; }
+        .flash-ico { width: 52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .flash-ico-inner { width: 36px; height: 36px; border-radius: 9px; display:flex; align-items:center; justify-content:center; }
+        .flash-ico-inner svg { width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2.5; }
+        .flash-body { flex:1; padding: 14px 10px 14px 0; }
+        .flash-title { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; line-height:1.2; margin-bottom:2px; }
+        .flash-msg { font-size:12.5px; opacity:.78; line-height:1.4; }
+        .flash-close {
+            background:none; border:none; cursor:pointer; color:currentColor;
+            opacity:.35; padding:0 14px; display:flex; align-items:center;
+            border-radius: 0 14px 14px 0; transition: opacity .15s, background .15s;
+        }
+        .flash-close:hover { opacity:.8; background:rgba(0,0,0,.06); }
+        .flash-close svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2.5; }
+        .flash--success { background: linear-gradient(135deg,#edfaf4,#d5f5e8); color:#094d37; border:1px solid rgba(16,130,90,.2); box-shadow: 0 6px 24px rgba(26,158,110,.14); }
+        .flash--success .flash-stripe { background: var(--green); }
+        .flash--success .flash-ico-inner { background:rgba(26,158,110,.15); color:var(--green-dark); }
+        .flash--error { background: linear-gradient(135deg,#fff1f1,#ffe3e3); color:#741e1e; border:1px solid rgba(163,45,45,.2); box-shadow: 0 6px 24px rgba(184,48,48,.12); }
+        .flash--error .flash-stripe { background: #e24b4a; }
+        .flash--error .flash-ico-inner { background:rgba(163,45,45,.13); color:var(--red); }
+
+        /* Page header */
+        .page-header {
+            padding: 3rem 0 2.25rem;
+            display: flex; align-items: flex-end; justify-content: space-between;
+            gap: 2rem; flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        .page-header-eyebrow {
+            font-size: 10px; font-weight: 600; letter-spacing: .12em;
+            text-transform: uppercase; color: var(--green);
+            margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+        }
+        .page-header-eyebrow::before {
+            content: ''; display: block; width: 20px; height: 1px; background: var(--green);
+        }
+        .page-header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 900; color: var(--text);
+            letter-spacing: -.04em; line-height: 1.05;
+        }
+        .page-header-title em { color: var(--green); font-style: italic; }
+        .page-header-sub {
+            font-size: 14px; color: var(--muted);
+            margin-top: 8px; line-height: 1.6; max-width: 480px;
+        }
+
+        /* Wallet filter */
+        .wallet-bar { display:flex; align-items:center; gap:12px; margin-bottom:1.75rem; flex-wrap:wrap; }
+        .wallet-lbl { font-size:12px; font-weight:500; color:var(--muted); white-space:nowrap; }
+        .wallet-sel {
+            height: 38px; padding: 0 36px 0 14px;
+            font-size: 13px; font-family: 'DM Sans', sans-serif;
+            background: var(--surface);
+            border: 1px solid var(--border); border-radius: var(--radius-sm);
+            color: var(--text); cursor: pointer; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8e8b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center;
+            min-width: 300px; transition: border-color .2s, box-shadow .2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .wallet-sel:focus { outline:none; border-color:var(--green); box-shadow: 0 0 0 3px rgba(26,158,110,.12); }
+        .wallet-notice {
+            display:flex; align-items:center; gap:10px;
+            background: var(--gold-light); color: var(--gold);
+            border: 1px solid rgba(201,146,10,.25); border-radius: var(--radius-sm);
+            padding: 11px 16px; font-size: 13px; margin-bottom: 1.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Stats row */
+        .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:2rem; }
+        .stat-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem 1.5rem;
+            display: flex; align-items: center; gap: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow .2s, transform .2s;
+            animation: card-in .5s ease both;
+        }
+        .stat-card:nth-child(1) { animation-delay: .05s; }
+        .stat-card:nth-child(2) { animation-delay: .1s; }
+        .stat-card:nth-child(3) { animation-delay: .15s; }
+        @keyframes card-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .stat-icon-wrap {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            font-size: 22px;
+            position: relative;
+        }
+        .stat-icon-wrap::after {
+            content:''; position:absolute; inset:0; border-radius:12px;
+            background: linear-gradient(135deg, rgba(255,255,255,.6), transparent);
+        }
+        .stat-icon-wrap--teal { background: linear-gradient(135deg, #c8f0e0, #90ddbe); }
+        .stat-icon-wrap--amber { background: linear-gradient(135deg, #fde8b4, #f9c44a); }
+        .stat-icon-wrap--blue { background: linear-gradient(135deg, #c8dff8, #90bff0); }
+        .stat-num { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:var(--text); line-height:1; }
+        .stat-lbl { font-size:11px; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.06em; }
+
+        /* Action bar */
+        .action-bar { display:flex; gap:12px; margin-bottom:2rem; flex-wrap:wrap; }
+        .action-card {
+            flex:1; min-width:180px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.1rem 1.25rem;
+            display: flex; align-items: center; gap: 14px;
+            cursor: pointer; text-decoration: none;
+            box-shadow: var(--shadow-sm);
+            transition: all .25s; position: relative; overflow: hidden;
+        }
+        .action-card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            transform: scaleX(0); transition: transform .3s; transform-origin: left;
+        }
+        .action-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .action-card:hover::before { transform: scaleX(1); }
+        .action-card--hist::before  { background: var(--blue); }
+        .action-card--hist:hover    { border-color: rgba(42,114,195,.25); }
+        .action-card--notif::before { background: var(--green); }
+        .action-card--notif:hover   { border-color: rgba(26,158,110,.25); }
+        .ac-icon {
+            width: 44px; height: 44px; border-radius: 11px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .ac-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .ac-icon--blue  { background: var(--blue-light); color: var(--blue); }
+        .ac-icon--green { background: var(--green-light); color: var(--green); }
+        .ac-title-main { font-family:'Playfair Display',serif; font-size:14px; font-weight:700; color:var(--text); line-height:1.2; }
+        .ac-sub  { font-size:11px; color:var(--muted); margin-top:2px; }
+        .ac-arrow { margin-left:auto; color:#ccc; font-size:18px; transition: transform .2s, color .2s; }
+        .action-card:hover .ac-arrow { transform:translateX(4px); color:var(--green); }
+        .ac-badge {
+            margin-left:auto; min-width:22px; height:22px; border-radius:11px;
+            background:#e24b4a; color:#fff; font-size:10px; font-weight:700;
+            padding:0 6px; display:none; align-items:center; justify-content:center;
+            animation: badge-pop .25s ease;
+        }
+        .ac-badge.on { display:flex; }
+        @keyframes badge-pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+        /* Drawer notifications (simplifié) */
+        .notif-overlay {
+            display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);
+            z-index:9000; backdrop-filter:blur(3px); animation: fade-in .22s ease;
+        }
+        @keyframes fade-in { from{opacity:0} to{opacity:1} }
+        .notif-overlay.open { display:block; }
+        .notif-drawer {
+            position:fixed; top:0; right:-420px; bottom:0; width:400px; max-width:100vw;
+            background:var(--surface); z-index:9001;
+            box-shadow: -12px 0 50px rgba(0,0,0,.18);
+            display:flex; flex-direction:column;
+            transition: right .35s cubic-bezier(.4,0,.2,1);
+            border-left: 1px solid var(--border);
+        }
+        .notif-drawer.open { right:0; }
+        .notif-head {
+            padding:1.5rem 1.5rem 1rem; border-bottom:1px solid var(--border);
+            display:flex; align-items:center; gap:14px;
+            background: linear-gradient(135deg, var(--green-deep), #0d5e42);
+        }
+        .notif-head-icon {
+            width:40px; height:40px; border-radius:10px;
+            background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15);
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+        }
+        .notif-head-icon svg { width:19px; height:19px; stroke:#5dcaa5; fill:none; stroke-width:2; }
+        .notif-head-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:#fff; flex:1; }
+        .notif-head-close {
+            width:32px; height:32px; border-radius:8px;
+            border:1px solid rgba(255,255,255,.15); background:transparent;
+            cursor:pointer; color:rgba(255,255,255,.65); font-size:14px;
+            display:flex; align-items:center; justify-content:center; transition:all .15s;
+        }
+        .notif-head-close:hover { background:rgba(255,255,255,.12); color:#fff; }
+        .notif-toolbar {
+            padding:.75rem 1.5rem; border-bottom:1px solid var(--border);
+            display:flex; justify-content:flex-end;
+        }
+        .notif-mark-all {
+            font-size:12px; font-weight:600; color:var(--green);
+            background:var(--green-light); border:1px solid rgba(26,158,110,.2);
+            border-radius:20px; padding:5px 14px; cursor:pointer; transition:background .15s;
+        }
+        .notif-mark-all:hover { background:#c5ecd9; }
+        .notif-body { flex:1; overflow-y:auto; padding:10px 14px 14px; }
+        .notif-empty { text-align:center; color:var(--muted); font-size:13px; padding:3rem 1rem; }
+        .notif-empty-icon { font-size:32px; display:block; margin-bottom:.75rem; }
+        .notif-item {
+            display:flex; gap:12px; padding:.9rem 1rem;
+            border-radius:12px; margin-bottom:6px; cursor:pointer;
+            transition:background .15s; border-left:3px solid transparent;
+            animation: notif-in .2s ease;
+        }
+        @keyframes notif-in { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+        .notif-item:hover { background:var(--surface-2); }
+        .notif-item.BIENTOT_ATTEINT { border-left-color:#ef9f27; background:#fffbf3; }
+        .notif-item.RAPPEL { border-left-color:var(--blue); background:var(--blue-light); }
+        .notif-item.is-read { opacity:.3; pointer-events:none; }
+        .notif-item-icon { font-size:18px; flex-shrink:0; width:28px; text-align:center; margin-top:2px; }
+        .notif-msg  { font-size:13px; color:var(--text); line-height:1.5; margin-bottom:4px; }
+        .notif-time { font-size:11px; color:var(--muted); }
+
+        /* Main layout */
+        .main-layout { display:flex; gap:1.75rem; align-items:flex-start; }
+        .obj-sidebar {
+            width: 220px; flex-shrink:0;
+            border-radius: 22px; overflow:hidden;
+            background: linear-gradient(160deg, var(--green-deep) 0%, #0a6644 50%, #073d28 100%);
+            border: 1px solid rgba(255,255,255,.06);
+            box-shadow: var(--shadow-lg);
+            position: sticky; top: 80px;
+            min-height: 480px;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-top {
+            padding: 2rem 1.5rem 1.5rem;
+            display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,.07); flex: 1;
+        }
+        .sidebar-svg-wrap {
+            position: relative; width: 130px; height: 130px;
+            animation: float-svg 4s ease-in-out infinite;
+        }
+        @keyframes float-svg { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        .sidebar-svg-wrap svg { width:130px; height:130px; }
+        .sidebar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 700; color: #fff;
+            text-align: center; line-height: 1.3;
+        }
+        .sidebar-sub { font-size: 11px; color: rgba(255,255,255,.5); text-align:center; line-height:1.55; }
+        .sidebar-badge {
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.15);
+            color: #5dcaa5; font-size: 11px; font-weight: 600;
+            padding: 5px 16px; border-radius: 20px;
+            display: inline-block;
+            backdrop-filter: blur(6px);
+        }
+        .sidebar-bottom {
+            padding: 1.25rem 1.5rem;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .sidebar-stat {
+            display: flex; align-items: center; justify-content: space-between;
+            font-size: 12px;
+            padding: 8px 12px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.08); border-radius: 10px;
+        }
+        .sidebar-stat-lbl { color: rgba(255,255,255,.5); }
+        .sidebar-stat-val { color: #fff; font-weight: 600; font-family:'Playfair Display',serif; font-size:14px; }
+
+        .carousel-zone { flex:1; min-width:0; }
+        .carousel-outer { overflow:hidden; border-radius:18px; }
+        .carousel-track {
+            display: flex; gap: 14px;
+            transition: transform .45s cubic-bezier(.4,0,.2,1);
+            will-change: transform;
+        }
+
+        /* Object cards */
+        .obj-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px; overflow:hidden;
+            flex: 0 0 calc(33.333% - 10px);
+            display: flex; flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow .3s, transform .3s, border-color .3s;
+            position: relative;
+        }
+        .obj-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); border-color: rgba(26,158,110,.2); }
+        .obj-card.nearly-done { border-color: rgba(239,159,39,.4); }
+        .card-visual {
+            position: relative; height: 160px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow:hidden;
+        }
+        .card-visual-bg {
+            position: absolute; inset:0;
+            transition: transform .5s ease;
+        }
+        .obj-card:hover .card-visual-bg { transform: scale(1.04); }
+        .card-visual-overlay {
+            position:absolute; inset:0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.35) 100%);
+        }
+        .card-visual-icon {
+            font-size: 58px; line-height:1; position:relative; z-index:2;
+            filter: drop-shadow(0 6px 18px rgba(0,0,0,.15));
+            transition: transform .35s ease;
+        }
+        .obj-card:hover .card-visual-icon { transform: scale(1.1) translateY(-4px) rotate(-4deg); }
+        .card-accent { position:absolute; top:0; left:0; right:0; height:3px; z-index:3; }
+        .accent-termine  { background: linear-gradient(90deg, #1a9e6e, #34d399); }
+        .accent-en_cours { background: linear-gradient(90deg, #c9920a, #fbbf24); }
+        .accent-echoue   { background: linear-gradient(90deg, #b83030, #ef4444); }
+        .card-status-badge {
+            position:absolute; top:12px; right:12px; z-index:3;
+            font-size:10px; font-weight:700; padding:4px 12px;
+            border-radius:20px; letter-spacing:.04em;
+            backdrop-filter: blur(6px);
+        }
+        .badge-termine  { background:rgba(225,245,238,.9); color:#0f6e56; border:0.5px solid rgba(26,158,110,.3); }
+        .badge-en_cours { background:rgba(250,238,218,.9); color:#854f0b; border:0.5px solid rgba(201,146,10,.3); }
+        .badge-echoue   { background:rgba(252,235,235,.9); color:#a32d2d; border:0.5px solid rgba(184,48,48,.3); }
+        .card-notif-badges {
+            position:absolute; top:12px; left:12px; z-index:3;
+            display:flex; flex-direction:column; gap:4px;
+        }
+        .badge-notif {
+            display:inline-flex; align-items:center; gap:4px;
+            font-size:10px; font-weight:600; padding:3px 9px;
+            border-radius:20px; backdrop-filter:blur(4px); white-space:nowrap;
+        }
+        .badge-notif--warn   { background:rgba(250,238,218,.92); color:#854f0b; border:0.5px solid rgba(201,146,10,.4); }
+        .badge-notif--rappel { background:rgba(230,241,251,.92); color:#185fa5; border:0.5px solid rgba(42,114,195,.3); }
+        .card-ring {
+            position:absolute; bottom:12px; right:12px; z-index:3;
+            width:46px; height:46px;
+        }
+        .card-ring svg { width:46px; height:46px; transform:rotate(-90deg); }
+        .ring-bg   { fill:none; stroke:rgba(255,255,255,.25); stroke-width:4; }
+        .ring-fill { fill:none; stroke-width:4; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
+        .ring-termine  { stroke: #1a9e6e; }
+        .ring-en_cours { stroke: #e9a000; }
+        .ring-echoue   { stroke: #c0392b; }
+        .ring-label {
+            position:absolute; inset:0;
+            display:flex; align-items:center; justify-content:center;
+            font-size:9px; font-weight:800; color:#fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,.5);
+        }
+        .card-body { padding: 1.1rem 1.1rem .75rem; flex:1; display:flex; flex-direction:column; }
+        .card-cat  { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; }
+        .card-title {
+            font-family:'Playfair Display',serif; font-weight:700;
+            font-size:15px; color:var(--text); line-height:1.3; margin-bottom:12px;
+            display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+        }
+        .card-amounts { display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
+        .amount-main { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; color:var(--green); }
+        .amount-sep  { color:var(--border); font-size:14px; }
+        .amount-tgt  { font-size:13px; color:var(--muted); }
+        .pbar-wrap { margin-bottom:5px; }
+        .pbar { height:6px; background:var(--border-soft); border-radius:3px; overflow:hidden; }
+        .pbar-fill { height:100%; border-radius:3px; transition:width .5s ease; }
+        .fill-termine  { background: linear-gradient(90deg, #1a9e6e, #34d399); }
+        .fill-en_cours { background: linear-gradient(90deg, #c9920a, #fbbf24); }
+        .fill-echoue   { background: linear-gradient(90deg, #b83030, #ef4444); }
+        .pbar-info { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:5px; margin-bottom:12px; }
+        .card-meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+        .meta-cell { background:var(--surface-2); border:1px solid var(--border-soft); border-radius:9px; padding:8px 11px; }
+        .meta-lbl  { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px; }
+        .meta-val  { font-size:13px; font-weight:600; color:var(--text-2); }
+        .wallet-chip {
+            display:flex; align-items:center; gap:8px;
+            background:var(--surface-2); border:1px solid var(--border-soft);
+            border-radius:9px; padding:7px 11px; font-size:12px; margin-bottom:10px;
+        }
+        .wallet-chip svg { width:13px; height:13px; stroke:var(--muted); fill:none; stroke-width:2; flex-shrink:0; }
+        .wallet-pays  { font-weight:500; color:var(--text-2); flex:1; }
+        .wallet-solde { color:var(--green); font-weight:700; font-size:12px; }
+        .alert-banner {
+            display:flex; align-items:center; gap:7px;
+            border-radius:9px; padding:8px 10px; font-size:11.5px; font-weight:500; margin-bottom:8px;
+        }
+        .alert-banner svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; flex-shrink:0; }
+        .alert-banner--warn   { background:linear-gradient(135deg,#faeeda,#fff8ec); border:1px solid rgba(201,146,10,.25); color:#854f0b; }
+        .alert-banner--rappel { background:var(--blue-light); border:1px solid rgba(42,114,195,.2); color:#185fa5; }
+        .alert-banner-pct { margin-left:auto; font-weight:800; }
+        .contrib-toggle {
+            display:flex; align-items:center; justify-content:space-between;
+            font-size:11px; font-weight:500; color:var(--muted);
+            cursor:pointer; padding:5px 7px; border-radius:7px;
+            transition:background .15s; user-select:none; margin-bottom:4px;
+        }
+        .contrib-toggle:hover { background:var(--surface-2); color:var(--text-2); }
+        .contrib-toggle svg { width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2.5; transition:transform .2s; }
+        .contrib-toggle.open svg { transform:rotate(180deg); }
+        .contrib-items { display:none; flex-direction:column; gap:4px; padding-bottom:4px; }
+        .contrib-items.open { display:flex; }
+        .contrib-row {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:5px 9px; background:var(--surface-2);
+            border:1px solid var(--border-soft); border-radius:8px; font-size:11.5px;
+        }
+        .contrib-montant { font-weight:600; color:var(--text-2); }
+        .contrib-date    { font-size:10px; color:var(--muted); margin-top:1px; }
+        .btn-del-contrib {
+            background:none; border:none; cursor:pointer; color:var(--muted);
+            padding:2px 6px; border-radius:5px; font-size:13px; transition:all .15s;
+        }
+        .btn-del-contrib:hover { background:var(--red-light); color:var(--red); }
+        .card-footer {
+            padding: .875rem 1.1rem 1.1rem;
+            border-top: 1px solid var(--border-soft);
+            background: var(--surface-2);
+        }
+        .card-actions { display:flex; gap:8px; margin-bottom:10px; }
+        .btn-edit {
+            flex:1; height:34px; border-radius:9px; border:1px solid var(--border);
+            background:var(--surface); font-size:12px; font-weight:500;
+            color:var(--text-2); cursor:pointer; text-decoration:none; text-align:center;
+            display:flex; align-items:center; justify-content:center; gap:5px;
+            transition:all .15s; font-family:'DM Sans',sans-serif;
+        }
+        .btn-edit svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
+        .btn-edit:hover { border-color:rgba(26,158,110,.4); color:var(--green); background:var(--green-light); }
+        .btn-del {
+            height:34px; padding:0 13px; border-radius:9px;
+            border:1px solid rgba(184,48,48,.2); background:transparent;
+            color:var(--red); cursor:pointer; font-size:12px;
+            display:flex; align-items:center; gap:5px; transition:all .15s; font-family:'DM Sans',sans-serif;
+        }
+        .btn-del svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
+        .btn-del:hover { background:var(--red-light); border-color:rgba(184,48,48,.4); }
+        .btn-contrib {
+            width:100%; height:38px; border-radius:10px; border:none;
+            background: linear-gradient(135deg, var(--green), #14825a);
+            font-size:13px; font-weight:700; color:#fff; cursor:pointer;
+            font-family:'DM Sans',sans-serif; letter-spacing:.01em;
+            display:flex; align-items:center; justify-content:center; gap:7px;
+            box-shadow: 0 3px 14px rgba(26,158,110,.35);
+            transition: all .2s;
+        }
+        .btn-contrib svg { width:13px; height:13px; stroke:#fff; fill:none; stroke-width:2.5; }
+        .btn-contrib:hover { background: linear-gradient(135deg, #14825a, #0f6e4e); transform:translateY(-1px); box-shadow: 0 5px 20px rgba(26,158,110,.45); }
+        .contrib-form { display:none; flex-direction:column; gap:8px; margin-top:10px; }
+        .contrib-form.open { display:flex; }
+        .contrib-hint { font-size:11px; color:var(--muted); line-height:1.5; }
+        .contrib-input {
+            width:100%; height:38px; padding:0 13px;
+            border-radius:9px; border:1px solid var(--border);
+            font-size:13px; font-family:'DM Sans',sans-serif; background:var(--surface);
+            color:var(--text); transition:border-color .2s, box-shadow .2s;
+        }
+        .contrib-input:focus { outline:none; border-color:var(--green); box-shadow:0 0 0 3px rgba(26,158,110,.1); }
+        .btn-submit {
+            height:36px; border-radius:9px; border:none;
+            background:var(--green); color:#fff; font-size:13px; font-weight:600;
+            cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s;
+        }
+        .btn-submit:hover { background:var(--green-dark); }
+        .card-done-banner {
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            background:linear-gradient(135deg,#e1f5ee,#d0f0e4);
+            border:1px solid rgba(26,158,110,.2); border-radius:10px;
+            padding:10px; font-size:13px; font-weight:600; color:#0f6e56;
+            font-family:'Playfair Display',serif;
+        }
+
+        /* Carousel nav */
+        .carousel-nav {
+            display:flex; align-items:center; justify-content:center;
+            gap:16px; margin-top:1.5rem; padding-top:1.25rem;
+            border-top:1px solid var(--border);
+        }
+        .carousel-btn {
+            width:40px; height:40px; border-radius:50%;
+            border:1px solid var(--border); background:var(--surface);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:var(--green); transition:all .2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .carousel-btn:hover:not(:disabled) {
+            background:var(--green); color:#fff; border-color:var(--green);
+            box-shadow: 0 4px 18px rgba(26,158,110,.35);
+            transform: scale(1.08);
+        }
+        .carousel-btn:disabled { opacity:.3; cursor:not-allowed; }
+        .carousel-btn svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.5; }
+        .carousel-dots { display:flex; gap:7px; align-items:center; }
+        .carousel-dot {
+            width:8px; height:8px; border-radius:50%;
+            background:#ddd; cursor:pointer; border:none; padding:0;
+            transition:all .25s;
+        }
+        .carousel-dot.active { background:var(--green); width:24px; border-radius:4px; }
+        .carousel-dot:hover:not(.active) { background:#aaa; }
+        .carousel-info { font-size:12px; color:var(--muted); font-weight:500; min-width:55px; text-align:center; }
+        .empty-card {
+            background:var(--surface); border:1.5px dashed var(--border);
+            border-radius:20px; padding:4rem 2rem; text-align:center;
+            box-shadow: var(--shadow-sm);
+        }
+        .empty-icon {
+            width:60px; height:60px; border-radius:14px;
+            background:var(--green-light); border:1px solid rgba(26,158,110,.2);
+            display:flex; align-items:center; justify-content:center;
+            margin:0 auto 1.25rem; font-size:26px;
+        }
+        .empty-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--text); margin-bottom:6px; }
+        .empty-sub   { font-size:13.5px; color:var(--muted); }
+        .pagination { text-align:center; font-size:12px; color:var(--muted); margin-top:.75rem; }
+        .pagination a { color:var(--green); text-decoration:none; }
+        .pagination a:hover { text-decoration:underline; }
+
+        /* Top contributeurs */
+        .top-section { margin-top: 3.5rem; }
+        .top-header {
+            display:flex; align-items:center; gap:16px; margin-bottom:1.5rem; flex-wrap:wrap;
+        }
+        .top-title {
+            font-family:'Playfair Display',serif; font-size:24px; font-weight:900;
+            color:var(--text); letter-spacing:-.04em; white-space:nowrap;
+            display:flex; align-items:center; gap:10px;
+        }
+        .top-title em { color:var(--green); font-style:italic; }
+        .top-line { flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
+        .top-link {
+            font-size:12px; font-weight:600; color:var(--green);
+            text-decoration:none; padding:6px 16px;
+            border:1px solid rgba(26,158,110,.25); border-radius:20px;
+            background:var(--green-light); transition:all .15s; white-space:nowrap;
+            box-shadow: var(--shadow-sm);
+        }
+        .top-link:hover { background:#c5ecd9; border-color:rgba(26,158,110,.5); }
+        .mag-grid {
+            display:grid; grid-template-columns:repeat(3,1fr);
+            gap:3px; border-radius:24px; overflow:hidden;
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,.08);
+            height: 430px;
+        }
+        .mag-card {
+            position:relative; overflow:hidden;
+            cursor:pointer; text-decoration:none; display:block;
+            transition: transform .4s cubic-bezier(.4,0,.2,1), filter .3s;
+        }
+        .mag-card:hover { transform:scale(1.018); z-index:2; filter:brightness(1.05); }
+        .mag-card--1 { background: linear-gradient(155deg, #a8e6c8 0%, #1a9e6e 40%, #063d25 100%); }
+        .mag-card--2 { background: linear-gradient(155deg, #fde3a5 0%, #c9920a 40%, #6b4500 100%); }
+        .mag-card--3 { background: linear-gradient(155deg, #f5c6c6 0%, #b83030 40%, #5c1010 100%); }
+        .mag-bg-circle {
+            position:absolute; border-radius:50%; pointer-events:none; z-index:0;
+            transition: transform .5s ease;
+        }
+        .mag-card:hover .mag-bg-circle { transform: scale(1.15) !important; }
+        .mag-card--1 .mag-bg-circle { width:300px; height:300px; top:-80px; right:-70px; background:radial-gradient(circle,rgba(255,255,255,.2) 0%,transparent 70%); }
+        .mag-card--2 .mag-bg-circle { width:280px; height:280px; bottom:-60px; left:-60px; background:radial-gradient(circle,rgba(255,255,255,.18) 0%,transparent 70%); }
+        .mag-card--3 .mag-bg-circle { width:260px; height:420px; top:0; right:15px; background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 100%); border-radius:0 0 120px 120px; }
+        .mag-card::after {
+            content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+            background-image: radial-gradient(circle,rgba(255,255,255,.85) 1.5px,transparent 1.5px), radial-gradient(circle,rgba(255,255,255,.45) 1px,transparent 1px);
+            background-size: 70px 70px, 42px 42px;
+            background-position: 15px 20px, 36px 46px;
+        }
+        .mag-card::before {
+            content:''; position:absolute; inset:0; z-index:2;
+            background: linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.05) 55%, transparent 100%);
+            transition: opacity .35s;
+        }
+        .mag-card:hover::before { opacity:.72; }
+        .mag-watermark {
+            position:absolute; top:8px; right:12px; z-index:3;
+            font-family:'Playfair Display',serif; font-size:110px; font-weight:900;
+            color:rgba(255,255,255,.07); line-height:1; pointer-events:none;
+            transition: color .3s;
+        }
+        .mag-card:hover .mag-watermark { color:rgba(255,255,255,.15); }
+        .mag-content {
+            position:absolute; bottom:0; left:0; right:0; z-index:4;
+            padding: 1.25rem 1.5rem 1.6rem;
+            display:flex; flex-direction:column; gap:10px;
+        }
+        .mag-medal {
+            width:52px; height:52px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:26px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.35); flex-shrink:0;
+            backdrop-filter: blur(4px);
+        }
+        .mag-medal--1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .mag-medal--2 { background: linear-gradient(135deg, #E8E8E8, #B0B0B0); }
+        .mag-medal--3 { background: linear-gradient(135deg, #CD7F32, #A05A20); }
+        .mag-name {
+            font-family:'Playfair Display',serif; font-size:21px; font-weight:900;
+            color:#fff; line-height:1.05;
+            text-shadow: 0 2px 12px rgba(0,0,0,.5);
+        }
+        .mag-pays { font-size:11px; color:rgba(255,255,255,.65); margin-top:-6px; }
+        .mag-stats-row {
+            display:flex; gap:0;
+            background:rgba(0,0,0,.32); backdrop-filter:blur(10px);
+            border-radius:12px; overflow:hidden;
+            border:1px solid rgba(255,255,255,.12);
+        }
+        .mag-stat { flex:1; padding:8px 10px; text-align:center; border-right:1px solid rgba(255,255,255,.08); }
+        .mag-stat:last-child { border-right:none; }
+        .mag-stat-val { font-family:'Playfair Display',serif; font-size:15px; font-weight:900; color:#fff; line-height:1; }
+        .mag-stat-lbl { font-size:9px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
+        .mag-obj-list {
+            display:flex; flex-direction:column; gap:5px;
+            max-height:0; overflow:hidden;
+            transition: max-height .4s ease, opacity .35s ease;
+            opacity:0;
+        }
+        .mag-card:hover .mag-obj-list { max-height:200px; opacity:1; }
+        .mag-obj-item {
+            display:flex; align-items:center; gap:7px;
+            background:rgba(255,255,255,.13); backdrop-filter:blur(6px);
+            border:1px solid rgba(255,255,255,.18); border-radius:9px;
+            padding:6px 10px; font-size:11px; color:rgba(255,255,255,.9);
+        }
+        .mag-obj-icon { font-size:14px; flex-shrink:0; }
+        .mag-obj-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; }
+        .mag-obj-amt  { font-size:10px; color:rgba(255,255,255,.6); white-space:nowrap; }
+        .mag-obj-check { color:#4ade80; font-size:12px; flex-shrink:0; }
+        .mag-cta {
+            display:inline-block; align-self:flex-start;
+            background:rgba(255,255,255,.95); color:#111;
+            font-size:10px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
+            padding:8px 18px; border-radius:4px; text-decoration:none;
+            transition: background .2s, transform .2s;
+        }
+        .mag-cta:hover { background:#fff; transform:translateY(-1px); color:#111; }
+        .mag-grid--2 { grid-template-columns:repeat(2,1fr); }
+        .mag-grid--1 { grid-template-columns:1fr; }
+
+        /* Responsive */
+        @media (max-width: 1024px) { .obj-sidebar { display:none; } }
+        @media (max-width: 900px) { .mag-grid { grid-template-columns:1fr; height:auto; } .mag-card { height:280px; } }
+        @media (max-width: 768px) { .stats-row { grid-template-columns:1fr 1fr; } .obj-card { flex: 0 0 calc(50% - 7px); } }
+        @media (max-width: 600px) { .obj-page { padding: 0 1rem 4rem; } .obj-card { flex: 0 0 100%; } .action-bar { flex-direction:column; } .stats-row { grid-template-columns:1fr 1fr; } }
+
+        /* NOUVEAU : bouton calendrier */
+        .btn-calendar {
+            background: #e2f5ee;
+            border: 1px solid #1a9e6e;
+            color: #1a9e6e;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .btn-calendar:hover {
+            background: #1a9e6e;
+            color: white;
+        }
+
+        /* Modal calendrier */
+        .modal-calendar {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal-calendar-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-calendar-close {
+            position: absolute;
+            top: 12px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .modal-calendar-close:hover {
+            color: #000;
+        }
+        .modal-calendar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            margin-bottom: 16px;
+            padding-right: 30px;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
-
-  :root {
-    --green:       #1a9e6e;
-    --green-dark:  #0f6e4e;
-    --green-deep:  #094d37;
-    --green-light: #e2f5ee;
-    --green-glow:  rgba(26,158,110,.18);
-    --gold:        #c9920a;
-    --gold-light:  #faeeda;
-    --red:         #b83030;
-    --red-light:   #fcebeb;
-    --blue:        #2a72c3;
-    --blue-light:  #e6f1fb;
-    --border:      #e6e6e2;
-    --border-soft: #f0f0ec;
-    --bg:          #f4f4f0;
-    --surface:     #ffffff;
-    --surface-2:   #fafaf8;
-    --text:        #0e1410;
-    --text-2:      #3a3f3c;
-    --muted:       #8a8e8b;
-    --shadow-sm:   0 2px 8px rgba(0,0,0,.06);
-    --shadow-md:   0 8px 28px rgba(0,0,0,.1);
-    --shadow-lg:   0 20px 60px rgba(0,0,0,.14);
-    --radius:      16px;
-    --radius-sm:   10px;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
-
-  /* ═══════════════════════════════════════════════════
-     TOPBAR PREMIUM
-  ═══════════════════════════════════════════════════ */
-  .topbar {
-    position: sticky; top: 0; z-index: 200;
-    background: var(--green-deep);
-    border-bottom: 1px solid rgba(255,255,255,.06);
-    backdrop-filter: blur(16px);
-  }
-  .topbar-inner {
-    max-width: 1280px; margin: 0 auto;
-    padding: 0 2rem;
-    height: 58px;
-    display: flex; align-items: center; gap: 1.5rem;
-  }
-  .topbar-brand {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px; font-weight: 900;
-    color: #fff; letter-spacing: -.02em;
-    text-decoration: none; flex-shrink: 0;
-  }
-  .topbar-brand em {
-    color: #5dcaa5; font-style: normal;
-  }
-  .topbar-sep {
-    width: 1px; height: 20px; background: rgba(255,255,255,.12); flex-shrink: 0;
-  }
-  .topbar-crumb {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12px; color: rgba(255,255,255,.45); letter-spacing: .02em;
-  }
-  .topbar-crumb a { color: rgba(255,255,255,.45); text-decoration: none; transition: color .15s; }
-  .topbar-crumb a:hover { color: rgba(255,255,255,.8); }
-  .topbar-crumb-sep { color: rgba(255,255,255,.2); }
-  .topbar-crumb-cur { color: rgba(255,255,255,.75); }
-  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-
-  .tb-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    height: 34px; padding: 0 16px;
-    font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
-    border-radius: 8px; cursor: pointer; text-decoration: none;
-    letter-spacing: .02em; transition: all .2s; white-space: nowrap;
-  }
-  .tb-btn--ghost {
-    border: 1px solid rgba(255,255,255,.14); background: transparent; color: rgba(255,255,255,.7);
-  }
-  .tb-btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.3); }
-  .tb-btn--primary {
-    border: none; background: var(--green); color: #fff;
-    box-shadow: 0 2px 12px rgba(26,158,110,.4);
-  }
-  .tb-btn--primary:hover { background: #14825a; transform: translateY(-1px); box-shadow: 0 4px 18px rgba(26,158,110,.5); }
-  .tb-btn--disabled {
-    border: 1px solid rgba(255,255,255,.06); background: transparent;
-    color: rgba(255,255,255,.2); cursor: not-allowed; pointer-events: none;
-  }
-  .tb-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; flex-shrink: 0; }
-
-  .tb-notif {
-    position: relative; width: 34px; height: 34px;
-    border: 1px solid rgba(255,255,255,.14); border-radius: 8px;
-    background: transparent; cursor: pointer; color: rgba(255,255,255,.65);
-    display: flex; align-items: center; justify-content: center; transition: all .2s;
-  }
-  .tb-notif:hover { background: rgba(255,255,255,.1); color: #fff; }
-  .tb-notif svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .tb-notif-dot {
-    position: absolute; top: 6px; right: 6px;
-    width: 7px; height: 7px; border-radius: 50%;
-    background: #e24b4a; border: 1.5px solid var(--green-deep);
-    display: none;
-  }
-  .tb-notif-dot.on { display: block; animation: pulse-dot 2s infinite; }
-  @keyframes pulse-dot {
-    0%,100% { box-shadow: 0 0 0 0 rgba(226,75,74,.5); }
-    50% { box-shadow: 0 0 0 4px rgba(226,75,74,0); }
-  }
-
-  /* ═══════════════════════════════════════════════════
-     PAGE WRAPPER
-  ═══════════════════════════════════════════════════ */
-  .obj-page {
-    max-width: 1280px; margin: 0 auto;
-    padding: 0 2rem 6rem;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     FLASH MESSAGES
-  ═══════════════════════════════════════════════════ */
-  .flash {
-    display: flex; align-items: stretch;
-    border-radius: 14px; margin-top: 1.5rem;
-    overflow: hidden;
-    animation: flash-in .4s cubic-bezier(.16,1,.3,1) both;
-    position: relative;
-  }
-  @keyframes flash-in { from { opacity:0; transform: translateY(-10px) scale(.98); } to { opacity:1; transform:none; } }
-  @keyframes flash-out { to { opacity:0; transform: translateX(10px) scale(.97); max-height:0; margin:0; overflow:hidden; } }
-  .flash::after {
-    content:''; position:absolute; inset:0;
-    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.25) 50%, transparent 65%);
-    animation: shimmer 2.5s ease .5s 1; pointer-events:none;
-  }
-  @keyframes shimmer { from{transform:translateX(-120%)} to{transform:translateX(120%)} }
-  .flash-stripe { width: 4px; flex-shrink: 0; }
-  .flash-ico { width: 52px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .flash-ico-inner { width: 36px; height: 36px; border-radius: 9px; display:flex; align-items:center; justify-content:center; }
-  .flash-ico-inner svg { width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2.5; }
-  .flash-body { flex:1; padding: 14px 10px 14px 0; }
-  .flash-title { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; line-height:1.2; margin-bottom:2px; }
-  .flash-msg { font-size:12.5px; opacity:.78; line-height:1.4; }
-  .flash-close {
-    background:none; border:none; cursor:pointer; color:currentColor;
-    opacity:.35; padding:0 14px; display:flex; align-items:center;
-    border-radius: 0 14px 14px 0; transition: opacity .15s, background .15s;
-  }
-  .flash-close:hover { opacity:.8; background:rgba(0,0,0,.06); }
-  .flash-close svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2.5; }
-  .flash--success { background: linear-gradient(135deg,#edfaf4,#d5f5e8); color:#094d37; border:1px solid rgba(16,130,90,.2); box-shadow: 0 6px 24px rgba(26,158,110,.14); }
-  .flash--success .flash-stripe { background: var(--green); }
-  .flash--success .flash-ico-inner { background:rgba(26,158,110,.15); color:var(--green-dark); }
-  .flash--error { background: linear-gradient(135deg,#fff1f1,#ffe3e3); color:#741e1e; border:1px solid rgba(163,45,45,.2); box-shadow: 0 6px 24px rgba(184,48,48,.12); }
-  .flash--error .flash-stripe { background: #e24b4a; }
-  .flash--error .flash-ico-inner { background:rgba(163,45,45,.13); color:var(--red); }
-
-  /* ═══════════════════════════════════════════════════
-     PAGE HEADER
-  ═══════════════════════════════════════════════════ */
-  .page-header {
-    padding: 3rem 0 2.25rem;
-    display: flex; align-items: flex-end; justify-content: space-between;
-    gap: 2rem; flex-wrap: wrap;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 2rem;
-  }
-  .page-header-eyebrow {
-    font-size: 10px; font-weight: 600; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--green);
-    margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
-  }
-  .page-header-eyebrow::before {
-    content: ''; display: block; width: 20px; height: 1px; background: var(--green);
-  }
-  .page-header-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 900; color: var(--text);
-    letter-spacing: -.04em; line-height: 1.05;
-  }
-  .page-header-title em { color: var(--green); font-style: italic; }
-  .page-header-sub {
-    font-size: 14px; color: var(--muted);
-    margin-top: 8px; line-height: 1.6; max-width: 480px;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     WALLET FILTER
-  ═══════════════════════════════════════════════════ */
-  .wallet-bar { display:flex; align-items:center; gap:12px; margin-bottom:1.75rem; flex-wrap:wrap; }
-  .wallet-lbl { font-size:12px; font-weight:500; color:var(--muted); white-space:nowrap; }
-  .wallet-sel {
-    height: 38px; padding: 0 36px 0 14px;
-    font-size: 13px; font-family: 'DM Sans', sans-serif;
-    background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    color: var(--text); cursor: pointer; appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8e8b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 12px center;
-    min-width: 300px; transition: border-color .2s, box-shadow .2s;
-    box-shadow: var(--shadow-sm);
-  }
-  .wallet-sel:focus { outline:none; border-color:var(--green); box-shadow: 0 0 0 3px rgba(26,158,110,.12); }
-  .wallet-notice {
-    display:flex; align-items:center; gap:10px;
-    background: var(--gold-light); color: var(--gold);
-    border: 1px solid rgba(201,146,10,.25); border-radius: var(--radius-sm);
-    padding: 11px 16px; font-size: 13px; margin-bottom: 1.75rem;
-    box-shadow: var(--shadow-sm);
-  }
-  .wallet-notice svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; flex-shrink:0; }
-
-  /* ═══════════════════════════════════════════════════
-     STATS ROW
-  ═══════════════════════════════════════════════════ */
-  .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:2rem; }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 1.25rem 1.5rem;
-    display: flex; align-items: center; gap: 16px;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow .2s, transform .2s;
-    animation: card-in .5s ease both;
-  }
-  .stat-card:nth-child(1) { animation-delay: .05s; }
-  .stat-card:nth-child(2) { animation-delay: .1s; }
-  .stat-card:nth-child(3) { animation-delay: .15s; }
-  @keyframes card-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
-  .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .stat-icon-wrap {
-    width: 48px; height: 48px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    font-size: 22px;
-    position: relative;
-  }
-  .stat-icon-wrap::after {
-    content:''; position:absolute; inset:0; border-radius:12px;
-    background: linear-gradient(135deg, rgba(255,255,255,.6), transparent);
-  }
-  .stat-icon-wrap--teal { background: linear-gradient(135deg, #c8f0e0, #90ddbe); }
-  .stat-icon-wrap--amber { background: linear-gradient(135deg, #fde8b4, #f9c44a); }
-  .stat-icon-wrap--blue { background: linear-gradient(135deg, #c8dff8, #90bff0); }
-  .stat-num { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:var(--text); line-height:1; }
-  .stat-lbl { font-size:11px; color:var(--muted); margin-top:3px; text-transform:uppercase; letter-spacing:.06em; }
-
-  /* ═══════════════════════════════════════════════════
-     ACTION BAR
-  ═══════════════════════════════════════════════════ */
-  .action-bar { display:flex; gap:12px; margin-bottom:2rem; flex-wrap:wrap; }
-  .action-card {
-    flex:1; min-width:180px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 1.1rem 1.25rem;
-    display: flex; align-items: center; gap: 14px;
-    cursor: pointer; text-decoration: none;
-    box-shadow: var(--shadow-sm);
-    transition: all .25s; position: relative; overflow: hidden;
-  }
-  .action-card::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:2px;
-    transform: scaleX(0); transition: transform .3s; transform-origin: left;
-  }
-  .action-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-  .action-card:hover::before { transform: scaleX(1); }
-  .action-card--hist::before  { background: var(--blue); }
-  .action-card--hist:hover    { border-color: rgba(42,114,195,.25); }
-  .action-card--notif::before { background: var(--green); }
-  .action-card--notif:hover   { border-color: rgba(26,158,110,.25); }
-  .ac-icon {
-    width: 44px; height: 44px; border-radius: 11px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .ac-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .ac-icon--blue  { background: var(--blue-light); color: var(--blue); }
-  .ac-icon--green { background: var(--green-light); color: var(--green); }
-  .ac-title-main { font-family:'Playfair Display',serif; font-size:14px; font-weight:700; color:var(--text); line-height:1.2; }
-  .ac-sub  { font-size:11px; color:var(--muted); margin-top:2px; }
-  .ac-arrow { margin-left:auto; color:#ccc; font-size:18px; transition: transform .2s, color .2s; }
-  .action-card:hover .ac-arrow { transform:translateX(4px); color:var(--green); }
-  .ac-badge {
-    margin-left:auto; min-width:22px; height:22px; border-radius:11px;
-    background:#e24b4a; color:#fff; font-size:10px; font-weight:700;
-    padding:0 6px; display:none; align-items:center; justify-content:center;
-    animation: badge-pop .25s ease;
-  }
-  .ac-badge.on { display:flex; }
-  @keyframes badge-pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
-
-  /* ═══════════════════════════════════════════════════
-     DRAWER NOTIFICATIONS
-  ═══════════════════════════════════════════════════ */
-  .notif-overlay {
-    display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);
-    z-index:9000; backdrop-filter:blur(3px); animation: fade-in .22s ease;
-  }
-  @keyframes fade-in { from{opacity:0} to{opacity:1} }
-  .notif-overlay.open { display:block; }
-  .notif-drawer {
-    position:fixed; top:0; right:-420px; bottom:0; width:400px; max-width:100vw;
-    background:var(--surface); z-index:9001;
-    box-shadow: -12px 0 50px rgba(0,0,0,.18);
-    display:flex; flex-direction:column;
-    transition: right .35s cubic-bezier(.4,0,.2,1);
-    border-left: 1px solid var(--border);
-  }
-  .notif-drawer.open { right:0; }
-  .notif-head {
-    padding:1.5rem 1.5rem 1rem; border-bottom:1px solid var(--border);
-    display:flex; align-items:center; gap:14px;
-    background: linear-gradient(135deg, var(--green-deep), #0d5e42);
-  }
-  .notif-head-icon {
-    width:40px; height:40px; border-radius:10px;
-    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15);
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  }
-  .notif-head-icon svg { width:19px; height:19px; stroke:#5dcaa5; fill:none; stroke-width:2; }
-  .notif-head-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:#fff; flex:1; }
-  .notif-head-close {
-    width:32px; height:32px; border-radius:8px;
-    border:1px solid rgba(255,255,255,.15); background:transparent;
-    cursor:pointer; color:rgba(255,255,255,.65); font-size:14px;
-    display:flex; align-items:center; justify-content:center; transition:all .15s;
-  }
-  .notif-head-close:hover { background:rgba(255,255,255,.12); color:#fff; }
-  .notif-toolbar {
-    padding:.75rem 1.5rem; border-bottom:1px solid var(--border);
-    display:flex; justify-content:flex-end;
-  }
-  .notif-mark-all {
-    font-size:12px; font-weight:600; color:var(--green);
-    background:var(--green-light); border:1px solid rgba(26,158,110,.2);
-    border-radius:20px; padding:5px 14px; cursor:pointer; transition:background .15s;
-  }
-  .notif-mark-all:hover { background:#c5ecd9; }
-  .notif-body { flex:1; overflow-y:auto; padding:10px 14px 14px; }
-  .notif-empty { text-align:center; color:var(--muted); font-size:13px; padding:3rem 1rem; }
-  .notif-empty-icon { font-size:32px; display:block; margin-bottom:.75rem; }
-  .notif-item {
-    display:flex; gap:12px; padding:.9rem 1rem;
-    border-radius:12px; margin-bottom:6px; cursor:pointer;
-    transition:background .15s; border-left:3px solid transparent;
-    animation: notif-in .2s ease;
-  }
-  @keyframes notif-in { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
-  .notif-item:hover { background:var(--surface-2); }
-  .notif-item.BIENTOT_ATTEINT { border-left-color:#ef9f27; background:#fffbf3; }
-  .notif-item.RAPPEL { border-left-color:var(--blue); background:var(--blue-light); }
-  .notif-item.is-read { opacity:.3; pointer-events:none; }
-  .notif-item-icon { font-size:18px; flex-shrink:0; width:28px; text-align:center; margin-top:2px; }
-  .notif-msg  { font-size:13px; color:var(--text); line-height:1.5; margin-bottom:4px; }
-  .notif-time { font-size:11px; color:var(--muted); }
-
-  /* ═══════════════════════════════════════════════════
-     MAIN LAYOUT (Sidebar + Carousel)
-  ═══════════════════════════════════════════════════ */
-  .main-layout { display:flex; gap:1.75rem; align-items:flex-start; }
-
-  /* ── SIDEBAR DECORATIVE ── */
-  .obj-sidebar {
-    width: 220px; flex-shrink:0;
-    border-radius: 22px; overflow:hidden;
-    background: linear-gradient(160deg, var(--green-deep) 0%, #0a6644 50%, #073d28 100%);
-    border: 1px solid rgba(255,255,255,.06);
-    box-shadow: var(--shadow-lg);
-    position: sticky; top: 80px;
-    min-height: 480px;
-    display: flex; flex-direction: column;
-  }
-  .sidebar-top {
-    padding: 2rem 1.5rem 1.5rem;
-    display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
-    border-bottom: 1px solid rgba(255,255,255,.07); flex: 1;
-  }
-  /* SVG target illustration */
-  .sidebar-svg-wrap {
-    position: relative; width: 130px; height: 130px;
-    animation: float-svg 4s ease-in-out infinite;
-  }
-  @keyframes float-svg { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  .sidebar-svg-wrap svg { width:130px; height:130px; }
-  .sidebar-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 16px; font-weight: 700; color: #fff;
-    text-align: center; line-height: 1.3;
-  }
-  .sidebar-sub { font-size: 11px; color: rgba(255,255,255,.5); text-align:center; line-height:1.55; }
-  .sidebar-badge {
-    background: rgba(255,255,255,.12);
-    border: 1px solid rgba(255,255,255,.15);
-    color: #5dcaa5; font-size: 11px; font-weight: 600;
-    padding: 5px 16px; border-radius: 20px;
-    display: inline-block;
-    backdrop-filter: blur(6px);
-  }
-  .sidebar-bottom {
-    padding: 1.25rem 1.5rem;
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .sidebar-stat {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 12px;
-    padding: 8px 12px;
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.08); border-radius: 10px;
-  }
-  .sidebar-stat-lbl { color: rgba(255,255,255,.5); }
-  .sidebar-stat-val { color: #fff; font-weight: 600; font-family:'Playfair Display',serif; font-size:14px; }
-
-  /* ── CAROUSEL ZONE ── */
-  .carousel-zone { flex:1; min-width:0; }
-  .carousel-outer { overflow:hidden; border-radius:18px; }
-  .carousel-track {
-    display: flex; gap: 14px;
-    transition: transform .45s cubic-bezier(.4,0,.2,1);
-    will-change: transform;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     OBJECTIVE CARDS
-  ═══════════════════════════════════════════════════ */
-  .obj-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px; overflow:hidden;
-    flex: 0 0 calc(33.333% - 10px);
-    display: flex; flex-direction: column;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow .3s, transform .3s, border-color .3s;
-    position: relative;
-  }
-  .obj-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); border-color: rgba(26,158,110,.2); }
-  .obj-card.nearly-done { border-color: rgba(239,159,39,.4); }
-
-  /* card visual */
-  .card-visual {
-    position: relative; height: 160px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow:hidden;
-  }
-  .card-visual-bg {
-    position: absolute; inset:0;
-    transition: transform .5s ease;
-  }
-  .obj-card:hover .card-visual-bg { transform: scale(1.04); }
-  .card-visual-overlay {
-    position:absolute; inset:0;
-    background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.35) 100%);
-  }
-  .card-visual-icon {
-    font-size: 58px; line-height:1; position:relative; z-index:2;
-    filter: drop-shadow(0 6px 18px rgba(0,0,0,.15));
-    transition: transform .35s ease;
-  }
-  .obj-card:hover .card-visual-icon { transform: scale(1.1) translateY(-4px) rotate(-4deg); }
-  .card-accent { position:absolute; top:0; left:0; right:0; height:3px; z-index:3; }
-  .accent-termine  { background: linear-gradient(90deg, #1a9e6e, #34d399); }
-  .accent-en_cours { background: linear-gradient(90deg, #c9920a, #fbbf24); }
-  .accent-echoue   { background: linear-gradient(90deg, #b83030, #ef4444); }
-  .card-status-badge {
-    position:absolute; top:12px; right:12px; z-index:3;
-    font-size:10px; font-weight:700; padding:4px 12px;
-    border-radius:20px; letter-spacing:.04em;
-    backdrop-filter: blur(6px);
-  }
-  .badge-termine  { background:rgba(225,245,238,.9); color:#0f6e56; border:0.5px solid rgba(26,158,110,.3); }
-  .badge-en_cours { background:rgba(250,238,218,.9); color:#854f0b; border:0.5px solid rgba(201,146,10,.3); }
-  .badge-echoue   { background:rgba(252,235,235,.9); color:#a32d2d; border:0.5px solid rgba(184,48,48,.3); }
-  .card-notif-badges {
-    position:absolute; top:12px; left:12px; z-index:3;
-    display:flex; flex-direction:column; gap:4px;
-  }
-  .badge-notif {
-    display:inline-flex; align-items:center; gap:4px;
-    font-size:10px; font-weight:600; padding:3px 9px;
-    border-radius:20px; backdrop-filter:blur(4px); white-space:nowrap;
-  }
-  .badge-notif--warn   { background:rgba(250,238,218,.92); color:#854f0b; border:0.5px solid rgba(201,146,10,.4); }
-  .badge-notif--rappel { background:rgba(230,241,251,.92); color:#185fa5; border:0.5px solid rgba(42,114,195,.3); }
-  .card-ring {
-    position:absolute; bottom:12px; right:12px; z-index:3;
-    width:46px; height:46px;
-  }
-  .card-ring svg { width:46px; height:46px; transform:rotate(-90deg); }
-  .ring-bg   { fill:none; stroke:rgba(255,255,255,.25); stroke-width:4; }
-  .ring-fill { fill:none; stroke-width:4; stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
-  .ring-termine  { stroke: #1a9e6e; }
-  .ring-en_cours { stroke: #e9a000; }
-  .ring-echoue   { stroke: #c0392b; }
-  .ring-label {
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    font-size:9px; font-weight:800; color:#fff;
-    text-shadow: 0 1px 3px rgba(0,0,0,.5);
-  }
-
-  /* card body */
-  .card-body { padding: 1.1rem 1.1rem .75rem; flex:1; display:flex; flex-direction:column; }
-  .card-cat  { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:4px; }
-  .card-title {
-    font-family:'Playfair Display',serif; font-weight:700;
-    font-size:15px; color:var(--text); line-height:1.3; margin-bottom:12px;
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-  }
-  .card-amounts { display:flex; align-items:baseline; gap:8px; margin-bottom:12px; }
-  .amount-main { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; color:var(--green); }
-  .amount-sep  { color:var(--border); font-size:14px; }
-  .amount-tgt  { font-size:13px; color:var(--muted); }
-
-  .pbar-wrap { margin-bottom:5px; }
-  .pbar { height:6px; background:var(--border-soft); border-radius:3px; overflow:hidden; }
-  .pbar-fill { height:100%; border-radius:3px; transition:width .5s ease; }
-  .fill-termine  { background: linear-gradient(90deg, #1a9e6e, #34d399); }
-  .fill-en_cours { background: linear-gradient(90deg, #c9920a, #fbbf24); }
-  .fill-echoue   { background: linear-gradient(90deg, #b83030, #ef4444); }
-  .pbar-info { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:5px; margin-bottom:12px; }
-
-  .card-meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
-  .meta-cell { background:var(--surface-2); border:1px solid var(--border-soft); border-radius:9px; padding:8px 11px; }
-  .meta-lbl  { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:2px; }
-  .meta-val  { font-size:13px; font-weight:600; color:var(--text-2); }
-
-  .wallet-chip {
-    display:flex; align-items:center; gap:8px;
-    background:var(--surface-2); border:1px solid var(--border-soft);
-    border-radius:9px; padding:7px 11px; font-size:12px; margin-bottom:10px;
-  }
-  .wallet-chip svg { width:13px; height:13px; stroke:var(--muted); fill:none; stroke-width:2; flex-shrink:0; }
-  .wallet-pays  { font-weight:500; color:var(--text-2); flex:1; }
-  .wallet-solde { color:var(--green); font-weight:700; font-size:12px; }
-
-  .alert-banner {
-    display:flex; align-items:center; gap:7px;
-    border-radius:9px; padding:8px 10px; font-size:11.5px; font-weight:500; margin-bottom:8px;
-  }
-  .alert-banner svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; flex-shrink:0; }
-  .alert-banner--warn   { background:linear-gradient(135deg,#faeeda,#fff8ec); border:1px solid rgba(201,146,10,.25); color:#854f0b; }
-  .alert-banner--rappel { background:var(--blue-light); border:1px solid rgba(42,114,195,.2); color:#185fa5; }
-  .alert-banner-pct { margin-left:auto; font-weight:800; }
-
-  /* contrib list */
-  .contrib-toggle {
-    display:flex; align-items:center; justify-content:space-between;
-    font-size:11px; font-weight:500; color:var(--muted);
-    cursor:pointer; padding:5px 7px; border-radius:7px;
-    transition:background .15s; user-select:none; margin-bottom:4px;
-  }
-  .contrib-toggle:hover { background:var(--surface-2); color:var(--text-2); }
-  .contrib-toggle svg { width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2.5; transition:transform .2s; }
-  .contrib-toggle.open svg { transform:rotate(180deg); }
-  .contrib-items { display:none; flex-direction:column; gap:4px; padding-bottom:4px; }
-  .contrib-items.open { display:flex; }
-  .contrib-row {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:5px 9px; background:var(--surface-2);
-    border:1px solid var(--border-soft); border-radius:8px; font-size:11.5px;
-  }
-  .contrib-montant { font-weight:600; color:var(--text-2); }
-  .contrib-date    { font-size:10px; color:var(--muted); margin-top:1px; }
-  .btn-del-contrib {
-    background:none; border:none; cursor:pointer; color:var(--muted);
-    padding:2px 6px; border-radius:5px; font-size:13px; transition:all .15s;
-  }
-  .btn-del-contrib:hover { background:var(--red-light); color:var(--red); }
-
-  /* card footer */
-  .card-footer {
-    padding: .875rem 1.1rem 1.1rem;
-    border-top: 1px solid var(--border-soft);
-    background: var(--surface-2);
-  }
-  .card-actions { display:flex; gap:8px; margin-bottom:10px; }
-  .btn-edit {
-    flex:1; height:34px; border-radius:9px; border:1px solid var(--border);
-    background:var(--surface); font-size:12px; font-weight:500;
-    color:var(--text-2); cursor:pointer; text-decoration:none; text-align:center;
-    display:flex; align-items:center; justify-content:center; gap:5px;
-    transition:all .15s; font-family:'DM Sans',sans-serif;
-  }
-  .btn-edit svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
-  .btn-edit:hover { border-color:rgba(26,158,110,.4); color:var(--green); background:var(--green-light); }
-  .btn-del {
-    height:34px; padding:0 13px; border-radius:9px;
-    border:1px solid rgba(184,48,48,.2); background:transparent;
-    color:var(--red); cursor:pointer; font-size:12px;
-    display:flex; align-items:center; gap:5px; transition:all .15s; font-family:'DM Sans',sans-serif;
-  }
-  .btn-del svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
-  .btn-del:hover { background:var(--red-light); border-color:rgba(184,48,48,.4); }
-
-  .btn-contrib {
-    width:100%; height:38px; border-radius:10px; border:none;
-    background: linear-gradient(135deg, var(--green), #14825a);
-    font-size:13px; font-weight:700; color:#fff; cursor:pointer;
-    font-family:'DM Sans',sans-serif; letter-spacing:.01em;
-    display:flex; align-items:center; justify-content:center; gap:7px;
-    box-shadow: 0 3px 14px rgba(26,158,110,.35);
-    transition: all .2s;
-  }
-  .btn-contrib svg { width:13px; height:13px; stroke:#fff; fill:none; stroke-width:2.5; }
-  .btn-contrib:hover { background: linear-gradient(135deg, #14825a, #0f6e4e); transform:translateY(-1px); box-shadow: 0 5px 20px rgba(26,158,110,.45); }
-
-  .contrib-form { display:none; flex-direction:column; gap:8px; margin-top:10px; }
-  .contrib-form.open { display:flex; }
-  .contrib-hint { font-size:11px; color:var(--muted); line-height:1.5; }
-  .contrib-input {
-    width:100%; height:38px; padding:0 13px;
-    border-radius:9px; border:1px solid var(--border);
-    font-size:13px; font-family:'DM Sans',sans-serif; background:var(--surface);
-    color:var(--text); transition:border-color .2s, box-shadow .2s;
-  }
-  .contrib-input:focus { outline:none; border-color:var(--green); box-shadow:0 0 0 3px rgba(26,158,110,.1); }
-  .btn-submit {
-    height:36px; border-radius:9px; border:none;
-    background:var(--green); color:#fff; font-size:13px; font-weight:600;
-    cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s;
-  }
-  .btn-submit:hover { background:var(--green-dark); }
-
-  .card-done-banner {
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    background:linear-gradient(135deg,#e1f5ee,#d0f0e4);
-    border:1px solid rgba(26,158,110,.2); border-radius:10px;
-    padding:10px; font-size:13px; font-weight:600; color:#0f6e56;
-    font-family:'Playfair Display',serif;
-  }
-
-  /* ═══════════════════════════════════════════════════
-     CAROUSEL NAV
-  ═══════════════════════════════════════════════════ */
-  .carousel-nav {
-    display:flex; align-items:center; justify-content:center;
-    gap:16px; margin-top:1.5rem; padding-top:1.25rem;
-    border-top:1px solid var(--border);
-  }
-  .carousel-btn {
-    width:40px; height:40px; border-radius:50%;
-    border:1px solid var(--border); background:var(--surface);
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer; color:var(--green); transition:all .2s;
-    box-shadow: var(--shadow-sm);
-  }
-  .carousel-btn:hover:not(:disabled) {
-    background:var(--green); color:#fff; border-color:var(--green);
-    box-shadow: 0 4px 18px rgba(26,158,110,.35);
-    transform: scale(1.08);
-  }
-  .carousel-btn:disabled { opacity:.3; cursor:not-allowed; }
-  .carousel-btn svg { width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.5; }
-  .carousel-dots { display:flex; gap:7px; align-items:center; }
-  .carousel-dot {
-    width:8px; height:8px; border-radius:50%;
-    background:#ddd; cursor:pointer; border:none; padding:0;
-    transition:all .25s;
-  }
-  .carousel-dot.active { background:var(--green); width:24px; border-radius:4px; }
-  .carousel-dot:hover:not(.active) { background:#aaa; }
-  .carousel-info { font-size:12px; color:var(--muted); font-weight:500; min-width:55px; text-align:center; }
-
-  /* empty */
-  .empty-card {
-    background:var(--surface); border:1.5px dashed var(--border);
-    border-radius:20px; padding:4rem 2rem; text-align:center;
-    box-shadow: var(--shadow-sm);
-  }
-  .empty-icon {
-    width:60px; height:60px; border-radius:14px;
-    background:var(--green-light); border:1px solid rgba(26,158,110,.2);
-    display:flex; align-items:center; justify-content:center;
-    margin:0 auto 1.25rem; font-size:26px;
-  }
-  .empty-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--text); margin-bottom:6px; }
-  .empty-sub   { font-size:13.5px; color:var(--muted); }
-
-  /* pagination */
-  .pagination { text-align:center; font-size:12px; color:var(--muted); margin-top:.75rem; }
-  .pagination a { color:var(--green); text-decoration:none; }
-  .pagination a:hover { text-decoration:underline; }
-
-  /* ═══════════════════════════════════════════════════
-     TOP CONTRIBUTEURS — MAGAZINE PREMIUM
-  ═══════════════════════════════════════════════════ */
-  .top-section { margin-top: 3.5rem; }
-  .top-header {
-    display:flex; align-items:center; gap:16px; margin-bottom:1.5rem; flex-wrap:wrap;
-  }
-  .top-title {
-    font-family:'Playfair Display',serif; font-size:24px; font-weight:900;
-    color:var(--text); letter-spacing:-.04em; white-space:nowrap;
-    display:flex; align-items:center; gap:10px;
-  }
-  .top-title em { color:var(--green); font-style:italic; }
-  .top-line { flex:1; height:1px; background:linear-gradient(90deg,var(--border),transparent); }
-  .top-link {
-    font-size:12px; font-weight:600; color:var(--green);
-    text-decoration:none; padding:6px 16px;
-    border:1px solid rgba(26,158,110,.25); border-radius:20px;
-    background:var(--green-light); transition:all .15s; white-space:nowrap;
-    box-shadow: var(--shadow-sm);
-  }
-  .top-link:hover { background:#c5ecd9; border-color:rgba(26,158,110,.5); }
-
-  /* Magazine grid */
-  .mag-grid {
-    display:grid; grid-template-columns:repeat(3,1fr);
-    gap:3px; border-radius:24px; overflow:hidden;
-    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,.08);
-    height: 430px;
-  }
-  .mag-card {
-    position:relative; overflow:hidden;
-    cursor:pointer; text-decoration:none; display:block;
-    transition: transform .4s cubic-bezier(.4,0,.2,1), filter .3s;
-  }
-  .mag-card:hover { transform:scale(1.018); z-index:2; filter:brightness(1.05); }
-  .mag-card--1 { background: linear-gradient(155deg, #a8e6c8 0%, #1a9e6e 40%, #063d25 100%); }
-  .mag-card--2 { background: linear-gradient(155deg, #fde3a5 0%, #c9920a 40%, #6b4500 100%); }
-  .mag-card--3 { background: linear-gradient(155deg, #f5c6c6 0%, #b83030 40%, #5c1010 100%); }
-
-  .mag-bg-circle {
-    position:absolute; border-radius:50%; pointer-events:none; z-index:0;
-    transition: transform .5s ease;
-  }
-  .mag-card:hover .mag-bg-circle { transform: scale(1.15) !important; }
-  .mag-card--1 .mag-bg-circle { width:300px; height:300px; top:-80px; right:-70px; background:radial-gradient(circle,rgba(255,255,255,.2) 0%,transparent 70%); }
-  .mag-card--2 .mag-bg-circle { width:280px; height:280px; bottom:-60px; left:-60px; background:radial-gradient(circle,rgba(255,255,255,.18) 0%,transparent 70%); }
-  .mag-card--3 .mag-bg-circle { width:260px; height:420px; top:0; right:15px; background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 100%); border-radius:0 0 120px 120px; }
-
-  /* sparkle dots */
-  .mag-card::after {
-    content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
-    background-image: radial-gradient(circle,rgba(255,255,255,.85) 1.5px,transparent 1.5px), radial-gradient(circle,rgba(255,255,255,.45) 1px,transparent 1px);
-    background-size: 70px 70px, 42px 42px;
-    background-position: 15px 20px, 36px 46px;
-  }
-  /* gradient overlay bottom */
-  .mag-card::before {
-    content:''; position:absolute; inset:0; z-index:2;
-    background: linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.05) 55%, transparent 100%);
-    transition: opacity .35s;
-  }
-  .mag-card:hover::before { opacity:.72; }
-
-  .mag-watermark {
-    position:absolute; top:8px; right:12px; z-index:3;
-    font-family:'Playfair Display',serif; font-size:110px; font-weight:900;
-    color:rgba(255,255,255,.07); line-height:1; pointer-events:none;
-    transition: color .3s;
-  }
-  .mag-card:hover .mag-watermark { color:rgba(255,255,255,.15); }
-
-  .mag-content {
-    position:absolute; bottom:0; left:0; right:0; z-index:4;
-    padding: 1.25rem 1.5rem 1.6rem;
-    display:flex; flex-direction:column; gap:10px;
-  }
-  .mag-medal {
-    width:52px; height:52px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center; font-size:26px;
-    box-shadow: 0 4px 20px rgba(0,0,0,.35); flex-shrink:0;
-    backdrop-filter: blur(4px);
-  }
-  .mag-medal--1 { background: linear-gradient(135deg, #FFD700, #FFA500); }
-  .mag-medal--2 { background: linear-gradient(135deg, #E8E8E8, #B0B0B0); }
-  .mag-medal--3 { background: linear-gradient(135deg, #CD7F32, #A05A20); }
-
-  .mag-name {
-    font-family:'Playfair Display',serif; font-size:21px; font-weight:900;
-    color:#fff; line-height:1.05;
-    text-shadow: 0 2px 12px rgba(0,0,0,.5);
-  }
-  .mag-pays { font-size:11px; color:rgba(255,255,255,.65); margin-top:-6px; }
-
-  .mag-stats-row {
-    display:flex; gap:0;
-    background:rgba(0,0,0,.32); backdrop-filter:blur(10px);
-    border-radius:12px; overflow:hidden;
-    border:1px solid rgba(255,255,255,.12);
-  }
-  .mag-stat { flex:1; padding:8px 10px; text-align:center; border-right:1px solid rgba(255,255,255,.08); }
-  .mag-stat:last-child { border-right:none; }
-  .mag-stat-val { font-family:'Playfair Display',serif; font-size:15px; font-weight:900; color:#fff; line-height:1; }
-  .mag-stat-lbl { font-size:9px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.5px; margin-top:2px; }
-
-  .mag-obj-list {
-    display:flex; flex-direction:column; gap:5px;
-    max-height:0; overflow:hidden;
-    transition: max-height .4s ease, opacity .35s ease;
-    opacity:0;
-  }
-  .mag-card:hover .mag-obj-list { max-height:200px; opacity:1; }
-  .mag-obj-item {
-    display:flex; align-items:center; gap:7px;
-    background:rgba(255,255,255,.13); backdrop-filter:blur(6px);
-    border:1px solid rgba(255,255,255,.18); border-radius:9px;
-    padding:6px 10px; font-size:11px; color:rgba(255,255,255,.9);
-  }
-  .mag-obj-icon { font-size:14px; flex-shrink:0; }
-  .mag-obj-name { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; }
-  .mag-obj-amt  { font-size:10px; color:rgba(255,255,255,.6); white-space:nowrap; }
-  .mag-obj-check { color:#4ade80; font-size:12px; flex-shrink:0; }
-
-  .mag-cta {
-    display:inline-block; align-self:flex-start;
-    background:rgba(255,255,255,.95); color:#111;
-    font-size:10px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
-    padding:8px 18px; border-radius:4px; text-decoration:none;
-    transition: background .2s, transform .2s;
-  }
-  .mag-cta:hover { background:#fff; transform:translateY(-1px); color:#111; }
-
-  .mag-grid--2 { grid-template-columns:repeat(2,1fr); }
-  .mag-grid--1 { grid-template-columns:1fr; }
-
-  /* ═══════════════════════════════════════════════════
-     RESPONSIVE
-  ═══════════════════════════════════════════════════ */
-  @media (max-width: 1024px) { .obj-sidebar { display:none; } }
-  @media (max-width: 900px) { .mag-grid { grid-template-columns:1fr; height:auto; } .mag-card { height:280px; } }
-  @media (max-width: 768px) { .stats-row { grid-template-columns:1fr 1fr; } .obj-card { flex: 0 0 calc(50% - 7px); } }
-  @media (max-width: 600px) { .obj-page { padding: 0 1rem 4rem; } .obj-card { flex: 0 0 100%; } .action-bar { flex-direction:column; } .stats-row { grid-template-columns:1fr 1fr; } }
-</style>
-
-{# ── TOPBAR ── #}
-<nav class="topbar">
-  <div class="topbar-inner">
-    <a href="#" class="topbar-brand">Findi<em>nari</em></a>
-    <div class="topbar-sep"></div>
-    <div class="topbar-crumb">
-      <a href="#">Tableau de bord</a>
-      <span class="topbar-crumb-sep">›</span>
-      <span class="topbar-crumb-cur">Mes objectifs</span>
-    </div>
-    <div class="topbar-right">
-      <button class="tb-notif" onclick="openNotifDrawer()" title="Alertes">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span class="tb-notif-dot" id="notifDot"></span>
-      </button>
-      <a href="{{ path('objectif_historique') }}" class="tb-btn tb-btn--ghost">
-        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Historique
-      </a>
-      {% if selectedWalletId %}
-        <a href="{{ path('objectif_new') }}" class="tb-btn tb-btn--primary">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nouvel objectif
-        </a>
-      {% else %}
-        <span class="tb-btn tb-btn--disabled">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nouvel objectif
-        </span>
-      {% endif %}
-    </div>
-  </div>
-</nav>
-
-{# ── DRAWER ── #}
-<div class="notif-overlay" id="notifOverlay" onclick="closeNotifDrawer()"></div>
-<div class="notif-drawer" id="notifDrawer">
-  <div class="notif-head">
-    <div class="notif-head-icon">
-      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-    </div>
-    <span class="notif-head-title">Alertes & notifications</span>
-    <button class="notif-head-close" onclick="closeNotifDrawer()">
-      <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-  </div>
-  <div class="notif-toolbar">
-    <button class="notif-mark-all" onclick="markAllRead()">Tout marquer comme lu</button>
-  </div>
-  <div class="notif-body" id="notifDrawerBody">
-    <p class="notif-empty"><span class="notif-empty-icon">🔔</span>Chargement…</p>
-  </div>
-</div>
-
-<div class="obj-page">
-
-  {# ── FLASH ── #}
-  {% for msg in app.flashes('success') %}
-    <div class="flash flash--success">
-      <div class="flash-stripe"></div>
-      <div class="flash-ico"><div class="flash-ico-inner"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div></div>
-      <div class="flash-body">
-        <div class="flash-title">Succès</div>
-        <div class="flash-msg">{{ msg }}</div>
-      </div>
-      <button class="flash-close" onclick="fnClose(this)">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-  {% endfor %}
-  {% for msg in app.flashes('error') %}
-    <div class="flash flash--error">
-      <div class="flash-stripe"></div>
-      <div class="flash-ico"><div class="flash-ico-inner"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
-      <div class="flash-body">
-        <div class="flash-title">Erreur</div>
-        <div class="flash-msg">{{ msg }}</div>
-      </div>
-      <button class="flash-close" onclick="fnClose(this)">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-  {% endfor %}
-
-  {# ── PAGE HEADER ── #}
-  <div class="page-header">
-    <div>
-      <div class="page-header-eyebrow">Gestion financière</div>
-      <h1 class="page-header-title">Mes <em>objectifs</em><br>d'épargne</h1>
-      <p class="page-header-sub">Suivez vos projets financiers, contribuez régulièrement et atteignez vos cibles.</p>
-    </div>
-  </div>
-
-  {# ── WALLET FILTER ── #}
-  <div class="wallet-bar">
-    <span class="wallet-lbl">Filtrer par wallet :</span>
-    <select class="wallet-sel" onchange="window.location.href=this.value">
-      <option value="{{ path('objectif_index') }}" {{ selectedWalletId is null ? 'selected' : '' }}>Tous les wallets</option>
-      {% for id, w in wallets %}
-        <option value="{{ path('objectif_index', {wallet_id: id}) }}" {{ selectedWalletId == id ? 'selected' : '' }}>
-          {{ w['pays'] }} · {{ w['devise'] }} — Solde : {{ w['solde']|number_format(2, ',', ' ') }}
-        </option>
-      {% endfor %}
-    </select>
-  </div>
-
-  {% if not selectedWalletId %}
-    <div class="wallet-notice">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Sélectionnez un wallet pour créer ou filtrer vos objectifs.
-    </div>
-  {% endif %}
-
-  {# ── STATS ── #}
-  {% set total = objectifs.getTotalItemCount() %}
-  {% set en_cours = 0 %}{% set termines = 0 %}
-  {% for obj in objectifs %}
-    {% if obj.statut == 'EN_COURS' %}{% set en_cours = en_cours + 1 %}{% endif %}
-    {% if obj.statut == 'TERMINE'  %}{% set termines = termines + 1 %}{% endif %}
-  {% endfor %}
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-icon-wrap stat-icon-wrap--teal">📊</div>
-      <div><div class="stat-num">{{ total }}</div><div class="stat-lbl">Total</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon-wrap stat-icon-wrap--amber">⏳</div>
-      <div><div class="stat-num">{{ en_cours }}</div><div class="stat-lbl">En cours</div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon-wrap stat-icon-wrap--blue">✅</div>
-      <div><div class="stat-num">{{ termines }}</div><div class="stat-lbl">Terminés</div></div>
-    </div>
-  </div>
-
-  {# ── ACTION BAR ── #}
-  <div class="action-bar">
-    <a href="{{ path('objectif_historique') }}" class="action-card action-card--hist">
-      <div class="ac-icon ac-icon--blue">
-        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <div>
-        <div class="ac-title-main">Historique complet</div>
-        <div class="ac-sub">Objectifs atteints & archivés</div>
-      </div>
-      <span class="ac-arrow">›</span>
-    </a>
-    <div class="action-card action-card--notif" onclick="openNotifDrawer()" style="cursor:pointer">
-      <div class="ac-icon ac-icon--green">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      </div>
-      <div>
-        <div class="ac-title-main">Alertes</div>
-        <div class="ac-sub">Notifications et rappels</div>
-      </div>
-      <span class="ac-badge" id="acBadge">0</span>
-      <span class="ac-arrow">›</span>
-    </div>
-  </div>
-
-  {# ── MAIN LAYOUT ── #}
-  <div class="main-layout">
-
-    {# ── SIDEBAR ── #}
-    <div class="obj-sidebar">
-      <div class="sidebar-top">
-        <div class="sidebar-svg-wrap">
-          <svg viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="65" cy="65" r="56" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
-            <circle cx="65" cy="65" r="40" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="5 3"/>
-            <circle cx="65" cy="65" r="24" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
-            <circle cx="65" cy="65" r="10" fill="#5dcaa5"/>
-            <circle cx="65" cy="65" r="4"  fill="#fff"/>
-            <path d="M100 28 L69 60" stroke="#5dcaa5" stroke-width="3" stroke-linecap="round"/>
-            <polygon points="100,28 86,32 96,44" fill="#5dcaa5"/>
-            <circle cx="24" cy="32" r="4.5" fill="rgba(93,202,165,.4)"/>
-            <circle cx="106" cy="94" r="3.5" fill="rgba(93,202,165,.35)"/>
-            <circle cx="30" cy="95" r="5.5" fill="rgba(93,202,165,.22)"/>
-            <circle cx="104" cy="46" r="9" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
-            <text x="104" y="50" text-anchor="middle" font-size="10" fill="#854f0b" font-weight="800" font-family="serif">€</text>
-          </svg>
-        </div>
-        <div class="sidebar-title">Atteignez vos objectifs financiers</div>
-        <div class="sidebar-sub">Suivez vos économies, contribuez régulièrement et célébrez chaque victoire.</div>
-        <span class="sidebar-badge">{{ total }} objectif{{ total > 1 ? 's' : '' }}</span>
-      </div>
-      <div class="sidebar-bottom">
-        <div class="sidebar-stat">
-          <span class="sidebar-stat-lbl">En cours</span>
-          <span class="sidebar-stat-val">{{ en_cours }}</span>
-        </div>
-        <div class="sidebar-stat">
-          <span class="sidebar-stat-lbl">Terminés</span>
-          <span class="sidebar-stat-val">{{ termines }}</span>
-        </div>
-        <div class="sidebar-stat">
-          <span class="sidebar-stat-lbl">Taux réussite</span>
-          <span class="sidebar-stat-val">{% if total > 0 %}{{ ((termines / total) * 100)|round }}%{% else %}—{% endif %}</span>
-        </div>
-      </div>
-    </div>
-
-    {# ── CAROUSEL ── #}
-    <div class="carousel-zone">
-      {% if objectifs|length > 0 %}
-        <div style="position:relative">
-          <div class="carousel-outer" id="carouselOuter">
-            <div class="carousel-track" id="carouselTrack">
-
-              {% for obj in objectifs %}
-                {% set sc = obj.statut|lower %}
-                {% set totalContrib = 0 %}
-                {% for c in obj.contributiongoals %}{% set totalContrib = totalContrib + c.montant %}{% endfor %}
-                {% set pct = obj.montant > 0 ? ((totalContrib / obj.montant) * 100)|round : 0 %}
-                {% set pct = pct > 100 ? 100 : pct %}
-                {% set walletInfo = wallets[obj.walletId] is defined ? wallets[obj.walletId] : null %}
-                {% set dernierContribJours = null %}
-                {% if obj.contributiongoals|length > 0 %}
-                  {% set sorted = obj.contributiongoals|sort((a, b) => b.date <=> a.date) %}
-                  {% set ld = sorted|first.date %}
-                  {% set dernierContribJours = ((date('now')|date('U') - ld|date('U')) / 86400)|round(0, 'floor') %}
-                {% endif %}
-                {% set isBientotAtteint = (obj.statut == 'EN_COURS' and pct >= 70 and pct < 100) %}
-                {% set isRappel = (obj.statut == 'EN_COURS' and dernierContribJours is not null and dernierContribJours >= 7) %}
-                {% set resteAAtteindre = obj.montant - totalContrib %}
-                {% set ringC = 118.4 %}
-                {% set ringOff = ringC - (pct / 100 * ringC) %}
-                {% set icon = '🎯' %}
-                {% if 'voyage' in obj.titre|lower or 'vacances' in obj.titre|lower %}{% set icon = '✈️' %}
-                {% elseif 'voiture' in obj.titre|lower or 'auto' in obj.titre|lower %}{% set icon = '🚗' %}
-                {% elseif 'maison' in obj.titre|lower or 'appart' in obj.titre|lower %}{% set icon = '🏠' %}
-                {% elseif 'etude' in obj.titre|lower or 'école' in obj.titre|lower %}{% set icon = '📚' %}
-                {% elseif 'retraite' in obj.titre|lower %}{% set icon = '🌿' %}
-                {% elseif 'invest' in obj.titre|lower %}{% set icon = '📈' %}
-                {% elseif obj.statut == 'TERMINE' %}{% set icon = '🏆' %}
-                {% endif %}
-                {% set bgColors = {
-                  'en_cours': 'linear-gradient(135deg,#fef3de,#faeeda)',
-                  'termine':  'linear-gradient(135deg,#d0f0e4,#e8f7f0)',
-                  'echoue':   'linear-gradient(135deg,#fce8e8,#faeaea)'
-                } %}
-                {% set bg = bgColors[sc] ?? bgColors['en_cours'] %}
-
-                <div class="obj-card{% if isBientotAtteint %} nearly-done{% endif %}">
-                  <div class="card-visual">
-                    <div class="card-visual-bg" style="background:{{ bg }}"></div>
-                    <div class="card-visual-overlay"></div>
-                    <div class="card-accent accent-{{ sc }}"></div>
-                    <span class="card-visual-icon">{{ icon }}</span>
-                    {% if isBientotAtteint or isRappel %}
-                      <div class="card-notif-badges">
-                        {% if isBientotAtteint %}<span class="badge-notif badge-notif--warn">⚡ {{ pct }}%</span>{% endif %}
-                        {% if isRappel and not isBientotAtteint %}<span class="badge-notif badge-notif--rappel">🔔 {{ dernierContribJours }}j</span>{% endif %}
-                      </div>
-                    {% endif %}
-                    <span class="card-status-badge badge-{{ sc }}">{{ obj.statut }}</span>
-                    <div class="card-ring">
-                      <svg viewBox="0 0 46 46">
-                        <circle class="ring-bg" cx="23" cy="23" r="19"/>
-                        <circle class="ring-fill ring-{{ sc }}" cx="23" cy="23" r="19"
-                                stroke-dasharray="{{ ringC }}" stroke-dashoffset="{{ ringOff }}"/>
-                      </svg>
-                      <div class="ring-label">{{ pct }}%</div>
-                    </div>
-                  </div>
-
-                  <div class="card-body">
-                    <div class="card-cat">{% if walletInfo %}{{ walletInfo['devise'] }} · {{ walletInfo['pays'] }}{% else %}Objectif{% endif %}</div>
-                    <div class="card-title">{{ obj.titre }}</div>
-                    <div class="card-amounts">
-                      <span class="amount-main">{{ totalContrib|number_format(0, ',', ' ') }}</span>
-                      <span class="amount-sep">/</span>
-                      <span class="amount-tgt">{{ obj.montant|number_format(0, ',', ' ') }} {{ walletInfo ? walletInfo['devise'] : '' }}</span>
-                    </div>
-                    <div class="pbar-wrap">
-                      <div class="pbar"><div class="pbar-fill fill-{{ sc }}" style="width:{{ pct }}%"></div></div>
-                    </div>
-                    <div class="pbar-info"><span>Progression</span><span>{{ pct }}%</span></div>
-
-                    {% if isBientotAtteint %}
-                      <div class="alert-banner alert-banner--warn">
-                        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                        Plus que {{ resteAAtteindre|number_format(0, ',', ' ') }} {{ walletInfo ? walletInfo['devise'] : '' }} à collecter
-                        <span class="alert-banner-pct">{{ pct }}%</span>
-                      </div>
-                    {% endif %}
-                    {% if isRappel %}
-                      <div class="alert-banner alert-banner--rappel">
-                        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        Aucune contribution depuis {{ dernierContribJours }} jour{{ dernierContribJours > 1 ? 's' : '' }}
-                      </div>
-                    {% endif %}
-
-                    <div class="card-meta">
-                      <div class="meta-cell"><div class="meta-lbl">Début</div><div class="meta-val">{{ obj.dateDebut|date('d/m/Y') }}</div></div>
-                      <div class="meta-cell"><div class="meta-lbl">Durée</div><div class="meta-val">{{ obj.duree }} mois</div></div>
-                    </div>
-
-                    {% if walletInfo %}
-                      <div class="wallet-chip">
-                        <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                        <span class="wallet-pays">{{ walletInfo['pays'] }}</span>
-                        <span class="wallet-solde">{{ walletInfo['solde']|number_format(2, ',', ' ') }} {{ walletInfo['devise'] }}</span>
-                      </div>
-                    {% endif %}
-
-                    {% if obj.contributiongoals|length > 0 %}
-                      <div class="contrib-toggle" id="ctgl-{{ obj.id }}" onclick="tglContribList({{ obj.id }})">
-                        <span>Contributions ({{ obj.contributiongoals|length }})</span>
-                        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-                      </div>
-                      <div class="contrib-items" id="clist-{{ obj.id }}">
-                        {% for c in obj.contributiongoals %}
-                          <div class="contrib-row">
-                            <div>
-                              <div class="contrib-montant">{{ c.montant|number_format(2, ',', ' ') }}</div>
-                              <div class="contrib-date">{{ c.date|date('d/m/Y') }}</div>
-                            </div>
-                            <form method="POST" action="{{ path('contribution_delete', {id: c.id}) }}" onsubmit="return confirm('Supprimer cette contribution ?')">
-                              <input type="hidden" name="_token" value="{{ csrf_token('delete_contrib'~c.id) }}">
-                              <button class="btn-del-contrib" type="submit">✕</button>
-                            </form>
-                          </div>
-                        {% endfor %}
-                      </div>
-                    {% endif %}
-                  </div>
-
-                  <div class="card-footer">
-                    <div class="card-actions">
-                      <a href="{{ path('objectif_edit', {id: obj.id}) }}" class="btn-edit">
-                        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        Modifier
-                      </a>
-                      <form method="POST" action="{{ path('objectif_delete', {id: obj.id}) }}" style="display:inline">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete'~obj.id) }}">
-                        <button class="btn-del" type="button" onclick="if(confirm('Supprimer cet objectif ?'))this.closest('form').submit()">
-                          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                        </button>
-                      </form>
-                    </div>
-                    {% if obj.statut != 'TERMINE' %}
-                      <button class="btn-contrib" onclick="tglContrib({{ obj.id }})">
+    {# ── TOPBAR ── #}
+    <nav class="topbar">
+        <div class="topbar-inner">
+            <a href="#" class="topbar-brand">Findi<em>nari</em></a>
+            <div class="topbar-sep"></div>
+            <div class="topbar-crumb">
+                <a href="#">Tableau de bord</a>
+                <span class="topbar-crumb-sep">›</span>
+                <span class="topbar-crumb-cur">Mes objectifs</span>
+            </div>
+            <div class="topbar-right">
+                <button class="tb-notif" onclick="openNotifDrawer()" title="Alertes">
+                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span class="tb-notif-dot" id="notifDot"></span>
+                </button>
+                <a href="{{ path('objectif_historique') }}" class="tb-btn tb-btn--ghost">
+                    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Historique
+                </a>
+                {% if selectedWalletId %}
+                    <a href="{{ path('objectif_new') }}" class="tb-btn tb-btn--primary">
                         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Ajouter une contribution
-                      </button>
-                      <form method="POST" action="{{ path('objectif_contribuer', {id: obj.id}) }}" class="contrib-form" id="contrib-{{ obj.id }}">
-                        <small class="contrib-hint">{% if walletInfo %}Solde : {{ walletInfo['solde']|number_format(2, ',', ' ') }} {{ walletInfo['devise'] }} — {% endif %}Restant : {{ resteAAtteindre|number_format(2, ',', ' ') }}</small>
-                        <input type="number" name="montant" class="contrib-input" placeholder="Montant à contribuer" min="0.01" step="0.01" max="{{ resteAAtteindre }}" required>
-                        <button type="submit" class="btn-submit">✓ Confirmer</button>
-                      </form>
-                    {% else %}
-                      <div class="card-done-banner">🏆 Objectif atteint !</div>
-                    {% endif %}
-                  </div>
-                </div>
-              {% endfor %}
-
+                        Nouvel objectif
+                    </a>
+                {% else %}
+                    <span class="tb-btn tb-btn--disabled">
+                        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nouvel objectif
+                    </span>
+                {% endif %}
             </div>
-          </div>
+        </div>
+    </nav>
 
-          <div class="carousel-nav">
-            <button class="carousel-btn" id="btnPrev" onclick="carouselMove(-1)" disabled>
-              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <div class="carousel-dots" id="carouselDots"></div>
-            <div class="carousel-info" id="carouselInfo"></div>
-            <button class="carousel-btn" id="btnNext" onclick="carouselMove(1)">
-              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
-
-          {% if objectifs.pageCount > 1 %}
-            <div class="pagination">
-              <a href="{{ path('objectif_index', {wallet_id: selectedWalletId, page: objectifs.currentPageNumber - 1}) }}" style="{{ objectifs.currentPageNumber <= 1 ? 'opacity:.4;pointer-events:none' : '' }}">← Préc.</a>
-              &nbsp; Page {{ objectifs.currentPageNumber }} / {{ objectifs.pageCount }} &nbsp;
-              <a href="{{ path('objectif_index', {wallet_id: selectedWalletId, page: objectifs.currentPageNumber + 1}) }}" style="{{ objectifs.currentPageNumber >= objectifs.pageCount ? 'opacity:.4;pointer-events:none' : '' }}">Suiv. →</a>
+    {# ── DRAWER NOTIFICATIONS ── #}
+    <div class="notif-overlay" id="notifOverlay" onclick="closeNotifDrawer()"></div>
+    <div class="notif-drawer" id="notifDrawer">
+        <div class="notif-head">
+            <div class="notif-head-icon">
+                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </div>
-          {% endif %}
+            <span class="notif-head-title">Alertes & notifications</span>
+            <button class="notif-head-close" onclick="closeNotifDrawer()">
+                <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
         </div>
-
-      {% else %}
-        <div class="empty-card">
-          <div class="empty-icon">🎯</div>
-          <div class="empty-title">{% if selectedWalletId %}Aucun objectif pour ce wallet{% else %}Sélectionnez un wallet{% endif %}</div>
-          <div class="empty-sub">{% if selectedWalletId %}Créez votre premier objectif d'épargne.{% else %}Filtrez par wallet pour voir ou créer vos objectifs.{% endif %}</div>
+        <div class="notif-toolbar">
+            <button class="notif-mark-all" onclick="markAllRead()">Tout marquer comme lu</button>
         </div>
-      {% endif %}
+        <div class="notif-body" id="notifDrawerBody">
+            <p class="notif-empty"><span class="notif-empty-icon">🔔</span>Chargement…</p>
+        </div>
+    </div>
 
-      {# ════════════════════════════════════════════════════
-         TOP CONTRIBUTEURS
-      ════════════════════════════════════════════════════ #}
-      {% if topContributeurs is defined and topContributeurs|length > 0 %}
-        <div class="top-section">
-          <div class="top-header">
-            <div class="top-title">🏆 Top <em>Contributeurs</em></div>
-            <div class="top-line"></div>
-            <a href="{{ path('top_contributions', {userId: app.user.id}) }}" class="top-link">Voir tout →</a>
-          </div>
-
-          {% set nbTop = topContributeurs|length > 3 ? 3 : topContributeurs|length %}
-          <div class="mag-grid {% if nbTop == 2 %}mag-grid--2{% elseif nbTop == 1 %}mag-grid--1{% endif %}">
-            {% for uData in topContributeurs|slice(0, 3) %}
-              {% set rank = loop.index %}
-              {% set userTotal = 0 %}{% set contribCount = 0 %}
-              {% for item in uData.objectifsAtteints %}
-                {% set userTotal    = userTotal    + item.stats.totalCollected %}
-                {% set contribCount = contribCount + item.stats.contributionCount %}
-              {% endfor %}
-
-              <a href="{{ path('top_contributions', {userId: uData.userId}) }}" class="mag-card mag-card--{{ rank }}">
-                <div class="mag-bg-circle"></div>
-                <div class="mag-watermark">#{{ rank }}</div>
-                <div class="mag-content">
-                  <div class="mag-medal mag-medal--{{ rank }}">
-                    {% if rank == 1 %}🥇{% elseif rank == 2 %}🥈{% else %}🥉{% endif %}
-                  </div>
-                  <div>
-                    <div class="mag-name">{{ uData.userName }}</div>
-                    <div class="mag-pays">📍 {{ uData.pays }}</div>
-                  </div>
-                  <div class="mag-stats-row">
-                    <div class="mag-stat"><div class="mag-stat-val">{{ uData.objectifsAtteints|length }}</div><div class="mag-stat-lbl">Objectifs</div></div>
-                    <div class="mag-stat"><div class="mag-stat-val">{{ contribCount }}</div><div class="mag-stat-lbl">Contribs</div></div>
-                    <div class="mag-stat"><div class="mag-stat-val">{{ userTotal|number_format(0,',',' ') }}</div><div class="mag-stat-lbl">Collecté</div></div>
-                  </div>
-                  <div class="mag-obj-list">
-                    {% for item in uData.objectifsAtteints|slice(0, 3) %}
-                      {% set oIcon = '🏆' %}
-                      {% if 'voyage' in item.objectif.titre|lower %}{% set oIcon = '✈️' %}
-                      {% elseif 'voiture' in item.objectif.titre|lower %}{% set oIcon = '🚗' %}
-                      {% elseif 'maison' in item.objectif.titre|lower %}{% set oIcon = '🏠' %}
-                      {% elseif 'etude' in item.objectif.titre|lower %}{% set oIcon = '📚' %}
-                      {% endif %}
-                      <div class="mag-obj-item">
-                        <span class="mag-obj-icon">{{ oIcon }}</span>
-                        <span class="mag-obj-name">{{ item.objectif.titre }}</span>
-                        <span class="mag-obj-amt">{{ item.stats.totalCollected|number_format(0,',',' ') }}</span>
-                        <span class="mag-obj-check">✔</span>
-                      </div>
-                    {% endfor %}
-                    {% if uData.objectifsAtteints|length > 3 %}
-                      <div class="mag-obj-item" style="justify-content:center;opacity:.7">+ {{ uData.objectifsAtteints|length - 3 }} autres</div>
-                    {% endif %}
-                  </div>
-                  <span class="mag-cta">VOIR DÉTAIL</span>
+    <div class="obj-page">
+        {# ── FLASH MESSAGES ── #}
+        {% for msg in app.flashes('success') %}
+            <div class="flash flash--success">
+                <div class="flash-stripe"></div>
+                <div class="flash-ico"><div class="flash-ico-inner"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+                <div class="flash-body">
+                    <div class="flash-title">Succès</div>
+                    <div class="flash-msg">{{ msg }}</div>
                 </div>
-              </a>
-            {% endfor %}
-          </div>
+                <button class="flash-close" onclick="fnClose(this)">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        {% endfor %}
+        {% for msg in app.flashes('error') %}
+            <div class="flash flash--error">
+                <div class="flash-stripe"></div>
+                <div class="flash-ico"><div class="flash-ico-inner"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
+                <div class="flash-body">
+                    <div class="flash-title">Erreur</div>
+                    <div class="flash-msg">{{ msg }}</div>
+                </div>
+                <button class="flash-close" onclick="fnClose(this)">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        {% endfor %}
+
+        {# ── PAGE HEADER ── #}
+        <div class="page-header">
+            <div>
+                <div class="page-header-eyebrow">Gestion financière</div>
+                <h1 class="page-header-title">Mes <em>objectifs</em><br>d'épargne</h1>
+                <p class="page-header-sub">Suivez vos projets financiers, contribuez régulièrement et atteignez vos cibles.</p>
+            </div>
         </div>
-      {% endif %}
 
-    </div>{# /carousel-zone #}
-  </div>{# /main-layout #}
+        {# ── WALLET FILTER ── #}
+        <div class="wallet-bar">
+            <span class="wallet-lbl">Filtrer par wallet :</span>
+            <select class="wallet-sel" onchange="window.location.href=this.value">
+                <option value="{{ path('objectif_index') }}" {{ selectedWalletId is null ? 'selected' : '' }}>Tous les wallets</option>
+                {% for id, w in wallets %}
+                    <option value="{{ path('objectif_index', {wallet_id: id}) }}" {{ selectedWalletId == id ? 'selected' : '' }}>
+                        {{ w['pays'] }} · {{ w['devise'] }} — Solde : {{ w['solde']|number_format(2, ',', ' ') }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-</div>{# /obj-page #}
+        {% if not selectedWalletId %}
+            <div class="wallet-notice">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Sélectionnez un wallet pour créer ou filtrer vos objectifs.
+            </div>
+        {% endif %}
 
-<script>
-/* ── FLASH CLOSE ── */
-window.fnClose = function(btn) {
-  var el = btn.closest('.flash');
-  el.style.transition = 'opacity .28s, transform .28s, max-height .32s, margin .32s, padding .32s';
-  el.style.opacity = '0'; el.style.transform = 'translateX(10px) scale(.97)';
-  el.style.maxHeight = el.offsetHeight + 'px'; el.style.overflow = 'hidden';
-  setTimeout(function(){ el.style.maxHeight='0'; el.style.marginTop='0'; el.style.paddingTop='0'; el.style.paddingBottom='0'; }, 40);
-  setTimeout(function(){ el.remove(); }, 370);
-};
-document.querySelectorAll('.flash').forEach(function(el){
-  setTimeout(function(){ var b = el.querySelector('.flash-close'); if(b&&el.isConnected) b.click(); }, 6000);
+        {# ── STATS ── #}
+        {% set total = objectifs.getTotalItemCount() %}
+        {% set en_cours = 0 %}{% set termines = 0 %}
+        {% for obj in objectifs %}
+            {% if obj.statut == 'EN_COURS' %}{% set en_cours = en_cours + 1 %}{% endif %}
+            {% if obj.statut == 'TERMINE'  %}{% set termines = termines + 1 %}{% endif %}
+        {% endfor %}
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-icon-wrap--teal">📊</div>
+                <div><div class="stat-num">{{ total }}</div><div class="stat-lbl">Total</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-icon-wrap--amber">⏳</div>
+                <div><div class="stat-num">{{ en_cours }}</div><div class="stat-lbl">En cours</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-icon-wrap--blue">✅</div>
+                <div><div class="stat-num">{{ termines }}</div><div class="stat-lbl">Terminés</div></div>
+            </div>
+        </div>
+
+        {# ── ACTION BAR ── #}
+        <div class="action-bar">
+            <a href="{{ path('objectif_historique') }}" class="action-card action-card--hist">
+                <div class="ac-icon ac-icon--blue">
+                    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div>
+                    <div class="ac-title-main">Historique complet</div>
+                    <div class="ac-sub">Objectifs atteints & archivés</div>
+                </div>
+                <span class="ac-arrow">›</span>
+            </a>
+            <div class="action-card action-card--notif" onclick="openNotifDrawer()" style="cursor:pointer">
+                <div class="ac-icon ac-icon--green">
+                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </div>
+                <div>
+                    <div class="ac-title-main">Alertes</div>
+                    <div class="ac-sub">Notifications et rappels</div>
+                </div>
+                <span class="ac-badge" id="acBadge">0</span>
+                <span class="ac-arrow">›</span>
+            </div>
+        </div>
+
+        {# ── MAIN LAYOUT ── #}
+        <div class="main-layout">
+
+            {# ── SIDEBAR ── #}
+            <div class="obj-sidebar">
+                <div class="sidebar-top">
+                    <div class="sidebar-svg-wrap">
+                        <svg viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="65" cy="65" r="56" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+                            <circle cx="65" cy="65" r="40" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="5 3"/>
+                            <circle cx="65" cy="65" r="24" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
+                            <circle cx="65" cy="65" r="10" fill="#5dcaa5"/>
+                            <circle cx="65" cy="65" r="4"  fill="#fff"/>
+                            <path d="M100 28 L69 60" stroke="#5dcaa5" stroke-width="3" stroke-linecap="round"/>
+                            <polygon points="100,28 86,32 96,44" fill="#5dcaa5"/>
+                            <circle cx="24" cy="32" r="4.5" fill="rgba(93,202,165,.4)"/>
+                            <circle cx="106" cy="94" r="3.5" fill="rgba(93,202,165,.35)"/>
+                            <circle cx="30" cy="95" r="5.5" fill="rgba(93,202,165,.22)"/>
+                            <circle cx="104" cy="46" r="9" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.5"/>
+                            <text x="104" y="50" text-anchor="middle" font-size="10" fill="#854f0b" font-weight="800" font-family="serif">€</text>
+                        </svg>
+                    </div>
+                    <div class="sidebar-title">Atteignez vos objectifs financiers</div>
+                    <div class="sidebar-sub">Suivez vos économies, contribuez régulièrement et célébrez chaque victoire.</div>
+                    <span class="sidebar-badge">{{ total }} objectif{{ total > 1 ? 's' : '' }}</span>
+                </div>
+                <div class="sidebar-bottom">
+                    <div class="sidebar-stat">
+                        <span class="sidebar-stat-lbl">En cours</span>
+                        <span class="sidebar-stat-val">{{ en_cours }}</span>
+                    </div>
+                    <div class="sidebar-stat">
+                        <span class="sidebar-stat-lbl">Terminés</span>
+                        <span class="sidebar-stat-val">{{ termines }}</span>
+                    </div>
+                    <div class="sidebar-stat">
+                        <span class="sidebar-stat-lbl">Taux réussite</span>
+                        <span class="sidebar-stat-val">{% if total > 0 %}{{ ((termines / total) * 100)|round }}%{% else %}—{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            {# ── CAROUSEL ZONE ── #}
+            <div class="carousel-zone">
+                {% if objectifs|length > 0 %}
+                    <div style="position:relative">
+                        <div class="carousel-outer" id="carouselOuter">
+                            <div class="carousel-track" id="carouselTrack">
+                                {% for obj in objectifs %}
+                                    {% set sc = obj.statut|lower %}
+                                    {% set totalContrib = 0 %}
+                                    {% for c in obj.contributiongoals %}{% set totalContrib = totalContrib + c.montant %}{% endfor %}
+                                    {% set pct = obj.montant > 0 ? ((totalContrib / obj.montant) * 100)|round : 0 %}
+                                    {% set pct = pct > 100 ? 100 : pct %}
+                                    {% set walletInfo = wallets[obj.walletId] is defined ? wallets[obj.walletId] : null %}
+                                    {% set dernierContribJours = null %}
+                                    {% if obj.contributiongoals|length > 0 %}
+                                        {% set sorted = obj.contributiongoals|sort((a, b) => b.date <=> a.date) %}
+                                        {% set ld = sorted|first.date %}
+                                        {% set dernierContribJours = ((date('now')|date('U') - ld|date('U')) / 86400)|round(0, 'floor') %}
+                                    {% endif %}
+                                    {% set isBientotAtteint = (obj.statut == 'EN_COURS' and pct >= 70 and pct < 100) %}
+                                    {% set isRappel = (obj.statut == 'EN_COURS' and dernierContribJours is not null and dernierContribJours >= 7) %}
+                                    {% set resteAAtteindre = obj.montant - totalContrib %}
+                                    {% set ringC = 118.4 %}
+                                    {% set ringOff = ringC - (pct / 100 * ringC) %}
+                                    {% set icon = '🎯' %}
+                                    {% if 'voyage' in obj.titre|lower or 'vacances' in obj.titre|lower %}{% set icon = '✈️' %}
+                                    {% elseif 'voiture' in obj.titre|lower or 'auto' in obj.titre|lower %}{% set icon = '🚗' %}
+                                    {% elseif 'maison' in obj.titre|lower or 'appart' in obj.titre|lower %}{% set icon = '🏠' %}
+                                    {% elseif 'etude' in obj.titre|lower or 'école' in obj.titre|lower %}{% set icon = '📚' %}
+                                    {% elseif 'retraite' in obj.titre|lower %}{% set icon = '🌿' %}
+                                    {% elseif 'invest' in obj.titre|lower %}{% set icon = '📈' %}
+                                    {% elseif obj.statut == 'TERMINE' %}{% set icon = '🏆' %}
+                                    {% endif %}
+                                    {% set bgColors = {
+                                      'en_cours': 'linear-gradient(135deg,#fef3de,#faeeda)',
+                                      'termine':  'linear-gradient(135deg,#d0f0e4,#e8f7f0)',
+                                      'echoue':   'linear-gradient(135deg,#fce8e8,#faeaea)'
+                                    } %}
+                                    {% set bg = bgColors[sc] ?? bgColors['en_cours'] %}
+
+                                    <div class="obj-card{% if isBientotAtteint %} nearly-done{% endif %}">
+                                        <div class="card-visual">
+                                            <div class="card-visual-bg" style="background:{{ bg }}"></div>
+                                            <div class="card-visual-overlay"></div>
+                                            <div class="card-accent accent-{{ sc }}"></div>
+                                            <span class="card-visual-icon">{{ icon }}</span>
+                                            {% if isBientotAtteint or isRappel %}
+                                                <div class="card-notif-badges">
+                                                    {% if isBientotAtteint %}<span class="badge-notif badge-notif--warn">⚡ {{ pct }}%</span>{% endif %}
+                                                    {% if isRappel and not isBientotAtteint %}<span class="badge-notif badge-notif--rappel">🔔 {{ dernierContribJours }}j</span>{% endif %}
+                                                </div>
+                                            {% endif %}
+                                            <span class="card-status-badge badge-{{ sc }}">{{ obj.statut }}</span>
+                                            <div class="card-ring">
+                                                <svg viewBox="0 0 46 46">
+                                                    <circle class="ring-bg" cx="23" cy="23" r="19"/>
+                                                    <circle class="ring-fill ring-{{ sc }}" cx="23" cy="23" r="19" stroke-dasharray="{{ ringC }}" stroke-dashoffset="{{ ringOff }}"/>
+                                                </svg>
+                                                <div class="ring-label">{{ pct }}%</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-body">
+                                            <div class="card-cat">{% if walletInfo %}{{ walletInfo['devise'] }} · {{ walletInfo['pays'] }}{% else %}Objectif{% endif %}</div>
+                                            <div class="card-title">{{ obj.titre }}</div>
+                                            <div class="card-amounts">
+                                                <span class="amount-main">{{ totalContrib|number_format(0, ',', ' ') }}</span>
+                                                <span class="amount-sep">/</span>
+                                                <span class="amount-tgt">{{ obj.montant|number_format(0, ',', ' ') }} {{ walletInfo ? walletInfo['devise'] : '' }}</span>
+                                            </div>
+                                            <div class="pbar-wrap">
+                                                <div class="pbar"><div class="pbar-fill fill-{{ sc }}" style="width:{{ pct }}%"></div></div>
+                                            </div>
+                                            <div class="pbar-info"><span>Progression</span><span>{{ pct }}%</span></div>
+
+                                            {% if isBientotAtteint %}
+                                                <div class="alert-banner alert-banner--warn">
+                                                    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                                    Plus que {{ resteAAtteindre|number_format(0, ',', ' ') }} {{ walletInfo ? walletInfo['devise'] : '' }} à collecter
+                                                    <span class="alert-banner-pct">{{ pct }}%</span>
+                                                </div>
+                                            {% endif %}
+                                            {% if isRappel %}
+                                                <div class="alert-banner alert-banner--rappel">
+                                                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                                    Aucune contribution depuis {{ dernierContribJours }} jour{{ dernierContribJours > 1 ? 's' : '' }}
+                                                </div>
+                                            {% endif %}
+
+                                            <div class="card-meta">
+                                                <div class="meta-cell"><div class="meta-lbl">Début</div><div class="meta-val">{{ obj.dateDebut|date('d/m/Y') }}</div></div>
+                                                <div class="meta-cell"><div class="meta-lbl">Durée</div><div class="meta-val">{{ obj.duree }} mois</div></div>
+                                            </div>
+
+                                            {% if walletInfo %}
+                                                <div class="wallet-chip">
+                                                    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                                                    <span class="wallet-pays">{{ walletInfo['pays'] }}</span>
+                                                    <span class="wallet-solde">{{ walletInfo['solde']|number_format(2, ',', ' ') }} {{ walletInfo['devise'] }}</span>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if obj.contributiongoals|length > 0 %}
+                                                <div class="contrib-toggle" id="ctgl-{{ obj.id }}" onclick="tglContribList({{ obj.id }})">
+                                                    <span>Contributions ({{ obj.contributiongoals|length }})</span>
+                                                    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                                                </div>
+                                                <div class="contrib-items" id="clist-{{ obj.id }}">
+                                                    {% for c in obj.contributiongoals %}
+                                                        <div class="contrib-row">
+                                                            <div>
+                                                                <div class="contrib-montant">{{ c.montant|number_format(2, ',', ' ') }}</div>
+                                                                <div class="contrib-date">{{ c.date|date('d/m/Y') }}</div>
+                                                            </div>
+                                                            <form method="POST" action="{{ path('contribution_delete', {id: c.id}) }}" onsubmit="return confirm('Supprimer cette contribution ?')">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_contrib'~c.id) }}">
+                                                                <button class="btn-del-contrib" type="submit">✕</button>
+                                                            </form>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="card-footer">
+                                            <div class="card-actions">
+                                                <a href="{{ path('objectif_edit', {id: obj.id}) }}" class="btn-edit">
+                                                    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                    Modifier
+                                                </a>
+                                                <form method="POST" action="{{ path('objectif_delete', {id: obj.id}) }}" style="display:inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete'~obj.id) }}">
+                                                    <button class="btn-del" type="button" onclick="if(confirm('Supprimer cet objectif ?'))this.closest('form').submit()">
+                                                        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                                                    </button>
+                                                </form>
+                                                {# ── BOUTON CALENDRIER ── #}
+                                                <button class="btn-calendar" onclick="openCalendarModal({{ obj.id }}, '{{ obj.titre|e('js') }}')">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                                        <line x1="16" y1="2" x2="16" y2="6"/>
+                                                        <line x1="8" y1="2" x2="8" y2="6"/>
+                                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                                    </svg>
+                                                    Calendrier
+                                                </button>
+                                            </div>
+                                            {% if obj.statut != 'TERMINE' %}
+                                                <button class="btn-contrib" onclick="tglContrib({{ obj.id }})">
+                                                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                    Ajouter une contribution
+                                                </button>
+                                                <form method="POST" action="{{ path('objectif_contribuer', {id: obj.id}) }}" class="contrib-form" id="contrib-{{ obj.id }}">
+                                                    <small class="contrib-hint">{% if walletInfo %}Solde : {{ walletInfo['solde']|number_format(2, ',', ' ') }} {{ walletInfo['devise'] }} — {% endif %}Restant : {{ resteAAtteindre|number_format(2, ',', ' ') }}</small>
+                                                    <input type="number" name="montant" class="contrib-input" placeholder="Montant à contribuer" min="0.01" step="0.01" max="{{ resteAAtteindre }}" required>
+                                                    <button type="submit" class="btn-submit">✓ Confirmer</button>
+                                                </form>
+                                            {% else %}
+                                                <div class="card-done-banner">🏆 Objectif atteint !</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="carousel-nav">
+                            <button class="carousel-btn" id="btnPrev" onclick="carouselMove(-1)" disabled>
+                                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                            </button>
+                            <div class="carousel-dots" id="carouselDots"></div>
+                            <div class="carousel-info" id="carouselInfo"></div>
+                            <button class="carousel-btn" id="btnNext" onclick="carouselMove(1)">
+                                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        </div>
+
+                        {% if objectifs.pageCount > 1 %}
+                            <div class="pagination">
+                                <a href="{{ path('objectif_index', {wallet_id: selectedWalletId, page: objectifs.currentPageNumber - 1}) }}" style="{{ objectifs.currentPageNumber <= 1 ? 'opacity:.4;pointer-events:none' : '' }}">← Préc.</a>
+                                &nbsp; Page {{ objectifs.currentPageNumber }} / {{ objectifs.pageCount }} &nbsp;
+                                <a href="{{ path('objectif_index', {wallet_id: selectedWalletId, page: objectifs.currentPageNumber + 1}) }}" style="{{ objectifs.currentPageNumber >= objectifs.pageCount ? 'opacity:.4;pointer-events:none' : '' }}">Suiv. →</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="empty-card">
+                        <div class="empty-icon">🎯</div>
+                        <div class="empty-title">{% if selectedWalletId %}Aucun objectif pour ce wallet{% else %}Sélectionnez un wallet{% endif %}</div>
+                        <div class="empty-sub">{% if selectedWalletId %}Créez votre premier objectif d'épargne.{% else %}Filtrez par wallet pour voir ou créer vos objectifs.{% endif %}</div>
+                    </div>
+                {% endif %}
+
+                {# ── TOP CONTRIBUTEURS ── #}
+                {% if topContributeurs is defined and topContributeurs|length > 0 %}
+                    <div class="top-section">
+                        <div class="top-header">
+                            <div class="top-title">🏆 Top <em>Contributeurs</em></div>
+                            <div class="top-line"></div>
+                            <a href="{{ path('top_contributions', {userId: app.user.id}) }}" class="top-link">Voir tout →</a>
+                        </div>
+                        {% set nbTop = topContributeurs|length > 3 ? 3 : topContributeurs|length %}
+                        <div class="mag-grid {% if nbTop == 2 %}mag-grid--2{% elseif nbTop == 1 %}mag-grid--1{% endif %}">
+                            {% for uData in topContributeurs|slice(0, 3) %}
+                                {% set rank = loop.index %}
+                                {% set userTotal = 0 %}{% set contribCount = 0 %}
+                                {% for item in uData.objectifsAtteints %}
+                                    {% set userTotal = userTotal + item.stats.totalCollected %}
+                                    {% set contribCount = contribCount + item.stats.contributionCount %}
+                                {% endfor %}
+                                <a href="{{ path('top_contributions', {userId: uData.userId}) }}" class="mag-card mag-card--{{ rank }}">
+                                    <div class="mag-bg-circle"></div>
+                                    <div class="mag-watermark">#{{ rank }}</div>
+                                    <div class="mag-content">
+                                        <div class="mag-medal mag-medal--{{ rank }}">
+                                            {% if rank == 1 %}🥇{% elseif rank == 2 %}🥈{% else %}🥉{% endif %}
+                                        </div>
+                                        <div>
+                                            <div class="mag-name">{{ uData.userName }}</div>
+                                            <div class="mag-pays">📍 {{ uData.pays }}</div>
+                                        </div>
+                                        <div class="mag-stats-row">
+                                            <div class="mag-stat"><div class="mag-stat-val">{{ uData.objectifsAtteints|length }}</div><div class="mag-stat-lbl">Objectifs</div></div>
+                                            <div class="mag-stat"><div class="mag-stat-val">{{ contribCount }}</div><div class="mag-stat-lbl">Contribs</div></div>
+                                            <div class="mag-stat"><div class="mag-stat-val">{{ userTotal|number_format(0,',',' ') }}</div><div class="mag-stat-lbl">Collecté</div></div>
+                                        </div>
+                                        <div class="mag-obj-list">
+                                            {% for item in uData.objectifsAtteints|slice(0, 3) %}
+                                                {% set oIcon = '🏆' %}
+                                                {% if 'voyage' in item.objectif.titre|lower %}{% set oIcon = '✈️' %}
+                                                {% elseif 'voiture' in item.objectif.titre|lower %}{% set oIcon = '🚗' %}
+                                                {% elseif 'maison' in item.objectif.titre|lower %}{% set oIcon = '🏠' %}
+                                                {% elseif 'etude' in item.objectif.titre|lower %}{% set oIcon = '📚' %}
+                                                {% endif %}
+                                                <div class="mag-obj-item">
+                                                    <span class="mag-obj-icon">{{ oIcon }}</span>
+                                                    <span class="mag-obj-name">{{ item.objectif.titre }}</span>
+                                                    <span class="mag-obj-amt">{{ item.stats.totalCollected|number_format(0,',',' ') }}</span>
+                                                    <span class="mag-obj-check">✔</span>
+                                                </div>
+                                            {% endfor %}
+                                            {% if uData.objectifsAtteints|length > 3 %}
+                                                <div class="mag-obj-item" style="justify-content:center;opacity:.7">+ {{ uData.objectifsAtteints|length - 3 }} autres</div>
+                                            {% endif %}
+                                        </div>
+                                        <span class="mag-cta">VOIR DÉTAIL</span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# ── MODAL CALENDRIER ── #}
+    <div id="calendarModal" class="modal-calendar">
+        <div class="modal-calendar-content">
+            <span class="modal-calendar-close" onclick="closeCalendarModal()">&times;</span>
+            <div class="modal-calendar-title" id="calendarModalTitle">Calendrier des contributions</div>
+            <div id="calendarContainer"></div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script>
+       // ── GESTION MODAL CALENDRIER (version robuste) ──
+document.addEventListener('DOMContentLoaded', function() {
+    window.currentCalendar = null;
+    window.currentModal = document.getElementById('calendarModal');
+
+    window.openCalendarModal = function(objectifId, titre) {
+        console.log('Ouverture calendrier pour', objectifId, titre);
+        if (!window.currentModal) {
+            console.error('Modal introuvable');
+            return;
+        }
+        if (typeof FullCalendar === 'undefined') {
+            console.error('FullCalendar non chargé');
+            alert('Le calendrier n\'a pas pu être chargé. Vérifiez votre connexion internet.');
+            return;
+        }
+        document.getElementById('calendarModalTitle').innerHTML = '📅 ' + titre + ' — Contributions';
+        window.currentModal.style.display = 'block';
+
+        if (window.currentCalendar) {
+            window.currentCalendar.destroy();
+        }
+
+        let container = document.getElementById('calendarContainer');
+        container.innerHTML = '';
+        let div = document.createElement('div');
+        div.id = 'tempCal';
+        container.appendChild(div);
+
+        window.currentCalendar = new FullCalendar.Calendar(div, {
+            initialView: 'dayGridMonth',
+            locale: 'fr',
+            events: '/objectif/' + objectifId + '/events',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            eventClick: function(info) {
+                alert(info.event.title);
+            },
+            eventFailure: function(error) {
+                console.error('Erreur chargement événements', error);
+                alert('Impossible de charger les contributions. Vérifiez la route /objectif/' + objectifId + '/events');
+            }
+        });
+        window.currentCalendar.render();
+    };
+
+    window.closeCalendarModal = function() {
+        if (window.currentModal) window.currentModal.style.display = 'none';
+        if (window.currentCalendar) {
+            window.currentCalendar.destroy();
+            window.currentCalendar = null;
+        }
+    };
+
+    // Fermeture en cliquant à l'extérieur
+    window.onclick = function(event) {
+        if (event.target === window.currentModal) {
+            window.closeCalendarModal();
+        }
+    };
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && window.currentModal && window.currentModal.style.display === 'block') {
+            window.closeCalendarModal();
+        }
+    });
 });
 
-/* ── NOTIFICATIONS ── */
-(function(){
-  const ICONS = { BIENTOT_ATTEINT:'⚡', RAPPEL:'🔔' };
-  function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function timeAgo(ts){ const d=Math.floor(Date.now()/1000-ts); if(d<60)return"À l'instant"; if(d<3600)return`Il y a ${Math.floor(d/60)} min`; if(d<86400)return`Il y a ${Math.floor(d/3600)} h`; return`Il y a ${Math.floor(d/86400)} j`; }
-  async function fetchNotifs(){
-    try{
-      const r=await fetch('/objectif/notifications',{credentials:'same-origin'}); const list=await r.json();
-      const dot=document.getElementById('notifDot'); const ab=document.getElementById('acBadge');
-      if(list.length>0){ dot.classList.add('on'); ab.textContent=list.length>99?'99+':list.length; ab.classList.add('on'); }
-      else{ dot.classList.remove('on'); ab.classList.remove('on'); }
-      const body=document.getElementById('notifDrawerBody');
-      if(!list.length){ body.innerHTML='<p class="notif-empty"><span class="notif-empty-icon">✓</span>Aucune nouvelle notification</p>'; return; }
-      body.innerHTML=list.map(n=>`
-        <div class="notif-item ${esc(n.type)}" onclick="markOne('${esc(n.key)}',this)">
-          <div class="notif-item-icon">${ICONS[n.type]||'•'}</div>
-          <div><div class="notif-msg">${esc(n.message)}</div><div class="notif-time">${timeAgo(n.time)}</div></div>
-        </div>`).join('');
-    }catch(e){}
-  }
-  window.openNotifDrawer  = ()=>{ document.getElementById('notifOverlay').classList.add('open'); document.getElementById('notifDrawer').classList.add('open'); fetchNotifs(); };
-  window.closeNotifDrawer = ()=>{ document.getElementById('notifOverlay').classList.remove('open'); document.getElementById('notifDrawer').classList.remove('open'); };
-  window.markOne = async(key,el)=>{ el.classList.add('is-read'); await fetch(`/objectif/notifications/${encodeURIComponent(key)}/read`,{method:'POST',credentials:'same-origin'}); setTimeout(fetchNotifs,350); };
-  window.markAllRead = async()=>{ await fetch('/objectif/notifications/read-all',{method:'POST',credentials:'same-origin'}); fetchNotifs(); };
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeNotifDrawer(); });
-  fetchNotifs(); setInterval(fetchNotifs, 60_000);
-})();
+        // ── FLASH CLOSE ──
+        window.fnClose = function(btn) {
+            var el = btn.closest('.flash');
+            el.style.transition = 'opacity .28s, transform .28s, max-height .32s, margin .32s, padding .32s';
+            el.style.opacity = '0'; el.style.transform = 'translateX(10px) scale(.97)';
+            el.style.maxHeight = el.offsetHeight + 'px'; el.style.overflow = 'hidden';
+            setTimeout(function(){ el.style.maxHeight='0'; el.style.marginTop='0'; el.style.paddingTop='0'; el.style.paddingBottom='0'; }, 40);
+            setTimeout(function(){ el.remove(); }, 370);
+        };
+        document.querySelectorAll('.flash').forEach(function(el){
+            setTimeout(function(){ var b = el.querySelector('.flash-close'); if(b&&el.isConnected) b.click(); }, 6000);
+        });
 
-/* ── CAROUSEL ── */
-(function(){
-  const track=document.getElementById('carouselTrack');
-  const outer=document.getElementById('carouselOuter');
-  if(!track) return;
-  const cards=track.querySelectorAll('.obj-card'); const total=cards.length;
-  let cur=0, pp=3;
-  const calcPP=()=>{ const w=outer.offsetWidth; return w<500?1:w<800?2:3; };
-  const totalPg=()=>Math.ceil(total/pp);
-  const cw=()=>(outer.offsetWidth-14*(pp-1))/pp;
-  const dotsEl=document.getElementById('carouselDots');
-  const infoEl=document.getElementById('carouselInfo');
-  const bP=document.getElementById('btnPrev'); const bN=document.getElementById('btnNext');
-  function buildDots(){ dotsEl.innerHTML=''; for(let i=0;i<totalPg();i++){ const d=document.createElement('button'); d.className='carousel-dot'+(i===cur?' active':''); d.addEventListener('click',()=>goTo(i)); dotsEl.appendChild(d); } }
-  function goTo(idx){ cur=Math.max(0,Math.min(idx,totalPg()-1)); track.style.transform=`translateX(-${cur*pp*(cw()+14)}px)`; dotsEl.querySelectorAll('.carousel-dot').forEach((d,i)=>d.classList.toggle('active',i===cur)); bP.disabled=cur===0; bN.disabled=cur>=totalPg()-1; infoEl.textContent=`${cur+1} / ${totalPg()}`; }
-  function init(){ pp=calcPP(); const w=cw(); cards.forEach(c=>{ c.style.flex=`0 0 ${w}px`; }); if(cur>=totalPg()) cur=0; buildDots(); goTo(cur); }
-  window.carouselMove=d=>goTo(cur+d);
-  let tx=0;
-  outer.addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; },{passive:true});
-  outer.addEventListener('touchend',  e=>{ const dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>50) carouselMove(dx<0?1:-1); },{passive:true});
-  init(); window.addEventListener('resize', init);
-})();
+        // ── NOTIFICATIONS ──
+        (function(){
+            const ICONS = { BIENTOT_ATTEINT:'⚡', RAPPEL:'🔔' };
+            function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+            function timeAgo(ts){ const d=Math.floor(Date.now()/1000-ts); if(d<60)return"À l'instant"; if(d<3600)return`Il y a ${Math.floor(d/60)} min`; if(d<86400)return`Il y a ${Math.floor(d/3600)} h`; return`Il y a ${Math.floor(d/86400)} j`; }
+            async function fetchNotifs(){
+                try{
+                    const r=await fetch('/objectif/notifications',{credentials:'same-origin'}); const list=await r.json();
+                    const dot=document.getElementById('notifDot'); const ab=document.getElementById('acBadge');
+                    if(list.length>0){ dot.classList.add('on'); ab.textContent=list.length>99?'99+':list.length; ab.classList.add('on'); }
+                    else{ dot.classList.remove('on'); ab.classList.remove('on'); }
+                    const body=document.getElementById('notifDrawerBody');
+                    if(!list.length){ body.innerHTML='<p class="notif-empty"><span class="notif-empty-icon">✓</span>Aucune nouvelle notification</p>'; return; }
+                    body.innerHTML=list.map(n=>`
+                        <div class="notif-item ${esc(n.type)}" onclick="markOne('${esc(n.key)}',this)">
+                            <div class="notif-item-icon">${ICONS[n.type]||'•'}</div>
+                            <div><div class="notif-msg">${esc(n.message)}</div><div class="notif-time">${timeAgo(n.time)}</div></div>
+                        </div>`).join('');
+                }catch(e){}
+            }
+            window.openNotifDrawer  = ()=>{ document.getElementById('notifOverlay').classList.add('open'); document.getElementById('notifDrawer').classList.add('open'); fetchNotifs(); };
+            window.closeNotifDrawer = ()=>{ document.getElementById('notifOverlay').classList.remove('open'); document.getElementById('notifDrawer').classList.remove('open'); };
+            window.markOne = async(key,el)=>{ el.classList.add('is-read'); await fetch(`/objectif/notifications/${encodeURIComponent(key)}/read`,{method:'POST',credentials:'same-origin'}); setTimeout(fetchNotifs,350); };
+            window.markAllRead = async()=>{ await fetch('/objectif/notifications/read-all',{method:'POST',credentials:'same-origin'}); fetchNotifs(); };
+            document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeNotifDrawer(); });
+            fetchNotifs(); setInterval(fetchNotifs, 60_000);
+        })();
 
-/* ── CONTRIB HELPERS ── */
-function tglContrib(id){ const f=document.getElementById('contrib-'+id); f.classList.toggle('open'); if(f.classList.contains('open')) f.querySelector('input').focus(); }
-function tglContribList(id){ const l=document.getElementById('clist-'+id); const t=document.getElementById('ctgl-'+id); l.classList.toggle('open'); t.classList.toggle('open'); }
-</script>
+        // ── CARROUSEL ──
+        (function(){
+            const track=document.getElementById('carouselTrack');
+            const outer=document.getElementById('carouselOuter');
+            if(!track) return;
+            const cards=track.querySelectorAll('.obj-card'); const total=cards.length;
+            let cur=0, pp=3;
+            const calcPP=()=>{ const w=outer.offsetWidth; return w<500?1:w<800?2:3; };
+            const totalPg=()=>Math.ceil(total/pp);
+            const cw=()=>(outer.offsetWidth-14*(pp-1))/pp;
+            const dotsEl=document.getElementById('carouselDots');
+            const infoEl=document.getElementById('carouselInfo');
+            const bP=document.getElementById('btnPrev'); const bN=document.getElementById('btnNext');
+            function buildDots(){ dotsEl.innerHTML=''; for(let i=0;i<totalPg();i++){ const d=document.createElement('button'); d.className='carousel-dot'+(i===cur?' active':''); d.addEventListener('click',()=>goTo(i)); dotsEl.appendChild(d); } }
+            function goTo(idx){ cur=Math.max(0,Math.min(idx,totalPg()-1)); track.style.transform=`translateX(-${cur*pp*(cw()+14)}px)`; dotsEl.querySelectorAll('.carousel-dot').forEach((d,i)=>d.classList.toggle('active',i===cur)); bP.disabled=cur===0; bN.disabled=cur>=totalPg()-1; infoEl.textContent=`${cur+1} / ${totalPg()}`; }
+            function init(){ pp=calcPP(); const w=cw(); cards.forEach(c=>{ c.style.flex=`0 0 ${w}px`; }); if(cur>=totalPg()) cur=0; buildDots(); goTo(cur); }
+            window.carouselMove=d=>goTo(cur+d);
+            let tx=0;
+            outer.addEventListener('touchstart',e=>{ tx=e.touches[0].clientX; },{passive:true});
+            outer.addEventListener('touchend',  e=>{ const dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>50) carouselMove(dx<0?1:-1); },{passive:true});
+            init(); window.addEventListener('resize', init);
+        })();
 
+        // ── CONTRIB HELPERS ──
+        function tglContrib(id){ const f=document.getElementById('contrib-'+id); f.classList.toggle('open'); if(f.classList.contains('open')) f.querySelector('input').focus(); }
+        function tglContribList(id){ const l=document.getElementById('clist-'+id); const t=document.getElementById('ctgl-'+id); l.classList.toggle('open'); t.classList.toggle('open'); }
+    </script>
 {% endblock %}
