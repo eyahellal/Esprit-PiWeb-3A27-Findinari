@@ -521,6 +521,10 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-in {
+            animation: fadeIn 0.4s ease-out, slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
     </style>
 </head>
 <body>
@@ -676,96 +680,12 @@
                 <div class="chat-area">
                     <div id="chatContainer" class="chat-messages">
                         {% for message in messages %}
-                            {% set isAdmin = message.typeSender == 'ADMIN' %}
-                            <div class="msg-group">
-                                <div class="msg-container {{ isAdmin ? 'admin' : 'user' }}">
-                                    {% if not isAdmin %}
-                                        <div class="msg-avatar">
-                                            {{ message.utilisateur.prenom|first|upper }}
-                                        </div>
-                                    {% endif %}
-
-                                    <div class="msg-content-wrapper">
-                                        <div class="msg-bubble" id="bubble-{{ message.id }}">
-                                            {% if not isAdmin %}
-                                                <span class="msg-sender-name">{{ message.utilisateur.prenom }} {{ message.utilisateur.nom }}</span>
-                                            {% endif %}
-                                            
-                                            <div>{{ message.contenu|nl2br }}</div>
-
-                                            {% if message.urlPieceJointe %}
-                                                <div style="margin-top:12px; padding-top:12px; border-top: 1px solid {{ not isAdmin ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.2)' }};">
-                                                    {% set isUrl = message.urlPieceJointe starts with 'http' %}
-                                                    {% set extension = isUrl ? 'm4a' : message.urlPieceJointe|split('.')|last|lower %}
-                                                    
-                                                    {% if isUrl or extension in ['m4a', 'mp3', 'wav', 'ogg'] %}
-                                                        {# Voice Message Player #}
-                                                        <div class="voice-message-player">
-                                                            <button class="play-btn" onclick="toggleAudio(this, '{{ isUrl ? message.urlPieceJointe : asset('uploads/messages/' ~ message.urlPieceJointe) }}')">
-                                                                <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M8 5v14l11-7z"/></svg>
-                                                            </button>
-                                                            <div class="waveform-mock">
-                                                                <div class="wave-bar" style="height:40%"></div>
-                                                                <div class="wave-bar" style="height:70%"></div>
-                                                                <div class="wave-bar" style="height:50%"></div>
-                                                                <div class="wave-bar" style="height:80%"></div>
-                                                                <div class="wave-bar" style="height:30%"></div>
-                                                                <div class="wave-bar" style="height:60%"></div>
-                                                                <div class="wave-bar" style="height:40%"></div>
-                                                                <div class="wave-bar" style="height:70%"></div>
-                                                                <div class="wave-bar" style="height:50%"></div>
-                                                                <div class="wave-bar" style="height:80%"></div>
-                                                            </div>
-                                                            <span class="timer" style="font-size:11px; opacity:0.8; color: inherit;">Voice</span>
-                                                        </div>
-                                                    {% elseif extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
-                                                        <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" class="image-attachment-link">
-                                                            <img src="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-                                                        </a>
-                                                    {% else %}
-                                                        <a
-                                                            href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}"
-                                                            target="_blank"
-                                                            style="display:inline-flex; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; opacity:.95; font-size: 13px;"
-                                                        >
-                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;">
-                                                                <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.5 8.49a1.5 1.5 0 0 1-2.12-2.12l7.78-7.78"/>
-                                                            </svg>
-                                                            Download Attachment ({{ extension|upper }})
-                                                        </a>
-                                                    {% endif %}
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                        
-                                        <div class="msg-date">
-                                            {{ message.date|date('F j, Y \\a\\t g:i A') }}
-                                        </div>
-                                    </div>
-
-                                    {% if isAdmin %}
-                                        <div style="position:relative; align-self: center;">
-                                            <div class="kebab-btn" style="color: #64748b;" onclick="toggleMenu({{ message.id }})">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                                            </div>
-                                            <div id="menu-{{ message.id }}" class="dropdown-menu">
-                                                <button class="dropdown-item" onclick="editMsg({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)">Edit</button>
-                                                <form method="POST" action="{{ path('app_admin_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ?')">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_message_admin_' ~ message.id) }}">
-                                                    <button type="submit" class="dropdown-item danger">Delete</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <form id="edit-form-{{ message.id }}" method="POST" action="{{ path('app_admin_message_edit', {id: message.id}) }}" style="display:none; margin-top:8px; align-self: flex-end; margin-right: 48px;">
-                                    <textarea name="edit_contenu" style="width:250px; height:80px; padding:10px; border-radius:12px; border:1.5px solid var(--brand); font-family: inherit; font-size: 13px;"></textarea>
-                                    <div style="display:flex; gap:8px; margin-top:6px;">
-                                        <button type="submit" style="background:var(--brand); color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Update</button>
-                                        <button type="button" onclick="window.location.reload()" style="background:#f1f5f9; color:#475569; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Cancel</button>
-                                    </div>
-                                </form>
+                            {% include 'reclamation/_message_item_admin.html.twig' with {'message': message, 'ticket': ticket} %}
+                        {% else %}
+                            <div id="noMessagesPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); opacity: 0.6;">
+                                <svg style="width: 48px; height: 48px; margin-bottom: 12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <p style="font-weight: 700; font-size: 15px; margin:0;">No messages yet.</p>
+                                <span style="font-size: 13px;">Customer is waiting for a response.</span>
                             </div>
                         {% endfor %}
                     </div>
@@ -1192,6 +1112,47 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.target === summaryModal) closeSummaryModal();
         });
     }
+
+    // --- AJAX Polling for new messages ---
+    let lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
+    // Using a numeric placeholder that Symfony will accept as an 'int' if required
+    const fetchUrlPattern = "{{ path('app_ticket_fetch_new_messages', {id: ticket.id, lastId: 999999}) }}";
+
+    function pollMessages() {
+        const url = fetchUrlPattern.replace('999999', lastMessageId);
+        
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.count > 0) {
+                console.log(`Chat Polling: Found ${data.count} new messages.`);
+                const chatContainer = document.getElementById('chatContainer');
+                const noMessagesPlaceholder = document.getElementById('noMessagesPlaceholder');
+                
+                if (noMessagesPlaceholder) {
+                    noMessagesPlaceholder.remove();
+                }
+                
+                // Append new messages
+                chatContainer.insertAdjacentHTML('beforeend', data.html);
+                
+                // Update lastId
+                lastMessageId = data.lastId;
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        })
+        .catch(err => console.error('Chat Polling Error:', err));
+    }
+
+    // Check for new messages every 3 seconds
+    setInterval(pollMessages, 3000);
 });
 </script>
 </body>

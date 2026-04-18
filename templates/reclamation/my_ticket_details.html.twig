@@ -293,6 +293,13 @@
         font-weight: 700;
         display: none;
     }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .animate-in {
+        animation: fadeIn 0.4s ease-out, slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 </style>
 
 {# Custom Support Header removed to show default navbar #}
@@ -379,102 +386,18 @@
                 <i class="far fa-comments" style="color: var(--primary-green);"></i>
                 Discussion
             </div>
-            
-            <div id="chatContainer" class="chat-messages">
+                        <div id="chatContainer" class="chat-messages">
                 {% for message in messages %}
-                    {% set isUser = message.typeSender == 'USER' %}
-                    
-                    <div class="msg-wrapper {{ isUser ? 'user' : 'admin' }}">
-                        <div class="msg-meta">
-                            {% if isUser %}
-                                You &bull; {{ message.date|date('d M, H:i') }}
-                            {% else %}
-                                <span style="color: var(--primary-green); font-weight: 800;">Support Team</span> &bull; {{ message.date|date('d M, H:i') }}
-                            {% endif %}
-                        </div>
-                        
-                        <div style="display: flex; gap: 8px; align-items: center; {{ isUser ? 'flex-direction: row-reverse;' : '' }}">
-                            <div class="msg-bubble" id="msg-content-{{ message.id }}">
-                                <div>{{ message.contenu|nl2br }}</div>
-                                                                    {% if message.urlPieceJointe %}
-                                        <div style="margin-top:12px; padding-top:12px; border-top:1px solid {{ isUser ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.06)' }};">
-                                            {% set isUrl = message.urlPieceJointe starts with 'http' %}
-                                            {% set extension = isUrl ? 'm4a' : message.urlPieceJointe|split('.')|last|lower %}
-                                            
-                                            {% if isUrl or extension in ['m4a', 'mp3', 'wav', 'ogg'] %}
-                                                {# Voice Message Player #}
-                                                <div class="voice-message-player">
-                                                    <button class="play-btn" onclick="toggleAudio(this, '{{ isUrl ? message.urlPieceJointe : asset('uploads/messages/' ~ message.urlPieceJointe) }}')">
-                                                        <i class="fas fa-play"></i>
-                                                    </button>
-                                                    <div class="waveform-mock">
-                                                        <div class="wave-bar" style="height:40%"></div>
-                                                        <div class="wave-bar" style="height:70%"></div>
-                                                        <div class="wave-bar" style="height:50%"></div>
-                                                        <div class="wave-bar" style="height:80%"></div>
-                                                        <div class="wave-bar" style="height:30%"></div>
-                                                        <div class="wave-bar" style="height:60%"></div>
-                                                        <div class="wave-bar" style="height:40%"></div>
-                                                        <div class="wave-bar" style="height:70%"></div>
-                                                        <div class="wave-bar" style="height:50%"></div>
-                                                        <div class="wave-bar" style="height:80%"></div>
-                                                    </div>
-                                                    <span style="font-size:11px; opacity:0.8; color: inherit;">Voice</span>
-                                                </div>
-                                            {% elseif extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
-                                                <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank">
-                                                    <img src="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-                                                </a>
-                                            {% else %}
-                                                <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" style="display:inline-flex; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; opacity:.95; font-size:13px;">
-                                                    <i class="fas fa-file-download"></i>
-                                                    Download Attachment ({{ extension|upper }})
-                                                </a>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-
-                            </div>
-
-                            {% if isUser %}
-                                <div style="position: relative;" class="message-actions-dropdown">
-                                    <button type="button" onclick="toggleMessageMenu({{ message.id }})" style="background:none; border:none; color: var(--gray-text); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-ellipsis-v" style="font-size: 14px;"></i>
-                                    </button>
-                                    
-                                    <div id="dropdown-{{ message.id }}" style="display: none; position: absolute; {{ isUser ? 'right: 0' : 'left: 0' }}; top: 100%; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10; min-width: 120px; padding: 6px; flex-direction: column; gap: 4px;">
-                                        <button type="button" onclick="editMessage({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)" style="background:none; border:none; color: var(--dark-text); cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px;">
-                                            <i class="fas fa-edit" style="width:14px;"></i> Modifier
-                                        </button>
-                                        
-                                        <form method="post" action="{{ path('app_user_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ce message définitivement ?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_message_user_' ~ message.id) }}">
-                                            <button type="submit" style="background:none; border:none; color: #ef4444; cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px; width: 100%;">
-                                                <i class="fas fa-trash-alt" style="width:14px;"></i> Supprimer
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-
-                                <!-- Hidden edit form -->
-                                <form id="edit-form-{{ message.id }}" method="post" action="{{ path('app_user_message_edit', {id: message.id}) }}" style="display: none; align-items: flex-end; gap: 8px;">
-                                    <textarea name="edit_contenu" style="width: 250px; height: 60px; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); font-family: inherit; font-size: 13px; resize: vertical;" required></textarea>
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <button type="submit" style="padding: 4px 8px; font-size: 11px; background: var(--primary-green); color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
-                                        <button type="button" onclick="cancelEdit({{ message.id }})" style="padding: 4px 8px; font-size: 11px; background: #eee; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
-                                    </div>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </div>
+                    {% include 'reclamation/_message_item_user.html.twig' with {'message': message, 'ticket': ticket} %}
                 {% else %}
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-text); opacity: 0.6;">
+                    <div id="noMessagesPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-text); opacity: 0.6;">
                         <i class="far fa-comment-dots" style="font-size: 3rem; margin-bottom: 12px;"></i>
                         <p style="font-weight: 600; font-size: 15px; margin:0;">No messages yet.</p>
                         <span style="font-size: 13px;">Add a reply to follow up on your ticket.</span>
                     </div>
                 {% endfor %}
             </div>
+
 
             <div class="reply-card">
                 <div class="reply-title">Add a reply</div>
@@ -796,6 +719,46 @@
                 }
             });
         });
+
+        // --- AJAX Polling for new messages ---
+        let lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
+        const fetchUrlPattern = "{{ path('app_ticket_fetch_new_messages', {id: ticket.id, lastId: 999999}) }}";
+
+        function pollMessages() {
+            const url = fetchUrlPattern.replace('999999', lastMessageId);
+            
+            fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.count > 0) {
+                    console.log(`Chat Polling: Found ${data.count} new messages.`);
+                    const chatContainer = document.getElementById('chatContainer');
+                    const noMessagesPlaceholder = document.getElementById('noMessagesPlaceholder');
+                    
+                    if (noMessagesPlaceholder) {
+                        noMessagesPlaceholder.remove();
+                    }
+                    
+                    // Append new messages
+                    chatContainer.insertAdjacentHTML('beforeend', data.html);
+                    
+                    // Update lastId
+                    lastMessageId = data.lastId;
+                    
+                    // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            })
+            .catch(err => console.error('Chat Polling Error:', err));
+        }
+
+        // Check for new messages every 3 seconds
+        setInterval(pollMessages, 3000);
     });
 </script>
 {% endblock %}

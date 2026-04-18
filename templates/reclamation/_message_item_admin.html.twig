@@ -1,0 +1,88 @@
+{% set isAdmin = message.typeSender == 'ADMIN' %}
+<div class="msg-group animate-in">
+    <div class="msg-container {{ isAdmin ? 'admin' : 'user' }}">
+        {% if not isAdmin %}
+            <div class="msg-avatar">
+                {{ message.utilisateur.prenom|first|upper }}
+            </div>
+        {% endif %}
+
+        <div class="msg-content-wrapper">
+            <div class="msg-bubble" id="bubble-{{ message.id }}">
+                {% if not isAdmin %}
+                    <span class="msg-sender-name">{{ message.utilisateur.prenom }} {{ message.utilisateur.nom }}</span>
+                {% endif %}
+                
+                <div>{{ message.contenu|nl2br }}</div>
+
+                {% if message.urlPieceJointe %}
+                    <div style="margin-top:12px; padding-top:12px; border-top: 1px solid {{ not isAdmin ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.2)' }};">
+                        {% set isUrl = message.urlPieceJointe starts with 'http' %}
+                        {% set extension = isUrl ? 'm4a' : message.urlPieceJointe|split('.')|last|lower %}
+                        
+                        {% if isUrl or extension in ['m4a', 'mp3', 'wav', 'ogg'] %}
+                            <div class="voice-message-player">
+                                <button class="play-btn" onclick="toggleAudio(this, '{{ isUrl ? message.urlPieceJointe : asset('uploads/messages/' ~ message.urlPieceJointe) }}')">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M8 5v14l11-7z"/></svg>
+                                </button>
+                                <div class="waveform-mock">
+                                    <div class="wave-bar" style="height:40%"></div>
+                                    <div class="wave-bar" style="height:70%"></div>
+                                    <div class="wave-bar" style="height:50%"></div>
+                                    <div class="wave-bar" style="height:80%"></div>
+                                    <div class="wave-bar" style="height:30%"></div>
+                                    <div class="wave-bar" style="height:60%"></div>
+                                    <div class="wave-bar" style="height:40%"></div>
+                                    <div class="wave-bar" style="height:70%"></div>
+                                    <div class="wave-bar" style="height:50%"></div>
+                                    <div class="wave-bar" style="height:80%"></div>
+                                </div>
+                                <span class="timer" style="font-size:11px; opacity:0.8; color: inherit;">Voice</span>
+                            </div>
+                        {% elseif extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
+                            <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" class="image-attachment-link">
+                                <img src="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                            </a>
+                        {% else %}
+                            <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" style="display:inline-flex; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; opacity:.95; font-size: 13px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px;height:16px;">
+                                    <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.5 8.49a1.5 1.5 0 0 1-2.12-2.12l7.78-7.78"/>
+                                </svg>
+                                Download ({{ extension|upper }})
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="msg-date">
+                {{ message.date|date('F j, Y \\a\\t g:i A') }}
+            </div>
+        </div>
+
+        {% if isAdmin %}
+            <div style="position:relative; align-self: center;">
+                <div class="kebab-btn" style="color: #64748b;" onclick="toggleMenu({{ message.id }})">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                </div>
+                <div id="menu-{{ message.id }}" class="dropdown-menu">
+                    <button class="dropdown-item" onclick="editMsg({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)">Edit</button>
+                    <form method="POST" action="{{ path('app_admin_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_message_admin_' ~ message.id) }}">
+                        <button type="submit" class="dropdown-item danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if isAdmin %}
+        <form id="edit-form-{{ message.id }}" method="POST" action="{{ path('app_admin_message_edit', {id: message.id}) }}" style="display:none; margin-top:8px; align-self: flex-end; margin-right: 48px;">
+            <textarea name="edit_contenu" style="width:250px; height:80px; padding:10px; border-radius:12px; border:1.5px solid var(--brand); font-family: inherit; font-size: 13px;"></textarea>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+                <button type="submit" style="background:var(--brand); color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Update</button>
+                <button type="button" onclick="this.parentElement.parentElement.style.display='none'" style="background:#f1f5f9; color:#475569; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">Cancel</button>
+            </div>
+        </form>
+    {% endif %}
+</div>
