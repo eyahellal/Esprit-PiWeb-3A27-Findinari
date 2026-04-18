@@ -45,45 +45,51 @@ class HomeController extends AbstractController
         return $this->render('reclamation/support_center.html.twig');
     }
 
-   #[Route('/service/{id}', name: 'app_service_details')]
-public function serviceDetails(int $id = 1): Response|RedirectResponse
-{
-    if ($id === 4) {
-        return $this->redirectToRoute('community_index');
-    }
-
-    $services = [
-        1 => [
-            'name' => 'Budget Management',
-            'description' => 'Track your income and expenses with AI-powered categorization'
-        ],
-        2 => [
-            'name' => 'Loan Investment',
-            'description' => 'Lend money, get receipts, earn returns after fixed period'
-        ],
-        3 => [
-            'name' => 'Objective Management',
-            'description' => 'Set financial goals and track progress with AI insights'
-        ],
-        4 => [
-            'name' => 'Community',
-            'description' => 'Connect with investors and learn from billionaires'
-        ],
-    ];
-
-    if (!isset($services[$id])) {
-        $id = 1;
-    }
-
-    return $this->render('home/service-details.html.twig', [
-        'id' => $id,
-        'service' => $services[$id]
-    ]);
-}
-
-    #[Route('/privacy', name: 'app_privacy')]
-    public function privacy(): Response
+    #[Route('/service/{id}', name: 'app_service_details')]
+    public function serviceDetails(int $id = 1): Response|RedirectResponse
     {
-        return $this->render('home/privacy-policy.html.twig');
+        if ($id === 4) {
+            return $this->redirectToRoute('community_index');
+        }
+
+        $services = [
+            1 => [
+                'name' => 'Budget Management',
+                'description' => 'Track your income and expenses with AI-powered categorization'
+            ],
+            2 => [
+                'name' => 'Loan Investment',
+                'description' => 'Lend money, get receipts, earn returns after fixed period'
+            ],
+            3 => [
+                'name' => 'Objective Management',
+                'description' => 'Set financial goals and track progress with AI insights'
+            ],
+            4 => [
+                'name' => 'Community',
+                'description' => 'Connect with investors and learn from billionaires'
+            ],
+        ];
+
+        if (!isset($services[$id])) {
+            $id = 1;
+        }
+
+        return $this->render('home/service-details.html.twig', [
+            'id' => $id,
+            'service' => $services[$id]
+        ]);
+    }
+
+    #[Route('/financial-news', name: 'app_financial_news')]
+    public function financialNews(): Response
+    {
+        return $this->render('home/financial_news.html.twig');
+    }
+
+    #[Route('/crypto-prices', name: 'app_crypto_prices')]
+    public function cryptoPrices(): Response
+    {
+        return $this->render('home/crypto_prices.html.twig');
     }
 }
