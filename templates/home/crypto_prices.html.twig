@@ -1,0 +1,347 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Crypto Prices - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">Cryptocurrency Prices</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_crypto_prices') }}">Crypto Prices</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="section-title">
+                    <h1 class="text-primary">💰 Cryptocurrency Prices</h1>
+                    <p class="text-secondary">Real-time cryptocurrency prices and market data</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Filter -->
+        <div class="row mb-4">
+            <div class="col-md-6 mx-auto">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" id="searchFilter" class="form-control border-start-0" placeholder="Search cryptocurrency... (Bitcoin, Ethereum, etc.)">
+                    <button class="btn btn-primary px-4" onclick="filterCryptos()">
+                        <i class="fas fa-search me-2"></i>Filter
+                    </button>
+                    <button class="btn btn-outline-secondary px-4" onclick="resetFilter()">
+                        <i class="fas fa-undo me-2"></i>Reset
+                    </button>
+                </div>
+                <div class="text-center mt-2">
+                    <small class="text-muted">Available: Bitcoin, Ethereum, Ripple, Cardano, Dogecoin, Solana, Polkadot, Chainlink, Uniswap, Litecoin</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Market Overview Stats -->
+        <div class="row mb-5" id="marketStats">
+            <div class="col-md-4 mb-3">
+                <div class="card border-success shadow-sm">
+                    <div class="card-body text-center">
+                        <p class="text-muted mb-1">Total Market Cap</p>
+                        <h4 class="text-primary" id="totalMarketCap">Loading...</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-success shadow-sm">
+                    <div class="card-body text-center">
+                        <p class="text-muted mb-1">24h Volume</p>
+                        <h4 class="text-primary" id="totalVolume">Loading...</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-success shadow-sm">
+                    <div class="card-body text-center">
+                        <p class="text-muted mb-1">BTC Dominance</p>
+                        <h4 class="text-primary" id="btcDominance">Loading...</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading crypto prices...</p>
+        </div>
+        
+        <!-- Crypto Prices Grid -->
+        <div id="cryptoGrid" class="row">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading cryptocurrency prices...</p>
+            </div>
+        </div>
+        
+        <!-- Note -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <div class="alert alert-light border-success">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    Data provided by CoinGecko API. Prices are updated in real-time.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .crypto-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 100%;
+    }
+    .crypto-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    }
+    .positive {
+        color: #28a745;
+    }
+    .negative {
+        color: #dc3545;
+    }
+    .text-primary { color: #2d6a4f !important; }
+    .border-success { border-color: #28a745 !important; }
+    .crypto-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #e8f5e9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .crypto-icon i {
+        font-size: 24px;
+        color: #2d6a4f;
+    }
+    .hidden-crypto {
+        display: none;
+    }
+</style>
+
+<script>
+    let allCryptoData = [];
+    
+    const CRYPTO_NAMES = {
+        'bitcoin': { name: 'Bitcoin', symbol: 'BTC', icon: 'fab fa-bitcoin' },
+        'ethereum': { name: 'Ethereum', symbol: 'ETH', icon: 'fab fa-ethereum' },
+        'ripple': { name: 'Ripple', symbol: 'XRP', icon: 'fas fa-chart-line' },
+        'cardano': { name: 'Cardano', symbol: 'ADA', icon: 'fas fa-chart-line' },
+        'dogecoin': { name: 'Dogecoin', symbol: 'DOGE', icon: 'fas fa-dog' },
+        'solana': { name: 'Solana', symbol: 'SOL', icon: 'fas fa-chart-line' },
+        'polkadot': { name: 'Polkadot', symbol: 'DOT', icon: 'fas fa-link' },
+        'chainlink': { name: 'Chainlink', symbol: 'LINK', icon: 'fas fa-link' },
+        'uniswap': { name: 'Uniswap', symbol: 'UNI', icon: 'fas fa-exchange-alt' },
+        'litecoin': { name: 'Litecoin', symbol: 'LTC', icon: 'fas fa-chart-line' }
+    };
+    
+    async function loadCryptoPrices() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('cryptoGrid').innerHTML = '';
+        
+        try {
+            // Fetch crypto prices
+            const priceResponse = await fetch('/api/crypto/prices');
+            const priceData = await priceResponse.json();
+            
+            // Fetch market data
+            const marketResponse = await fetch('/api/crypto/market-data');
+            const marketData = await marketResponse.json();
+            
+            if (priceData.success && priceData.prices) {
+                displayMarketStats(marketData);
+                allCryptoData = priceData.prices;
+                displayCryptoPrices(allCryptoData);
+            } else {
+                document.getElementById('cryptoGrid').innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Failed to load crypto prices. Please try again later.
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            document.getElementById('cryptoGrid').innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Failed to load crypto prices. Please try again.
+                    </div>
+                </div>
+            `;
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+    
+    function filterCryptos() {
+        const searchTerm = document.getElementById('searchFilter').value.toLowerCase().trim();
+        
+        if (!searchTerm) {
+            displayCryptoPrices(allCryptoData);
+            return;
+        }
+        
+        const filteredData = {};
+        const cryptoList = Object.keys(allCryptoData);
+        
+        cryptoList.forEach(cryptoId => {
+            const info = CRYPTO_NAMES[cryptoId];
+            if (info && (info.name.toLowerCase().includes(searchTerm) || 
+                info.symbol.toLowerCase().includes(searchTerm) ||
+                cryptoId.toLowerCase().includes(searchTerm))) {
+                filteredData[cryptoId] = allCryptoData[cryptoId];
+            }
+        });
+        
+        if (Object.keys(filteredData).length > 0) {
+            displayCryptoPrices(filteredData);
+        } else {
+            document.getElementById('cryptoGrid').innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No cryptocurrencies found matching "${searchTerm}".
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    function resetFilter() {
+        document.getElementById('searchFilter').value = '';
+        displayCryptoPrices(allCryptoData);
+    }
+    
+    function displayMarketStats(marketData) {
+        if (marketData.success && marketData.market) {
+            const totalMarketCap = marketData.market.total_market_cap?.usd;
+            const totalVolume = marketData.market.total_volume?.usd;
+            const btcDominance = marketData.market.market_cap_percentage?.btc;
+            
+            if (totalMarketCap) {
+                document.getElementById('totalMarketCap').innerText = formatNumber(totalMarketCap) + ' USD';
+            }
+            if (totalVolume) {
+                document.getElementById('totalVolume').innerText = formatNumber(totalVolume) + ' USD';
+            }
+            if (btcDominance) {
+                document.getElementById('btcDominance').innerText = btcDominance.toFixed(1) + '%';
+            }
+        }
+    }
+    
+    function displayCryptoPrices(prices) {
+        const grid = document.getElementById('cryptoGrid');
+        grid.innerHTML = '';
+        
+        const cryptoList = Object.keys(prices);
+        
+        if (cryptoList.length === 0) {
+            grid.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No cryptocurrencies available.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        cryptoList.forEach(cryptoId => {
+            const crypto = prices[cryptoId];
+            const info = CRYPTO_NAMES[cryptoId] || { name: cryptoId, symbol: cryptoId.toUpperCase(), icon: 'fas fa-chart-line' };
+            const usdPrice = crypto.usd;
+            const eurPrice = crypto.eur;
+            const change24h = crypto.usd_24h_change;
+            const isPositive = change24h >= 0;
+            
+            const col = document.createElement('div');
+            col.className = 'col-lg-4 col-md-6 mb-4';
+            col.innerHTML = `
+                <div class="card border-0 shadow-sm crypto-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="crypto-icon me-3">
+                                <i class="${info.icon}"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0 text-primary">${info.name}</h4>
+                                <small class="text-muted">${info.symbol.toUpperCase()}</small>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">USD Price:</span>
+                                <span class="fw-bold fs-5 text-primary">$${usdPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted">EUR Price:</span>
+                                <span class="fw-bold">€${eurPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">24h Change:</span>
+                                <span class="fw-bold ${isPositive ? 'positive' : 'negative'}">
+                                    ${isPositive ? '+' : ''}${change24h.toFixed(2)}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(col);
+        });
+    }
+    
+    function formatNumber(num) {
+        if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+        if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+        if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+        return num.toLocaleString();
+    }
+    
+    // Add enter key support for search
+    document.getElementById('searchFilter')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            filterCryptos();
+        }
+    });
+    
+    // Load crypto prices on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCryptoPrices();
+        // Refresh every 60 seconds
+        setInterval(loadCryptoPrices, 60000);
+    });
+</script>
+
+{% endblock %}
