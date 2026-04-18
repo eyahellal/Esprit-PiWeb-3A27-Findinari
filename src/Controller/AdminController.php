@@ -306,6 +306,39 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/ticket-calendar', name: 'app_admin_ticket_calendar')]
+    public function ticketCalendar(TicketRepository $ticketRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $tickets = $ticketRepository->createQueryBuilder('t')
+            ->where('t.statut NOT IN (:closed)')
+            ->setParameter('closed', ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'])
+            ->getQuery()
+            ->getResult();
+
+        $events = [];
+        foreach ($tickets as $ticket) {
+            $events[] = [
+                'id' => $ticket->getId(),
+                'title' => $ticket->getTitre() ?: 'Untitled Ticket',
+                'start' => $ticket->getDateCreation() ? $ticket->getDateCreation()->format('Y-m-d\TH:i:s') : date('Y-m-d\TH:i:s'),
+                'url' => $this->generateUrl('app_admin_ticket_details', ['id' => $ticket->getId()]),
+                'className' => 'priority-' . strtolower($ticket->getPriorite() ?: 'low'),
+                'extendedProps' => [
+                    'status'   => $ticket->getStatut(),
+                    'priority' => $ticket->getPriorite(),
+                    'user'     => $ticket->getUtilisateur() ? $ticket->getUtilisateur()->getPrenom() . ' ' . $ticket->getUtilisateur()->getNom() : 'Anonymous'
+                ]
+            ];
+        }
+
+        return $this->render('admin/ticket_calendar.html.twig', [
+            'events'      => json_encode($events),
+            'ticketCount' => count($tickets)
+        ]);
+    }
+
     #[Route('/admin/ticket/{id}/delete', name: 'app_admin_ticket_delete', methods: ['POST'])]
     public function deleteTicketAdmin(
         Ticket $ticket,
