@@ -456,23 +456,15 @@
 
                 detectedExplainer.style.color = '#6366f1';
                 // ... rest of the logic ...
-                let sourceLabel = '';
-                let iconClass = 'fas fa-robot';
+                let sourceLabel = data.source === 'remote_ai' ? 'Remote AI' : 'Keywords';
                 
-                if (data.source === 'remote_ai') {
-                    sourceLabel = 'Remote AI';
-                    iconClass = 'fas fa-brain';
-                    aiBadge.style.background = 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)';
-                } else if (data.source === 'local_keywords') {
-                    sourceLabel = 'Keywords';
-                    iconClass = 'fas fa-search';
-                    aiBadge.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-                }
-
+                // Set uniform appearance (Purple + Robot) as requested
+                aiBadge.style.background = 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)';
+                aiBadge.querySelector('i').className = 'fas fa-robot';
                 aiLabel.innerHTML = `AI Detected: ${data.priority} <span class="source-badge">${sourceLabel}</span>`;
-                aiBadge.querySelector('i').className = iconClass;
                 
                 detectedExplainer.style.display = 'block';
+                detectedExplainer.style.color = '#6366f1';
                 detectedExplainer.textContent = data.source === 'remote_ai' 
                     ? "Intelligence optimized: Deep analysis complete." 
                     : "Pattern recognized: Auto-selected based on keywords.";

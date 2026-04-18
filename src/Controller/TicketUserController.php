@@ -168,7 +168,6 @@ public function createTicket(
             $entityManager->persist($message);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Message sent successfully.');
 
             return $this->redirectToRoute('app_user_ticket_details', [
                 'id' => $ticket->getId(),

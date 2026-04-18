@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use App\Repository\TicketRepository;
+use App\Repository\MessageRepository;
 use App\Service\GroqSuggestionService;
 
 class MessageController extends AbstractController
@@ -68,7 +69,6 @@ class MessageController extends AbstractController
 
             $entityManager->persist($message);
             $entityManager->flush();
-            $this->addFlash('success', 'Message sent successfully.');
         }
 
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
@@ -177,7 +177,6 @@ class MessageController extends AbstractController
 
             $entityManager->persist($message);
             $entityManager->flush();
-            $this->addFlash('success', 'Message sent successfully.');
         }
 
         return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
@@ -420,5 +419,41 @@ class MessageController extends AbstractController
         $summary = $summaryService->summarizeTicket($messages, $ticket->getStatut() ?? 'OUVERT');
 
         return $this->json($summary);
+    }
+
+    #[Route('/ticket/{id}/fetch-new/{lastId}', name: 'app_ticket_fetch_new_messages', methods: ['GET'])]
+    public function fetchNewMessages(
+        Ticket $ticket,
+        int $lastId,
+        MessageRepository $messageRepository,
+        Request $request
+    ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Safety check
+        $isAdmin = $this->isGranted('ROLE_ADMIN');
+        if (!$isAdmin && $ticket->getUtilisateur() !== $user) {
+            return $this->json(['error' => 'Access denied'], 403);
+        }
+
+        $newMessages = $messageRepository->findMessagesAfterId($ticket->getId(), $lastId);
+
+        $html = '';
+        foreach ($newMessages as $message) {
+            $template = $isAdmin ? 'reclamation/_message_item_admin.html.twig' : 'reclamation/_message_item_user.html.twig';
+            $html .= $this->renderView($template, [
+                'message' => $message,
+                'ticket' => $ticket
+            ]);
+        }
+
+        return $this->json([
+            'html' => $html,
+            'count' => count($newMessages),
+            'lastId' => count($newMessages) > 0 ? (int)end($newMessages)->getId() : (int)$lastId
+        ]);
     }
 }
