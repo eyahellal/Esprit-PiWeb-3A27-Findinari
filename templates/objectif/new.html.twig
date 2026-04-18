@@ -1,153 +1,1266 @@
 {% extends 'base.html.twig' %}
-{% block title %}Nouvel objectif{% endblock %}
+{% block title %}Nouvel objectif — Findinari{% endblock %}
 {% block body %}
 
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+
 <style>
-  .form-page { max-width: 560px; margin: 2rem auto; padding: 0 1rem; font-family: 'DM Sans', sans-serif; }
-  .form-card { background: #fff; border: 0.5px solid 
-#e0e0dc; border-radius: 12px; padding: 2rem; }
-  .form-title { font-size: 20px; font-weight: 600; margin-bottom: 1.5rem; }
-  .form-page .form-label { font-size: 13px; color: #555; font-weight: 500; }
-  .form-page .form-control,
-  .form-page .form-select { border-radius: 8px; border: 0.5px solid #ccc; font-size: 14px; padding: 8px 12px; width: 100%; }
-  .form-page .form-control:focus,
-  .form-page .form-select:focus { border-color: 
-#1a9e6e; box-shadow: none; outline: none; }
-  .form-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
-  .btn-save { background: 
-#1a9e6e; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
-  .btn-save:hover { background: 
-#157a55; }
-  .btn-cancel { padding: 10px 20px; border-radius: 8px; border: 0.5px solid #ccc; background: transparent; font-size: 14px; text-decoration: none; color: #555; }
-  .btn-cancel:hover { background: 
-#f5f5f3; color: #555; }
-  .invalid-feedback { color: 
-#a32d2d; font-size: 12px; margin-top: 4px; }
+  :root {
+    --ink:       #0a1628;
+    --ink-soft:  #3d4f6b;
+    --ink-muted: #7a8ba6;
+    --surface:   #ffffff;
+    --canvas:    #f4f6fa;
+    --border:    #dde3ed;
+    --border-focus: #1D9E75;
+    --teal-900:  #04342c;
+    --teal-800:  #085041;
+    --teal-600:  #0F6E56;
+    --teal-400:  #1D9E75;
+    --teal-200:  #5DCAA5;
+    --teal-100:  #9FE1CB;
+    --teal-50:   #E1F5EE;
+    --amber-400: #EF9F27;
+    --amber-50:  #FAEEDA;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 20px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--canvas);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .fn-hero {
+    background: var(--teal-800);
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fn-hero-pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 80% 50%, rgba(29,158,117,.18) 0%, transparent 55%),
+      radial-gradient(circle at 15% 80%, rgba(93,202,165,.10) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .fn-hero-rings {
+    position: absolute;
+    right: -80px;
+    top: -80px;
+    width: 320px;
+    height: 320px;
+    pointer-events: none;
+  }
+  .fn-hero-rings circle {
+    fill: none;
+    stroke: rgba(159,225,203,.12);
+  }
+
+  .fn-hero-inner {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 2.8rem 2rem 2rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .fn-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--teal-100);
+    margin-bottom: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .03em;
+  }
+  .fn-breadcrumb a { color: var(--teal-100); text-decoration: none; opacity: .7; }
+  .fn-breadcrumb a:hover { opacity: 1; }
+  .fn-breadcrumb-sep { opacity: .4; font-size: 10px; }
+  .fn-breadcrumb-cur { opacity: 1; }
+
+  .fn-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 14px;
+    border-radius: 99px;
+    border: 1px solid rgba(93,202,165,.35);
+    background: rgba(93,202,165,.08);
+    margin-bottom: .9rem;
+  }
+  .fn-hero-badge-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--teal-200);
+    animation: blink 2.4s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity:1; } 50% { opacity:.3; }
+  }
+  .fn-hero-badge span {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--teal-100);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .fn-hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+    margin-bottom: .6rem;
+  }
+  .fn-hero-title em {
+    font-style: normal;
+    color: var(--teal-200);
+  }
+
+  .fn-hero-sub {
+    font-size: 14px;
+    color: var(--teal-100);
+    line-height: 1.65;
+    max-width: 440px;
+    font-weight: 300;
+  }
+
+  .fn-hero-stats {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding-bottom: .25rem;
+  }
+  .fn-stat {
+    text-align: right;
+  }
+  .fn-stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .fn-stat-val span { color: var(--teal-200); }
+  .fn-stat-label {
+    font-size: 11px;
+    color: var(--teal-100);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    font-family: 'Syne', sans-serif;
+    opacity: .7;
+  }
+
+  /* ── STEP PROGRESS BAR ────────────────────────── */
+  .fn-steps-wrap {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 5;
+  }
+
+  .fn-steps {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 1.1rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: -22px;
+    box-shadow: 0 4px 20px rgba(10,22,40,.07);
+  }
+
+  .fn-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    cursor: pointer;
+  }
+  .fn-step-num {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all .3s ease;
+    font-family: 'Syne', sans-serif;
+  }
+  .fn-step-num.done {
+    background: var(--teal-50);
+    color: var(--teal-600);
+    border: 1.5px solid var(--teal-200);
+  }
+  .fn-step-num.active {
+    background: var(--teal-800);
+    color: #fff;
+    border: 1.5px solid var(--teal-800);
+    box-shadow: 0 0 0 4px rgba(8,80,65,.12);
+  }
+  .fn-step-num.idle {
+    background: var(--canvas);
+    color: var(--ink-muted);
+    border: 1.5px solid var(--border);
+  }
+
+  .fn-step-info {}
+  .fn-step-label {
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: .01em;
+    transition: color .3s;
+  }
+  .fn-step-label.active { color: var(--ink); }
+  .fn-step-label.idle   { color: var(--ink-muted); }
+  .fn-step-label.done   { color: var(--teal-600); }
+  .fn-step-sub {
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-top: 1px;
+  }
+
+  .fn-step-line {
+    flex: 0 0 40px;
+    height: 1px;
+    background: var(--border);
+    margin: 0 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .fn-step-line-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--teal-400);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .4s ease;
+  }
+  .fn-step-line-fill.active { transform: scaleX(1); }
+
+  /* ── LAYOUT ───────────────────────────────────── */
+  .fn-layout {
+    max-width: 1060px;
+    margin: 2rem auto 4rem;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* ── MAIN CARD ────────────────────────────────── */
+  .fn-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+
+  /* ── PANELS ───────────────────────────────────── */
+  .fn-panel {
+    padding: 2rem 2rem 1.5rem;
+    display: none;
+  }
+  .fn-panel.active { display: block; }
+
+  .fn-panel-hd {
+    margin-bottom: 1.75rem;
+  }
+  .fn-panel-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--teal-400);
+    margin-bottom: 6px;
+  }
+  .fn-panel-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    color: var(--ink);
+    letter-spacing: -.01em;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .fn-panel-desc {
+    font-size: 13.5px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ── CATEGORY GRID ───────────────────────────── */
+  .fn-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .fn-cat-btn {
+    padding: 16px 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--canvas);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: all .2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .fn-cat-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--teal-50);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .fn-cat-btn:hover {
+    border-color: var(--teal-200);
+    transform: translateY(-2px);
+  }
+  .fn-cat-btn:hover::before { opacity: 1; }
+  .fn-cat-btn.sel {
+    border-color: var(--teal-400);
+    background: var(--teal-50);
+  }
+  .fn-cat-btn.sel::before { opacity: 0; }
+
+  .fn-cat-icon {
+    width: 44px; height: 44px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+    position: relative;
+    z-index: 1;
+  }
+  .fn-cat-btn.sel .fn-cat-icon {
+    background: var(--teal-400);
+    border-color: var(--teal-400);
+  }
+  .fn-cat-icon svg {
+    width: 20px; height: 20px;
+    stroke: var(--ink-soft);
+    fill: none;
+    stroke-width: 1.75;
+    transition: stroke .2s;
+  }
+  .fn-cat-btn.sel .fn-cat-icon svg { stroke: #fff; }
+
+  .fn-cat-name {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    color: var(--ink-soft);
+    letter-spacing: .01em;
+    position: relative;
+    z-index: 1;
+    transition: color .2s;
+  }
+  .fn-cat-btn.sel .fn-cat-name { color: var(--teal-600); }
+  .fn-cat-btn.sel::after {
+    content: '';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--teal-400);
+  }
+
+  /* ── FORM FIELDS ─────────────────────────────── */
+  .fn-field { margin-bottom: 1.4rem; }
+  .fn-field:last-child { margin-bottom: 0; }
+
+  .fn-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: .01em;
+  }
+  .fn-label .opt {
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin-left: 5px;
+  }
+
+  .fn-input-wrap { position: relative; }
+
+  .fn-input,
+  .fn-select {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    background: var(--canvas);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-md);
+    transition: all .18s ease;
+    appearance: none;
+  }
+  .fn-input::placeholder { color: var(--ink-muted); font-size: 13px; }
+  .fn-input:focus, .fn-select:focus {
+    outline: none;
+    border-color: var(--teal-400);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(29,158,117,.12);
+  }
+  .fn-input.has-mic  { padding-right: 46px; }
+  .fn-input.has-pre  { padding-left: 58px; }
+  .fn-input.has-suf  { padding-right: 54px; }
+
+  .fn-pre {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 13px; font-weight: 500; color: var(--ink-muted);
+    pointer-events: none; letter-spacing: .01em;
+  }
+  .fn-suf {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 13px; color: var(--ink-muted); pointer-events: none;
+  }
+
+  .fn-select {
+    padding-right: 36px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a8ba6' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
+  .fn-mic-btn {
+    position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px;
+    border: none; background: none;
+    cursor: pointer;
+    border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-muted);
+    transition: all .18s;
+  }
+  .fn-mic-btn:hover { background: var(--teal-50); color: var(--teal-400); }
+  .fn-mic-btn.on    { background: var(--teal-50); color: var(--teal-600); animation: mic-pulse 1.5s ease infinite; }
+  .fn-mic-btn svg   { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  @keyframes mic-pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(29,158,117,.3); }
+    50%      { box-shadow: 0 0 0 6px rgba(29,158,117,.0); }
+  }
+
+  .fn-mic-hint {
+    font-size: 12px; color: var(--ink-muted);
+    margin-top: 5px; min-height: 16px; line-height: 1.4;
+    transition: color .2s;
+  }
+  .fn-mic-hint.on { color: var(--teal-600); font-weight: 500; }
+
+  .fn-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .fn-row3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; }
+
+  .fn-divider {
+    height: 1px; background: var(--border);
+    margin: 1.5rem 0;
+  }
+
+  /* errors */
+  .invalid-feedback, .form-error {
+    font-size: 11.5px; color: #c0392b;
+    margin-top: 4px; display: block; line-height: 1.4;
+  }
+
+  /* ── CONFIRMATION PANEL ───────────────────────── */
+  .fn-confirm-icon {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: var(--teal-50);
+    border: 2px solid var(--teal-200);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+  .fn-confirm-icon svg { width: 28px; height: 28px; stroke: var(--teal-600); fill: none; stroke-width: 2.5; }
+
+  .fn-confirm-title {
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: .4rem;
+  }
+  .fn-confirm-sub {
+    text-align: center;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+    margin-bottom: 1.75rem;
+    line-height: 1.55;
+  }
+
+  .fn-summary {
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .fn-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    font-size: 13.5px;
+  }
+  .fn-summary-row + .fn-summary-row { border-top: 1px solid var(--border); }
+  .fn-summary-key { color: var(--ink-muted); }
+  .fn-summary-val { color: var(--ink); font-weight: 500; }
+  .fn-summary-val.accent { color: var(--teal-600); font-family: 'Syne', sans-serif; font-weight: 700; }
+
+  .fn-highlight-row {
+    background: var(--teal-50);
+    border-top: 1px solid var(--teal-200) !important;
+  }
+  .fn-highlight-row .fn-summary-key { color: var(--teal-600); font-weight: 500; }
+
+  /* ── BOTTOM NAV ───────────────────────────────── */
+  .fn-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem 2rem;
+    border-top: 1px solid var(--border);
+    background: var(--canvas);
+  }
+  .fn-nav-meta {
+    font-size: 12px;
+    color: var(--ink-muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 500;
+    letter-spacing: .04em;
+  }
+
+  .fn-btn-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 38px; padding: 0 18px;
+    font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .fn-btn-back:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .fn-btn-back:disabled { opacity: .35; cursor: default; pointer-events: none; }
+  .fn-btn-back svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .fn-btn-next {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 38px; padding: 0 22px;
+    font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    border: none;
+    border-radius: var(--r-md);
+    background: var(--teal-800);
+    color: #fff;
+    cursor: pointer;
+    transition: background .18s;
+  }
+  .fn-btn-next:hover { background: var(--teal-600); }
+  .fn-btn-next svg   { width: 14px; height: 14px; stroke: #fff; fill: none; stroke-width: 2.5; }
+
+  .fn-btn-submit {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 38px; padding: 0 24px;
+    font-size: 13px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    border: none; border-radius: var(--r-md);
+    background: var(--teal-400);
+    color: #fff;
+    cursor: pointer;
+    transition: background .18s;
+  }
+  .fn-btn-submit:hover { background: var(--teal-600); }
+  .fn-btn-submit svg   { width: 14px; height: 14px; stroke: #fff; fill: none; stroke-width: 2.5; }
+
+  /* ── SIDEBAR ──────────────────────────────────── */
+  .fn-sidebar { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .fn-side-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+
+  /* preview card */
+  .fn-preview-head {
+    padding: 1.25rem 1.25rem .75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .fn-preview-icon {
+    width: 46px; height: 46px;
+    border-radius: var(--r-md);
+    background: var(--teal-50);
+    border: 1px solid var(--teal-100);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+  .fn-preview-icon svg { width: 22px; height: 22px; stroke: var(--teal-600); fill: none; stroke-width: 1.75; }
+
+  .fn-preview-name {
+    font-size: 15px; font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    color: var(--ink); letter-spacing: -.01em;
+    margin-bottom: 2px;
+  }
+  .fn-preview-cat {
+    font-size: 12px; color: var(--ink-muted);
+  }
+
+  .fn-preview-body { padding: 1rem 1.25rem 1.25rem; }
+
+  .fn-prog-label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 7px;
+  }
+  .fn-prog-curr { font-size: 22px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--ink); }
+  .fn-prog-total { font-size: 13px; color: var(--ink-muted); }
+
+  .fn-pbar { height: 6px; background: var(--canvas); border-radius: 99px; overflow: hidden; margin-bottom: 8px; border: 1px solid var(--border); }
+  .fn-pbar-fill { height: 100%; width: 0%; background: var(--teal-400); border-radius: 99px; transition: width .5s ease; }
+
+  .fn-prog-note { font-size: 12px; color: var(--ink-muted); line-height: 1.4; }
+
+  .fn-metrics {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-top: 1rem;
+  }
+  .fn-metric {
+    background: var(--canvas);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+  }
+  .fn-metric-label { font-size: 11px; color: var(--ink-muted); margin-bottom: 3px; letter-spacing: .02em; }
+  .fn-metric-val   { font-size: 15px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--ink); }
+  .fn-metric-val.teal { color: var(--teal-600); }
+
+  /* tip card */
+  .fn-tip-head {
+    padding: .9rem 1.25rem .6rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: var(--ink-muted);
+  }
+  .fn-tip-list { list-style: none; padding: 0 1.25rem; }
+  .fn-tip-item {
+    display: flex; gap: 9px;
+    font-size: 13px; color: var(--ink-soft);
+    padding: 9px 0; line-height: 1.5;
+  }
+  .fn-tip-item + .fn-tip-item { border-top: 1px solid var(--border); }
+  .fn-tip-icon {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--teal-50);
+    border: 1px solid var(--teal-100);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .fn-tip-icon svg { width: 9px; height: 9px; stroke: var(--teal-600); fill: none; stroke-width: 3; }
+
+  /* cta card */
+  .fn-cta-card {
+    background: var(--teal-900);
+    border: none;
+    border-radius: var(--r-xl);
+    padding: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .fn-cta-card::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    border: 1px solid rgba(159,225,203,.12);
+    pointer-events: none;
+  }
+  .fn-cta-label {
+    font-size: 11px; font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: var(--teal-200); margin-bottom: 6px;
+  }
+  .fn-cta-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: #fff; margin-bottom: 8px; line-height: 1.3;
+  }
+  .fn-cta-desc { font-size: 12px; color: var(--teal-100); line-height: 1.5; opacity: .8; }
+
+  /* ── RESPONSIVE ───────────────────────────────── */
+  @media (max-width: 760px) {
+    .fn-layout    { grid-template-columns: 1fr; padding: 0 1rem; }
+    .fn-hero-inner{ flex-direction: column; padding: 2rem 1rem 1.5rem; }
+    .fn-hero-stats{ display: none; }
+    .fn-steps-wrap{ padding: 0 1rem; }
+    .fn-steps     { padding: .9rem 1rem; gap: 4px; }
+    .fn-step-sub  { display: none; }
+    .fn-step-line { flex: 0 0 18px; }
+    .fn-cat-grid  { grid-template-columns: repeat(2, 1fr); }
+    .fn-row2, .fn-row3 { grid-template-columns: 1fr; }
+    .fn-panel     { padding: 1.5rem 1.25rem 1rem; }
+    .fn-nav       { padding: .9rem 1.25rem; }
+  }
 </style>
 
-<div class="form-page">
-  <div class="form-card">
-    <h2 class="form-title">Nouvel objectif</h2>
+{# ── HERO ──────────────────────────────────────────────────────────── #}
+<div class="fn-hero">
+  <div class="fn-hero-pattern"></div>
+  <svg class="fn-hero-rings" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <circle cx="160" cy="160" r="140"/><circle cx="160" cy="160" r="100"/><circle cx="160" cy="160" r="60"/>
+  </svg>
+  <div class="fn-hero-inner">
+    <div>
+      <nav class="fn-breadcrumb">
+        <a href="{{ path('app_dashboard') ?? '#' }}">Tableau de bord</a>
+        <span class="fn-breadcrumb-sep">›</span>
+        <a href="{{ path('objectif_index') }}">Objectifs</a>
+        <span class="fn-breadcrumb-sep">›</span>
+        <span class="fn-breadcrumb-cur">Nouvel objectif</span>
+      </nav>
+      <div class="fn-hero-badge"><span class="fn-hero-badge-dot"></span><span>Findinari — Épargne</span></div>
+      <h1 class="fn-hero-title">Créez votre prochain<br><em>objectif d'épargne</em></h1>
+      <p class="fn-hero-sub">Définissez votre cible, choisissez votre rythme et suivez chaque étape de votre progression.</p>
+    </div>
+    <div class="fn-hero-stats">
+      <div class="fn-stat">
+        <div class="fn-stat-val">100<span>%</span></div>
+        <div class="fn-stat-label">Piloté par vous</div>
+      </div>
+      <div class="fn-stat">
+        <div class="fn-stat-val">24<span>/7</span></div>
+        <div class="fn-stat-label">Suivi en temps réel</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+{# ── STEP BAR ──────────────────────────────────────────────────────── #}
+<div class="fn-steps-wrap">
+  <div class="fn-steps" id="stepsBar">
+    <div class="fn-step" onclick="jumpToStep(1)">
+      <div class="fn-step-num active" id="sn1">1</div>
+      <div class="fn-step-info">
+        <div class="fn-step-label active" id="sl1">Catégorie</div>
+        <div class="fn-step-sub">Type de projet</div>
+      </div>
+    </div>
+    <div class="fn-step-line"><div class="fn-step-line-fill" id="line1"></div></div>
+    <div class="fn-step" onclick="jumpToStep(2)">
+      <div class="fn-step-num idle" id="sn2">2</div>
+      <div class="fn-step-info">
+        <div class="fn-step-label idle" id="sl2">Informations</div>
+        <div class="fn-step-sub">Nom & statut</div>
+      </div>
+    </div>
+    <div class="fn-step-line"><div class="fn-step-line-fill" id="line2"></div></div>
+    <div class="fn-step" onclick="jumpToStep(3)">
+      <div class="fn-step-num idle" id="sn3">3</div>
+      <div class="fn-step-info">
+        <div class="fn-step-label idle" id="sl3">Finance</div>
+        <div class="fn-step-sub">Montant & durée</div>
+      </div>
+    </div>
+    <div class="fn-step-line"><div class="fn-step-line-fill" id="line3"></div></div>
+    <div class="fn-step" onclick="jumpToStep(4)">
+      <div class="fn-step-num idle" id="sn4">4</div>
+      <div class="fn-step-info">
+        <div class="fn-step-label idle" id="sl4">Confirmation</div>
+        <div class="fn-step-sub">Vérification</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-      <div class="mb-3">
-        <div class="mb-3">
-        {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
-        <div class="input-mic-wrap">
-          {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'id': 'mic_titre'}}) }}
-          <button type="button" class="mic-btn" id="micBtn" title="Dicter le titre">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="9" y="2" width="6" height="11" rx="3"/>
-              <path d="M19 10a7 7 0 01-14 0"/>
-              <line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="8" y1="22" x2="16" y2="22"/>
-            </svg>
+{# ── MAIN LAYOUT ───────────────────────────────────────────────────── #}
+<div class="fn-layout">
+
+  {# ── MAIN CARD ─────────────────────────────────────────────────── #}
+  <div class="fn-card">
+
+    {# ─ PANEL 1 : Catégorie ─ #}
+    <div class="fn-panel active" id="panel1">
+      <div class="fn-panel-hd">
+        <div class="fn-panel-eyebrow">Étape 1 / 4</div>
+        <h2 class="fn-panel-title">Quelle catégorie d'objectif ?</h2>
+        <p class="fn-panel-desc">Sélectionnez le type qui correspond le mieux à votre projet d'épargne.</p>
+      </div>
+      <div class="fn-cat-grid" id="catGrid">
+        <button type="button" class="fn-cat-btn" data-cat="Voyage" onclick="selectCat(this)">
+          <div class="fn-cat-icon">
+            <svg viewBox="0 0 24 24"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5S18 2 16.5 3.5L13 7 4.8 5.2C4.3 5.1 3.9 5.4 3.8 5.9l-.4 1.4c-.1.4.1.9.4 1.1L8 10.7l-3.5 3.5c-.5.5-.5 1.2 0 1.6l.7.7c.4.4 1.1.4 1.6 0L10 13l2.6 4.2c.2.4.7.6 1.1.4l1.4-.4c.5-.1.8-.5.7-1z"/></svg>
+          </div>
+          <span class="fn-cat-name">Voyage</span>
+        </button>
+        <button type="button" class="fn-cat-btn" data-cat="Immobilier" onclick="selectCat(this)">
+          <div class="fn-cat-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <span class="fn-cat-name">Immobilier</span>
+        </button>
+        <button type="button" class="fn-cat-btn" data-cat="Véhicule" onclick="selectCat(this)">
+          <div class="fn-cat-icon">
+            <svg viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+          </div>
+          <span class="fn-cat-name">Véhicule</span>
+        </button>
+        <button type="button" class="fn-cat-btn" data-cat="Formation" onclick="selectCat(this)">
+          <div class="fn-cat-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <span class="fn-cat-name">Formation</span>
+        </button>
+        <button type="button" class="fn-cat-btn" data-cat="Urgences" onclick="selectCat(this)">
+          <div class="fn-cat-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <span class="fn-cat-name">Urgences</span>
+        </button>
+        <button type="button" class="fn-cat-btn" data-cat="Autre" onclick="selectCat(this)">
+          <div class="fn-cat-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </div>
+          <span class="fn-cat-name">Autre</span>
+        </button>
+      </div>
+    </div>
+
+    {# ─ PANEL 2 : Informations ─ #}
+    <div class="fn-panel" id="panel2">
+      <div class="fn-panel-hd">
+        <div class="fn-panel-eyebrow">Étape 2 / 4</div>
+        <h2 class="fn-panel-title">Nommez votre objectif</h2>
+        <p class="fn-panel-desc">Donnez un nom parlant et choisissez son état de départ.</p>
+      </div>
+
+      {{ form_start(form, {'attr': {'id': 'fn-form', 'novalidate': 'novalidate'}}) }}
+
+      <div class="fn-field">
+        <label class="fn-label" for="fn_titre">{{ form_label(form.titre) }}</label>
+        <div class="fn-input-wrap">
+          {{ form_widget(form.titre, {
+            'attr': {
+              'class': 'fn-input has-mic',
+              'id': 'fn_titre',
+              'placeholder': 'Ex : Voyage au Japon, Fonds d\'urgence…',
+              'oninput': 'syncPreview()'
+            }
+          }) }}
+          <button type="button" class="fn-mic-btn" id="micBtn" onclick="toggleMic()" title="Saisie vocale">
+            <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
           </button>
         </div>
-        <div class="mic-status" id="micStatus"></div>
+        <p class="fn-mic-hint" id="micHint">Cliquez sur le micro pour dicter le titre vocalement.</p>
         {{ form_errors(form.titre) }}
       </div>
 
+      <div class="fn-field">
+        <label class="fn-label" for="fn_statut">{{ form_label(form.statut) }}</label>
+        {{ form_widget(form.statut, {
+          'attr': {
+            'class': 'fn-select',
+            'id': 'fn_statut',
+            'onchange': 'syncPreview()'
+          }
+        }) }}
+        {{ form_errors(form.statut) }}
+      </div>
+    </div>
 
-      <div class="mb-3">
-        {{ form_label(form.montant, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.montant, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.montant) }}
+    {# ─ PANEL 3 : Finance ─ #}
+    <div class="fn-panel" id="panel3">
+      <div class="fn-panel-hd">
+        <div class="fn-panel-eyebrow">Étape 3 / 4</div>
+        <h2 class="fn-panel-title">Paramètres financiers</h2>
+        <p class="fn-panel-desc">Définissez votre cible et la durée de votre effort d'épargne.</p>
       </div>
 
-      <div class="mb-3">
-        {{ form_label(form.dateDebut, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control'}}) }}
+      <div class="fn-row2">
+        <div class="fn-field">
+          <label class="fn-label" for="fn_montant">{{ form_label(form.montant) }}</label>
+          <div class="fn-input-wrap">
+            <span class="fn-pre">TND</span>
+            {{ form_widget(form.montant, {
+              'attr': {
+                'class': 'fn-input has-pre',
+                'id': 'fn_montant',
+                'placeholder': '0',
+                'min': '0',
+                'step': '100',
+                'oninput': 'syncPreview()'
+              }
+            }) }}
+          </div>
+          {{ form_errors(form.montant) }}
+        </div>
+        <div class="fn-field">
+          <label class="fn-label" for="fn_duree">{{ form_label(form.duree) }} <span class="opt">(mois)</span></label>
+          <div class="fn-input-wrap">
+            {{ form_widget(form.duree, {
+              'attr': {
+                'class': 'fn-input has-suf',
+                'id': 'fn_duree',
+                'placeholder': '12',
+                'min': '1',
+                'max': '360',
+                'oninput': 'syncPreview()'
+              }
+            }) }}
+            <span class="fn-suf">mois</span>
+          </div>
+          {{ form_errors(form.duree) }}
+        </div>
+      </div>
+
+      <div class="fn-field" style="max-width:220px">
+        <label class="fn-label" for="fn_date">{{ form_label(form.dateDebut) }}</label>
+        {{ form_widget(form.dateDebut, {
+          'attr': {
+            'class': 'fn-input',
+            'id': 'fn_date',
+            'oninput': 'syncPreview()'
+          }
+        }) }}
         {{ form_errors(form.dateDebut) }}
       </div>
 
-      <div class="mb-3">
-        {{ form_label(form.duree, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.duree, {'attr': {'class': 'form-control'}}) }}
-        {{ form_errors(form.duree) }}
-      </div>
+      {{ form_end(form) }}
+    </div>
 
-       <div class="mb-3">
-        {{ form_label(form.statut, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.statut, {'attr': {'class': 'form-select'}}) }}
-        {{ form_errors(form.statut) }}
+    {# ─ PANEL 4 : Confirmation ─ #}
+    <div class="fn-panel" id="panel4">
+      <div class="fn-confirm-icon">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn-save">Enregistrer</button>
-        <a href="{{ path('objectif_index') }}" class="btn-cancel">Annuler</a>
+      <p class="fn-confirm-title">Votre objectif est prêt</p>
+      <p class="fn-confirm-sub">Vérifiez les informations ci-dessous avant d'enregistrer définitivement votre objectif.</p>
+      <div class="fn-summary">
+        <div class="fn-summary-row"><span class="fn-summary-key">Catégorie</span><span class="fn-summary-val" id="cf-cat">—</span></div>
+        <div class="fn-summary-row"><span class="fn-summary-key">Intitulé</span><span class="fn-summary-val" id="cf-titre">—</span></div>
+        <div class="fn-summary-row"><span class="fn-summary-key">Statut</span><span class="fn-summary-val" id="cf-statut">—</span></div>
+        <div class="fn-summary-row"><span class="fn-summary-key">Montant cible</span><span class="fn-summary-val accent" id="cf-montant">—</span></div>
+        <div class="fn-summary-row"><span class="fn-summary-key">Durée</span><span class="fn-summary-val" id="cf-duree">—</span></div>
+        <div class="fn-summary-row"><span class="fn-summary-key">Date de début</span><span class="fn-summary-val" id="cf-date">—</span></div>
+        <div class="fn-summary-row fn-highlight-row"><span class="fn-summary-key">Mensualité estimée</span><span class="fn-summary-val accent" id="cf-mensuel">—</span></div>
       </div>
+    </div>
 
-    {{ form_end(form) }}
+    {# ── BOTTOM NAV ──────────────────────────────── #}
+    <div class="fn-nav">
+      <button type="button" class="fn-btn-back" id="btnBack" onclick="prevStep()" disabled>
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Retour
+      </button>
+      <span class="fn-nav-meta" id="navMeta">Étape 1 / 4</span>
+      <button type="button" class="fn-btn-next" id="btnNext" onclick="nextStep()">
+        Suivant <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button type="submit" form="fn-form" class="fn-btn-submit" id="btnSubmit" style="display:none">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+
+  {# ── SIDEBAR ─────────────────────────────────────────────────────── #}
+  <div class="fn-sidebar">
+
+    {# Aperçu vivant #}
+    <div class="fn-side-card">
+      <div class="fn-preview-head">
+        <div class="fn-preview-icon" id="pvIcon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div>
+          <p class="fn-preview-name" id="pvName">Nouvel objectif</p>
+          <p class="fn-preview-cat" id="pvCat">Catégorie non définie</p>
+        </div>
+      </div>
+      <div class="fn-preview-body">
+        <div class="fn-prog-label">
+          <span class="fn-prog-curr">0 TND</span>
+          <span class="fn-prog-total" id="pvTotal">/ — TND</span>
+        </div>
+        <div class="fn-pbar"><div class="fn-pbar-fill" id="pvBar"></div></div>
+        <p class="fn-prog-note" id="pvNote">Renseignez le montant pour voir l'aperçu.</p>
+        <div class="fn-metrics">
+          <div class="fn-metric">
+            <p class="fn-metric-label">Durée</p>
+            <p class="fn-metric-val" id="pvDuree">—</p>
+          </div>
+          <div class="fn-metric">
+            <p class="fn-metric-label">/ mois</p>
+            <p class="fn-metric-val teal" id="pvMensuel">—</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# Conseils #}
+    <div class="fn-side-card">
+      <div class="fn-tip-head">Conseils pratiques</div>
+      <ul class="fn-tip-list">
+        <li class="fn-tip-item">
+          <span class="fn-tip-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Choisissez un montant réaliste adapté à vos revenus mensuels.
+        </li>
+        <li class="fn-tip-item">
+          <span class="fn-tip-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Une durée de 6 à 24 mois maintient la motivation à long terme.
+        </li>
+        <li class="fn-tip-item">
+          <span class="fn-tip-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Utilisez la saisie vocale pour nommer l'objectif en un instant.
+        </li>
+        <li class="fn-tip-item">
+          <span class="fn-tip-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Suivez vos progrès depuis le tableau de bord quotidiennement.
+        </li>
+      </ul>
+    </div>
+
+    {# CTA card #}
+    <div class="fn-cta-card">
+      <p class="fn-cta-label">Bon à savoir</p>
+      <p class="fn-cta-title">Chaque dinar compte</p>
+      <p class="fn-cta-desc">Même une petite épargne régulière crée de grands résultats sur le long terme grâce aux intérêts cumulés.</p>
+    </div>
+
   </div>
 </div>
+
 <script>
 (function () {
-  const btn    = document.getElementById('micBtn');
-  const input  = document.querySelector('input[name="objectif[titre]"]');
-  const status = document.getElementById('micStatus');
 
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  /* ── STATE ─────────────────────────────────── */
+  let step = 1;
+  const TOTAL = 4;
+  let selCat = '';
+  let micListening = false;
+  let micRec = null;
 
-  if (!SR) {
-    btn.disabled = true;
-    btn.title = 'Navigateur non compatible (utilisez Chrome)';
-    status.textContent = 'Reconnaissance vocale non disponible';
-    return;
-  }
-
-  const recognition = new SR();
-  recognition.lang = 'fr-FR';
-  recognition.interimResults = true;
-  recognition.continuous = false;
-
-  let listening = false;
-
-  recognition.onstart = () => {
-    listening = true;
-    btn.classList.add('listening');
-    status.textContent = 'Écoute en cours… Parlez maintenant';
-    status.className = 'mic-status active';
+  const catIcons = {
+    'Voyage':     '<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#0F6E56;fill:none;stroke-width:1.75"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5S18 2 16.5 3.5L13 7 4.8 5.2C4.3 5.1 3.9 5.4 3.8 5.9l-.4 1.4c-.1.4.1.9.4 1.1L8 10.7l-3.5 3.5c-.5.5-.5 1.2 0 1.6l.7.7c.4.4 1.1.4 1.6 0L10 13l2.6 4.2c.2.4.7.6 1.1.4l1.4-.4c.5-.1.8-.5.7-1z"/></svg>',
+    'Immobilier': '<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#0F6E56;fill:none;stroke-width:1.75"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    'Véhicule':   '<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#0F6E56;fill:none;stroke-width:1.75"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>',
+    'Formation':  '<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#0F6E56;fill:none;stroke-width:1.75"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    'Urgences':   '<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#0F6E56;fill:none;stroke-width:1.75"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+    'Autre':      '<svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#0F6E56;fill:none;stroke-width:1.75"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>'
   };
 
-  recognition.onresult = (e) => {
-    const transcript = Array.from(e.results)
-      .map(r => r[0].transcript)
-      .join('');
-    input.value = transcript;
-
-    if (e.results[e.results.length - 1].isFinal) {
-      status.textContent = '✓ Transcription terminée';
-      status.className = 'mic-status';
-    }
+  /* ── CATEGORY ────────────────────────────── */
+  window.selectCat = function (btn) {
+    document.querySelectorAll('.fn-cat-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selCat = btn.dataset.cat;
+    document.getElementById('pvCat').textContent = selCat;
+    document.getElementById('pvIcon').innerHTML = catIcons[selCat] || catIcons['Autre'];
+    syncPreview();
   };
 
-  recognition.onerror = (e) => {
-    status.textContent = e.error === 'not-allowed'
-      ? 'Accès au microphone refusé'
-      : 'Erreur : ' + e.error;
-    status.className = 'mic-status';
-    stopListen();
-  };
+  /* ── PREVIEW SYNC ────────────────────────── */
+  window.syncPreview = function () {
+    const titreEl   = document.getElementById('fn_titre');
+    const montantEl = document.getElementById('fn_montant');
+    const dureeEl   = document.getElementById('fn_duree');
+    const dateEl    = document.getElementById('fn_date');
+    const statutEl  = document.getElementById('fn_statut');
 
-  recognition.onend = () => stopListen();
+    const titre   = titreEl   ? titreEl.value.trim() : '';
+    const montant = montantEl ? (parseFloat(montantEl.value) || 0) : 0;
+    const duree   = dureeEl   ? (parseInt(dureeEl.value) || 0)    : 0;
+    const dateVal = dateEl    ? dateEl.value : '';
+    const statut  = statutEl  ? statutEl.options[statutEl.selectedIndex]?.text : 'Actif';
 
-  function stopListen() {
-    listening = false;
-    btn.classList.remove('listening');
-  }
+    document.getElementById('pvName').textContent = titre || 'Nouvel objectif';
+    if (selCat) document.getElementById('pvCat').textContent = selCat;
 
-  btn.addEventListener('click', () => {
-    if (listening) {
-      recognition.stop();
-      status.textContent = '';
+    if (montant > 0) {
+      document.getElementById('pvTotal').textContent = '/ ' + montant.toLocaleString('fr-TN') + ' TND';
+      document.getElementById('pvNote').textContent  = 'Objectif défini — commencez à épargner !';
     } else {
-      recognition.start();
+      document.getElementById('pvTotal').textContent = '/ — TND';
+      document.getElementById('pvNote').textContent  = 'Renseignez le montant pour voir l\'aperçu.';
     }
-  });
-})();
 
+    document.getElementById('pvDuree').textContent = duree ? duree + ' mois' : '—';
+
+    const mensuel = (montant > 0 && duree > 0) ? Math.round(montant / duree) : 0;
+    document.getElementById('pvMensuel').textContent = mensuel ? mensuel.toLocaleString('fr-TN') + ' TND' : '—';
+
+    /* confirmation panel */
+    document.getElementById('cf-cat').textContent    = selCat || '—';
+    document.getElementById('cf-titre').textContent  = titre || '—';
+    document.getElementById('cf-statut').textContent = statut || '—';
+    document.getElementById('cf-montant').textContent = montant ? montant.toLocaleString('fr-TN') + ' TND' : '—';
+    document.getElementById('cf-duree').textContent  = duree ? duree + ' mois' : '—';
+    document.getElementById('cf-mensuel').textContent = mensuel ? mensuel.toLocaleString('fr-TN') + ' TND / mois' : '—';
+
+    if (dateVal) {
+      const d = new Date(dateVal);
+      document.getElementById('cf-date').textContent = d.toLocaleDateString('fr-FR', {day:'2-digit', month:'long', year:'numeric'});
+    } else {
+      document.getElementById('cf-date').textContent = '—';
+    }
+  };
+
+  /* ── STEP MACHINE ────────────────────────── */
+  function applyStep (n) {
+    step = n;
+    for (let i = 1; i <= TOTAL; i++) {
+      const panel = document.getElementById('panel' + i);
+      if (panel) panel.classList.toggle('active', i === n);
+
+      const sn = document.getElementById('sn' + i);
+      const sl = document.getElementById('sl' + i);
+      if (!sn || !sl) continue;
+
+      if (i < n) {
+        sn.className = 'fn-step-num done';
+        sn.innerHTML = '<svg style="width:12px;height:12px;stroke:#0F6E56;fill:none;stroke-width:3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+        sl.className = 'fn-step-label done';
+      } else if (i === n) {
+        sn.className = 'fn-step-num active';
+        sn.textContent = i;
+        sl.className = 'fn-step-label active';
+      } else {
+        sn.className = 'fn-step-num idle';
+        sn.textContent = i;
+        sl.className = 'fn-step-label idle';
+      }
+
+      const line = document.getElementById('line' + i);
+      if (line) line.classList.toggle('active', i < n);
+    }
+
+    document.getElementById('btnBack').disabled = n === 1;
+    document.getElementById('navMeta').textContent = 'Étape ' + n + ' / ' + TOTAL;
+
+    const btnNext   = document.getElementById('btnNext');
+    const btnSubmit = document.getElementById('btnSubmit');
+    if (n === TOTAL) {
+      btnNext.style.display   = 'none';
+      btnSubmit.style.display = 'inline-flex';
+      syncPreview();
+    } else {
+      btnNext.style.display   = 'inline-flex';
+      btnSubmit.style.display = 'none';
+    }
+  }
+
+  window.nextStep     = function () { if (step < TOTAL) applyStep(step + 1); };
+  window.prevStep     = function () { if (step > 1)     applyStep(step - 1); };
+  window.jumpToStep   = function (n) { if (n < step)    applyStep(n); };
+
+  /* ── MIC ─────────────────────────────────── */
+  window.toggleMic = function () {
+    const SR   = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const hint = document.getElementById('micHint');
+    const btn  = document.getElementById('micBtn');
+    const inp  = document.getElementById('fn_titre');
+
+    if (!SR) { if (hint) hint.textContent = 'Saisie vocale non prise en charge.'; return; }
+    if (micListening && micRec) { micRec.stop(); return; }
+
+    micRec = new SR();
+    micRec.lang = 'fr-FR';
+    micRec.interimResults = true;
+    micRec.continuous = false;
+
+    micRec.onstart = () => {
+      micListening = true;
+      btn.classList.add('on');
+      hint.textContent = 'Écoute en cours — parlez maintenant…';
+      hint.classList.add('on');
+    };
+
+    micRec.onresult = (e) => {
+      const t = Array.from(e.results).map(r => r[0].transcript).join('');
+      if (inp) { inp.value = t; syncPreview(); }
+      if (e.results[e.results.length - 1].isFinal) {
+        hint.textContent = 'Titre enregistré par saisie vocale.';
+        hint.classList.remove('on');
+      }
+    };
+
+    micRec.onerror = (e) => {
+      hint.textContent = e.error === 'not-allowed' ? 'Accès au microphone refusé.' : 'Erreur : ' + e.error;
+      hint.classList.remove('on');
+      stop();
+    };
+
+    micRec.onend = stop;
+
+    function stop () {
+      micListening = false;
+      if (btn) btn.classList.remove('on');
+    }
+
+    micRec.start();
+  };
+
+  /* ── INIT ────────────────────────────────── */
+  const dateEl = document.getElementById('fn_date');
+  if (dateEl && !dateEl.value) dateEl.valueAsDate = new Date();
+
+  applyStep(1);
+
+})();
 </script>
 
 {% endblock %}

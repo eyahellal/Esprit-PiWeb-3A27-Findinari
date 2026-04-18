@@ -10,6 +10,7 @@ use App\Service\NotificationService;
 use App\Repository\UtilisateurRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,54 +21,127 @@ use Symfony\Component\Routing\Attribute\Route;
 class ObjectifController extends AbstractController
 {
     // ── INDEX ─────────────────────────────────────────────────────────────
-    #[Route('', name: 'objectif_index', methods: ['GET'])]
-    public function index(
-        ObjectifRepository  $repo,
-        Connection          $connection,
-        Request             $request,
-        NotificationService $notifService
-    ): Response {
-        $user             = $this->getUser();
-        $userId           = $user?->getId() ?? 1;
-        $selectedWalletId = $request->query->get('wallet_id');
-
-        if ($selectedWalletId) {
-            $request->getSession()->set('selected_wallet_id', $selectedWalletId);
-        }
-
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $walletsRaw = $connection->fetchAllAssociative(
-                'SELECT id, pays, devise, solde FROM wallet'
-            );
-        } else {
-            $walletsRaw = $connection->fetchAllAssociative(
-                'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
-                [$userId]
-            );
-        }
-
-        $wallets = [];
-        foreach ($walletsRaw as $w) {
-            $wallets[$w['id']] = $w;
-        }
-
-        if ($selectedWalletId) {
-            $objectifs = $repo->findBy(['walletId' => $selectedWalletId]);
-        } else {
-            $walletIds = array_keys($wallets);
-            $objectifs = $walletIds ? $repo->findBy(['walletId' => $walletIds]) : [];
-        }
-
-        // ── Génère / rafraîchit les notifications en session ──
-        $notifService->generateForObjectifs($objectifs);
-
-        return $this->render('objectif/index.html.twig', [
-            'objectifs'        => $objectifs,
-            'wallets'          => $wallets,
-            'selectedWalletId' => $selectedWalletId,
-            'notifCount'       => $notifService->countUnread(),
-        ]);
+    
+    
+#[Route('', name: 'objectif_index', methods: ['GET'])]
+public function index(
+    ObjectifRepository    $repo,
+    Connection            $connection,
+    Request               $request,
+    NotificationService   $notifService,
+    GoalStatisticsService $goalStats,          // ← ajouter ce paramètre
+    UtilisateurRepository $utilisateurRepository, // ← ajouter ce paramètre
+    PaginatorInterface    $paginator
+): Response {
+    $user             = $this->getUser();
+    $userId           = $user?->getId() ?? 1;
+    $selectedWalletId = $request->query->get('wallet_id');
+ 
+    if ($selectedWalletId) {
+        $request->getSession()->set('selected_wallet_id', $selectedWalletId);
     }
+ 
+    if ($this->isGranted('ROLE_ADMIN')) {
+        $walletsRaw = $connection->fetchAllAssociative(
+            'SELECT id, pays, devise, solde FROM wallet'
+        );
+    } else {
+        $walletsRaw = $connection->fetchAllAssociative(
+            'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
+            [$userId]
+        );
+    }
+ 
+    $wallets = [];
+    foreach ($walletsRaw as $w) {
+        $wallets[$w['id']] = $w;
+    }
+ 
+    $qb = $repo->createQueryBuilder('o');
+    if ($selectedWalletId) {
+        $qb->where('o.walletId = :wid')->setParameter('wid', $selectedWalletId);
+    } else {
+        $walletIds = array_keys($wallets);
+        if ($walletIds) {
+            $qb->where('o.walletId IN (:wids)')->setParameter('wids', $walletIds);
+        } else {
+            $qb->where('1 = 0');
+        }
+    }
+ 
+    $objectifsPaginated = $paginator->paginate(
+        $qb->getQuery(),
+        $request->query->getInt('page', 1),
+        3
+    );
+ 
+    $notifService->generateForObjectifs(
+        iterator_to_array($objectifsPaginated->getItems())
+    );
+ 
+    // ══ TOP CONTRIBUTEURS pour la section magazine ══
+    $allObjectifs   = $repo->findAll();
+    $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
+    $walletToUser   = [];
+    $userPays       = [];
+    foreach ($allWalletsData as $w) {
+        $walletToUser[$w['id']] = $w['utilisateur_id'];
+        if ($w['utilisateur_id'] && !isset($userPays[$w['utilisateur_id']])) {
+            $userPays[$w['utilisateur_id']] = $w['pays'] ?: '—';
+        }
+    }
+ 
+    $usersMap = [];
+    foreach ($utilisateurRepository->findAll() as $u) {
+        $usersMap[$u->getId()] = [
+            'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
+            'pays' => $userPays[$u->getId()] ?? '—',
+        ];
+    }
+ 
+    $byUser = [];
+    foreach ($allObjectifs as $objectif) {
+        $wid   = $objectif->getWalletId();
+        $uid   = $walletToUser[$wid] ?? null;
+        if (!$uid || !isset($usersMap[$uid])) continue;
+ 
+        $stats = $goalStats->compute($objectif);
+        if (!isset($byUser[$uid])) {
+            $byUser[$uid] = [
+                'userId'            => $uid,
+                'userName'          => $usersMap[$uid]['nom'],
+                'pays'              => $usersMap[$uid]['pays'],
+                'objectifsAtteints' => [],
+            ];
+        }
+        if ($stats['progressPct'] >= 100) {
+            $byUser[$uid]['objectifsAtteints'][] = ['objectif' => $objectif, 'stats' => $stats];
+        }
+    }
+ 
+    // Trier par nombre d'objectifs atteints desc, puis montant collecté desc
+    usort($byUser, function ($a, $b) {
+        $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
+        if ($diff !== 0) return $diff;
+        $ta = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $a['objectifsAtteints']));
+        $tb = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $b['objectifsAtteints']));
+        return $tb <=> $ta;
+    });
+ 
+    // Garder uniquement ceux qui ont au moins 1 objectif atteint, top 3
+    $topContributeurs = array_slice(
+        array_values(array_filter($byUser, fn($u) => count($u['objectifsAtteints']) > 0)),
+        0, 3
+    );
+ 
+    return $this->render('objectif/index.html.twig', [
+        'objectifs'         => $objectifsPaginated,
+        'wallets'           => $wallets,
+        'selectedWalletId'  => $selectedWalletId,
+        'notifCount'        => $notifService->countUnread(),
+        'topContributeurs'  => $topContributeurs,   // ← nouveau
+    ]);
+}
 
     // ── NEW ───────────────────────────────────────────────────────────────
     #[Route('/new', name: 'objectif_new', methods: ['GET', 'POST'])]
@@ -108,7 +182,7 @@ class ObjectifController extends AbstractController
         return $this->json($notifService->getUnread());
     }
 
-    // ── NOTIFICATIONS : marquer une lue (AJAX) ────────────────────────────
+    // ── NOTIFICATIONS : marquer toutes lues (AJAX) ────────────────────────
     #[Route('/notifications/read-all', name: 'notifications_read_all', methods: ['POST'])]
     public function notificationsReadAll(NotificationService $notifService): JsonResponse
     {
@@ -117,7 +191,6 @@ class ObjectifController extends AbstractController
     }
 
     // ── NOTIFICATIONS : marquer une lue par clé (AJAX) ───────────────────
-    // DOIT être APRÈS /notifications/read-all pour éviter que {key}="read-all"
     #[Route('/notifications/{key}/read', name: 'notification_mark_read', methods: ['POST'])]
     public function notificationMarkRead(
         string              $key,
@@ -128,82 +201,93 @@ class ObjectifController extends AbstractController
     }
 
     // ── TOP CONTRIBUTIONS ─────────────────────────────────────────────────
-    #[Route('/top-contributions', name: 'top_contributions', methods: ['GET'])]
-    public function topContributions(
-        ObjectifRepository    $objectifRepo,
-        GoalStatisticsService $goalStats,
-        Connection            $connection,
-        UtilisateurRepository $utilisateurRepository
-    ): Response {
-        $user = $this->getUser();
-        if (!$user) {
-            throw $this->createAccessDeniedException('Vous devez être connecté.');
+   #[Route('/top-contributions/detail/{userId}', name: 'top_contributions', methods: ['GET'])]
+public function topContributionsDetail(
+    int                   $userId,
+    ObjectifRepository    $objectifRepo,
+    GoalStatisticsService $goalStats,
+    Connection            $connection,
+    UtilisateurRepository $utilisateurRepository
+): Response {
+    $user = $this->getUser();
+    if (!$user) {
+        throw $this->createAccessDeniedException('Vous devez être connecté.');
+    }
+
+    $utilisateur = $utilisateurRepository->find($userId);
+    if (!$utilisateur) {
+        throw $this->createNotFoundException('Utilisateur introuvable.');
+    }
+
+    // Récupérer les wallets de cet utilisateur
+    $walletsData  = $connection->fetchAllAssociative(
+        'SELECT id, pays FROM wallet WHERE utilisateur_id = ?', [$userId]
+    );
+    $walletIds    = array_column($walletsData, 'id');
+    $pays         = $walletsData[0]['pays'] ?? '—';
+
+    // Calculer le rang de cet utilisateur
+    $allObjectifs   = $objectifRepo->findAll();
+    $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id FROM wallet');
+    $walletToUser   = [];
+    foreach ($allWalletsData as $w) {
+        $walletToUser[$w['id']] = $w['utilisateur_id'];
+    }
+
+    $byUser = [];
+    foreach ($allObjectifs as $objectif) {
+        $wid = $objectif->getWalletId();
+        $uid = $walletToUser[$wid] ?? null;
+        if (!$uid) continue;
+
+        $stats = $goalStats->compute($objectif);
+        if (!isset($byUser[$uid])) {
+            $byUser[$uid] = ['objectifsAtteints' => [], 'totalCollected' => 0];
         }
-
-        $objectifs = $objectifRepo->findAll();
-
-        $users = [];
-        foreach ($utilisateurRepository->findAll() as $u) {
-            $users[$u->getId()] = [
-                'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
-                'pays' => null,
-            ];
+        if ($stats['progressPct'] >= 100) {
+            $byUser[$uid]['objectifsAtteints'][] = true;
+            $byUser[$uid]['totalCollected'] += $stats['totalCollected'];
         }
+    }
 
-        $walletsData  = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
-        $walletToUser = [];
-        $userPays     = [];
-        foreach ($walletsData as $w) {
-            $walletToUser[$w['id']] = $w['utilisateur_id'];
-            if ($w['utilisateur_id'] && !isset($userPays[$w['utilisateur_id']])) {
-                $userPays[$w['utilisateur_id']] = $w['pays'] ?: '—';
-            }
-        }
+    usort($byUser, fn($a, $b) => count($b['objectifsAtteints']) - count($a['objectifsAtteints'])
+        ?: $b['totalCollected'] <=> $a['totalCollected']
+    );
 
-        foreach ($users as $uid => &$info) {
-            $info['pays'] = $userPays[$uid] ?? '—';
-        }
-        unset($info);
+    $rank = 1;
+    foreach (array_keys($byUser) as $uid) {
+        if ((int)$uid === $userId) break;
+        $rank++;
+    }
 
-        $byUser = [];
+    // Construire les données détaillées pour cet utilisateur
+    $objectifsAtteints = [];
+    if ($walletIds) {
+        $objectifs = $objectifRepo->findBy(['walletId' => $walletIds]);
         foreach ($objectifs as $objectif) {
-            $wid = $objectif->getWalletId();
-            $uid = $walletToUser[$wid] ?? null;
-            if (!$uid || !isset($users[$uid])) {
-                continue;
-            }
-
-            $stats    = $goalStats->compute($objectif);
-            $userInfo = $users[$uid];
-
-            if (!isset($byUser[$uid])) {
-                $byUser[$uid] = [
-                    'userName'          => $userInfo['nom'],
-                    'pays'              => $userInfo['pays'],
-                    'objectifsAtteints' => [],
-                    'objectifsEnCours'  => [],
+            $stats = $goalStats->compute($objectif);
+            if ($stats['progressPct'] >= 100) {
+                $objectifsAtteints[] = [
+                    'objectif'      => $objectif,
+                    'stats'         => $stats,
+                    'contributions' => $objectif->getContributiongoals()->toArray(),
                 ];
             }
-
-            if ($stats['progressPct'] >= 100) {
-                $byUser[$uid]['objectifsAtteints'][] = ['objectif' => $objectif, 'stats' => $stats];
-            } else {
-                $byUser[$uid]['objectifsEnCours'][]  = ['objectif' => $objectif, 'stats' => $stats];
-            }
         }
-
-        usort($byUser, function ($a, $b) {
-            $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
-            if ($diff !== 0) return $diff;
-            $totalA = array_sum(array_map(fn($item) => $item['stats']['totalCollected'], $a['objectifsAtteints']));
-            $totalB = array_sum(array_map(fn($item) => $item['stats']['totalCollected'], $b['objectifsAtteints']));
-            return $totalB <=> $totalA;
-        });
-
-        return $this->render('objectif/top_contributions.twig', [
-            'byUser' => $byUser,
-        ]);
     }
+
+    $userData = [
+        'userId'            => $userId,
+        'userName'          => $utilisateur->getPrenom() . ' ' . $utilisateur->getNom(),
+        'pays'              => $pays,
+        'rank'              => $rank,
+        'objectifsAtteints' => $objectifsAtteints,
+    ];
+
+    return $this->render('objectif/top_contributions_detail.html.twig', [
+        'userData' => $userData,
+    ]);
+}
 
     // ── HISTORIQUE ────────────────────────────────────────────────────────
     #[Route('/historique', name: 'objectif_historique', methods: ['GET'])]
@@ -212,7 +296,8 @@ class ObjectifController extends AbstractController
         GoalStatisticsService $goalStats,
         Connection            $connection,
         Request               $request,
-        NotificationService   $notifService
+        NotificationService   $notifService,
+        PaginatorInterface    $paginator
     ): Response {
         $user   = $this->getUser();
         $userId = $user?->getId() ?? 1;
@@ -266,12 +351,26 @@ class ObjectifController extends AbstractController
             return $b['dateAtteinte'] <=> $a['dateAtteinte'];
         });
 
-        // Rafraîchir les notifications depuis la page historique aussi
+        // Deux paginateurs avec des noms de paramètre distincts
+        $historiquePaginated = $paginator->paginate(
+            $historique,
+            $request->query->getInt('pageH', 1),
+            5,   // objectifs atteints par page
+            ['pageParameterName' => 'pageH']
+        );
+
+        $enCoursPaginated = $paginator->paginate(
+            $enCours,
+            $request->query->getInt('pageE', 1),
+            4,   // objectifs en cours par page
+            ['pageParameterName' => 'pageE']
+        );
+
         $notifService->generateForObjectifs($objectifs);
 
         return $this->render('objectif/historique.html.twig', [
-            'historique' => $historique,
-            'enCours'    => $enCours,
+            'historique' => $historiquePaginated,
+            'enCours'    => $enCoursPaginated,
             'notifCount' => $notifService->countUnread(),
         ]);
     }
@@ -412,7 +511,6 @@ class ObjectifController extends AbstractController
             $objectif->setStatut($totalContrib >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
             $em->flush();
 
-            // ── Régénérer les notifications après la contribution ──
             $notifService->generateForObjectifs([$objectif]);
 
             $this->addFlash('success', 'Contribution de ' . $montant . ' ajoutée !');
@@ -449,7 +547,6 @@ class ObjectifController extends AbstractController
             $objectif->setStatut($totalContrib >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
             $em->flush();
 
-            // ── Régénérer après suppression de contribution ──
             $notifService->generateForObjectifs([$objectif]);
 
             $this->addFlash('success', 'Contribution supprimée, ' . $montant . ' remboursé dans le wallet !');
