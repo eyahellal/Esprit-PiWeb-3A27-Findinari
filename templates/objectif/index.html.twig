@@ -814,7 +814,8 @@
 {% endblock %}
 
 {% block body %}
-    {# ── TOPBAR ── #}
+    
+
     <nav class="topbar">
         <div class="topbar-inner">
             <a href="#" class="topbar-brand">Findi<em>nari</em></a>
@@ -833,6 +834,16 @@
                     <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                     Historique
                 </a>
+                <a href="{{ path('market_trends') }}" class="tb-btn tb-btn--ghost">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M2 20L12 4L22 20" />
+        <path d="M12 4V20" />
+        <path d="M2 20H22" />
+    </svg>
+    Tendances
+</a>
+              
+    
                 {% if selectedWalletId %}
                     <a href="{{ path('objectif_new') }}" class="tb-btn tb-btn--primary">
                         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -921,7 +932,10 @@
 
         {% if not selectedWalletId %}
             <div class="wallet-notice">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" style="flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="12"/>
+    <line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 Sélectionnez un wallet pour créer ou filtrer vos objectifs.
             </div>
         {% endif %}

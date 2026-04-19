@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tendance - {{ symbol }}{% endblock %}
+
+{% block body %}
+<div class="container mt-4" style="max-width:1000px; margin:0 auto; padding:2rem;">
+
+    <a href="{{ path('market_trends') }}" style="
+        display:inline-flex; align-items:center; gap:6px;
+        font-size:13px; color:#1a9e6e; text-decoration:none;
+        margin-bottom:1.5rem; font-weight:600;
+    ">← Retour aux tendances</a>
+
+    <h1 style="font-size:2rem; font-weight:900; margin-bottom:0.25rem;">
+        {{ name ?? symbol }}
+    </h1>
+    <p style="color:#888; font-size:13px; margin-bottom:2rem;">
+        {{ symbol }} · Clôtures des 30 derniers jours
+    </p>
+
+    {% if error is defined %}
+        <div style="background:#fce8e8; color:#a32d2d; padding:1rem; border-radius:10px; margin-bottom:1rem;">
+            ⚠️ {{ error }}
+        </div>
+    {% endif %}
+
+    {% if dates == '[]' or values == '[]' %}
+        <div style="background:#faeeda; color:#854f0b; padding:1rem; border-radius:10px;">
+            ⚠️ Aucune donnée disponible pour <strong>{{ symbol }}</strong>.
+            Vérifiez que le symbole est valide et que votre clé API est active.
+        </div>
+    {% else %}
+        <div style="background:#fff; border:1px solid #e6e6e2; border-radius:16px; padding:1.5rem; box-shadow:0 2px 12px rgba(0,0,0,.06);">
+            <canvas id="priceChart" height="120"></canvas>
+        </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const rawDates  = {{ dates|raw }};
+    const rawValues = {{ values|raw }};
+
+    console.log('Dates:', rawDates);
+    console.log('Valeurs:', rawValues);
+
+    if (rawDates.length > 0 && rawValues.length > 0) {
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: rawDates,
+                datasets: [{
+                    label: 'Prix de clôture (USD)',
+                    data: rawValues,
+                    borderColor: '#1a9e6e',
+                    backgroundColor: 'rgba(26,158,110,0.08)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#1a9e6e',
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => '$' + ctx.parsed.y.toFixed(2)
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: val => '$' + val.toFixed(2)
+                        },
+                        grid: { color: 'rgba(0,0,0,.04)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
