@@ -11,7 +11,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[Route('/loan/obligation')]
 class ObligationController extends AbstractController
@@ -142,5 +144,66 @@ class ObligationController extends AbstractController
         }
 
         return $this->redirectToRoute('app_obligation_index');
+    }
+
+    #[Route('/api/obligation/recommendations', name: 'app_obligation_recommendations', methods: ['GET'])]
+    public function getRecommendations(HttpClientInterface $httpClient): JsonResponse
+    {
+        $prompt = "Generate 3 investment obligation recommendations for a financial platform. Each recommendation should have: a creative name, an interest rate between 3% and 15%, and a duration in months between 6 and 60. Format the response as JSON only, like this: [{\"name\":\"Example Bond\",\"rate\":8.5,\"duration\":24},...]";
+        
+        try {
+            $response = $httpClient->request('POST', 'http://localhost:11434/api/generate', [
+                'json' => [
+                    'model' => 'gemma3:1b',
+                    'prompt' => $prompt,
+                    'stream' => false,
+                    'temperature' => 0.8,
+                    'max_tokens' => 500
+                ],
+                'timeout' => 60
+            ]);
+            
+            $data = $response->toArray();
+            $output = trim($data['response'] ?? '[]');
+            
+            // Extract JSON from response
+            preg_match('/\[.*\]/s', $output, $matches);
+            $jsonString = $matches[0] ?? '[]';
+            $recommendations = json_decode($jsonString, true);
+            
+            if (!is_array($recommendations) || empty($recommendations)) {
+                $recommendations = $this->getDefaultRecommendations();
+            }
+            
+            return $this->json(['recommendations' => $recommendations]);
+            
+        } catch (\Exception $e) {
+            return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
+        }
+    }
+
+    #[Route('/api/obligation/recommendation/add', name: 'app_obligation_recommendation_add', methods: ['POST'])]
+    public function addRecommendation(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        $obligation = new Obligation();
+        $obligation->setNom($data['name']);
+        $obligation->setTauxInteret($data['rate']);
+        $obligation->setDuree($data['duration']);
+        
+        $entityManager->persist($obligation);
+        $entityManager->flush();
+        
+        return $this->json(['success' => true, 'id' => $obligation->getIdObligation()]);
+    }
+
+    private function getDefaultRecommendations(): array
+    {
+        return [
+            ['name' => 'Eco Green Bond', 'rate' => 6.5, 'duration' => 24],
+            ['name' => 'Tech Growth Bond', 'rate' => 9.0, 'duration' => 36],
+            ['name' => 'Secure Plus Bond', 'rate' => 4.5, 'duration' => 12],
+        ];
     }
 }
