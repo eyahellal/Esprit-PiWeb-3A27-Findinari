@@ -45,10 +45,12 @@ class WalletController extends AbstractController
         return $user;
     }
 
-    #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
+   #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
     public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
         $user = $this->getUserOrCreate($entityManager);
         
         $qb = $repository->createQueryBuilder('w')
@@ -59,12 +61,26 @@ class WalletController extends AbstractController
             $qb->andWhere('w.pays LIKE :search OR w.devise LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
-        
-        $wallets = $qb->getQuery()->getResult();
+
+        // Count total results
+        $total = (clone $qb)->select('COUNT(w.id)')->getQuery()->getSingleScalarResult();
+        $totalPages = max(1, ceil($total / $limit));
+
+        if ($page < 1) $page = 1;
+        if ($page > $totalPages) $page = $totalPages;
+
+        // Get paginated results
+        $wallets = $qb->setFirstResult(($page - 1) * $limit)
+                      ->setMaxResults($limit)
+                      ->getQuery()
+                      ->getResult();
 
         return $this->render('loan/wallet/index.html.twig', [
             'wallets' => $wallets,
             'search' => $search,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
         ]);
     }
 

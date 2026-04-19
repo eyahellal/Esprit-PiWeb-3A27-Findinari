@@ -96,7 +96,7 @@
         </div>
     </div>
 
-    {# Transactions List #}
+   {# Transactions List #}
     <div class="row">
         {% if transactions is empty %}
             <div class="col-12 text-center py-5">
@@ -133,6 +133,16 @@
                                         <div>
                                             <h6 class="fw-bold mb-0" style="color: #26474E;">
                                                 {{ transaction.categorie.nom }}
+                                                {% if transaction.isRecurring %}
+                                                    <span class="badge rounded-pill px-2 py-1 ms-1" style="background: #fff3ee; color: #F27438;">
+                                                        <i class="fas fa-sync-alt me-1"></i>{{ transaction.frequency | capitalize }}
+                                                    </span>
+                                                {% endif %}
+                                                {% if transaction.description starts with '[Auto]' %}
+                                                    <span class="badge rounded-pill px-2 py-1 ms-1" style="background: #e3f2fd; color: #1e3a5f;">
+                                                        <i class="fas fa-robot me-1"></i>Auto
+                                                    </span>
+                                                {% endif %}
                                             </h6>
                                             <p class="text-muted small mb-0">
                                                 <i class="fas fa-wallet me-1"></i>{{ transaction.wallet.pays }}
@@ -153,8 +163,17 @@
                                     </div>
                                 </div>
 
-                                {# Delete #}
-                                <div class="ms-3 flex-shrink-0">
+                                {# Actions #}
+                                <div class="ms-3 flex-shrink-0 d-flex gap-2">
+                                    {% if transaction.isRecurring %}
+                                        <form method="post" action="{{ path('app_transaction_toggle_recurring', {'id': transaction.id}) }}"
+                                              onsubmit="return confirm('Stop this recurring transaction?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ transaction.id) }}">
+                                            <button class="btn btn-sm" style="background: #fff3ee; color: #F27438; border-radius: 10px;">
+                                                <i class="fas fa-stop"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                     <form method="post" action="{{ path('app_transaction_delete', {'id': transaction.id}) }}"
                                           onsubmit="return confirm('Are you sure?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ transaction.id) }}">
@@ -171,6 +190,47 @@
             </div>
         {% endif %}
     </div>
+
+    {# Pagination — OUTSIDE the if/else block #}
+    {% if totalPages > 1 %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav>
+                <ul class="pagination mb-0" style="gap: 4px;">
+                    <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+                        <a class="page-link rounded-3 border-0 px-3"
+                           href="{{ path('app_transaction_index', {page: currentPage - 1, type: type}) }}"
+                           style="color: {{ currentPage == 1 ? '#999' : '#26474E' }}; background: {{ currentPage == 1 ? '#f5f5f5' : '#e8f5f5' }};">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+
+                    {% for p in 1..totalPages %}
+                        <li class="page-item">
+                            <a class="page-link rounded-3 border-0 px-3"
+                               href="{{ path('app_transaction_index', {page: p, type: type}) }}"
+                               style="background: {{ p == currentPage ? '#F27438' : '#f5f5f5' }};
+                                      color: {{ p == currentPage ? 'white' : '#26474E' }};
+                                      font-weight: {{ p == currentPage ? 'bold' : 'normal' }};">
+                                {{ p }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    <li class="page-item {{ currentPage == totalPages ? 'disabled' : '' }}">
+                        <a class="page-link rounded-3 border-0 px-3"
+                           href="{{ path('app_transaction_index', {page: currentPage + 1, type: type}) }}"
+                           style="color: {{ currentPage == totalPages ? '#999' : '#26474E' }}; background: {{ currentPage == totalPages ? '#f5f5f5' : '#e8f5f5' }};">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <p class="text-center text-muted small mt-2">
+            Showing {{ (currentPage - 1) * 8 + 1 }}-{% if currentPage * 8 > total %}{{ total }}{% else %}{{ currentPage * 8 }}{% endif %} of {{ total }} transactions
+        </p>
+    {% endif %}
 
 </turbo-frame>
 
