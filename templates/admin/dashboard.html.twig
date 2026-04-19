@@ -106,7 +106,6 @@
 
         .side-link:hover { background: var(--brand-light); color: var(--brand); transform: translateX(2px); }
         .side-link.active { background: var(--brand-light); color: var(--brand); box-shadow: inset 3px 0 0 var(--brand); }
-        .side-link svg { width: 18px; height: 18px; flex-shrink: 0; }
 
         .sidebar-footer {
             margin-top: auto;
@@ -195,25 +194,15 @@
 
         .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
 
-        .card-icon {
-            width: 46px; height: 46px;
-            border-radius: 14px;
-            background: var(--card-accent, var(--brand-light));
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .card-icon svg { width: 22px; height: 22px; }
         .card-body { flex: 1; min-width: 0; }
         .card-label { font-size: 12.5px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
         .card-value { font-size: 32px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1; }
-        .card-link { text-decoration: none; }
 
-        .card.c-purple  { --card-accent: #dcfce7; } .card.c-purple  .card-icon svg { color: var(--brand); }
-        .card.c-green   { --card-accent: #d1fae5; } .card.c-green   .card-icon svg { color: var(--brand-dark); }
-        .card.c-amber   { --card-accent: #fff8e6; } .card.c-amber   .card-icon svg { color: var(--warning); }
-        .card.c-blue    { --card-accent: #e6f6ff; } .card.c-blue    .card-icon svg { color: var(--info); }
-        .card.c-red     { --card-accent: #fef2f2; } .card.c-red     .card-icon svg { color: var(--danger); }
+        .card.c-purple  { --card-accent: #dcfce7; }
+        .card.c-green   { --card-accent: #d1fae5; }
+        .card.c-amber   { --card-accent: #fff8e6; }
+        .card.c-blue    { --card-accent: #e6f6ff; }
+        .card.c-red     { --card-accent: #fef2f2; }
 
         .section {
             background: var(--surface);
@@ -243,7 +232,6 @@
             gap: 9px;
         }
 
-        .section-title svg { width: 18px; height: 18px; color: var(--brand); }
         .section-body { padding: 24px 26px; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
@@ -388,6 +376,12 @@
             color: #fff;
             border-color: var(--brand);
         }
+
+        .ajax-loading {
+            opacity: .6;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
     </style>
 </head>
 <body>
@@ -492,91 +486,7 @@
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">All Users</div>
-                <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
-                    {{ users.getTotalItemCount }} shown / {{ totalUsers }} total
-                </span>
-            </div>
-
-            <div class="section-body" style="padding-bottom:0;">
-                <form method="get" action="{{ path('app_admin_dashboard') }}" class="filters-bar">
-                    <div class="form-group flex-grow">
-                        <label>Search user by name</label>
-                        <input type="text" name="q" value="{{ search|default('') }}" placeholder="Search by first name or last name">
-                    </div>
-                    <div class="form-group fixed-width">
-                        <label>Sort by</label>
-                        <select name="user_sort">
-                            <option value="name_asc"  {% if userSort == 'name_asc'  %}selected{% endif %}>Name A → Z</option>
-                            <option value="name_desc" {% if userSort == 'name_desc' %}selected{% endif %}>Name Z → A</option>
-                            <option value="role_asc"  {% if userSort == 'role_asc'  %}selected{% endif %}>Role A → Z</option>
-                            <option value="role_desc" {% if userSort == 'role_desc' %}selected{% endif %}>Role Z → A</option>
-                            <option value="id_asc"    {% if userSort == 'id_asc'    %}selected{% endif %}>Oldest ID</option>
-                            <option value="id_desc"   {% if userSort == 'id_desc'   %}selected{% endif %}>Newest ID</option>
-                        </select>
-                    </div>
-                    <div class="filters-actions">
-                        <button class="btn btn-primary" type="submit">Apply</button>
-                        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-secondary">Reset</a>
-                    </div>
-                </form>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Change Role</th><th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for user in users %}
-                        <tr>
-                            <td>{{ user.id }}</td>
-                            <td>{{ user.prenom }} {{ user.nom }}</td>
-                            <td>{{ user.gmail }}</td>
-                            <td>
-                                <span class="badge {% if user.role == 'ADMIN' %}admin{% elseif user.role == 'INFLUENCER' %}influencer{% else %}user{% endif %}">
-                                    {{ user.role }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if user.statut in ['ACTIF', 'ACTIVE'] %}
-                                    <span class="badge active">ACTIF</span>
-                                {% else %}
-                                    <span class="badge inactive">INACTIF</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="role-form">
-                                    <select name="role">
-                                        <option value="USER" {% if user.role == 'USER' %}selected{% endif %}>USER</option>
-                                        <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
-                                        <option value="INFLUENCER" {% if user.role == 'INFLUENCER' %}selected{% endif %}>INFLUENCER</option>
-                                    </select>
-                                    <button class="btn btn-success btn-sm" type="submit">Save</button>
-                                </form>
-                            </td>
-                            <td>
-                                <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
-                                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr><td colspan="7"><div class="empty-state"><p>No users found for this search.</p></div></td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <div style="padding:18px 26px;">
-                {{ knp_pagination_render(users) }}
-            </div>
-        </div>
+        {% include 'admin/_users_table.html.twig' %}
 
         <div class="section">
             <div class="section-header">
@@ -689,5 +599,102 @@
 
     </main>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function initUsersAjax() {
+        const usersSection = document.getElementById('users-section');
+        if (!usersSection) {
+            return;
+        }
+
+        const form = document.getElementById('users-filter-form');
+        const searchInput = document.getElementById('ajax-search');
+        const sortSelect = document.getElementById('ajax-sort');
+        const resetBtn = document.getElementById('ajax-reset');
+
+        if (!form || !searchInput || !sortSelect) {
+            return;
+        }
+
+        let debounceTimer = null;
+
+        function loadUsers(page = 1) {
+            usersSection.classList.add('ajax-loading');
+
+            const params = new URLSearchParams();
+            params.set('q', searchInput.value || '');
+            params.set('user_sort', sortSelect.value || 'name_asc');
+            params.set('users_page', page);
+
+            fetch("{{ path('app_admin_ajax_users') }}?" + params.toString(), {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('AJAX request failed');
+                }
+                return response.text();
+            })
+            .then(function (html) {
+                const currentSection = document.getElementById('users-section');
+                if (currentSection) {
+                    currentSection.outerHTML = html;
+                    initUsersAjax();
+                }
+            })
+            .catch(function (error) {
+                console.error(error);
+            })
+            .finally(function () {
+                const refreshedSection = document.getElementById('users-section');
+                if (refreshedSection) {
+                    refreshedSection.classList.remove('ajax-loading');
+                }
+            });
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            loadUsers(1);
+        });
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                loadUsers(1);
+            }, 350);
+        });
+
+        sortSelect.addEventListener('change', function () {
+            loadUsers(1);
+        });
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                sortSelect.value = 'name_asc';
+                loadUsers(1);
+            });
+        }
+
+        const paginationLinks = document.querySelectorAll('#users-section .pagination a');
+        paginationLinks.forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const url = new URL(this.href);
+                const page = url.searchParams.get('users_page') || 1;
+                loadUsers(page);
+            });
+        });
+    }
+
+    initUsersAjax();
+});
+</script>
 </body>
 </html>
