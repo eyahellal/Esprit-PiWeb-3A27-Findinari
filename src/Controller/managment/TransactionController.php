@@ -46,17 +46,24 @@ class TransactionController extends AbstractController
         return $user;
     }
 
-    #[Route('/', name: 'app_transaction_index', methods: ['GET'])]
+   #[Route('/', name: 'app_transaction_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
         $user = $this->getUserOrCreate($entityManager);
-$this->executeRecurringTransactions($entityManager, $user);
-        // Get wallets of current user
+        $this->executeRecurringTransactions($entityManager, $user);
+
         $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
             ->findBy(['utilisateur' => $user]);
 
-        // Get all transactions of those wallets
         $transactions = [];
+        $total = 0;
+        $totalIncome = 0;
+        $totalExpense = 0;
+        $page = $request->query->getInt('page', 1);
+        $limit = 8;
+        $totalPages = 1;
+        $type = $request->query->get('type', '');
+
         if (!empty($wallets)) {
             $qb = $entityManager->getRepository(Transaction::class)
                 ->createQueryBuilder('t')
@@ -64,32 +71,43 @@ $this->executeRecurringTransactions($entityManager, $user);
                 ->setParameter('wallets', $wallets)
                 ->orderBy('t.date', 'DESC');
 
-            // Filter by type
-            $type = $request->query->get('type', '');
             if ($type) {
                 $qb->andWhere('t.type = :type')
                    ->setParameter('type', $type);
             }
 
-            $transactions = $qb->getQuery()->getResult();
-        }
-
-        // Calculate stats
-        $totalIncome = 0;
-        $totalExpense = 0;
-        foreach ($transactions as $t) {
-            if ($t->getType() === 'income') {
-                $totalIncome += $t->getMontant();
-            } else {
-                $totalExpense += $t->getMontant();
+            // Calculate stats from ALL matching transactions (before pagination)
+            $allTransactions = (clone $qb)->getQuery()->getResult();
+            foreach ($allTransactions as $t) {
+                if ($t->getType() === 'income') {
+                    $totalIncome += $t->getMontant();
+                } else {
+                    $totalExpense += $t->getMontant();
+                }
             }
+
+            // Count total
+            $total = count($allTransactions);
+            $totalPages = max(1, ceil($total / $limit));
+
+            if ($page < 1) $page = 1;
+            if ($page > $totalPages) $page = $totalPages;
+
+            // Get paginated results
+            $transactions = $qb->setFirstResult(($page - 1) * $limit)
+                               ->setMaxResults($limit)
+                               ->getQuery()
+                               ->getResult();
         }
 
         return $this->render('management/transaction/index.html.twig', [
             'transactions' => $transactions,
             'totalIncome' => $totalIncome,
             'totalExpense' => $totalExpense,
-            'type' => $type ?? '',
+            'type' => $type,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
         ]);
     }
 
@@ -310,48 +328,63 @@ if ($isRecurring) {
     foreach ($dueTransactions as $recurring) {
         $wallet = $recurring->getWallet();
 
-        // Skip if insufficient balance for expense
-        if ($recurring->getType() === 'depense' && $recurring->getMontant() > $wallet->getSolde()) {
-            continue;
-        }
+        // Keep creating transactions until nextExecutionDate is in the future
+        while ($recurring->getNextExecutionDate() <= $today) {
 
-        // Create the actual transaction
-        $transaction = new Transaction();
-        $transaction->setWallet($wallet);
-        $transaction->setCategorie($recurring->getCategorie());
-        $transaction->setType($recurring->getType());
-        $transaction->setMontant($recurring->getMontant());
-        $transaction->setDevise($wallet->getDevise());
-        $transaction->setDate(new \DateTime());
-        $transaction->setDescription('[Auto] ' . ($recurring->getDescription() ?? 'Recurring'));
-        $transaction->setIsRecurring(false);
+            // Check end date
+            if ($recurring->getEndDate() && $recurring->getNextExecutionDate() > $recurring->getEndDate()) {
+                $recurring->setIsRecurring(false);
+                break;
+            }
 
-        // Update wallet balance
-        if ($recurring->getType() === 'income') {
-            $wallet->setSolde($wallet->getSolde() + $recurring->getMontant());
-        } else {
-            $wallet->setSolde($wallet->getSolde() - $recurring->getMontant());
-        }
+            // Skip if insufficient balance for expense
+            if ($recurring->getType() === 'depense' && $recurring->getMontant() > $wallet->getSolde()) {
+                break;
+            }
 
-        $entityManager->persist($transaction);
+            // Create the actual transaction
+            $transaction = new Transaction();
+            $transaction->setWallet($wallet);
+            $transaction->setCategorie($recurring->getCategorie());
+            $transaction->setType($recurring->getType());
+            $transaction->setMontant($recurring->getMontant());
+            $transaction->setDevise($wallet->getDevise());
+            $transaction->setDate(clone $recurring->getNextExecutionDate());
+            $transaction->setDescription('[Auto] ' . ($recurring->getDescription() ?? 'Recurring'));
+            $transaction->setIsRecurring(false);
 
-        // Calculate next execution date
-        $next = clone $recurring->getNextExecutionDate();
-        match ($recurring->getFrequency()) {
-            'daily' => $next->modify('+1 day'),
-            'weekly' => $next->modify('+1 week'),
-            'monthly' => $next->modify('+1 month'),
-            'yearly' => $next->modify('+1 year'),
-            default => null,
-        };
-        $recurring->setNextExecutionDate($next);
+            // Update wallet balance
+            if ($recurring->getType() === 'income') {
+                $wallet->setSolde($wallet->getSolde() + $recurring->getMontant());
+            } else {
+                $wallet->setSolde($wallet->getSolde() - $recurring->getMontant());
+            }
 
-        // Auto-disable if past end date
-        if ($recurring->getEndDate() && $next > $recurring->getEndDate()) {
-            $recurring->setIsRecurring(false);
+            $entityManager->persist($transaction);
+
+            // Calculate next execution date
+            $next = clone $recurring->getNextExecutionDate();
+            match ($recurring->getFrequency()) {
+                'daily' => $next->modify('+1 day'),
+                'weekly' => $next->modify('+1 week'),
+                'monthly' => $next->modify('+1 month'),
+                'yearly' => $next->modify('+1 year'),
+                default => null,
+            };
+            $recurring->setNextExecutionDate($next);
         }
     }
 
     $entityManager->flush();
+}
+#[Route('/{id}/toggle-recurring', name: 'app_transaction_toggle_recurring', methods: ['POST'])]
+public function toggleRecurring(Transaction $transaction, EntityManagerInterface $entityManager, Request $request): Response
+{
+    if ($this->isCsrfTokenValid('toggle' . $transaction->getId(), $request->request->get('_token'))) {
+        $transaction->setIsRecurring(!$transaction->isRecurring());
+        $entityManager->flush();
+        $this->addFlash('success', $transaction->isRecurring() ? 'Recurring transaction activated!' : 'Recurring transaction stopped!');
+    }
+    return $this->redirectToRoute('app_transaction_index');
 }
 }

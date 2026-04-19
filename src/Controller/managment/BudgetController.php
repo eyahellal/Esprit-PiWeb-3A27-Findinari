@@ -56,8 +56,11 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
     $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
         ->findBy(['utilisateur' => $user]);
 
-    $budgets = [];
+    $activeBudgets = [];
+    $expiredBudgets = [];
     $budgetsStats = [];
+    $totalBudgets = 0;
+    $totalAmount = 0;
 
     if (!empty($wallets)) {
         $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
@@ -67,8 +70,11 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
             ->getQuery()
             ->getResult();
 
+        $totalBudgets = count($budgets);
+
         foreach ($budgets as $budget) {
-            // Calculate total spent for this budget's category + wallet
+            $totalAmount += $budget->getMontantMax();
+
             $totalSpent = $entityManager->getRepository(\App\Entity\management\Transaction::class)
                 ->createQueryBuilder('t')
                 ->select('SUM(t.montant)')
@@ -85,7 +91,6 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
             $remaining = $montantMax - $totalSpent;
             $spentPercent = $montantMax > 0 ? min(100, ($totalSpent / $montantMax) * 100) : 0;
 
-            // Calculate time progress
             $startDate = $budget->getDateBudget();
             $endDate = (clone $startDate)->modify('+' . $budget->getDureeBudget() . ' days');
             $now = new \DateTime();
@@ -107,12 +112,43 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
                 'expired' => $expired,
                 'endDate' => $endDate,
             ];
+
+            // Separate active and expired
+            if ($expired) {
+                $expiredBudgets[] = $budget;
+            } else {
+                $activeBudgets[] = $budget;
+            }
         }
     }
 
+    // Paginate active budgets
+    $activePage = $request->query->getInt('active_page', 1);
+    $limit = 6;
+    $totalActivePages = max(1, ceil(count($activeBudgets) / $limit));
+    if ($activePage < 1) $activePage = 1;
+    if ($activePage > $totalActivePages) $activePage = $totalActivePages;
+    $paginatedActive = array_slice($activeBudgets, ($activePage - 1) * $limit, $limit);
+
+    // Paginate expired budgets
+    $expiredPage = $request->query->getInt('expired_page', 1);
+    $totalExpiredPages = max(1, ceil(count($expiredBudgets) / $limit));
+    if ($expiredPage < 1) $expiredPage = 1;
+    if ($expiredPage > $totalExpiredPages) $expiredPage = $totalExpiredPages;
+    $paginatedExpired = array_slice($expiredBudgets, ($expiredPage - 1) * $limit, $limit);
+
     return $this->render('management/budget/index.html.twig', [
-        'budgets' => $budgets,
+        'activeBudgets' => $paginatedActive,
+        'expiredBudgets' => $paginatedExpired,
         'budgetsStats' => $budgetsStats,
+        'totalBudgets' => $totalBudgets,
+        'totalAmount' => $totalAmount,
+        'totalActive' => count($activeBudgets),
+        'totalExpired' => count($expiredBudgets),
+        'activePage' => $activePage,
+        'totalActivePages' => $totalActivePages,
+        'expiredPage' => $expiredPage,
+        'totalExpiredPages' => $totalExpiredPages,
     ]);
 }
     #[Route('/new/step1', name: 'app_budget_new_step1', methods: ['GET', 'POST'])]
