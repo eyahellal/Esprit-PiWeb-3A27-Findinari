@@ -10,6 +10,7 @@ use App\form\InvestissementobligationType;
 use App\Repository\InvestissementobligationRepository;
 use App\Repository\ObligationRepository;
 use App\Repository\WalletRepository;
+use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -97,7 +98,7 @@ class InvestissementobligationController extends AbstractController
     }
 
     #[Route('/new/{idObligation?}', name: 'app_investment_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, ?Obligation $obligation = null): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService, ?Obligation $obligation = null): Response
     {
         $investment = new Investissementobligation();
         
@@ -110,6 +111,8 @@ class InvestissementobligationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $obligationId = $investment->getObligationId();
+            $selectedObligation = null;
+            
             if ($obligationId) {
                 $obligationRepo = $entityManager->getRepository(Obligation::class);
                 $selectedObligation = $obligationRepo->find($obligationId);
@@ -122,6 +125,13 @@ class InvestissementobligationController extends AbstractController
             
             $entityManager->persist($investment);
             $entityManager->flush();
+            
+            // Add notification
+            $notificationService->addNotification(
+                '💰 New Investment',
+                sprintf('You invested %s DT in %s', number_format($investment->getMontantInvesti(), 2), $selectedObligation?->getNom() ?? 'Obligation'),
+                'success'
+            );
 
             $this->addFlash('success', 'Investment created successfully!');
             return $this->redirectToRoute('app_investment_index');
@@ -170,7 +180,8 @@ class InvestissementobligationController extends AbstractController
         Request $request, 
         InvestissementobligationRepository $repository, 
         WalletRepository $walletRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
     ): Response {
         $user = $this->getUserOrCreate($entityManager);
         
@@ -186,11 +197,16 @@ class InvestissementobligationController extends AbstractController
             throw $this->createNotFoundException('Investment not found');
         }
         
+        $oldAmount = $investment->getMontantInvesti();
+        $oldObligationId = $investment->getObligationId();
+        
         $form = $this->createForm(InvestissementobligationType::class, $investment);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $obligationId = $investment->getObligationId();
+            $selectedObligation = null;
+            
             if ($obligationId) {
                 $obligationRepo = $entityManager->getRepository(Obligation::class);
                 $selectedObligation = $obligationRepo->find($obligationId);
@@ -202,6 +218,24 @@ class InvestissementobligationController extends AbstractController
             }
             
             $entityManager->flush();
+            
+            // Add notification for update
+            if ($oldAmount != $investment->getMontantInvesti()) {
+                $notificationService->addNotification(
+                    '✏️ Investment Updated',
+                    sprintf('Investment amount changed from %s DT to %s DT', number_format($oldAmount, 2), number_format($investment->getMontantInvesti(), 2)),
+                    'info'
+                );
+            }
+            
+            if ($oldObligationId != $investment->getObligationId() && $selectedObligation) {
+                $notificationService->addNotification(
+                    '🔄 Investment Updated',
+                    sprintf('Investment obligation changed to %s', $selectedObligation->getNom()),
+                    'info'
+                );
+            }
+            
             $this->addFlash('success', 'Investment updated successfully!');
             return $this->redirectToRoute('app_investment_index');
         }
@@ -218,7 +252,8 @@ class InvestissementobligationController extends AbstractController
         Request $request, 
         InvestissementobligationRepository $repository, 
         WalletRepository $walletRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
     ): Response {
         $user = $this->getUserOrCreate($entityManager);
         
@@ -234,9 +269,19 @@ class InvestissementobligationController extends AbstractController
             throw $this->createNotFoundException('Investment not found');
         }
         
+        $amount = $investment->getMontantInvesti();
+        
         if ($this->isCsrfTokenValid('delete'.$investment->getIdInvestissement(), $request->request->get('_token'))) {
             $entityManager->remove($investment);
             $entityManager->flush();
+            
+            // Add notification for delete
+            $notificationService->addNotification(
+                '🗑️ Investment Deleted',
+                sprintf('Investment of %s DT was deleted', number_format($amount, 2)),
+                'danger'
+            );
+            
             $this->addFlash('success', 'Investment deleted successfully!');
         }
 
