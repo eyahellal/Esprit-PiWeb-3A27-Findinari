@@ -17,6 +17,7 @@ use App\Repository\TicketRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\WalletRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,45 +35,16 @@ class AdminController extends AbstractController
         ObjectifRepository $objectifRepository,
         PaginatorInterface $paginator
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $q = trim((string) $request->query->get('q', ''));
         $userSort = trim((string) $request->query->get('user_sort', 'name_asc'));
         $objStatut = trim((string) $request->query->get('obj_statut', ''));
 
-        $qb = $utilisateurRepository->createQueryBuilder('u');
-
-        if ($q !== '') {
-            $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
-               ->setParameter('q', '%' . $q . '%');
-        }
-
-        switch ($userSort) {
-            case 'name_desc':
-                $qb->orderBy('u.nom', 'DESC')->addOrderBy('u.prenom', 'DESC');
-                break;
-            case 'role_asc':
-                $qb->orderBy('u.role', 'ASC')
-                   ->addOrderBy('u.nom', 'ASC')
-                   ->addOrderBy('u.prenom', 'ASC');
-                break;
-            case 'role_desc':
-                $qb->orderBy('u.role', 'DESC')
-                   ->addOrderBy('u.nom', 'ASC')
-                   ->addOrderBy('u.prenom', 'ASC');
-                break;
-            case 'id_asc':
-                $qb->orderBy('u.id', 'ASC');
-                break;
-            case 'id_desc':
-                $qb->orderBy('u.id', 'DESC');
-                break;
-            case 'name_asc':
-            default:
-                $qb->orderBy('u.nom', 'ASC')->addOrderBy('u.prenom', 'ASC');
-                break;
-        }
+        $usersQb = $this->buildUsersQuery($utilisateurRepository, $q, $userSort);
 
         $users = $paginator->paginate(
-            $qb,
+            $usersQb,
             $request->query->getInt('users_page', 1),
             10,
             ['pageParameterName' => 'users_page']
@@ -145,12 +117,90 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/ajax/users', name: 'app_admin_ajax_users', methods: ['GET'])]
+    public function ajaxUsers(
+        Request $request,
+        UtilisateurRepository $utilisateurRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $q = trim((string) $request->query->get('q', ''));
+        $userSort = trim((string) $request->query->get('user_sort', 'name_asc'));
+
+        $usersQb = $this->buildUsersQuery($utilisateurRepository, $q, $userSort);
+
+        $users = $paginator->paginate(
+            $usersQb,
+            $request->query->getInt('users_page', 1),
+            10,
+            ['pageParameterName' => 'users_page']
+        );
+
+        return $this->render('admin/_users_table.html.twig', [
+            'users' => $users,
+            'totalUsers' => $utilisateurRepository->count([]),
+            'search' => $q,
+            'userSort' => $userSort,
+        ]);
+    }
+
+    private function buildUsersQuery(
+        UtilisateurRepository $utilisateurRepository,
+        string $q,
+        string $userSort
+    ): QueryBuilder {
+        $qb = $utilisateurRepository->createQueryBuilder('u');
+
+        if ($q !== '') {
+            $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
+               ->setParameter('q', '%' . $q . '%');
+        }
+
+        switch ($userSort) {
+            case 'name_desc':
+                $qb->orderBy('u.nom', 'DESC')
+                   ->addOrderBy('u.prenom', 'DESC');
+                break;
+
+            case 'role_asc':
+                $qb->orderBy('u.role', 'ASC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+
+            case 'role_desc':
+                $qb->orderBy('u.role', 'DESC')
+                   ->addOrderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+
+            case 'id_asc':
+                $qb->orderBy('u.id', 'ASC');
+                break;
+
+            case 'id_desc':
+                $qb->orderBy('u.id', 'DESC');
+                break;
+
+            case 'name_asc':
+            default:
+                $qb->orderBy('u.nom', 'ASC')
+                   ->addOrderBy('u.prenom', 'ASC');
+                break;
+        }
+
+        return $qb;
+    }
+
     #[Route('/admin/user/{id}/delete', name: 'app_admin_user_delete', methods: ['POST'])]
     public function deleteUser(
         Utilisateur $utilisateur,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         if ($this->isCsrfTokenValid('delete_user_' . $utilisateur->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($utilisateur);
             $entityManager->flush();
@@ -168,6 +218,8 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $newRole = strtoupper(trim((string) $request->request->get('role')));
 
         if (in_array($newRole, ['USER', 'ADMIN', 'INFLUENCER'], true)) {
@@ -188,6 +240,8 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $newStatus = strtoupper(trim((string) $request->request->get('statut')));
 
         if (in_array($newStatus, ['ACTIF', 'ACTIVE', 'INACTIF', 'INACTIVE', 'BANNED'], true)) {
@@ -208,6 +262,8 @@ class AdminController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $nom = trim((string) $request->request->get('nom'));
         $prenom = trim((string) $request->request->get('prenom'));
         $gmail = trim((string) $request->request->get('gmail'));
@@ -248,6 +304,8 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         if ($this->isCsrfTokenValid('delete_feedback_admin_' . $feedback->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($feedback);
             $entityManager->flush();
@@ -504,6 +562,8 @@ class AdminController extends AbstractController
     #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
     public function showUser(Utilisateur $utilisateur): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         return $this->render('admin/user_show.html.twig', [
             'selectedUser' => $utilisateur,
         ]);

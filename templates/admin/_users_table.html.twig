@@ -1,0 +1,107 @@
+<div id="users-section">
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">All Users</div>
+            <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
+                {{ users.getTotalItemCount }} shown / {{ totalUsers }} total
+            </span>
+        </div>
+
+        <div class="section-body" style="padding-bottom:0;">
+            <form id="users-filter-form" method="get" action="{{ path('app_admin_dashboard') }}" class="filters-bar">
+                <div class="form-group flex-grow">
+                    <label>Search user by name</label>
+                    <input
+                        type="text"
+                        id="ajax-search"
+                        name="q"
+                        value="{{ search|default('') }}"
+                        placeholder="Search by first name or last name"
+                    >
+                </div>
+
+                <div class="form-group fixed-width">
+                    <label>Sort by</label>
+                    <select id="ajax-sort" name="user_sort">
+                        <option value="name_asc"  {% if userSort == 'name_asc'  %}selected{% endif %}>Name A → Z</option>
+                        <option value="name_desc" {% if userSort == 'name_desc' %}selected{% endif %}>Name Z → A</option>
+                        <option value="role_asc"  {% if userSort == 'role_asc'  %}selected{% endif %}>Role A → Z</option>
+                        <option value="role_desc" {% if userSort == 'role_desc' %}selected{% endif %}>Role Z → A</option>
+                        <option value="id_asc"    {% if userSort == 'id_asc'    %}selected{% endif %}>Oldest ID</option>
+                        <option value="id_desc"   {% if userSort == 'id_desc'   %}selected{% endif %}>Newest ID</option>
+                    </select>
+                </div>
+
+                <div class="filters-actions">
+                    <button class="btn btn-primary" type="submit">Apply</button>
+                    <button id="ajax-reset" class="btn btn-secondary" type="button">Reset</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Change Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.prenom }} {{ user.nom }}</td>
+                        <td>{{ user.gmail }}</td>
+                        <td>
+                            <span class="badge {% if user.role == 'ADMIN' %}admin{% elseif user.role == 'INFLUENCER' %}influencer{% else %}user{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user.statut in ['ACTIF', 'ACTIVE'] %}
+                                <span class="badge active">ACTIF</span>
+                            {% else %}
+                                <span class="badge inactive">INACTIF</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="role-form">
+                                <select name="role">
+                                    <option value="USER" {% if user.role == 'USER' %}selected{% endif %}>USER</option>
+                                    <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
+                                    <option value="INFLUENCER" {% if user.role == 'INFLUENCER' %}selected{% endif %}>INFLUENCER</option>
+                                </select>
+                                <button class="btn btn-success btn-sm" type="submit">Save</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+                                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <p>No users found for this search.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="padding:18px 26px;">
+            {{ knp_pagination_render(users) }}
+        </div>
+    </div>
+</div>
