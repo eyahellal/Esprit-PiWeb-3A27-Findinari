@@ -253,6 +253,10 @@
                 </div>
             {% endfor %}
         </div>
+        
+        <div class="pagination-container" style="display:flex; justify-content:center; margin-top:30px;">
+            {{ knp_pagination_render(tickets) }}
+        </div>
     {% endif %}
 </div>
 {% endblock %}

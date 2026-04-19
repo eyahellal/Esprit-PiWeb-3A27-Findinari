@@ -41,21 +41,30 @@ class TicketUserController extends AbstractController
     }
 
     #[Route('/user/tickets', name: 'app_user_tickets')]
-    public function myTickets(TicketRepository $ticketRepository): Response
-    {
+    public function myTickets(
+        TicketRepository $ticketRepository,
+        Request $request,
+        \Knp\Component\Pager\PaginatorInterface $paginator
+    ): Response {
         $user = $this->getUser();
         
         if (!$user) {
-            return $this->redirectToRoute('app_login'); // Security measure to ensure the user is logged in
+            return $this->redirectToRoute('app_login');
         }
 
-        $tickets = $ticketRepository->findBy(
-            ['utilisateur' => $user],
-            ['dateCreation' => 'DESC']
+        $qb = $ticketRepository->createQueryBuilder('t')
+            ->where('t.utilisateur = :user')
+            ->setParameter('user', $user)
+            ->orderBy('t.dateCreation', 'DESC');
+
+        $pagination = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            5
         );
 
         return $this->render('reclamation/my_tickets.html.twig', [
-            'tickets' => $tickets,
+            'tickets' => $pagination,
         ]);
     }
     #[Route('/user/createticket', name: 'app_user_createticket')]

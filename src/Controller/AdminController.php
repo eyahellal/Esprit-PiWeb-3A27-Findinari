@@ -278,7 +278,8 @@ class AdminController extends AbstractController
     #[Route('/admin/ticket', name: 'app_admin_tickets')]
     public function tickets(
         Request $request,
-        TicketRepository $ticketRepository
+        TicketRepository $ticketRepository,
+        \Knp\Component\Pager\PaginatorInterface $paginator
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -302,8 +303,14 @@ class AdminController extends AbstractController
                 break;
         }
 
+        $pagination = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            10
+        );
+
         return $this->render('admin/tickets.html.twig', [
-            'tickets'     => $qb->getQuery()->getResult(),
+            'tickets'     => $pagination,
             'currentSort' => $sort,
         ]);
     }
