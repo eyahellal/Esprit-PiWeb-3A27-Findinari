@@ -386,7 +386,8 @@
                 <i class="far fa-comments" style="color: var(--primary-green);"></i>
                 Discussion
             </div>
-                        <div id="chatContainer" class="chat-messages">
+            
+            <div id="chatContainer" class="chat-messages">
                 {% for message in messages %}
                     {% include 'reclamation/_message_item_user.html.twig' with {'message': message, 'ticket': ticket} %}
                 {% else %}
@@ -507,6 +508,45 @@
     function cancelEdit(id) {
         document.getElementById('msg-content-' + id).style.visibility = 'visible';
         document.getElementById('edit-form-' + id).style.display = 'none';
+    }
+
+    async function translateMsgToFR(messageId, btn) {
+        // If already translated → restore original
+        if (btn.dataset.translated === '1') {
+            document.getElementById('msg-text-' + messageId).innerHTML = btn.dataset.original;
+            btn.innerHTML = btn.dataset.btnOriginal;
+            btn.dataset.translated = '0';
+            btn.style.color = '';
+            return;
+        }
+
+        const originalHtml = btn.innerHTML;
+        btn.dataset.btnOriginal = originalHtml;
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Translating…';
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/message/${messageId}/translate`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (data.translated) {
+                const msgEl = document.getElementById('msg-text-' + messageId);
+                btn.dataset.original = msgEl.innerHTML; // save original HTML
+                msgEl.innerHTML = data.translated.replace(/\n/g, '<br>');
+                btn.innerHTML = '↩ Show original';
+                btn.style.color = '#22c55e';
+                btn.dataset.translated = '1';
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                alert('Translation failed: ' + (data.error || 'Unknown error'));
+            }
+        } catch(e) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
     }
 
     // Voice Recording Logic

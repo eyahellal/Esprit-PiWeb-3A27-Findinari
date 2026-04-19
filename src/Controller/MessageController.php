@@ -456,4 +456,50 @@ class MessageController extends AbstractController
             'lastId' => count($newMessages) > 0 ? (int)end($newMessages)->getId() : (int)$lastId
         ]);
     }
+
+    #[Route('/message/{id}/translate', name: 'app_message_translate', methods: ['POST'])]
+    public function translateMessage(Message $message): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $ticket = $message->getTicket();
+        if (!$this->isGranted('ROLE_ADMIN') && $ticket->getUtilisateur() !== $user) {
+            return $this->json(['error' => 'Access denied'], 403);
+        }
+
+        $textToTranslate = $message->getContenu();
+        if (!$textToTranslate || trim($textToTranslate) === '') {
+            return $this->json(['translated' => '']);
+        }
+
+        try {
+            $encoded = urlencode($textToTranslate);
+            $url = 'https://api.mymemory.translated.net/get?q=' . $encoded . '&langpair=en|fr';
+
+            $context = stream_context_create([
+                'http' => [
+                    'method'        => 'GET',
+                    'header'        => "Accept: application/json\r\nUser-Agent: Mozilla/5.0\r\n",
+                    'timeout'       => 10,
+                    'ignore_errors' => true,
+                ]
+            ]);
+
+            $result = @file_get_contents($url, false, $context);
+
+            if ($result) {
+                $json = json_decode($result, true);
+                if (isset($json['responseData']['translatedText'])) {
+                    return $this->json(['translated' => $json['responseData']['translatedText']]);
+                }
+            }
+
+            return $this->json(['error' => 'Translation service unavailable. Please try again.'], 502);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Translation failed: ' . $e->getMessage()], 500);
+        }
+    }
 }
