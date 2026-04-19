@@ -6,6 +6,7 @@ use App\Entity\Loan\Obligation;
 use App\form\ObligationType;
 use App\Repository\ObligationRepository;
 use App\Repository\InvestissementobligationRepository;
+use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,7 +38,7 @@ class ObligationController extends AbstractController
     }
 
     #[Route('/new', name: 'app_obligation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
     {
         $obligation = new Obligation();
         $form = $this->createForm(ObligationType::class, $obligation);
@@ -46,6 +47,13 @@ class ObligationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($obligation);
             $entityManager->flush();
+
+            // Add notification
+            $notificationService->addNotification(
+                '📋 New Obligation Created',
+                sprintf('Obligation "%s" has been created with %.2f%% interest rate', $obligation->getNom(), $obligation->getTauxInteret()),
+                'success'
+            );
 
             $this->addFlash('success', 'Obligation created successfully!');
             return $this->redirectToRoute('app_obligation_index');
@@ -72,7 +80,7 @@ class ObligationController extends AbstractController
     }
 
     #[Route('/{idObligation}/edit', name: 'app_obligation_edit', methods: ['GET', 'POST'])]
-    public function edit(int $idObligation, Request $request, ObligationRepository $repository, EntityManagerInterface $entityManager): Response
+    public function edit(int $idObligation, Request $request, ObligationRepository $repository, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
     {
         $obligation = $repository->find($idObligation);
         
@@ -85,6 +93,14 @@ class ObligationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+            
+            // Add notification
+            $notificationService->addNotification(
+                '✏️ Obligation Updated',
+                sprintf('Obligation "%s" has been updated', $obligation->getNom()),
+                'info'
+            );
+            
             $this->addFlash('success', 'Obligation updated successfully!');
             return $this->redirectToRoute('app_obligation_index');
         }
@@ -96,7 +112,7 @@ class ObligationController extends AbstractController
     }
 
     #[Route('/{idObligation}', name: 'app_obligation_delete', methods: ['POST'])]
-    public function delete(int $idObligation, Request $request, ObligationRepository $repository, InvestissementobligationRepository $investmentRepository, EntityManagerInterface $entityManager): Response
+    public function delete(int $idObligation, Request $request, ObligationRepository $repository, InvestissementobligationRepository $investmentRepository, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
     {
         $obligation = $repository->find($idObligation);
         
@@ -114,6 +130,14 @@ class ObligationController extends AbstractController
             // Then delete the obligation
             $entityManager->remove($obligation);
             $entityManager->flush();
+            
+            // Add notification
+            $notificationService->addNotification(
+                '🗑️ Obligation Deleted',
+                sprintf('Obligation "%s" has been deleted', $obligation->getNom()),
+                'danger'
+            );
+            
             $this->addFlash('success', 'Obligation and all related investments deleted successfully!');
         }
 
