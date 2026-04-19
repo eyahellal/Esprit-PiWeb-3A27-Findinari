@@ -32,6 +32,9 @@
                 <a href="{{ path('app_obligation_index') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i>Browse Obligations
                 </a>
+                <a href="{{ path('app_investment_pdf_upload') }}" class="btn btn-outline-primary ms-2">
+                    <i class="fas fa-file-pdf me-1"></i>Upload PDF
+                </a>
             </div>
         </div>
 
@@ -204,12 +207,6 @@
         cards.forEach(card => grid.appendChild(card));
     }
     
-    // Check for maturity alerts when viewing investments page
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(checkMaturityAlerts, 300);
-    });
-</script>
-<script>
     // Check for maturity alerts when viewing investments page
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(checkMaturityAlerts, 300);
