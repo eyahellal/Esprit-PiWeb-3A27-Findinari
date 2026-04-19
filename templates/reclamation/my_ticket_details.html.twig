@@ -335,7 +335,7 @@
                 
                 <div class="info-group">
                     <span class="info-label">Status</span>
-                    <div class="status-badge {% if ticket.statut|lower == 'open' or ticket.statut == 'Ouvert' %}status-open{% elseif ticket.statut|lower == 'closed' or ticket.statut == 'Fermé' %}status-closed{% else %}status-in-progress{% endif %}">
+                    <div class="status-badge {% if ticket.statut|lower == 'open' %}status-open{% elseif ticket.statut|lower == 'closed' %}status-closed{% else %}status-in-progress{% endif %}">
                         {{ ticket.statut }}
                     </div>
                 </div>
@@ -343,9 +343,9 @@
                 <div class="info-group">
                     <span class="info-label">Priority</span>
                     <div class="info-value priority-{{ ticket.priorite|lower }}">
-                        {% if ticket.priorite == 'Haute' or ticket.priorite|lower == 'high' %}
+                        {% if ticket.priorite|lower == 'high' %}
                             <i class="fas fa-arrow-up"></i>
-                        {% elseif ticket.priorite == 'Moyenne' or ticket.priorite|lower == 'medium' %}
+                        {% elseif ticket.priorite|lower == 'medium' %}
                             <i class="fas fa-minus"></i>
                         {% else %}
                             <i class="fas fa-arrow-down"></i>
