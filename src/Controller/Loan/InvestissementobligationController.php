@@ -137,10 +137,23 @@ class InvestissementobligationController extends AbstractController
             return $this->redirectToRoute('app_investment_index');
         }
 
+        // Get all obligations data for the calculator
+        $obligationRepo = $entityManager->getRepository(Obligation::class);
+        $allObligations = $obligationRepo->findAll();
+        $obligationsData = [];
+        foreach ($allObligations as $obl) {
+            $obligationsData[$obl->getIdObligation()] = [
+                'rate' => $obl->getTauxInteret(),
+                'duration' => $obl->getDuree(),
+                'name' => $obl->getNom()
+            ];
+        }
+
         return $this->render('loan/investment/new.html.twig', [
             'investment' => $investment,
             'form' => $form,
             'selected_obligation' => $obligation,
+            'obligationsData' => $obligationsData,
         ]);
     }
 
@@ -200,6 +213,13 @@ class InvestissementobligationController extends AbstractController
         $oldAmount = $investment->getMontantInvesti();
         $oldObligationId = $investment->getObligationId();
         
+        // Get the current obligation for display
+        $obligation = null;
+        if ($investment->getObligationId()) {
+            $obligationRepo = $entityManager->getRepository(Obligation::class);
+            $obligation = $obligationRepo->find($investment->getObligationId());
+        }
+        
         $form = $this->createForm(InvestissementobligationType::class, $investment);
         $form->handleRequest($request);
 
@@ -240,9 +260,23 @@ class InvestissementobligationController extends AbstractController
             return $this->redirectToRoute('app_investment_index');
         }
 
+        // Get all obligations data for the calculator
+        $obligationRepo = $entityManager->getRepository(Obligation::class);
+        $allObligations = $obligationRepo->findAll();
+        $obligationsData = [];
+        foreach ($allObligations as $obl) {
+            $obligationsData[$obl->getIdObligation()] = [
+                'rate' => $obl->getTauxInteret(),
+                'duration' => $obl->getDuree(),
+                'name' => $obl->getNom()
+            ];
+        }
+
         return $this->render('loan/investment/edit.html.twig', [
             'investment' => $investment,
             'form' => $form,
+            'obligation' => $obligation,
+            'obligationsData' => $obligationsData,
         ]);
     }
 
