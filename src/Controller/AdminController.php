@@ -24,6 +24,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 class AdminController extends AbstractController
 {
@@ -336,6 +338,116 @@ class AdminController extends AbstractController
         return $this->render('admin/ticket_calendar.html.twig', [
             'events'      => json_encode($events),
             'ticketCount' => count($tickets)
+        ]);
+    }
+
+    #[Route('/admin/ticket-stats', name: 'app_admin_ticket_stats')]
+    public function ticketStats(
+        TicketRepository $ticketRepository,
+        ChartBuilderInterface $chartBuilder
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $tickets = $ticketRepository->findAll();
+
+        $statuses = [];
+        $priorities = [];
+        $sla = ['On Time' => 0, 'Delayed' => 0];
+
+        $now = new \DateTime();
+
+        foreach ($tickets as $ticket) {
+            $rawStatut = strtolower(trim((string) $ticket->getStatut()));
+            if (in_array($rawStatut, ['en cours', 'in progress'])) {
+                $statut = 'In Progress';
+            } elseif (in_array($rawStatut, ['fermé', 'closed', 'resolved'])) {
+                $statut = 'Closed';
+            } else {
+                $statut = 'Open';
+            }
+            $statuses[$statut] = ($statuses[$statut] ?? 0) + 1;
+
+            $rawPriority = strtolower(trim((string) $ticket->getPriorite()));
+            if (in_array($rawPriority, ['high', 'haute', 'urgent', 'urgente'])) {
+                $priorite = 'High';
+            } elseif (in_array($rawPriority, ['medium', 'moyenne'])) {
+                $priorite = 'Medium';
+            } else {
+                $priorite = 'Low';
+            }
+            $priorities[$priorite] = ($priorities[$priorite] ?? 0) + 1;
+
+            $deadline = $ticket->getDeadline();
+            if ($deadline) {
+                if ($statut === 'Closed') {
+                    $closedAt = $ticket->getDateFermeture() ?: $now;
+                    if ($closedAt > $deadline) {
+                        $sla['Delayed']++;
+                    } else {
+                        $sla['On Time']++;
+                    }
+                } else {
+                    if ($now > $deadline) {
+                        $sla['Delayed']++;
+                    } else {
+                        $sla['On Time']++;
+                    }
+                }
+            }
+        }
+
+        $statusChart = $chartBuilder->createChart(Chart::TYPE_PIE);
+        $statusChart->setData([
+            'labels' => array_keys($statuses),
+            'datasets' => [
+                [
+                    'label' => 'Ticket Statuses',
+                    'backgroundColor' => ['#4ade80', '#fbbf24', '#f87171', '#60a5fa', '#a78bfa', '#9ca3af', '#f472b6'],
+                    'data' => array_values($statuses),
+                ],
+            ],
+        ]);
+        $statusChart->setOptions(['responsive' => true, 'maintainAspectRatio' => false]);
+
+        $priorityChart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $priorityChart->setData([
+            'labels' => array_keys($priorities),
+            'datasets' => [
+                [
+                    'label' => 'Tickets by Priority',
+                    'backgroundColor' => ['#f87171', '#fbbf24', '#60a5fa', '#9ca3af'],
+                    'data' => array_values($priorities),
+                ],
+            ],
+        ]);
+        $priorityChart->setOptions([
+            'responsive' => true, 
+            'maintainAspectRatio' => false, 
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['stepSize' => 1]
+                ]
+            ]
+        ]);
+
+        $slaChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $slaChart->setData([
+            'labels' => array_keys($sla),
+            'datasets' => [
+                [
+                    'label' => 'SLA Adherence',
+                    'backgroundColor' => ['#4ade80', '#f87171'],
+                    'data' => array_values($sla),
+                ],
+            ],
+        ]);
+        $slaChart->setOptions(['responsive' => true, 'maintainAspectRatio' => false]);
+
+        return $this->render('admin/ticket_statistics.html.twig', [
+            'statusChart'   => $statusChart,
+            'priorityChart' => $priorityChart,
+            'slaChart'      => $slaChart,
         ]);
     }
 
