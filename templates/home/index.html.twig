@@ -585,5 +585,11 @@
     </div>
   </div>
 </section>
+<script>
+    // Check for maturity alerts when opening the application (homepage)
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(checkMaturityAlerts, 500);
+    });
+</script>
 
 {% endblock %}

@@ -28,8 +28,450 @@
 
     {% include 'partials/_footer.html.twig' %}
 
+    <!-- Maturity Alert Popup -->
+    <div id="maturityAlertOverlay" class="alert-overlay" style="display: none;">
+        <div class="alert-popup">
+            <div class="alert-popup-header">
+                <div class="alert-popup-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div>
+                    <h4>Investment Maturity Alerts</h4>
+                    <p>Your investments are maturing soon!</p>
+                </div>
+                <button class="alert-popup-close" onclick="closeAlertPopup()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="alertPopupContent" class="alert-popup-content">
+                <div class="alert-loading">
+                    <div class="alert-spinner"></div>
+                    <span>Loading alerts...</span>
+                </div>
+            </div>
+            <div class="alert-popup-footer">
+                <button class="btn-alert-secondary" onclick="closeAlertPopup()">Remind Me Later</button>
+                <a href="{{ path('app_investment_index') }}" class="btn-alert-primary">View My Investments</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Extra scripts block for page-specific JS -->
     {% block extra_javascripts %}{% endblock %}
     
+    <style>
+        /* Alert Popup Styles */
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .alert-popup {
+            background: white;
+            border-radius: 24px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .alert-popup-header {
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4d3b 100%);
+            color: white;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+        
+        .alert-popup-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: ring 0.5s ease;
+        }
+        
+        @keyframes ring {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+            75% { transform: rotate(5deg); }
+            100% { transform: rotate(0deg); }
+        }
+        
+        .alert-popup-icon i {
+            font-size: 24px;
+        }
+        
+        .alert-popup-header h4 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .alert-popup-header p {
+            margin: 0;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .alert-popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .alert-popup-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .alert-popup-content {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        .alert-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid;
+            transition: transform 0.2s ease;
+        }
+        
+        .alert-card:hover {
+            transform: translateX(4px);
+        }
+        
+        .alert-card.high {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+        }
+        
+        .alert-card.medium {
+            border-left-color: #ffc107;
+            background: linear-gradient(135deg, #fffbf0 0%, #fff 100%);
+        }
+        
+        .alert-card.low {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #f0fff4 0%, #fff 100%);
+        }
+        
+        .alert-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .alert-card-title {
+            font-weight: 700;
+            color: #1a2e1a;
+            font-size: 16px;
+        }
+        
+        .alert-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .alert-badge.high {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .alert-badge.medium {
+            background: #ffc107;
+            color: #1a2e1a;
+        }
+        
+        .alert-badge.low {
+            background: #28a745;
+            color: white;
+        }
+        
+        .alert-card-details {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .alert-detail {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #4b6b4b;
+        }
+        
+        .alert-detail i {
+            width: 16px;
+            color: #2d6a4f;
+        }
+        
+        .alert-progress {
+            margin-top: 12px;
+        }
+        
+        .alert-progress-bar {
+            height: 6px;
+            background: #e8e8e8;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        
+        .alert-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2d6a4f, #28a745);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .alert-progress-text {
+            font-size: 11px;
+            color: #8faa8f;
+            text-align: right;
+        }
+        
+        .alert-loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8faa8f;
+        }
+        
+        .alert-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e8f5e9;
+            border-top-color: #2d6a4f;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+        
+        .alert-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8faa8f;
+        }
+        
+        .alert-empty i {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+        
+        .alert-popup-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: #fafafa;
+        }
+        
+        .btn-alert-primary {
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4d3b 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-alert-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 106, 79, 0.3);
+            color: white;
+        }
+        
+        .btn-alert-secondary {
+            background: #f0f0f0;
+            color: #4b6b4b;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-alert-secondary:hover {
+            background: #e8e8e8;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Custom scrollbar */
+        .alert-popup-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .alert-popup-content::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+        
+        .alert-popup-content::-webkit-scrollbar-thumb {
+            background: #2d6a4f;
+            border-radius: 4px;
+        }
+    </style>
+
+    <script>
+        let hasShownAlert = false;
+        
+        async function checkMaturityAlerts() {
+            try {
+                const response = await fetch('/alerts/maturity');
+                const data = await response.json();
+                
+                if (data.hasAlerts && !hasShownAlert) {
+                    showAlertPopup(data.alerts);
+                    hasShownAlert = true;
+                }
+            } catch (error) {
+                console.error('Error checking alerts:', error);
+            }
+        }
+        
+        function showAlertPopup(alerts) {
+            const overlay = document.getElementById('maturityAlertOverlay');
+            const content = document.getElementById('alertPopupContent');
+            
+            if (!overlay) return;
+            
+            if (alerts.length === 0) {
+                content.innerHTML = `
+                    <div class="alert-empty">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No investments maturing soon!</p>
+                    </div>
+                `;
+            } else {
+                let alertsHtml = '';
+                alerts.forEach(alert => {
+                    const progressPercent = ((7 - alert.daysLeft) / 7) * 100;
+                    alertsHtml += `
+                        <div class="alert-card ${alert.severity}">
+                            <div class="alert-card-header">
+                                <span class="alert-card-title">💰 ${escapeHtml(alert.obligationName)}</span>
+                                <span class="alert-badge ${alert.severity}">
+                                    ${alert.daysLeft === 0 ? 'Today!' : `${alert.daysLeft} days left`}
+                                </span>
+                            </div>
+                            <div class="alert-card-details">
+                                <div class="alert-detail">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>${alert.amount} DT</span>
+                                </div>
+                                <div class="alert-detail">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Matures: ${alert.maturityDate}</span>
+                                </div>
+                                <div class="alert-detail">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Return: ${alert.expectedReturn} DT</span>
+                                </div>
+                            </div>
+                            <div class="alert-progress">
+                                <div class="alert-progress-bar">
+                                    <div class="alert-progress-fill" style="width: ${progressPercent}%"></div>
+                                </div>
+                                <div class="alert-progress-text">
+                                    ${alert.daysLeft === 0 ? 'Matures today!' : `${7 - alert.daysLeft} of 7 days passed`}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                content.innerHTML = alertsHtml;
+            }
+            
+            overlay.style.display = 'flex';
+            
+            // Play sound (optional)
+            playNotificationSound();
+        }
+        
+        function playNotificationSound() {
+            try {
+                const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
+                audio.volume = 0.3;
+                audio.play().catch(e => console.log('Sound play failed:', e));
+            } catch(e) {}
+        }
+        
+        function closeAlertPopup() {
+            const overlay = document.getElementById('maturityAlertOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // NO automatic check here - will be called only from specific pages
+    </script>
+
 </body>
 </html>

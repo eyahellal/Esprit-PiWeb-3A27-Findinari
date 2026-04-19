@@ -203,6 +203,17 @@
         grid.innerHTML = '';
         cards.forEach(card => grid.appendChild(card));
     }
+    
+    // Check for maturity alerts when viewing investments page
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(checkMaturityAlerts, 300);
+    });
+</script>
+<script>
+    // Check for maturity alerts when viewing investments page
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(checkMaturityAlerts, 300);
+    });
 </script>
 
 {% endblock %}
