@@ -46,7 +46,7 @@ class TransactionController extends AbstractController
         return $user;
     }
 
-   #[Route('/', name: 'app_transaction_index', methods: ['GET'])]
+  #[Route('/', name: 'app_transaction_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
     {
         $user = $this->getUserOrCreate($entityManager);
@@ -64,6 +64,9 @@ class TransactionController extends AbstractController
         $totalPages = 1;
         $type = $request->query->get('type', '');
 
+        // Collect all transaction data for JS conversion
+        $transactionsData = [];
+
         if (!empty($wallets)) {
             $qb = $entityManager->getRepository(Transaction::class)
                 ->createQueryBuilder('t')
@@ -76,9 +79,13 @@ class TransactionController extends AbstractController
                    ->setParameter('type', $type);
             }
 
-            // Calculate stats from ALL matching transactions (before pagination)
             $allTransactions = (clone $qb)->getQuery()->getResult();
             foreach ($allTransactions as $t) {
+                $transactionsData[] = [
+                    'type' => $t->getType(),
+                    'montant' => $t->getMontant(),
+                    'devise' => $t->getDevise(),
+                ];
                 if ($t->getType() === 'income') {
                     $totalIncome += $t->getMontant();
                 } else {
@@ -86,14 +93,12 @@ class TransactionController extends AbstractController
                 }
             }
 
-            // Count total
             $total = count($allTransactions);
             $totalPages = max(1, ceil($total / $limit));
 
             if ($page < 1) $page = 1;
             if ($page > $totalPages) $page = $totalPages;
 
-            // Get paginated results
             $transactions = $qb->setFirstResult(($page - 1) * $limit)
                                ->setMaxResults($limit)
                                ->getQuery()
@@ -108,9 +113,9 @@ class TransactionController extends AbstractController
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'total' => $total,
+            'transactionsData' => $transactionsData,
         ]);
     }
-
     #[Route('/new/step1', name: 'app_transaction_new_step1', methods: ['GET', 'POST'])]
 public function step1(Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
 {

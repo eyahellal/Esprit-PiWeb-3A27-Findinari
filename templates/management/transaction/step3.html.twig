@@ -214,7 +214,71 @@
         {% endfor %}
     {% endif %}
 </div>
+{# Currency Converter #}
+<div class="mb-3">
+    <div class="rounded-4 p-3" style="background: #f8f9fa; border: 1px solid #e0e0e0;">
+        <label class="form-label fw-bold small" style="color: #26474E;">
+            <i class="fas fa-exchange-alt me-1" style="color: #F27438;"></i>Currency Converter
+        </label>
 
+        <div class="row g-2 mb-2">
+            {# Amount to convert #}
+            <div class="col-4">
+                <input type="number" id="convertAmount" class="form-control form-control-sm"
+                       placeholder="Amount" step="0.01" style="border-color: #76CDCD;">
+            </div>
+
+            {# From currency #}
+          <div class="col-3">
+    <select id="fromCurrency" class="form-select form-select-sm"
+            style="border-color: #76CDCD; color: #26474E; background-color: #f8f9fa;">
+        <option value="" style="color: #26474E;">From</option>
+    </select>
+</div>
+            {# Arrow #}
+            <div class="col-1 d-flex align-items-center justify-content-center">
+                <i class="fas fa-arrow-right" style="color: #F27438;"></i>
+            </div>
+
+            {# To currency (wallet currency, readonly) #}
+            <div class="col-4">
+                <input type="text" id="toCurrency" class="form-control form-control-sm"
+                       value="{{ wallet.devise }}" readonly
+                       style="border-color: #76CDCD; background: #e8f5f5; font-weight: bold; color: #26474E;">
+            </div>
+        </div>
+
+        {# Convert button #}
+        <div class="d-flex gap-2 align-items-center">
+            <button type="button" class="btn btn-sm px-3"
+                    onclick="convertCurrency()"
+                    style="background: #F27438; color: white; border-radius: 10px;">
+                <i class="fas fa-calculator me-1"></i>Convert
+            </button>
+
+            {# Result #}
+            <div id="conversionResult" style="display: none;"
+                 class="flex-fill d-flex align-items-center justify-content-between rounded-3 p-2"
+                 style="background: white;">
+                <span id="conversionText" class="small fw-bold" style="color: #26474E;"></span>
+                <button type="button" class="btn btn-sm px-3"
+                        onclick="useConvertedAmount()"
+                        style="background: #e8f5e9; color: #2d6a4f; border-radius: 10px;">
+                    <i class="fas fa-check me-1"></i>Use
+                </button>
+            </div>
+
+            {# Loading #}
+            <div id="conversionLoading" style="display: none;">
+                <span class="spinner-border spinner-border-sm" style="color: #F27438;"></span>
+                <span class="small text-muted ms-1">Converting...</span>
+            </div>
+
+            {# Error #}
+            <div id="conversionError" style="display: none;" class="small text-danger"></div>
+        </div>
+    </div>
+</div>
                             {# Description #}
                             <div class="mb-4">
                                 <label class="form-label fw-bold" style="color: #26474E;">
@@ -311,6 +375,16 @@
     .freq-option:hover {
         border-color: #F27438 !important;
     }
+    #fromCurrency {
+    color: #26474E !important;
+    background-color: #f8f9fa !important;
+}
+#fromCurrency option {
+    color: #26474E;
+    background-color: white;
+    padding: 4px;
+
+}
 
 </style>
 <script>
@@ -371,6 +445,105 @@ function toggleRecurringOptions() {
     const options = document.getElementById('recurringOptions');
     options.style.display = toggle.checked ? 'block' : 'none';
 }
+let lastConvertedAmount = 0;
+
+async function loadCurrencies() {
+    try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+
+        if (data.rates) {
+            const select = document.getElementById('fromCurrency');
+            const currencies = Object.keys(data.rates).sort();
+
+            currencies.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency;
+                option.textContent = currency;
+                option.style.color = '#26474E';
+                select.appendChild(option);
+            });
+
+            // Check wallet currency
+            const walletCurrency = document.getElementById('toCurrency').value.toUpperCase().trim();
+            if (!data.rates[walletCurrency]) {
+                console.warn('Wallet currency "' + walletCurrency + '" not found in API');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading currencies:', error);
+    }
+}
+
+async function convertCurrency() {
+    const amount = parseFloat(document.getElementById('convertAmount').value);
+    const from = document.getElementById('fromCurrency').value;
+    const to = document.getElementById('toCurrency').value.toUpperCase().trim();
+    const resultDiv = document.getElementById('conversionResult');
+    const loadingDiv = document.getElementById('conversionLoading');
+    const errorDiv = document.getElementById('conversionError');
+    const resultText = document.getElementById('conversionText');
+
+    resultDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+        errorDiv.textContent = 'Please enter a valid amount';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    if (!from) {
+        errorDiv.textContent = 'Please select a source currency';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    if (from === to) {
+        lastConvertedAmount = amount;
+        resultText.innerHTML = amount.toFixed(2) + ' ' + from + ' = <strong>' + amount.toFixed(2) + ' ' + to + '</strong>';
+        resultDiv.style.display = 'flex';
+        return;
+    }
+
+    loadingDiv.style.display = 'block';
+
+    try {
+        // Map common non-standard codes
+        const currencyMap = { 'DT': 'TND', 'DA': 'DZD', 'LE': 'EGP', 'LD': 'LYD' };
+        const targetCode = currencyMap[to] || to;
+
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/' + from);
+        const data = await response.json();
+
+        if (data.rates && data.rates[targetCode]) {
+            const rate = data.rates[targetCode];
+            const converted = amount * rate;
+            lastConvertedAmount = converted;
+
+            resultText.innerHTML =
+                amount.toFixed(2) + ' ' + from +
+                ' = <strong>' + converted.toFixed(2) + ' ' + to + '</strong>' +
+                ' <span class="text-muted small">(1 ' + from + ' = ' + rate.toFixed(4) + ' ' + to + ')</span>';
+            resultDiv.style.display = 'flex';
+        } else {
+            errorDiv.textContent = 'Currency "' + to + '" not supported. Try a standard code like TND, EUR, USD.';
+            errorDiv.style.display = 'block';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Conversion failed. Check your internet connection.';
+        errorDiv.style.display = 'block';
+    }
+
+    loadingDiv.style.display = 'none';
+}
+
+function useConvertedAmount() {
+    document.getElementById('montantInput').value = lastConvertedAmount.toFixed(2);
+    const input = document.getElementById('montantInput');
+    input.style.background = '#e8f5e9';
+    setTimeout(() => { input.style.background = 'white'; }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', loadCurrencies);
 </script>
 
 {% endblock %}
