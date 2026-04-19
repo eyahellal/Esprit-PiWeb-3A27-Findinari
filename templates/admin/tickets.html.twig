@@ -857,13 +857,38 @@ row.style.display = (! q || text.includes(q)) ? '' : 'none';
     <script>
 document.addEventListener('DOMContentLoaded', function () {
     const timers = document.querySelectorAll('.sla-timer');
+    
+    // Sync with server time to avoid local clock issues
+    const serverTimeStr = '{{ "now"|date("c") }}';
+    const serverNow = new Date(serverTimeStr);
+    const clientNow = new Date();
+    const timeOffset = serverNow.getTime() - clientNow.getTime();
+
+    function formatDuration(totalSeconds) {
+        const isNegative = totalSeconds < 0;
+        const absSeconds = Math.abs(totalSeconds);
+        
+        const days = Math.floor(absSeconds / 86400);
+        const hours = Math.floor((absSeconds % 86400) / 3600);
+        const minutes = Math.floor((absSeconds % 3600) / 60);
+        const seconds = absSeconds % 60;
+
+        let text = isNegative ? '- ' : '';
+        if (days > 0) text += days + 'd ';
+        text += String(hours).padStart(2, '0') + 'h ';
+        text += String(minutes).padStart(2, '0') + 'm ';
+        text += String(seconds).padStart(2, '0') + 's';
+        
+        return text;
+    }
 
     function updateTimer(element) {
         const deadlineString = element.dataset.deadline;
         const deadline = new Date(deadlineString);
-        const now = new Date();
+        // Correct current time using the offset
+        const now = new Date(Date.now() + timeOffset);
 
-        const diff = deadline - now;
+        const diff = deadline.getTime() - now.getTime();
 
         if (isNaN(deadline.getTime())) {
             element.textContent = 'Invalid SLA';
@@ -871,36 +896,20 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (diff <= 0) {
-            element.textContent = 'Breached';
-            element.className = 'sla-timer badge bg-danger';
-            return;
-        }
-
         const totalSeconds = Math.floor(diff / 1000);
-        const days = Math.floor(totalSeconds / 86400);
-        const hours = Math.floor((totalSeconds % 86400) / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
+        element.textContent = formatDuration(totalSeconds);
 
-        let text = '';
-        if (days > 0) {
-            text += days + 'd ';
-        }
-
-        text += String(hours).padStart(2, '0') + 'h ';
-        text += String(minutes).padStart(2, '0') + 'm ';
-        text += String(seconds).padStart(2, '0') + 's';
-
-        element.textContent = text;
-
-        if (diff <= 3600 * 1000) {
+        if (totalSeconds <= 0) {
+            // BREACHED
+            element.className = 'sla-timer badge bg-danger';
+            // If it's more than 24h past due, maybe show a special style?
+        } else if (totalSeconds <= 3600) {
             // Less than 1 hour remains - URGENT (Red)
             element.className = 'sla-timer badge bg-danger';
-        } else if (diff <= 4 * 3600 * 1000) {
+        } else if (totalSeconds <= 4 * 3600) {
             // Less than 4 hours - Warning (Yellow)
             element.className = 'sla-timer badge bg-warning text-dark';
-        } else if (diff <= 24 * 3600 * 1000) {
+        } else if (totalSeconds <= 24 * 3600) {
             // Less than 24 hours - Info (Blue)
             element.className = 'sla-timer badge bg-info';
         } else {

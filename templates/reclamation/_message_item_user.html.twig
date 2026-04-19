@@ -2,15 +2,27 @@
 <div class="msg-wrapper {{ isUser ? 'user' : 'admin' }} animate-in">
     <div class="msg-meta">
         {% if isUser %}
-            You &bull; {{ message.date|date('d M, H:i') }}
+            You &bull; {{ message.date|ago }}
         {% else %}
-            <span style="color: #22c55e; font-weight: 800;">Support Team</span> &bull; {{ message.date|date('d M, H:i') }}
+            <span style="color: #22c55e; font-weight: 800;">Support Team</span> &bull; {{ message.date|ago }}
         {% endif %}
     </div>
     
     <div style="display: flex; gap: 8px; align-items: center; {{ isUser ? 'flex-direction: row-reverse;' : '' }}">
         <div class="msg-bubble" id="msg-content-{{ message.id }}">
-            <div>{{ message.contenu|nl2br }}</div>
+            <div id="msg-text-{{ message.id }}">{{ message.contenu|nl2br }}</div>
+            {% if message.contenu and message.contenu != 'Voice message' %}
+            <button
+                onclick="translateMsgToFR({{ message.id }}, this)"
+                title="Translate to French"
+                style="display:inline-flex; align-items:center; gap:5px; background:none; border:none; cursor:pointer; padding:3px 0 0 0; font-size:11px; color:{{ isUser ? 'rgba(255,255,255,0.55)' : '#9ca3af' }}; font-family:inherit; transition:color 0.2s;"
+                onmouseover="this.style.color='{{ isUser ? 'rgba(255,255,255,0.9)' : '#6b7280' }}';"
+                onmouseout="if(!this.dataset.done)this.style.color='{{ isUser ? 'rgba(255,255,255,0.55)' : '#9ca3af' }}';"
+            >
+                <svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;"><path fill-rule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a7.03 7.03 0 01-1.318 2.894A7.036 7.036 0 009 10.07V9a1 1 0 112 0v1.072a7.037 7.037 0 001.74-3.14.75.75 0 011.46.362A8.537 8.537 0 0112 10.66V11h1a1 1 0 110 2h-1v.5a1 1 0 11-2 0V13H9a1 1 0 110-2h1v-.34a8.537 8.537 0 01-2.2-3.44.75.75 0 011.46-.362A7.037 7.037 0 0010.422 9H8.578A7.036 7.036 0 007.322 6.894 7.033 7.033 0 016 5H3a1 1 0 110-2h3V3a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+                Translate
+            </button>
+            {% endif %}
             {% if message.urlPieceJointe %}
                 <div style="margin-top:12px; padding-top:12px; border-top:1px solid {{ isUser ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.06)' }};">
                     {% set isUrl = message.urlPieceJointe starts with 'http' %}

@@ -618,6 +618,22 @@
                         {{ ticket.description }}
                     </div>
 
+                    <span class="info-label">SLA Status</span>
+                    <div style="margin-bottom:20px;">
+                        {% if ticket.deadline %}
+                            {% set isClosed = ticket.statut in ['Fermé', 'Closed', 'CLOSED'] %}
+                            {% if isClosed %}
+                                <span class="badge bg-success">Resolved on time</span>
+                            {% else %}
+                                <span class="sla-timer badge" data-deadline="{{ ticket.deadline|date('c') }}" style="font-size:14px; padding:8px 16px;">
+                                    Loading...
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-secondary">No SLA defined</span>
+                        {% endif %}
+                    </div>
+
                     <button type="button" id="summarizeBtn" class="btn" style="width:100%; margin-bottom:20px; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
                         <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v19M5 8h14M5 16h14"/></svg>
                         Get Smart Summary
@@ -1144,6 +1160,64 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --- SLA Timer Logic ---
+    const timers = document.querySelectorAll('.sla-timer');
+    const serverTimeStr = '{{ "now"|date("c") }}';
+    const serverNow = new Date(serverTimeStr);
+    const clientNow = new Date();
+    const timeOffset = serverNow.getTime() - clientNow.getTime();
+
+    function formatDuration(totalSeconds) {
+        const isNegative = totalSeconds < 0;
+        const absSeconds = Math.abs(totalSeconds);
+        const days = Math.floor(absSeconds / 86400);
+        const hours = Math.floor((absSeconds % 86400) / 3600);
+        const minutes = Math.floor((absSeconds % 3600) / 60);
+        const seconds = absSeconds % 60;
+
+        let text = isNegative ? '- ' : '';
+        if (days > 0) text += days + 'd ';
+        text += String(hours).padStart(2, '0') + 'h ';
+        text += String(minutes).padStart(2, '0') + 'm ';
+        text += String(seconds).padStart(2, '0') + 's';
+        return text;
+    }
+
+    function updateTimer(element) {
+        const deadlineString = element.dataset.deadline;
+        const deadline = new Date(deadlineString);
+        const now = new Date(Date.now() + timeOffset);
+        const diff = deadline.getTime() - now.getTime();
+
+        if (isNaN(deadline.getTime())) {
+            element.textContent = 'Invalid SLA';
+            element.className = 'sla-timer badge bg-dark';
+            return;
+        }
+
+        const totalSeconds = Math.floor(diff / 1000);
+        element.textContent = formatDuration(totalSeconds);
+
+        if (totalSeconds <= 0) {
+            element.className = 'sla-timer badge bg-danger';
+        } else if (totalSeconds <= 3600) {
+            element.className = 'sla-timer badge bg-danger';
+        } else if (totalSeconds <= 4 * 3600) {
+            element.className = 'sla-timer badge bg-warning text-dark';
+        } else if (totalSeconds <= 24 * 3600) {
+            element.className = 'sla-timer badge bg-info';
+        } else {
+            element.className = 'sla-timer badge bg-success';
+        }
+    }
+
+    if (timers.length > 0) {
+        timers.forEach(t => {
+            updateTimer(t);
+            setInterval(() => updateTimer(t), 1000);
+        });
+    }
+
     // --- AJAX Polling for new messages ---
     let lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
     // Using a numeric placeholder that Symfony will accept as an 'int' if required
@@ -1185,6 +1259,45 @@ document.addEventListener('DOMContentLoaded', function () {
     // Check for new messages every 3 seconds
     setInterval(pollMessages, 3000);
 });
+
+async function translateMsgToFR(messageId, btn) {
+    // If already translated → restore original
+    if (btn.dataset.translated === '1') {
+        document.getElementById('msg-text-' + messageId).innerHTML = btn.dataset.original;
+        btn.innerHTML = btn.dataset.btnOriginal;
+        btn.dataset.translated = '0';
+        btn.style.color = '';
+        return;
+    }
+
+    const originalHtml = btn.innerHTML;
+    btn.dataset.btnOriginal = originalHtml;
+    btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Translating…';
+    btn.disabled = true;
+    try {
+        const res = await fetch(`/message/${messageId}/translate`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await res.json();
+        if (data.translated) {
+            const msgEl = document.getElementById('msg-text-' + messageId);
+            btn.dataset.original = msgEl.innerHTML; // save original HTML
+            msgEl.innerHTML = data.translated.replace(/\n/g, '<br>');
+            btn.innerHTML = '↩ Show original';
+            btn.style.color = '#22c55e';
+            btn.dataset.translated = '1';
+            btn.disabled = false;
+        } else {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+            alert('Translation failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch(e) {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    }
+}
 </script>
 </body>
 </html>

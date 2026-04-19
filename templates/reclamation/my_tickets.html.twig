@@ -223,7 +223,7 @@
                             </div>
                             
                             <div class="ticket-meta">
-                                <span><i class="far fa-clock"></i> {{ ticket.dateCreation|date('M d, Y \\a\\t H:i') }}</span>
+                                <span><i class="far fa-clock"></i> {{ ticket.dateCreation|ago }}</span>
                                 <span><i class="far fa-folder"></i> {{ ticket.type }}</span>
                                 <span><i class="fas fa-fingerprint"></i> #{{ ticket.id }}</span>
                             </div>
