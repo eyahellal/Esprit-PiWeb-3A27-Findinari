@@ -92,4 +92,9 @@ class HomeController extends AbstractController
     {
         return $this->render('home/crypto_prices.html.twig');
     }
+    #[Route('/investment/pdf-upload', name: 'app_investment_pdf_upload')]
+    public function pdfUpload(): Response
+    {
+        return $this->redirectToRoute('app_investment_pdf_upload');
+    }
 }
