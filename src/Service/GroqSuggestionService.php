@@ -25,37 +25,35 @@ class GroqSuggestionService
         }
 
         $roleInstruction = match (strtoupper($role)) {
-            'ADMIN' => 'You are an elite, highly professional fintech support specialist at Fin-Dinari. Your tone is sophisticated, empathetic, and exceptionally clear. Formulate very polite responses that demonstrate expertise and dedication to quality service.',
-            'USER' => 'You are a client of a premium fintech platform. Formulate natural, polite, and professional follow-up questions or clarifications regarding your support request.',
-            default => 'Formulate highly professional and concise replies for a support ticket interaction.',
+            'ADMIN' => 'ACT AS: Elite Fintech Support Agent for Fin-Dinari. YOUR GOAL: Provide helpful, expert guidance. NEVER ask for help; always offer it.',
+            'USER' => 'ACT AS: Client/Customer of Fin-Dinari. YOUR GOAL: Seek support, ask for updates, or clarify your issues. NEVER offer assistance to the agent.',
+            default => 'Formulate concise replies for the current participant.',
         };
 
         if (empty($conversationText)) {
-            $userPrompt = sprintf("The conversation has just started. As a %s, suggest 3 professional initial messages to start the interaction.", $role);
+            $userPrompt = "The conversation has just started. Suggest 3 professional initial messages to start the interaction as the " . $role;
         } else {
-            $userPrompt = "Conversation context:\n" . implode("\n", $conversationText);
+            $userPrompt = "Conversation context (Last 5 messages):\n" . implode("\n", $conversationText);
         }
 
         $systemPrompt = <<<PROMPT
-{$roleInstruction}
+Role-Specific Persona: {$roleInstruction}
 
 Context: You are providing 3 quick-reply suggestions for a chat interface.
 
 Return ONLY valid JSON in this exact format:
 {"suggestions":["suggestion 1","suggestion 2","suggestion 3"]}
 
-Rules for Suggestions:
-- exactly 3 suggestions.
-- tone: formal, extremely professional, and premium.
-- max 15 words per suggestion.
-- relevance: must be the most logical continuation for the {$role}.
-- if the conversation is empty, suggest standard professional openings.
-- no markdown, no quotes, no conversational filler.
-- IMPORTANT: You must suggest what the {$role} should say NEXT.
-- DO NOT invent information not present in the context
--Provide meaningfull suggestions not just one words
+CRITICAL RULES:
+- EXACTLY 3 suggestions.
+- MAX 15 words per suggestion.
+- PERSPECTIVE: You are the {$role}. You MUST suggest what the {$role} would say next.
+- ROLE BOUNDARY: If you are the USER, DO NOT say things like "How can I assist you?" or "I'm here to help". These are ADMIN phrases.
+- ROLE BOUNDARY: If you are the ADMIN, DO NOT say things like "I need help" or "I'm reporting a bug". These are USER phrases.
+- TONE: High-end fintech, professional, polite, and efficient.
+- Ensure the suggestions are direct continuations of the conversation flow.
+- DO NOT add markdown or any text outside the JSON.
 PROMPT;
-                $userPrompt = "Conversation context:\n" . implode("\n", $conversationText);
 
 
         $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
