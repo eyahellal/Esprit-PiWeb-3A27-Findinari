@@ -91,8 +91,9 @@ public function createTicket(
                         $this->getParameter('tickets_directory'),
                         $newFilename
                     );
-                } catch (FileException $e) 
-                $ticket->setImageUrl($newFilename);
+                    $ticket->setImageUrl($newFilename);
+                } catch (FileException $e) {
+                }
             }
 
             // Set other fields
