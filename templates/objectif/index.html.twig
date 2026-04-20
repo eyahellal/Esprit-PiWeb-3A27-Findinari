@@ -833,6 +833,9 @@
                 <a href="{{ path('objectif_historique') }}" class="tb-btn tb-btn--ghost">
                     <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                     Historique
+                    <a href="{{ path('objectif_inflation') }}" class="tb-btn tb-btn--ghost">
+    📉 Simulateur Inflation
+</a>
                 </a>
                 <a href="{{ path('market_trends') }}" class="tb-btn tb-btn--ghost">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -842,6 +845,9 @@
     </svg>
     Tendances
 </a>
+
+
+
               
     
                 {% if selectedWalletId %}

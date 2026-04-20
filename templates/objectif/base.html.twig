@@ -13,6 +13,7 @@
    NAVBAR — copiez/collez votre navbar existante ici
    et ajoutez juste le bloc "notif-bell-wrap" dedans
 ══════════════════════════════════════════════════════════ #}
+{% block navbar %}
 <nav class="navbar">
 
   {# ... votre logo, liens, etc. ... #}
@@ -50,7 +51,7 @@
   {# ── FIN CLOCHE ── #}
 
 </nav>
-
+{% endblock %}
 {# ══════════════════════════════════════════════════════════
    STYLES NOTIFICATION
 ══════════════════════════════════════════════════════════ #}
