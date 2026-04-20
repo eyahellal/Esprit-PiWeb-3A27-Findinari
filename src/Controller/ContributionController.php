@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\objective\Contributiongoal;
-use App\Form\ContributiongoalType;
+use App\form\ContributiongoalType;
 use App\Repository\ContributiongoalRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
