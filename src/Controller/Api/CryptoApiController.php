@@ -12,16 +12,18 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class CryptoApiController extends AbstractController
 {
     private $httpClient;
+    private $cryptoApiUrl;
     
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(HttpClientInterface $httpClient, string $cryptoApiUrl)
     {
         $this->httpClient = $httpClient;
+        $this->cryptoApiUrl = $cryptoApiUrl;
     }
     
     #[Route('/prices', name: 'api_crypto_prices', methods: ['GET'])]
     public function getCryptoPrices(): JsonResponse
     {
-        $url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,cardano,dogecoin,solana,polkadot,chainlink,uniswap,litecoin&vs_currencies=usd,eur&include_24hr_change=true';
+        $url = $this->cryptoApiUrl . '/simple/price?ids=bitcoin,ethereum,ripple,cardano,dogecoin,solana,polkadot,chainlink,uniswap,litecoin&vs_currencies=usd,eur&include_24hr_change=true';
         
         try {
             $response = $this->httpClient->request('GET', $url, [
@@ -46,7 +48,7 @@ class CryptoApiController extends AbstractController
     #[Route('/market-data', name: 'api_crypto_market', methods: ['GET'])]
     public function getMarketData(): JsonResponse
     {
-        $url = 'https://api.coingecko.com/api/v3/global';
+        $url = $this->cryptoApiUrl . '/global';
         
         try {
             $response = $this->httpClient->request('GET', $url);
