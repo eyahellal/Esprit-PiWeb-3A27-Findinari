@@ -322,7 +322,7 @@ class AdminController extends AbstractController
 
         $tickets = $ticketRepository->createQueryBuilder('t')
             ->where('t.statut NOT IN (:closed)')
-            ->setParameter('closed', ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'])
+            ->setParameter('closed', [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'])
             ->getQuery()
             ->getResult();
 
@@ -366,21 +366,21 @@ class AdminController extends AbstractController
         foreach ($tickets as $ticket) {
             $rawStatut = strtolower(trim((string) $ticket->getStatut()));
             if (in_array($rawStatut, ['en cours', 'in progress'])) {
-                $statut = 'In Progress';
+                $statut = Ticket::STATUS_IN_PROGRESS;
             } elseif (in_array($rawStatut, ['fermé', 'closed', 'resolved'])) {
-                $statut = 'Closed';
+                $statut = Ticket::STATUS_CLOSED;
             } else {
-                $statut = 'Open';
+                $statut = Ticket::STATUS_OPEN;
             }
             $statuses[$statut] = ($statuses[$statut] ?? 0) + 1;
 
             $rawPriority = strtolower(trim((string) $ticket->getPriorite()));
             if (in_array($rawPriority, ['high', 'haute', 'urgent', 'urgente'])) {
-                $priorite = 'High';
+                $priorite = Ticket::PRIORITY_HIGH;
             } elseif (in_array($rawPriority, ['medium', 'moyenne'])) {
-                $priorite = 'Medium';
+                $priorite = Ticket::PRIORITY_MEDIUM;
             } else {
-                $priorite = 'Low';
+                $priorite = Ticket::PRIORITY_LOW;
             }
             $priorities[$priorite] = ($priorities[$priorite] ?? 0) + 1;
 
@@ -502,11 +502,11 @@ class AdminController extends AbstractController
             $ticket->setPriorite($newPriorite);
         }
 
-        if (in_array($newStatut, ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
+        if (in_array($newStatut, [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
             $ticket->setDateFermeture(new \DateTime());
         }
 
-        $resolvedStatuses = ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'];
+        $resolvedStatuses = [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'];
 
         $becameResolved =
             !in_array($oldStatus, $resolvedStatuses, true)

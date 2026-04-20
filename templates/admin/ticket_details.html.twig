@@ -621,16 +621,16 @@
                     <span class="info-label">SLA Status</span>
                     <div style="margin-bottom:20px;">
                         {% if ticket.deadline %}
-                            {% set isClosed = ticket.statut in ['Fermé', 'Closed', 'CLOSED'] %}
+                            {% set isClosed = ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_CLOSED') or ticket.statut in ['Fermé', 'CLOSED'] %}
                             {% if isClosed %}
-                                <span class="badge bg-success">Resolved on time</span>
+                                <span style="color: #16a34a; font-weight: 800; font-size: 15px;">Resolved on time</span>
                             {% else %}
-                                <span class="sla-timer badge" data-deadline="{{ ticket.deadline|date('c') }}" style="font-size:14px; padding:8px 16px;">
+                                <span class="sla-timer" data-deadline="{{ ticket.deadline|date('c') }}" style="font-size:18px; font-weight: 800;">
                                     Loading...
                                 </span>
                             {% endif %}
                         {% else %}
-                            <span class="badge bg-secondary">No SLA defined</span>
+                            <span style="color: var(--text-muted); font-style: italic;">No SLA defined</span>
                         {% endif %}
                     </div>
 
@@ -690,17 +690,17 @@
                                 <div>
                                     <label class="info-label">Statut</label>
                                     <select name="statut" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border);">
-                                        <option value="Open" {% if ticket.statut|lower in ['open', 'ouvert', 'nouveau'] %}selected{% endif %}>Open</option>
-                                        <option value="In Progress" {% if ticket.statut|lower in ['in progress', 'en cours'] %}selected{% endif %}>In Progress</option>
-                                        <option value="Closed" {% if ticket.statut|lower in ['closed', 'fermé', 'resolved'] %}selected{% endif %}>Closed</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::STATUS_OPEN') }}" {% if ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_OPEN') %}selected{% endif %}>Open</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::STATUS_IN_PROGRESS') }}" {% if ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_IN_PROGRESS') %}selected{% endif %}>In Progress</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::STATUS_CLOSED') }}" {% if ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_CLOSED') %}selected{% endif %}>Closed</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="info-label">Priorité</label>
                                     <select name="priorite" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border);">
-                                        <option value="Low" {% if ticket.priorite|lower in ['low', 'faible'] %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if ticket.priorite|lower in ['medium', 'moyenne'] %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if ticket.priorite|lower in ['high', 'haute', 'urgent', 'urgente'] %}selected{% endif %}>High</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::PRIORITY_LOW') }}" {% if ticket.priorite == constant('App\\Entity\\reclamation\\Ticket::PRIORITY_LOW') %}selected{% endif %}>Low</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::PRIORITY_MEDIUM') }}" {% if ticket.priorite == constant('App\\Entity\\reclamation\\Ticket::PRIORITY_MEDIUM') %}selected{% endif %}>Medium</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::PRIORITY_HIGH') }}" {% if ticket.priorite == constant('App\\Entity\\reclamation\\Ticket::PRIORITY_HIGH') %}selected{% endif %}>High</option>
                                     </select>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="width:100%;">update</button>
@@ -1199,15 +1199,16 @@ document.addEventListener('DOMContentLoaded', function () {
         element.textContent = formatDuration(totalSeconds);
 
         if (totalSeconds <= 0) {
-            element.className = 'sla-timer badge bg-danger';
+            element.style.color = '#dc2626';
+            element.textContent = "BREACHED";
         } else if (totalSeconds <= 3600) {
-            element.className = 'sla-timer badge bg-danger';
+            element.style.color = '#dc2626';
         } else if (totalSeconds <= 4 * 3600) {
-            element.className = 'sla-timer badge bg-warning text-dark';
+            element.style.color = '#d97706';
         } else if (totalSeconds <= 24 * 3600) {
-            element.className = 'sla-timer badge bg-info';
+            element.style.color = '#0284c7';
         } else {
-            element.className = 'sla-timer badge bg-success';
+            element.style.color = '#16a34a';
         }
     }
 

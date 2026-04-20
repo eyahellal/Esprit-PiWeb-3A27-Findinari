@@ -17,6 +17,16 @@ use App\Repository\TicketRepository;
 #[ORM\HasLifecycleCallbacks]
 class Ticket
 {
+    // Status Constants
+    public const STATUS_OPEN = 'Open';
+    public const STATUS_IN_PROGRESS = 'In Progress';
+    public const STATUS_CLOSED = 'Closed';
+
+    // Priority Constants
+    public const PRIORITY_LOW = 'Low';
+    public const PRIORITY_MEDIUM = 'Medium';
+    public const PRIORITY_HIGH = 'High';
+
   
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
@@ -26,13 +36,13 @@ class Ticket
             $deadline = \DateTime::createFromInterface($this->dateCreation);
             
             switch ($this->priorite) {
-                case 'High':
+                case self::PRIORITY_HIGH:
                     $deadline->modify('+2 hours'); // 2 heures pour High
                     break;
-                case 'Medium':
+                case self::PRIORITY_MEDIUM:
                     $deadline->modify('+24 hours'); // 24 heures pour Medium
                     break;
-                case 'Low':
+                case self::PRIORITY_LOW:
                 default:
                     $deadline->modify('+48 hours'); // 48 heures pour Low
                     break;
@@ -120,13 +130,13 @@ class Ticket
         
         // On applique la logique de délai (SLA) selon la priorité
         switch ($this->priorite) {
-            case 'High':
+            case self::PRIORITY_HIGH:
                 $deadline->modify('+2 hours'); // +2h pour High
                 break;
-            case 'Medium':
+            case self::PRIORITY_MEDIUM:
                 $deadline->modify('+24 hours'); // +24h pour Medium
                 break;
-            case 'Low':
+            case self::PRIORITY_LOW:
             default:
                 $deadline->modify('+48 hours'); // +48h pour Low (par défaut)
                 break;
@@ -264,7 +274,7 @@ class Ticket
 
     public function isBreached(): bool
     {
-        if (!$this->getDeadline() || in_array($this->statut, ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'])) {
+        if (!$this->getDeadline() || in_array($this->statut, [self::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'])) {
             return false;
         }
 
