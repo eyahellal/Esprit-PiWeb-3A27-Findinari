@@ -13,11 +13,13 @@ class ChatbotController extends AbstractController
 {
     private $httpClient;
     private $projectDir;
+    private $ollamaApiUrl;
     
-    public function __construct(HttpClientInterface $httpClient, string $projectDir)
+    public function __construct(HttpClientInterface $httpClient, string $projectDir, string $ollamaApiUrl)
     {
         $this->httpClient = $httpClient;
         $this->projectDir = $projectDir;
+        $this->ollamaApiUrl = $ollamaApiUrl;
     }
     
     #[Route('/chatbot', name: 'app_chatbot')]
@@ -191,7 +193,7 @@ PROMPT;
     private function callOllama(string $prompt): string
     {
         try {
-            $response = $this->httpClient->request('POST', 'http://localhost:11434/api/generate', [
+            $response = $this->httpClient->request('POST', $this->ollamaApiUrl, [
                 'json' => [
                     'model' => 'gemma3:1b',
                     'prompt' => $prompt,
