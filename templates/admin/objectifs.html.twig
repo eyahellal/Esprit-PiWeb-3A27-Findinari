@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Objectifs — Fin-Dinari</title>
+    <title>Objectifs & AI Detector — Fin-Dinari</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -51,19 +51,13 @@
             width: var(--sidebar-width);
             background: var(--surface);
             border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            z-index: 100;
-            padding: 28px 18px 24px;
-            overflow-y: auto;
+            display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; bottom: 0;
+            z-index: 100; padding: 28px 18px 24px; overflow-y: auto;
         }
 
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: flex; align-items: center; gap: 10px;
             padding: 4px 10px 28px;
             border-bottom: 1px solid var(--border);
             margin-bottom: 18px;
@@ -74,48 +68,33 @@
         .brand-name { font-size: 22px; font-weight: 800; color: var(--brand); letter-spacing: -0.5px; }
 
         .nav-section {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.9px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            padding: 8px 12px 6px;
-            margin-top: 4px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.9px;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 8px 12px 6px; margin-top: 4px;
         }
 
         .side-link {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            text-decoration: none;
-            color: var(--text-secondary);
-            padding: 11px 14px;
-            border-radius: var(--radius-md);
-            margin-bottom: 4px;
-            font-weight: 600;
-            font-size: 14px;
+            display: flex; align-items: center; gap: 11px;
+            text-decoration: none; color: var(--text-secondary);
+            padding: 11px 14px; border-radius: var(--radius-md);
+            margin-bottom: 4px; font-weight: 600; font-size: 14px;
             transition: background var(--transition), color var(--transition), transform var(--transition);
         }
 
         .side-link:hover { background: var(--brand-light); color: var(--brand); transform: translateX(2px); }
         .side-link.active { background: var(--brand-light); color: var(--brand-dark); box-shadow: inset 3px 0 0 var(--brand); }
         .side-link svg { width: 18px; height: 18px; flex-shrink: 0; }
-
         .sidebar-footer { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--border); }
 
         /* ── CONTENT ── */
         .content { margin-left: var(--sidebar-width); flex: 1; padding: 28px; min-width: 0; }
 
+        /* ── TOPBAR ── */
         .topbar {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 16px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 26px;
-            box-shadow: var(--shadow-card);
-            border: 1px solid var(--border);
+            background: var(--surface); border-radius: var(--radius-lg);
+            padding: 16px 24px; display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 26px;
+            box-shadow: var(--shadow-card); border: 1px solid var(--border);
         }
 
         .topbar-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
@@ -123,30 +102,73 @@
         .topbar-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
         .avatar {
-            width: 38px; height: 38px;
-            border-radius: 50%;
-            background: var(--brand-light);
-            color: var(--brand-dark);
-            font-weight: 800;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 15px;
-            border: 2px solid var(--brand);
+            width: 38px; height: 38px; border-radius: 50%;
+            background: var(--brand-light); color: var(--brand-dark);
+            font-weight: 800; display: flex; align-items: center; justify-content: center;
+            font-size: 15px; border: 2px solid var(--brand);
         }
 
         .welcome-text { font-size: 13.5px; color: var(--text-secondary); font-weight: 600; }
         .welcome-text strong { color: var(--text-primary); }
 
+        /* ── TABS ── */
+        .tabs-bar {
+            display: flex; gap: 6px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 8px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 26px;
+        }
+
+        .tab-btn {
+            display: flex; align-items: center; gap: 9px;
+            padding: 12px 22px; border-radius: var(--radius-md);
+            border: none; background: none; cursor: pointer;
+            font-family: inherit; font-size: 14px; font-weight: 700;
+            color: var(--text-muted);
+            transition: all var(--transition);
+            flex: 1; justify-content: center;
+        }
+
+        .tab-btn:hover { background: var(--bg); color: var(--text-secondary); }
+
+        .tab-btn.active {
+            background: var(--brand);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(22,163,74,.3);
+        }
+
+        .tab-btn.active-ai {
+            background: linear-gradient(135deg, #0f172a, #15803d);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(15,23,42,.35);
+        }
+
+        .tab-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        .tab-badge {
+            background: rgba(255,255,255,.25);
+            padding: 2px 8px; border-radius: 999px;
+            font-size: 11px; font-weight: 800;
+        }
+
+        .tab-btn:not(.active):not(.active-ai) .tab-badge {
+            background: var(--brand-light);
+            color: var(--brand-dark);
+        }
+
+        /* ── TAB PANELS ── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeInTab .2s ease; }
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
         /* ── FLASH ── */
         .flash {
-            padding: 14px 18px;
-            border-radius: var(--radius-md);
-            margin-bottom: 20px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            border: 1px solid transparent;
+            padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 20px;
+            font-weight: 600; display: flex; align-items: center; gap: 10px;
+            font-size: 14px; border: 1px solid transparent;
             animation: fadeSlideDown .3s ease;
         }
 
@@ -163,43 +185,31 @@
         .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
-            margin-bottom: 26px;
+            gap: 18px; margin-bottom: 26px;
         }
 
         .card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 22px;
-            box-shadow: var(--shadow-card);
+            background: var(--surface); border-radius: var(--radius-lg);
+            padding: 22px; box-shadow: var(--shadow-card);
             border: 1px solid var(--border);
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
+            display: flex; align-items: flex-start; gap: 16px;
             transition: transform var(--transition), box-shadow var(--transition);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
 
         .card::after {
-            content: '';
-            position: absolute;
-            top: 0; right: 0;
-            width: 80px; height: 80px;
-            border-radius: 50%;
+            content: ''; position: absolute; top: 0; right: 0;
+            width: 80px; height: 80px; border-radius: 50%;
             background: var(--card-accent, var(--brand-light));
-            transform: translate(25px, -25px);
-            opacity: .5;
+            transform: translate(25px, -25px); opacity: .5;
         }
 
         .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
 
         .card-icon {
-            width: 46px; height: 46px;
-            border-radius: 14px;
+            width: 46px; height: 46px; border-radius: 14px;
             background: var(--card-accent, var(--brand-light));
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
 
         .card-icon svg { width: 22px; height: 22px; }
@@ -213,163 +223,91 @@
 
         /* ── SECTION ── */
         .section {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-card);
-            margin-bottom: 26px;
-            overflow: hidden;
+            background: var(--surface); border-radius: var(--radius-lg);
+            border: 1px solid var(--border); box-shadow: var(--shadow-card);
+            margin-bottom: 26px; overflow: hidden;
         }
 
         .section-header {
-            padding: 22px 26px 18px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
+            padding: 22px 26px 18px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
         }
 
         .section-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 9px;
+            font-size: 16px; font-weight: 800; color: var(--text-primary);
+            display: flex; align-items: center; gap: 9px;
         }
 
         .section-title svg { width: 18px; height: 18px; color: var(--brand); }
 
         /* ── WALLET TOOLBAR ── */
         .wallet-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            padding: 14px 18px;
-            background: #f4faf6;
-            border-radius: var(--radius-md);
-            border: 1.5px solid var(--border);
-            margin-bottom: 18px;
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            padding: 14px 18px; background: #f4faf6;
+            border-radius: var(--radius-md); border: 1.5px solid var(--border); margin-bottom: 18px;
         }
 
         .wt-label {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .6px;
-            color: var(--text-muted);
-            white-space: nowrap;
+            display: flex; align-items: center; gap: 7px;
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .6px; color: var(--text-muted); white-space: nowrap;
         }
 
         .wt-label svg { width: 15px; height: 15px; color: var(--brand); flex-shrink: 0; }
 
-        .wt-select-wrap {
-            position: relative;
-            flex: 1;
-            max-width: 300px;
-            min-width: 190px;
-        }
+        .wt-select-wrap { position: relative; flex: 1; max-width: 300px; min-width: 190px; }
 
         .wt-select-wrap select {
-            width: 100%;
-            appearance: none;
-            -webkit-appearance: none;
-            padding: 9px 34px 9px 14px;
-            font-size: 13.5px;
-            font-family: inherit;
-            font-weight: 600;
-            border-radius: var(--radius-sm);
-            border: 1.5px solid var(--border);
-            background: var(--surface);
-            color: var(--text-primary);
-            cursor: pointer;
-            outline: none;
+            width: 100%; appearance: none; -webkit-appearance: none;
+            padding: 9px 34px 9px 14px; font-size: 13.5px;
+            font-family: inherit; font-weight: 600; border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border); background: var(--surface);
+            color: var(--text-primary); cursor: pointer; outline: none;
             transition: border-color var(--transition), box-shadow var(--transition);
         }
 
-        .wt-select-wrap select:focus {
-            border-color: var(--brand);
-            box-shadow: 0 0 0 3px rgba(22,163,74,.13);
-        }
-
-        .wt-chevron {
-            position: absolute;
-            right: 10px; top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: var(--text-muted);
-        }
-
+        .wt-select-wrap select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(22,163,74,.13); }
+        .wt-chevron { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-muted); }
         .wt-chevron svg { width: 14px; height: 14px; display: block; }
-
         .wt-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .wt-divider { width: 1px; height: 26px; background: var(--border); flex-shrink: 0; }
 
         .wpill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 5px 13px;
-            border-radius: 999px;
-            font-size: 12.5px;
-            font-weight: 700;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            white-space: nowrap;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 13px; border-radius: 999px; font-size: 12.5px;
+            font-weight: 700; border: 1px solid var(--border);
+            background: var(--surface); white-space: nowrap;
         }
 
         .wpill .pl { color: var(--text-muted); font-weight: 600; margin-right: 1px; }
         .wpill .pv { color: var(--text-primary); }
         .wpill.solde .pv { color: var(--brand-dark); }
 
-        /* ── FILTERS BAR ── */
+        /* ── FILTERS ── */
         .filters-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-
         .fg { display: flex; flex-direction: column; gap: 6px; }
         .fg label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
         .fg.grow { flex: 1; min-width: 200px; }
         .fg.fixed { min-width: 170px; }
 
         input[type="text"], select {
-            padding: 9px 14px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-sm);
-            background: var(--surface);
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 13.5px;
-            font-weight: 500;
-            outline: none;
+            padding: 9px 14px; border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); background: var(--surface);
+            color: var(--text-primary); font-family: inherit;
+            font-size: 13.5px; font-weight: 500; outline: none;
             transition: border-color var(--transition), box-shadow var(--transition);
         }
 
-        input[type="text"]:focus, select:focus {
-            border-color: var(--brand);
-            box-shadow: 0 0 0 3px rgba(22,163,74,.13);
-        }
-
+        input[type="text"]:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(22,163,74,.13); }
         input::placeholder { color: var(--text-muted); font-weight: 400; }
 
         /* ── BUTTONS ── */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 9px 16px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 700;
-            text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 7px; border: none; border-radius: var(--radius-sm);
+            padding: 9px 16px; cursor: pointer; font-family: inherit;
+            font-size: 13px; font-weight: 700; text-decoration: none;
             transition: filter var(--transition), transform var(--transition);
             white-space: nowrap;
         }
@@ -378,7 +316,8 @@
         .btn:active { transform: translateY(0); filter: brightness(.97); }
         .btn-primary   { background: var(--brand);   color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,.28); }
         .btn-danger    { background: var(--danger);   color: #fff; box-shadow: 0 4px 12px rgba(239,68,68,.25); }
-        .btn-secondary { background: #f0f2f7;         color: var(--text-secondary); }
+        .btn-secondary { background: #f0f2f7; color: var(--text-secondary); }
+        .btn-dark      { background: linear-gradient(135deg, #0f172a, #15803d); color: #fff; box-shadow: 0 4px 14px rgba(15,23,42,.35); font-size: 15px; padding: 14px 28px; }
         .btn svg { width: 14px; height: 14px; }
 
         /* ── SEARCH INLINE ── */
@@ -386,19 +325,12 @@
         .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; }
         .search-wrap input { padding-left: 34px; width: 100%; }
 
-        /* ── ACTIVE FILTER BANNER ── */
+        /* ── FILTER BANNER ── */
         .filter-banner {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            padding: 10px 16px;
-            background: var(--brand-light);
-            border-radius: var(--radius-sm);
-            margin: 16px 0 4px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--brand-dark);
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            padding: 10px 16px; background: var(--brand-light);
+            border-radius: var(--radius-sm); margin: 16px 0 4px;
+            font-size: 13px; font-weight: 600; color: var(--brand-dark);
             border: 1px solid #bbf7d0;
         }
 
@@ -411,36 +343,20 @@
         thead tr { background: #f4faf6; border-bottom: 2px solid var(--border); }
 
         th {
-            text-align: left;
-            padding: 13px 16px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: .7px;
-            white-space: nowrap;
+            text-align: left; padding: 13px 16px; font-size: 12px;
+            font-weight: 700; color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: .7px; white-space: nowrap;
         }
 
-        td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-            color: var(--text-primary);
-        }
-
+        td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-primary); }
         tbody tr { transition: background var(--transition); }
         tbody tr:hover { background: #f9fdf9; }
         tbody tr:last-child td { border-bottom: none; }
 
         /* ── BADGES ── */
         .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 11px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 700;
         }
 
         .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
@@ -450,15 +366,9 @@
 
         /* ── WALLET CHIP ── */
         .wallet-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: var(--info-light);
-            color: #0369a1;
-            font-size: 12px;
-            font-weight: 700;
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 999px;
+            background: var(--info-light); color: #0369a1; font-size: 12px; font-weight: 700;
         }
 
         /* ── PROGRESS ── */
@@ -470,18 +380,10 @@
 
         /* ── CONTRIB PILL ── */
         .contrib-count {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            background: var(--brand-light);
-            color: var(--brand-dark);
-            border: none;
-            cursor: pointer;
-            transition: background var(--transition);
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px; border-radius: 999px; font-size: 12px;
+            font-weight: 700; background: var(--brand-light); color: var(--brand-dark);
+            border: none; cursor: pointer; transition: background var(--transition);
         }
 
         .contrib-count:hover { background: #bbf7d0; }
@@ -494,29 +396,19 @@
 
         /* ── MODAL ── */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.35);
-            z-index: 999;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(3px);
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,.35); z-index: 999;
+            align-items: center; justify-content: center; backdrop-filter: blur(3px);
         }
 
         .modal-overlay.open { display: flex; animation: fadeIn .18s ease; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
+            background: var(--surface); border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             box-shadow: 0 20px 60px rgba(0,0,0,.18);
-            width: 100%;
-            max-width: 540px;
-            margin: 20px;
-            overflow: hidden;
+            width: 100%; max-width: 540px; margin: 20px; overflow: hidden;
             animation: slideUp .22s cubic-bezier(.4,0,.2,1);
         }
 
@@ -526,58 +418,255 @@
         }
 
         .modal-header {
-            padding: 22px 26px 18px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 22px 26px 18px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
         }
 
         .modal-title { font-size: 17px; font-weight: 800; }
         .modal-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-muted);
-            width: 32px; height: 32px;
-            border-radius: 50%;
+            background: none; border: none; cursor: pointer; color: var(--text-muted);
+            width: 32px; height: 32px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
-            transition: background var(--transition), color var(--transition);
+            font-size: 20px; transition: background var(--transition), color var(--transition);
         }
-        .modal-close:hover { background: var(--danger-light); color: var(--danger); }
 
+        .modal-close:hover { background: var(--danger-light); color: var(--danger); }
         .modal-body { padding: 24px 26px; }
 
         .detail-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-            gap: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px solid var(--border); gap: 12px;
         }
+
         .detail-row:last-child { border-bottom: none; }
         .detail-key { font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
         .detail-val { font-weight: 600; color: var(--text-primary); text-align: right; }
-
         .contribs-list { margin-top: 18px; }
         .contribs-list-title { font-size: 13px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
 
         .contrib-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 9px 14px;
-            background: #f9fdf9;
-            border-radius: var(--radius-sm);
-            margin-bottom: 7px;
-            border: 1px solid var(--border);
-            font-size: 13.5px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 9px 14px; background: #f9fdf9; border-radius: var(--radius-sm);
+            margin-bottom: 7px; border: 1px solid var(--border); font-size: 13.5px;
         }
 
         .contrib-amount { font-weight: 800; color: var(--brand-dark); }
         .contrib-date   { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+        /* ═══════════════════════════════════
+           AI ANOMALY DETECTOR STYLES
+           ═══════════════════════════════════ */
+
+        /* HERO */
+        .hero-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #15803d 100%);
+            border-radius: var(--radius-lg);
+            padding: 36px 40px; margin-bottom: 26px;
+            color: white; display: flex; align-items: center;
+            justify-content: space-between; gap: 24px; flex-wrap: wrap;
+            position: relative; overflow: hidden;
+        }
+
+        .hero-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 80% 50%, rgba(22,163,74,.15) 0%, transparent 60%);
+        }
+
+        .hero-glow {
+            position: absolute; right: -40px; top: -40px;
+            width: 200px; height: 200px; border-radius: 50%;
+            background: rgba(34,197,94,.08); filter: blur(40px);
+        }
+
+        .hero-text { position: relative; z-index: 1; }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+            border-radius: 999px; padding: 5px 14px;
+            font-size: 12px; font-weight: 700; letter-spacing: .5px;
+            text-transform: uppercase; margin-bottom: 14px;
+        }
+
+        .hero-badge svg { width: 13px; height: 13px; }
+        .hero-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -.5px; }
+        .hero-sub { font-size: 14px; opacity: .75; max-width: 500px; line-height: 1.6; }
+        .hero-action { position: relative; z-index: 1; }
+
+        /* AI STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px; margin-bottom: 26px;
+        }
+
+        .stat-card {
+            background: var(--surface); border-radius: var(--radius-md);
+            border: 1px solid var(--border); box-shadow: var(--shadow-card);
+            padding: 18px 20px; text-align: center;
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+        .stat-card.danger  { background: var(--danger-light);  border-color: #fecaca; }
+        .stat-card.warning { background: var(--warning-light); border-color: #fde68a; }
+        .stat-card.success { background: var(--brand-light);   border-color: #bbf7d0; }
+        .stat-card.info    { background: var(--info-light);    border-color: #bae6fd; }
+
+        .stat-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .6px; color: var(--text-muted); margin-bottom: 8px;
+        }
+
+        .stat-card.danger  .stat-label { color: #b91c1c; }
+        .stat-card.warning .stat-label { color: #92400e; }
+        .stat-card.success .stat-label { color: var(--brand-dark); }
+        .stat-card.info    .stat-label { color: #0369a1; }
+
+        .stat-value { font-size: 30px; font-weight: 800; line-height: 1; color: var(--text-primary); }
+        .stat-card.danger  .stat-value { color: #b91c1c; }
+        .stat-card.warning .stat-value { color: #92400e; }
+        .stat-card.success .stat-value { color: var(--brand-dark); }
+        .stat-card.info    .stat-value { color: #0369a1; }
+
+        /* COUNT BADGE */
+        .count-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
+        }
+
+        .count-badge svg { width: 14px; height: 14px; }
+        .count-danger  { background: var(--danger-light); color: #b91c1c; }
+        .count-success { background: var(--brand-light);  color: var(--brand-dark); }
+
+        /* ANOMALY GRID */
+        .anomaly-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 18px; padding: 26px;
+        }
+
+        .anomaly-card {
+            background: var(--surface); border-radius: var(--radius-md);
+            border: 1px solid var(--border); box-shadow: var(--shadow-card);
+            padding: 22px 24px; position: relative; overflow: hidden;
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+
+        .anomaly-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .anomaly-card.risk-eleve  { border-left: 4px solid var(--danger); }
+        .anomaly-card.risk-moyen  { border-left: 4px solid var(--warning); }
+        .anomaly-card.risk-faible { border-left: 4px solid var(--info); }
+
+        .anomaly-card::after {
+            content: ''; position: absolute; top: 0; right: 0;
+            width: 100px; height: 100px; border-radius: 50%;
+            opacity: .06; transform: translate(30px, -30px);
+        }
+
+        .anomaly-card.risk-eleve::after  { background: var(--danger); }
+        .anomaly-card.risk-moyen::after  { background: var(--warning); }
+        .anomaly-card.risk-faible::after { background: var(--info); }
+
+        .risk-tag {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 999px;
+            font-size: 11.5px; font-weight: 700; margin-bottom: 14px;
+        }
+
+        .risk-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .risk-tag.eleve  { background: var(--danger-light);  color: #b91c1c; }
+        .risk-tag.moyen  { background: var(--warning-light); color: #92400e; }
+        .risk-tag.faible { background: var(--info-light);    color: #0369a1; }
+
+        .anomaly-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+        .anomaly-amount { font-size: 26px; font-weight: 800; color: var(--text-primary); }
+        .method-tag { font-size: 11px; font-weight: 700; background: #f1f5f1; padding: 4px 10px; border-radius: 6px; color: var(--text-secondary); white-space: nowrap; }
+
+        .anomaly-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+        .meta-pill {
+            background: #f4faf6; border: 1px solid var(--border);
+            padding: 3px 10px; border-radius: 999px;
+            font-size: 12px; font-weight: 600; color: var(--text-secondary);
+        }
+
+        .anomaly-reason {
+            font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+            background: #f9fdf9; padding: 12px 14px;
+            border-radius: var(--radius-sm); border-left: 3px solid var(--border);
+        }
+
+        .score-bar { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
+        .score-label { font-size: 11px; font-weight: 700; color: var(--text-muted); white-space: nowrap; }
+        .score-track { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+        .score-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+        .score-fill.eleve  { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .score-fill.moyen  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .score-fill.faible { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+        .score-val { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+
+        /* INITIAL / EMPTY STATES */
+        .initial-state { text-align: center; padding: 64px 20px; }
+        .initial-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #0f172a, #15803d);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .initial-icon svg { width: 40px; height: 40px; color: white; }
+        .initial-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .initial-sub { color: var(--text-muted); font-size: 14px; max-width: 380px; margin: 0 auto; line-height: 1.6; }
+
+        .empty-ai { text-align: center; padding: 64px 20px; }
+        .empty-ai-icon {
+            width: 80px; height: 80px; background: var(--brand-light);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .empty-ai-icon svg { width: 40px; height: 40px; color: var(--brand); }
+        .empty-ai-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .empty-ai-sub { color: var(--text-muted); font-size: 14px; }
+
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,23,42,.6); z-index: 999;
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: 20px; backdrop-filter: blur(6px);
+        }
+
+        .loading-overlay.show { display: flex; animation: fadeIn .2s ease; }
+
+        .loading-box {
+            background: white; border-radius: var(--radius-lg);
+            padding: 40px 48px; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,.2); max-width: 360px; width: 90%;
+        }
+
+        .spinner {
+            width: 52px; height: 52px; border: 4px solid var(--brand-light);
+            border-top-color: var(--brand); border-radius: 50%;
+            animation: spin 0.7s linear infinite; margin: 0 auto 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-title { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+        .loading-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+        .loading-steps { margin-top: 20px; text-align: left; }
+
+        .loading-step {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px; font-weight: 600; color: var(--text-muted);
+            padding: 6px 0; border-bottom: 1px solid var(--border);
+        }
+
+        .loading-step:last-child { border-bottom: none; }
+        .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+        .step-dot.active { background: var(--brand); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -610,14 +699,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Manage Objectifs
         </a>
-        <a class="side-link" href="{{ path('app_admin_tickets') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-            Tickets & Messages
-        </a>
-        <a class="side-link" href="{{ path('app_admin_obligations') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
-            Manage Obligations
-        </a>
 
         <div class="sidebar-footer">
             <a class="side-link" href="{{ path('app_home') }}">
@@ -636,7 +717,7 @@
 
         <!-- TOPBAR -->
         <div class="topbar">
-            <div class="topbar-title">Objectif <span>Management</span></div>
+            <div class="topbar-title">Objectif <span>& AI Management</span></div>
             <div class="topbar-right">
                 <a href="{{ path('app_admin_dashboard') }}" class="btn btn-primary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -647,367 +728,476 @@
             </div>
         </div>
 
-        <!-- FLASH -->
-        {% for message in app.flashes('success') %}
-            <div class="flash success">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                {{ message }}
-            </div>
-        {% endfor %}
-        {% for message in app.flashes('danger') %}
-            <div class="flash danger">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                {{ message }}
-            </div>
-        {% endfor %}
-
-        <!-- STAT CARDS -->
-        {% set totalObjectifs = objectifs|length %}
-        {% set termines       = objectifs|filter(o => o.statut == 'TERMINE')|length %}
-        {% set enCours        = objectifs|filter(o => o.statut == 'EN_COURS')|length %}
-        {% set totalContribs  = 0 %}
-        {% for o in objectifs %}
-            {% set totalContribs = totalContribs + o.contributiongoals|length %}
-        {% endfor %}
-
-        <div class="cards">
-            <div class="card c-green">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-label">Total Objectifs</div>
-                    <div class="card-value">{{ totalObjectifs }}</div>
-                </div>
-            </div>
-            <div class="card c-blue">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-label">En Cours</div>
-                    <div class="card-value">{{ enCours }}</div>
-                </div>
-            </div>
-            <div class="card c-green">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-label">Terminés</div>
-                    <div class="card-value">{{ termines }}</div>
-                </div>
-            </div>
-            <div class="card c-amber">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-label">Contributions</div>
-                    <div class="card-value">{{ totalContribs }}</div>
-                </div>
-            </div>
+        <!-- ═══ TABS BAR ═══ -->
+        <div class="tabs-bar">
+            <button class="tab-btn active" id="tab-objectifs" onclick="switchTab('objectifs')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Manage Objectifs
+                <span class="tab-badge">{{ objectifs|length }}</span>
+            </button>
+            <button class="tab-btn" id="tab-ai" onclick="switchTab('ai')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                AI Anomaly Detector
+                {% if anomalies is not null and anomalies|length > 0 %}
+                    <span class="tab-badge" style="background:rgba(239,68,68,.2);color:#ef4444;">{{ anomalies|length }}</span>
+                {% endif %}
+            </button>
         </div>
 
-        <!-- ═══ TABLE SECTION ═══ -->
-        <div class="section">
+        <!-- ═══════════════════════════════════════
+             TAB 1 : MANAGE OBJECTIFS
+             ═══════════════════════════════════════ -->
+        <div class="tab-panel active" id="panel-objectifs">
 
-            <!-- Section header -->
-            <div class="section-header">
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    All Objectifs
+            <!-- FLASH -->
+            {% for message in app.flashes('success') %}
+                <div class="flash success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    {{ message }}
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
-                        {{ totalObjectifs }} result{{ totalObjectifs != 1 ? 's' : '' }}
-                    </span>
-                    <!-- Live client-side search (does not reset server filters) -->
-                    <div class="search-wrap">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" id="searchInput" placeholder="Search in results…" oninput="filterTable(this.value)">
+            {% endfor %}
+            {% for message in app.flashes('danger') %}
+                <div class="flash danger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            <!-- STAT CARDS -->
+            {% set totalObjectifs = objectifs|length %}
+            {% set termines       = objectifs|filter(o => o.statut == 'TERMINE')|length %}
+            {% set enCours        = objectifs|filter(o => o.statut == 'EN_COURS')|length %}
+            {% set totalContribs  = 0 %}
+            {% for o in objectifs %}
+                {% set totalContribs = totalContribs + o.contributiongoals|length %}
+            {% endfor %}
+
+            <div class="cards">
+                <div class="card c-green">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-label">Total Objectifs</div>
+                        <div class="card-value">{{ totalObjectifs }}</div>
+                    </div>
+                </div>
+                <div class="card c-blue">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-label">En Cours</div>
+                        <div class="card-value">{{ enCours }}</div>
+                    </div>
+                </div>
+                <div class="card c-green">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-label">Terminés</div>
+                        <div class="card-value">{{ termines }}</div>
+                    </div>
+                </div>
+                <div class="card c-amber">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-label">Contributions</div>
+                        <div class="card-value">{{ totalContribs }}</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Filters body -->
-            <div style="padding: 22px 26px; border-bottom: 1px solid var(--border);">
-                <form method="get" action="{{ path('app_admin_objectifs') }}">
-
-                    <!-- ── WALLET TOOLBAR ── -->
-                    <div class="wallet-toolbar">
-                        <div class="wt-label">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="14" r="1" fill="currentColor"/></svg>
-                            Wallet
-                        </div>
-
-                        <div class="wt-select-wrap">
-                            <select name="wallet_id" id="walletSelect" onchange="onWalletChange(this)">
-                                <option value="">— All wallets —</option>
-                                {% for id, w in wallets %}
-                                    <option
-                                        value="{{ id }}"
-                                        data-pays="{{ w.pays }}"
-                                        data-devise="{{ w.devise }}"
-                                        data-solde="{{ w.solde }}"
-                                        {{ filterWalletId == id ? 'selected' : '' }}
-                                    >
-                                        Wallet #{{ id }} — {{ w.pays }} / {{ w.devise }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            <div class="wt-chevron">
-                                <svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </div>
-                        </div>
-
-                        <!-- Info pills — populated by JS on change, pre-filled by Twig on reload -->
-                        <div class="wt-pills" id="walletPills" style="{{ filterWalletId ? '' : 'display:none;' }}">
-                            <div class="wt-divider"></div>
-                            <div class="wpill">
-                                <span class="pl">Pays</span>
-                                <span class="pv" id="pillPays">{% if filterWalletId and wallets[filterWalletId] is defined %}{{ wallets[filterWalletId].pays }}{% endif %}</span>
-                            </div>
-                            <div class="wpill">
-                                <span class="pl">Devise</span>
-                                <span class="pv" id="pillDevise">{% if filterWalletId and wallets[filterWalletId] is defined %}{{ wallets[filterWalletId].devise }}{% endif %}</span>
-                            </div>
-                            <div class="wpill solde">
-                                <span class="pl">Solde</span>
-                                <span class="pv" id="pillSolde">
-                                    {% if filterWalletId and wallets[filterWalletId] is defined %}
-                                        {{ wallets[filterWalletId].solde|number_format(2, ',', ' ') }} {{ wallets[filterWalletId].devise }}
-                                    {% endif %}
-                                </span>
-                            </div>
+            <!-- TABLE SECTION -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        All Objectifs
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
+                            {{ totalObjectifs }} result{{ totalObjectifs != 1 ? 's' : '' }}
+                        </span>
+                        <div class="search-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" id="searchInput" placeholder="Search in results…" oninput="filterTable(this.value)">
                         </div>
                     </div>
+                </div>
 
-                    <!-- ── OTHER FILTERS ── -->
-                    <div class="filters-bar">
-                        <div class="fg grow">
-                            <label>Search by title</label>
-                            <input type="text" name="q" value="{{ searchObjectif|default('') }}" placeholder="Objectif title…">
-                        </div>
-                        <div class="fg fixed">
-                            <label>Statut</label>
-                            <select name="status">
-                                <option value="">All status</option>
-                                <option value="EN_COURS" {{ filterStatut == 'EN_COURS' ? 'selected' : '' }}>En cours</option>
-                                <option value="TERMINE"  {{ filterStatut == 'TERMINE'  ? 'selected' : '' }}>Terminé</option>
-                            </select>
-                        </div>
-                        <div style="display:flex;gap:8px;align-items:flex-end;">
-                            <button class="btn btn-primary" type="submit">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                Apply
-                            </button>
-                            <a href="{{ path('app_admin_objectifs') }}" class="btn btn-secondary">Reset</a>
-                        </div>
-                    </div>
-
-                    <!-- Active filter banner -->
-                    {% if filterWalletId or filterStatut or searchObjectif %}
-                    <div class="filter-banner">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                        Filtered by:
-                        {% if filterWalletId %}
-                            <strong>
-                                Wallet #{{ filterWalletId }}{% if wallets[filterWalletId] is defined %} · {{ wallets[filterWalletId].pays }} / {{ wallets[filterWalletId].devise }}{% endif %}
-                            </strong>
-                        {% endif %}
-                        {% if filterStatut %}
-                            <strong>{{ filterStatut == 'TERMINE' ? 'Terminés' : 'En cours' }}</strong>
-                        {% endif %}
-                        {% if searchObjectif %}
-                            <strong>"{{ searchObjectif }}"</strong>
-                        {% endif %}
-                        — {{ totalObjectifs }} result{{ totalObjectifs != 1 ? 's' : '' }}
-                    </div>
-                    {% endif %}
-
-                </form>
-            </div>
-
-            <!-- TABLE -->
-            <div class="table-wrapper">
-                <table id="objectifsTable">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Title</th>
-                            <th>Wallet</th>
-                            <th>Target</th>
-                            <th>Progress</th>
-                            <th>Date début</th>
-                            <th>Durée</th>
-                            <th>Statut</th>
-                            
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for objectif in objectifs %}
-                        {% set totalContrib = 0 %}
-                        {% for c in objectif.contributiongoals %}
-                            {% set totalContrib = totalContrib + c.montant %}
-                        {% endfor %}
-                        {% set pct = objectif.montant > 0 ? ((totalContrib / objectif.montant) * 100)|round(0) : 0 %}
-                        {% set pct = pct > 100 ? 100 : pct %}
-                        {% set wi  = wallets[objectif.walletId] is defined ? wallets[objectif.walletId] : null %}
-
-                        <tr>
-                            <td style="color:var(--text-muted);font-weight:700;">{{ objectif.id }}</td>
-
-                            <td style="font-weight:700;">{{ objectif.titre }}</td>
-
-                            <td>
-                                {% if wi %}
-                                    <div style="display:flex;flex-direction:column;gap:3px;">
-                                        <span class="wallet-chip">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-                                            #{{ objectif.walletId }}
-                                        </span>
-                                        <span style="font-size:11.5px;color:var(--text-muted);font-weight:600;">{{ wi.pays }} · {{ wi.devise }}</span>
-                                    </div>
-                                {% else %}
-                                    <span class="wallet-chip">#{{ objectif.walletId }}</span>
-                                {% endif %}
-                            </td>
-
-                            <td style="font-weight:700;">
-                                {{ objectif.montant|number_format(2, '.', ',') }}
-                                {% if wi %}<span style="font-size:11.5px;color:var(--text-muted);font-weight:600;margin-left:3px;">{{ wi.devise }}</span>{% endif %}
-                            </td>
-
-                            <td>
-                                <div class="progress-wrap">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill {{ pct >= 100 ? 'full' : '' }}" style="width:{{ pct }}%;"></div>
-                                    </div>
-                                    <span class="progress-pct">{{ pct }}%</span>
-                                </div>
-                                <div style="font-size:11.5px;color:var(--text-muted);font-weight:600;margin-top:3px;">
-                                    {{ totalContrib|number_format(2, '.', ',') }} / {{ objectif.montant|number_format(2, '.', ',') }}
-                                </div>
-                            </td>
-
-                            <td style="color:var(--text-secondary);font-weight:600;white-space:nowrap;">
-                                {{ objectif.dateDebut ? objectif.dateDebut|date('d M Y') : '—' }}
-                            </td>
-
-                            <td style="font-weight:600;color:var(--text-secondary);">
-                                {{ objectif.duree }} day{{ objectif.duree > 1 ? 's' : '' }}
-                            </td>
-
-                            <td>
-                                {% if objectif.statut == 'TERMINE' %}
-                                    <span class="badge badge-termine">TERMINÉ</span>
-                                {% elseif objectif.statut == 'EN_COURS' %}
-                                    <span class="badge badge-en-cours">EN COURS</span>
-                                {% else %}
-                                    <span class="badge badge-pause">{{ objectif.statut }}</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                <button class="contrib-count" onclick="openModal({{ objectif.id }})" title="View contributions">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                                    {{ objectif.contributiongoals|length }}
-                                </button>
-                            </td>
-
-                            <td>
-                                <form method="post" action="{{ path('objectif_delete', {id: objectif.id}) }}" onsubmit="return confirm('Delete this objectif and refund all contributions?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ objectif.id) }}">
-                                    <button class="btn btn-danger" type="submit">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                        Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-
-                        <!-- Modal data template for this objectif -->
-                        <template id="modal-data-{{ objectif.id }}">
-                            <div class="modal-body">
-                                <div class="detail-row">
-                                    <span class="detail-key">ID</span>
-                                    <span class="detail-val">#{{ objectif.id }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-key">Title</span>
-                                    <span class="detail-val">{{ objectif.titre }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-key">Wallet</span>
-                                    <span class="detail-val">#{{ objectif.walletId }}{% if wi %} — {{ wi.pays }} / {{ wi.devise }}{% endif %}</span>
-                                </div>
-                                {% if wi %}
-                                <div class="detail-row">
-                                    <span class="detail-key">Solde wallet</span>
-                                    <span class="detail-val" style="color:var(--brand-dark);">{{ wi.solde|number_format(2, '.', ',') }} {{ wi.devise }}</span>
-                                </div>
-                                {% endif %}
-                                <div class="detail-row">
-                                    <span class="detail-key">Target</span>
-                                    <span class="detail-val">{{ objectif.montant|number_format(2, '.', ',') }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-key">Collected</span>
-                                    <span class="detail-val">{{ totalContrib|number_format(2, '.', ',') }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-key">Progress</span>
-                                    <span class="detail-val" style="color:{{ pct >= 100 ? 'var(--brand)' : 'var(--text-primary)' }};">{{ pct }}%</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-key">Start Date</span>
-                                    <span class="detail-val">{{ objectif.dateDebut ? objectif.dateDebut|date('d M Y') : '—' }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-key">Duration</span>
-                                    <span class="detail-val">{{ objectif.duree }} day{{ objectif.duree > 1 ? 's' : '' }}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-key">Status</span>
-                                    <span class="detail-val">{{ objectif.statut }}</span>
-                                </div>
-
-                                {% if objectif.contributiongoals|length > 0 %}
-                                <div class="contribs-list">
-                                    <div class="contribs-list-title">Contributions ({{ objectif.contributiongoals|length }})</div>
-                                    {% for contrib in objectif.contributiongoals %}
-                                        <div class="contrib-item">
-                                            <span class="contrib-amount">+{{ contrib.montant|number_format(2, '.', ',') }}</span>
-                                            <span class="contrib-date">{{ contrib.date ? contrib.date|date('d M Y') : '—' }}</span>
-                                        </div>
+                <!-- Filters -->
+                <div style="padding: 22px 26px; border-bottom: 1px solid var(--border);">
+                    <form method="get" action="{{ path('app_admin_objectifs') }}">
+                        <div class="wallet-toolbar">
+                            <div class="wt-label">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="14" r="1" fill="currentColor"/></svg>
+                                Wallet
+                            </div>
+                            <div class="wt-select-wrap">
+                                <select name="wallet_id" id="walletSelect" onchange="onWalletChange(this)">
+                                    <option value="">— All wallets —</option>
+                                    {% for id, w in wallets %}
+                                        <option
+                                            value="{{ id }}"
+                                            data-pays="{{ w.pays }}"
+                                            data-devise="{{ w.devise }}"
+                                            data-solde="{{ w.solde }}"
+                                            {{ filterWalletId == id ? 'selected' : '' }}
+                                        >
+                                            Wallet #{{ id }} — {{ w.pays }} / {{ w.devise }}
+                                        </option>
                                     {% endfor %}
+                                </select>
+                                <div class="wt-chevron">
+                                    <svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </div>
-                                {% else %}
-                                <div style="margin-top:16px;text-align:center;color:var(--text-muted);font-size:13px;font-weight:600;">
-                                    No contributions yet.
-                                </div>
-                                {% endif %}
                             </div>
-                        </template>
-
-                    {% else %}
-                        <tr>
-                            <td colspan="10">
-                                <div class="empty-state">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    <p>No objectifs found.</p>
-                                    <span>Try adjusting your filters or reset them.</span>
+                            <div class="wt-pills" id="walletPills" style="{{ filterWalletId ? '' : 'display:none;' }}">
+                                <div class="wt-divider"></div>
+                                <div class="wpill">
+                                    <span class="pl">Pays</span>
+                                    <span class="pv" id="pillPays">{% if filterWalletId and wallets[filterWalletId] is defined %}{{ wallets[filterWalletId].pays }}{% endif %}</span>
                                 </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                                <div class="wpill">
+                                    <span class="pl">Devise</span>
+                                    <span class="pv" id="pillDevise">{% if filterWalletId and wallets[filterWalletId] is defined %}{{ wallets[filterWalletId].devise }}{% endif %}</span>
+                                </div>
+                                <div class="wpill solde">
+                                    <span class="pl">Solde</span>
+                                    <span class="pv" id="pillSolde">
+                                        {% if filterWalletId and wallets[filterWalletId] is defined %}
+                                            {{ wallets[filterWalletId].solde|number_format(2, ',', ' ') }} {{ wallets[filterWalletId].devise }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filters-bar">
+                            <div class="fg grow">
+                                <label>Search by title</label>
+                                <input type="text" name="q" value="{{ searchObjectif|default('') }}" placeholder="Objectif title…">
+                            </div>
+                            <div class="fg fixed">
+                                <label>Statut</label>
+                                <select name="status">
+                                    <option value="">All status</option>
+                                    <option value="EN_COURS" {{ filterStatut == 'EN_COURS' ? 'selected' : '' }}>En cours</option>
+                                    <option value="TERMINE"  {{ filterStatut == 'TERMINE'  ? 'selected' : '' }}>Terminé</option>
+                                </select>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:flex-end;">
+                                <button class="btn btn-primary" type="submit">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    Apply
+                                </button>
+                                <a href="{{ path('app_admin_objectifs') }}" class="btn btn-secondary">Reset</a>
+                            </div>
+                        </div>
+
+                        {% if filterWalletId or filterStatut or searchObjectif %}
+                        <div class="filter-banner">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                            Filtered by:
+                            {% if filterWalletId %}
+                                <strong>Wallet #{{ filterWalletId }}{% if wallets[filterWalletId] is defined %} · {{ wallets[filterWalletId].pays }} / {{ wallets[filterWalletId].devise }}{% endif %}</strong>
+                            {% endif %}
+                            {% if filterStatut %}
+                                <strong>{{ filterStatut == 'TERMINE' ? 'Terminés' : 'En cours' }}</strong>
+                            {% endif %}
+                            {% if searchObjectif %}
+                                <strong>"{{ searchObjectif }}"</strong>
+                            {% endif %}
+                            — {{ totalObjectifs }} result{{ totalObjectifs != 1 ? 's' : '' }}
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <!-- TABLE -->
+                <div class="table-wrapper">
+                    <table id="objectifsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Wallet</th>
+                                <th>Target</th>
+                                <th>Progress</th>
+                                <th>Date début</th>
+                                <th>Durée</th>
+                                <th>Statut</th>
+                                <th>Contributions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for objectif in objectifs %}
+                            {% set totalContrib = 0 %}
+                            {% for c in objectif.contributiongoals %}
+                                {% set totalContrib = totalContrib + c.montant %}
+                            {% endfor %}
+                            {% set pct = objectif.montant > 0 ? ((totalContrib / objectif.montant) * 100)|round(0) : 0 %}
+                            {% set pct = pct > 100 ? 100 : pct %}
+                            {% set wi  = wallets[objectif.walletId] is defined ? wallets[objectif.walletId] : null %}
+
+                            <tr>
+                                <td style="color:var(--text-muted);font-weight:700;">{{ objectif.id }}</td>
+                                <td style="font-weight:700;">{{ objectif.titre }}</td>
+                                <td>
+                                    {% if wi %}
+                                        <div style="display:flex;flex-direction:column;gap:3px;">
+                                            <span class="wallet-chip">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                                                #{{ objectif.walletId }}
+                                            </span>
+                                            <span style="font-size:11.5px;color:var(--text-muted);font-weight:600;">{{ wi.pays }} · {{ wi.devise }}</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="wallet-chip">#{{ objectif.walletId }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-weight:700;">
+                                    {{ objectif.montant|number_format(2, '.', ',') }}
+                                    {% if wi %}<span style="font-size:11.5px;color:var(--text-muted);font-weight:600;margin-left:3px;">{{ wi.devise }}</span>{% endif %}
+                                </td>
+                                <td>
+                                    <div class="progress-wrap">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill {{ pct >= 100 ? 'full' : '' }}" style="width:{{ pct }}%;"></div>
+                                        </div>
+                                        <span class="progress-pct">{{ pct }}%</span>
+                                    </div>
+                                    <div style="font-size:11.5px;color:var(--text-muted);font-weight:600;margin-top:3px;">
+                                        {{ totalContrib|number_format(2, '.', ',') }} / {{ objectif.montant|number_format(2, '.', ',') }}
+                                    </div>
+                                </td>
+                                <td style="color:var(--text-secondary);font-weight:600;white-space:nowrap;">
+                                    {{ objectif.dateDebut ? objectif.dateDebut|date('d M Y') : '—' }}
+                                </td>
+                                <td style="font-weight:600;color:var(--text-secondary);">
+                                    {{ objectif.duree }} day{{ objectif.duree > 1 ? 's' : '' }}
+                                </td>
+                                <td>
+                                    {% if objectif.statut == 'TERMINE' %}
+                                        <span class="badge badge-termine">TERMINÉ</span>
+                                    {% elseif objectif.statut == 'EN_COURS' %}
+                                        <span class="badge badge-en-cours">EN COURS</span>
+                                    {% else %}
+                                        <span class="badge badge-pause">{{ objectif.statut }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="contrib-count" onclick="openModal({{ objectif.id }})" title="View contributions">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                                        {{ objectif.contributiongoals|length }}
+                                    </button>
+                                </td>
+                                <td>
+                                    <form method="post" action="{{ path('objectif_delete', {id: objectif.id}) }}" onsubmit="return confirm('Delete this objectif and refund all contributions?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ objectif.id) }}">
+                                        <button class="btn btn-danger" type="submit">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+
+                            <!-- Modal data template -->
+                            <template id="modal-data-{{ objectif.id }}">
+                                <div class="modal-body">
+                                    <div class="detail-row"><span class="detail-key">ID</span><span class="detail-val">#{{ objectif.id }}</span></div>
+                                    <div class="detail-row"><span class="detail-key">Title</span><span class="detail-val">{{ objectif.titre }}</span></div>
+                                    <div class="detail-row"><span class="detail-key">Wallet</span><span class="detail-val">#{{ objectif.walletId }}{% if wi %} — {{ wi.pays }} / {{ wi.devise }}{% endif %}</span></div>
+                                    {% if wi %}
+                                    <div class="detail-row"><span class="detail-key">Solde wallet</span><span class="detail-val" style="color:var(--brand-dark);">{{ wi.solde|number_format(2, '.', ',') }} {{ wi.devise }}</span></div>
+                                    {% endif %}
+                                    <div class="detail-row"><span class="detail-key">Target</span><span class="detail-val">{{ objectif.montant|number_format(2, '.', ',') }}</span></div>
+                                    <div class="detail-row"><span class="detail-key">Collected</span><span class="detail-val">{{ totalContrib|number_format(2, '.', ',') }}</span></div>
+                                    <div class="detail-row"><span class="detail-key">Progress</span><span class="detail-val" style="color:{{ pct >= 100 ? 'var(--brand)' : 'var(--text-primary)' }};">{{ pct }}%</span></div>
+                                    <div class="detail-row"><span class="detail-key">Start Date</span><span class="detail-val">{{ objectif.dateDebut ? objectif.dateDebut|date('d M Y') : '—' }}</span></div>
+                                    <div class="detail-row"><span class="detail-key">Duration</span><span class="detail-val">{{ objectif.duree }} day{{ objectif.duree > 1 ? 's' : '' }}</span></div>
+                                    <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val">{{ objectif.statut }}</span></div>
+                                    {% if objectif.contributiongoals|length > 0 %}
+                                        <div class="contribs-list">
+                                            <div class="contribs-list-title">Contributions ({{ objectif.contributiongoals|length }})</div>
+                                            {% for contrib in objectif.contributiongoals %}
+                                                <div class="contrib-item">
+                                                    <span class="contrib-amount">+{{ contrib.montant|number_format(2, '.', ',') }}</span>
+                                                    <span class="contrib-date">{{ contrib.date ? contrib.date|date('d M Y') : '—' }}</span>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div style="margin-top:16px;text-align:center;color:var(--text-muted);font-size:13px;font-weight:600;">No contributions yet.</div>
+                                    {% endif %}
+                                </div>
+                            </template>
+
+                        {% else %}
+                            <tr>
+                                <td colspan="10">
+                                    <div class="empty-state">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <p>No objectifs found.</p>
+                                        <span>Try adjusting your filters or reset them.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- END TAB 1 -->
+
+
+        <!-- ═══════════════════════════════════════
+             TAB 2 : AI ANOMALY DETECTOR
+             ═══════════════════════════════════════ -->
+        <div class="tab-panel" id="panel-ai">
+
+            <!-- HERO -->
+            <div class="hero-card">
+                <div class="hero-glow"></div>
+                <div class="hero-text">
+                    <div class="hero-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                        Isolation Forest ML + Analyse Statistique
+                    </div>
+                    <div class="hero-title">Détection d'Anomalies Financières</div>
+                    <div class="hero-sub">
+                        Algorithme ML Isolation Forest combiné à l'analyse statistique (Z-Score, IQR, règles métier)
+                        pour détecter les contributions suspectes, montants frauduleux et patterns inhabituels.
+                    </div>
+                </div>
+                <div class="hero-action">
+                    <form method="post" id="analyzeForm">
+                        <button class="btn btn-dark" type="submit" onclick="showLoading()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:16px;height:16px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            Lancer l'Analyse IA
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- AI STATS -->
+            {% if stats is not null %}
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Contributions analysées</div>
+                        <div class="stat-value">{{ stats.total_contributions }}</div>
+                    </div>
+                    <div class="stat-card {{ stats.total_anomalies > 0 ? 'danger' : 'success' }}">
+                        <div class="stat-label">Anomalies détectées</div>
+                        <div class="stat-value">{{ stats.total_anomalies }}</div>
+                    </div>
+                    <div class="stat-card {{ stats.eleve > 0 ? 'danger' : '' }}">
+                        <div class="stat-label">Risque Élevé</div>
+                        <div class="stat-value">{{ stats.eleve }}</div>
+                    </div>
+                    <div class="stat-card {{ stats.moyen > 0 ? 'warning' : '' }}">
+                        <div class="stat-label">Risque Moyen</div>
+                        <div class="stat-value">{{ stats.moyen }}</div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-label">Montant Moyen</div>
+                        <div class="stat-value" style="font-size:18px;padding-top:4px;">{{ stats.moyenne|number_format(2, ',', ' ') }}</div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- AI RESULTS SECTION -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Résultats de l'Analyse
+                    </div>
+                    {% if anomalies is not null %}
+                        {% if anomalies|length > 0 %}
+                            <span class="count-badge count-danger">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                                {{ anomalies|length }} anomalie{{ anomalies|length > 1 ? 's' : '' }} détectée{{ anomalies|length > 1 ? 's' : '' }}
+                            </span>
+                        {% else %}
+                            <span class="count-badge count-success">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                Aucune anomalie
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if anomalies is null %}
+                    <div class="initial-state">
+                        <div class="initial-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="initial-title">Analyse non lancée</div>
+                        <div class="initial-sub">Cliquez sur "Lancer l'Analyse IA" pour démarrer la détection d'anomalies sur toutes les contributions.</div>
+                    </div>
+
+                {% elseif anomalies|length == 0 %}
+                    <div class="empty-ai">
+                        <div class="empty-ai-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <div class="empty-ai-title">Aucune anomalie détectée ✓</div>
+                        <div class="empty-ai-sub">Toutes les contributions analysées sont dans les normes attendues.</div>
+                    </div>
+
+                {% else %}
+                    <div class="anomaly-grid">
+                        {% for a in anomalies %}
+                            {% set riskRaw = a.niveau_risque|upper %}
+                            {% set riskClass = 'faible' %}
+                            {% if 'LEVE' in riskRaw or 'LEVÉ' in riskRaw or riskRaw == 'ÉLEVÉ' or riskRaw == 'ELEVE' %}
+                                {% set riskClass = 'eleve' %}
+                            {% elseif riskRaw == 'MOYEN' %}
+                                {% set riskClass = 'moyen' %}
+                            {% endif %}
+
+                            {% set scoreMax = 15 %}
+                            {% set scorePct = ((a.score / scoreMax) * 100)|round %}
+{% if scorePct > 100 %}{% set scorePct = 100 %}{% endif %}
+                            
+
+                            <div class="anomaly-card risk-{{ riskClass }}">
+                                <div class="risk-tag {{ riskClass }}">{{ a.niveau_risque }}</div>
+                                <div class="anomaly-top">
+                                    <div class="anomaly-amount">{{ a.montant|number_format(2, ',', ' ') }}</div>
+                                    <div class="method-tag">{{ a.methode }}</div>
+                                </div>
+                                <div class="anomaly-meta">
+                                    <span class="meta-pill">Objectif #{{ a.objectif_id }}</span>
+                                    <span class="meta-pill">{{ a.objectif_titre }}</span>
+                                    <span class="meta-pill">Wallet #{{ a.wallet_id }}</span>
+                                    {% if a.date %}<span class="meta-pill">{{ a.date }}</span>{% endif %}
+                                </div>
+                                <div class="anomaly-reason">{{ a.raison }}</div>
+                                <div class="score-bar">
+                                    <span class="score-label">Score</span>
+                                    <div class="score-track">
+                                        <div class="score-fill {{ riskClass }}" style="width:{{ scorePct }}%;"></div>
+                                    </div>
+                                    <span class="score-val">{{ a.score }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
         </div>
+        <!-- END TAB 2 -->
+
     </main>
 </div>
 
@@ -1022,28 +1212,65 @@
     </div>
 </div>
 
+<!-- ═══ LOADING OVERLAY ═══ -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <div class="loading-title">Analyse IA en cours…</div>
+        <div class="loading-sub">Isolation Forest + Z-Score + IQR + Règles métier</div>
+        <div class="loading-steps">
+            <div class="loading-step"><div class="step-dot active" id="step1"></div>Construction des arbres Isolation Forest</div>
+            <div class="loading-step"><div class="step-dot" id="step2"></div>Calcul des scores d'anomalie</div>
+            <div class="loading-step"><div class="step-dot" id="step3"></div>Analyse statistique (Z-Score, IQR)</div>
+            <div class="loading-step"><div class="step-dot" id="step4"></div>Fusion et ranking des résultats</div>
+        </div>
+    </div>
+</div>
+
 <script>
-/* ── Wallet toolbar: update pills on dropdown change ── */
+/* ── TAB SWITCHING ── */
+function switchTab(tab) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'active-ai'));
+
+    document.getElementById('panel-' + tab).classList.add('active');
+
+    if (tab === 'objectifs') {
+        document.getElementById('tab-objectifs').classList.add('active');
+    } else {
+        document.getElementById('tab-ai').classList.add('active-ai');
+    }
+
+    // Save active tab in sessionStorage so it survives form submission
+    sessionStorage.setItem('activeTab', tab);
+}
+
+// Restore tab after page reload (e.g. after AI analysis form submit)
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = sessionStorage.getItem('activeTab');
+    if (saved && saved !== 'objectifs') {
+        switchTab(saved);
+    }
+    {% if anomalies is not null %}
+        switchTab('ai');
+        sessionStorage.setItem('activeTab', 'ai');
+    {% endif %}
+});
+
+/* ── WALLET TOOLBAR ── */
 function onWalletChange(sel) {
     const opt   = sel.options[sel.selectedIndex];
     const pills = document.getElementById('walletPills');
-
-    if (!opt.value) {
-        pills.style.display = 'none';
-        return;
-    }
-
+    if (!opt.value) { pills.style.display = 'none'; return; }
     document.getElementById('pillPays').textContent   = opt.dataset.pays   || '—';
-    document.getElementById('pillDevise').textContent = opt.dataset.devise || '—';
+    document.getElementById('pillDevise').textContent = opt.dataset.devise  || '—';
     document.getElementById('pillSolde').textContent  =
-        parseFloat(opt.dataset.solde || 0)
-            .toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        parseFloat(opt.dataset.solde || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
         + ' ' + (opt.dataset.devise || '');
-
     pills.style.display = 'flex';
 }
 
-/* ── Client-side live search within already-filtered rows ── */
+/* ── CLIENT-SIDE SEARCH ── */
 function filterTable(query) {
     const rows = document.querySelectorAll('#objectifsTable tbody tr');
     const q = query.toLowerCase().trim();
@@ -1054,7 +1281,7 @@ function filterTable(query) {
     });
 }
 
-/* ── Contributions Modal ── */
+/* ── CONTRIBUTIONS MODAL ── */
 function openModal(id) {
     const tpl = document.getElementById('modal-data-' + id);
     if (!tpl) return;
@@ -1074,6 +1301,23 @@ function closeModalOnBg(e) {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ── LOADING OVERLAY (AI Analysis) ── */
+function showLoading() {
+    sessionStorage.setItem('activeTab', 'ai');
+    document.getElementById('loadingOverlay').classList.add('show');
+    const steps = ['step1','step2','step3','step4'];
+    let current = 0;
+    const interval = setInterval(() => {
+        if (current > 0) document.getElementById(steps[current - 1]).classList.remove('active');
+        if (current < steps.length) {
+            document.getElementById(steps[current]).classList.add('active');
+            current++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 600);
+}
 </script>
 </body>
 </html>

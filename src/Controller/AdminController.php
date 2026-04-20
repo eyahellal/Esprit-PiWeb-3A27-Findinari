@@ -9,7 +9,7 @@ use App\Entity\user\Feedback;
 use App\Repository\UtilisateurRepository;
 use App\Repository\FeedbackRepository;
 use App\Repository\WalletRepository;
-use App\Service\GoalStatisticsService; //
+use App\Service\GoalStatisticsService;
 use App\Repository\ObjectifRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\DBAL\Connection;
+use App\Service\AnomalyDetectorService;
 class AdminController extends AbstractController
 {
     #[Route('/admin', name: 'app_admin_dashboard')]
@@ -88,19 +89,19 @@ class AdminController extends AbstractController
                 $userCount++;
             }
         }
-        
+
         return $this->render('admin/dashboard.html.twig', [
-            'users' => $users,
-            'feedbacks' => $feedbacks,
-            'totalUsers' => count($allUsers),
+            'users'              => $users,
+            'feedbacks'          => $feedbacks,
+            'totalUsers'         => count($allUsers),
             'filteredUsersCount' => count($users),
-            'totalFeedbacks' => count($feedbacks),
-            'objectifs' => $objectifs,
-            'adminCount' => $adminCount,
-            'userCount' => $userCount,
-            'influencerCount' => $influencerCount,
-            'search' => $q,
-            'sort' => $sort,
+            'totalFeedbacks'     => count($feedbacks),
+            'objectifs'          => $objectifs,
+            'adminCount'         => $adminCount,
+            'userCount'          => $userCount,
+            'influencerCount'    => $influencerCount,
+            'search'             => $q,
+            'sort'               => $sort,
         ]);
     }
 
@@ -149,9 +150,9 @@ class AdminController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
-        $nom = trim((string) $request->request->get('nom'));
-        $prenom = trim((string) $request->request->get('prenom'));
-        $gmail = trim((string) $request->request->get('gmail'));
+        $nom      = trim((string) $request->request->get('nom'));
+        $prenom   = trim((string) $request->request->get('prenom'));
+        $gmail    = trim((string) $request->request->get('gmail'));
         $password = (string) $request->request->get('password');
 
         if (!$nom || !$prenom || !$gmail || !$password) {
@@ -160,7 +161,7 @@ class AdminController extends AbstractController
         }
 
         $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy([
-            'gmail' => $gmail
+            'gmail' => $gmail,
         ]);
 
         if ($existing) {
@@ -233,17 +234,20 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_wallets');
     }
-    #[Route('/admin/objectifs', name: 'app_admin_objectifs')]
+
+#[Route('/admin/objectifs', name: 'app_admin_objectifs')]
 public function objectifs(
     ObjectifRepository $objectifRepository,
     WalletRepository $walletRepository,
-    Request $request
+    Request $request,
+    AnomalyDetectorService $anomalyDetector  // ← ajouter ça
 ): Response {
     $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-    $selectedWalletId = $request->query->get('wallet_id');
+    $filterWalletId = $request->query->get('wallet_id');
+    $filterStatut   = $request->query->get('status');
+    $searchObjectif = trim((string) $request->query->get('q', ''));
 
-    // Construire le tableau wallets [id => [pays, devise, solde]]
     $wallets = [];
     foreach ($walletRepository->findAll() as $w) {
         $wallets[$w->getId()] = [
@@ -253,19 +257,70 @@ public function objectifs(
         ];
     }
 
-    // Filtrer les objectifs par wallet si sélectionné
-    if ($selectedWalletId) {
-        $objectifs = $objectifRepository->findBy(['walletId' => (int) $selectedWalletId]);
-    } else {
-        $objectifs = $objectifRepository->findAll();
+    $criteria = [];
+    if ($filterWalletId) $criteria['walletId'] = (int) $filterWalletId;
+    if ($filterStatut)   $criteria['statut']   = $filterStatut;
+
+    $objectifs = $objectifRepository->findBy($criteria);
+
+    if ($searchObjectif !== '') {
+        $objectifs = array_values(array_filter(
+            $objectifs,
+            fn($o) => str_contains(strtolower($o->getTitre()), strtolower($searchObjectif))
+        ));
+    }
+
+    // ── AI Anomaly Detector ──
+    $anomalies = null;
+    $stats     = null;
+
+    if ($request->isMethod('POST')) {
+        // Extraire toutes les contributions de tous les objectifs
+        $allContributions = [];
+        foreach ($objectifRepository->findAll() as $obj) {
+            foreach ($obj->getContributiongoals() as $c) {
+                $allContributions[] = [
+                    'objectif_id'    => $obj->getId(),
+                    'objectif_titre' => $obj->getTitre(),
+                    'wallet_id'      => $obj->getWalletId(),
+                    'montant'        => $c->getMontant(),
+                    'date'           => $c->getDate()?->format('Y-m-d'),
+                ];
+            }
+        }
+
+        if (!empty($allContributions)) {
+            $anomalies = $anomalyDetector->detect($allContributions);
+            $montants  = array_column($allContributions, 'montant');
+            $stats = [
+                'total_contributions' => count($allContributions),
+                'total_anomalies'     => count($anomalies),
+                'eleve'  => count(array_filter($anomalies, fn($a) => strtoupper($a['niveau_risque']) === 'ÉLEVÉ' || strtoupper($a['niveau_risque']) === 'ELEVE')),
+                'moyen'  => count(array_filter($anomalies, fn($a) => strtoupper($a['niveau_risque']) === 'MOYEN')),
+                'moyenne'=> count($montants) > 0 ? array_sum($montants) / count($montants) : 0,
+            ];
+        } else {
+            $anomalies = [];
+            $stats = ['total_contributions' => 0, 'total_anomalies' => 0, 'eleve' => 0, 'moyen' => 0, 'moyenne' => 0];
+        }
     }
 
     return $this->render('admin/objectifs.html.twig', [
-        'objectifs'        => $objectifs,
-        'wallets'          => $wallets,
-        'selectedWalletId' => $selectedWalletId,
+        'objectifs'      => $objectifs,
+        'wallets'        => $wallets,
+        'filterWalletId' => $filterWalletId,
+        'filterStatut'   => $filterStatut,
+        'searchObjectif' => $searchObjectif,
+        'anomalies'      => $anomalies,
+        'stats'          => $stats,
     ]);
 }
-  
-}
 
+    #[Route('/admin/tickets', name: 'app_admin_tickets')]
+    public function tickets(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('admin/tickets.html.twig');
+    }
+}
