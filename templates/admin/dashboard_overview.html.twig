@@ -1,0 +1,465 @@
+{% extends 'front/layout.html.twig' %}
+
+{% block title %}Overview Dashboard{% endblock %}
+
+{% block body %}
+<section class="py-4" style="background: #f5f7fb; min-height: 100vh;">
+    <div class="container-fluid px-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Overview Dashboard</h2>
+                <p class="text-muted mb-0">Users, wallets, investments, feedback and satisfaction overview</p>
+            </div>
+            <div class="badge rounded-pill bg-dark px-3 py-2 fs-6">
+                FinDinari Admin Panel
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-body">
+                        <div class="text-muted small mb-2">Total Users</div>
+                        <h3 class="fw-bold">{{ totalUsers }}</h3>
+                        <div class="mt-2 small text-success">Active users: {{ activeUsers }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-body">
+                        <div class="text-muted small mb-2">Total Wallets</div>
+                        <h3 class="fw-bold">{{ totalWallets }}</h3>
+                        <div class="mt-2 small text-muted">Face enabled users: {{ faceEnabledUsers }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-body">
+                        <div class="text-muted small mb-2">Investments</div>
+                        <h3 class="fw-bold">{{ totalInvestments }}</h3>
+                        <div class="mt-2 small text-muted">All investment records</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-2">
+                <div class="card border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-body">
+                        <div class="text-muted small mb-2">Feedbacks</div>
+                        <h3 class="fw-bold">{{ totalFeedbacks }}</h3>
+                        <div class="mt-2 small text-muted">Average rating: {{ averageRating }}/5</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 col-xl-2">
+                <div class="card border-0 shadow-sm h-100 rounded-4 bg-dark text-white">
+                    <div class="card-body">
+                        <div class="small mb-2" style="opacity:.8;">Satisfaction</div>
+                        <h3 class="fw-bold">{{ satisfactionRate }}%</h3>
+                        <div class="progress mt-3" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ satisfactionRate }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-8">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Users Growth</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="usersGrowthChart" height="110"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Users by Role</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="usersRoleChart" height="260"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Wallets by Currency</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="walletCurrencyCountChart" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Wallet Balance by Currency</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="walletCurrencyBalanceChart" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Wallets by Country</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="walletCountryChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Feedback Ratings</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="feedbackRatingChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Investment Breakdown</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="investmentBreakdownChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-8">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Feedback Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="feedbackTimelineChart" height="110"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Investment Stats</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4 p-3 rounded-3" style="background:#f8f9fa;">
+                            <div class="text-muted small">Obligation Investments</div>
+                            <div class="fs-4 fw-bold">{{ obligationInvestmentStats.total_count|default(0) }}</div>
+                            <div class="small text-muted">
+                                Total amount: {{ obligationInvestmentStats.total_amount|default(0)|number_format(2, '.', ',') }}
+                            </div>
+                            <div class="small text-muted">
+                                Average amount: {{ obligationInvestmentStats.average_amount|default(0)|number_format(2, '.', ',') }}
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-3" style="background:#f8f9fa;">
+                            <div class="text-muted small">Action Portfolios</div>
+                            <div class="fs-4 fw-bold">{{ portfolioStats.total_count|default(0) }}</div>
+                            <div class="small text-muted">
+                                Average rendement: {{ portfolioStats.average_rendement|default(0)|number_format(2, '.', ',') }}%
+                            </div>
+                            <div class="small text-muted">
+                                Max rendement: {{ portfolioStats.max_rendement|default(0)|number_format(2, '.', ',') }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-semibold">Wallet Summary by Currency</h5>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Currency</th>
+                                    <th>Wallets</th>
+                                    <th>Total Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in walletTotalsByCurrency %}
+                                    <tr>
+                                        <td><span class="badge bg-dark">{{ item.devise }}</span></td>
+                                        <td>{{ item.total_wallets }}</td>
+                                        <td>{{ item.total_balance|number_format(2, '.', ',') }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No wallet data</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Recent Feedbacks</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for feedback in recentFeedbacks %}
+                            <div class="border rounded-3 p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="fw-semibold">{{ feedback.user_email }}</div>
+                                    <span class="badge bg-warning text-dark">⭐ {{ feedback.rating }}/5</span>
+                                </div>
+                                <div class="text-muted small mb-2">{{ feedback.created_at|date('Y-m-d H:i') }}</div>
+                                <div>{{ feedback.message }}</div>
+                            </div>
+                        {% else %}
+                            <div class="text-muted">No feedback yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="mb-0 fw-semibold">Recent Users</h5>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recentUsers %}
+                                    <tr>
+                                        <td>#{{ user.id }}</td>
+                                        <td>{{ user.prenom }} {{ user.nom }}</td>
+                                        <td>{{ user.gmail }}</td>
+                                        <td>
+                                            <span class="badge {% if user.role == 'ADMIN' %}bg-danger{% elseif user.role == 'INFLUENCER' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                                                {{ user.role }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if user.statut in ['ACTIF', 'ACTIVE'] %}bg-success{% else %}bg-dark{% endif %}">
+                                                {{ user.statut }}
+                                            </span>
+                                        </td>
+                                        <td>{{ user.dateCreation|date('Y-m-d H:i') }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">No users found</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const usersGrowthLabels = {{ usersGrowthLabels|json_encode|raw }};
+    const usersGrowthValues = {{ usersGrowthValues|json_encode|raw }};
+
+    const walletCurrencyLabels = {{ walletCurrencyLabels|json_encode|raw }};
+    const walletCurrencyCounts = {{ walletCurrencyCounts|json_encode|raw }};
+    const walletCurrencyBalances = {{ walletCurrencyBalances|json_encode|raw }};
+
+    const countryLabels = {{ countryLabels|json_encode|raw }};
+    const countryValues = {{ countryValues|json_encode|raw }};
+
+    const roleLabels = {{ roleLabels|json_encode|raw }};
+    const roleValues = {{ roleValues|json_encode|raw }};
+
+    const feedbackLabels = {{ feedbackLabels|json_encode|raw }};
+    const feedbackValues = {{ feedbackValues|json_encode|raw }};
+
+    const feedbackTimelineLabels = {{ feedbackTimelineLabels|json_encode|raw }};
+    const feedbackTimelineValues = {{ feedbackTimelineValues|json_encode|raw }};
+
+    const investmentBreakdownLabels = {{ investmentBreakdownLabels|json_encode|raw }};
+    const investmentBreakdownValues = {{ investmentBreakdownValues|json_encode|raw }};
+
+    new Chart(document.getElementById('usersGrowthChart'), {
+        type: 'line',
+        data: {
+            labels: usersGrowthLabels,
+            datasets: [{
+                label: 'Users',
+                data: usersGrowthValues,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.12)',
+                fill: true,
+                tension: 0.35
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true } }
+        }
+    });
+
+    new Chart(document.getElementById('usersRoleChart'), {
+        type: 'doughnut',
+        data: {
+            labels: roleLabels,
+            datasets: [{
+                data: roleValues,
+                backgroundColor: ['#0d6efd', '#dc3545', '#20c997', '#6c757d', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    new Chart(document.getElementById('walletCurrencyCountChart'), {
+        type: 'bar',
+        data: {
+            labels: walletCurrencyLabels,
+            datasets: [{
+                label: 'Wallet count',
+                data: walletCurrencyCounts,
+                backgroundColor: '#198754'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true } }
+        }
+    });
+
+    new Chart(document.getElementById('walletCurrencyBalanceChart'), {
+        type: 'bar',
+        data: {
+            labels: walletCurrencyLabels,
+            datasets: [{
+                label: 'Total balance',
+                data: walletCurrencyBalances,
+                backgroundColor: '#6610f2'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true } }
+        }
+    });
+
+    new Chart(document.getElementById('walletCountryChart'), {
+        type: 'pie',
+        data: {
+            labels: countryLabels,
+            datasets: [{
+                data: countryValues,
+                backgroundColor: ['#0d6efd', '#20c997', '#ffc107', '#dc3545', '#6610f2', '#6f42c1', '#198754']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    new Chart(document.getElementById('feedbackRatingChart'), {
+        type: 'polarArea',
+        data: {
+            labels: feedbackLabels,
+            datasets: [{
+                data: feedbackValues,
+                backgroundColor: [
+                    'rgba(220,53,69,0.7)',
+                    'rgba(255,193,7,0.7)',
+                    'rgba(13,202,240,0.7)',
+                    'rgba(25,135,84,0.7)',
+                    'rgba(13,110,253,0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    new Chart(document.getElementById('investmentBreakdownChart'), {
+        type: 'doughnut',
+        data: {
+            labels: investmentBreakdownLabels,
+            datasets: [{
+                data: investmentBreakdownValues,
+                backgroundColor: ['#fd7e14', '#0dcaf0']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    new Chart(document.getElementById('feedbackTimelineChart'), {
+        type: 'line',
+        data: {
+            labels: feedbackTimelineLabels,
+            datasets: [{
+                label: 'Feedback count',
+                data: feedbackTimelineValues,
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220,53,69,0.12)',
+                fill: true,
+                tension: 0.35
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: true } }
+        }
+    });
+</script>
+{% endblock %}

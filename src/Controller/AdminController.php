@@ -568,4 +568,11 @@ class AdminController extends AbstractController
             'selectedUser' => $utilisateur,
         ]);
     }
+    #[Route('/admin/overview', name: 'app_admin_overview')]
+public function overviewDashboard(): Response
+{
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    return $this->redirectToRoute('app_admin_overview_dashboard');
+}
 }
