@@ -70,7 +70,7 @@
 
         <!-- Obligations Grid -->
         <div class="row" id="obligationsGrid">
-            {% if obligations is empty %}
+            {% if pagination is empty or pagination.getTotalItemCount == 0 %}
                 <div class="col-12 text-center py-5">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>No obligations found.
@@ -78,7 +78,7 @@
                     </div>
                 </div>
             {% else %}
-                {% for obligation in obligations %}
+                {% for obligation in pagination %}
                     <div class="col-lg-4 col-md-6 mb-4 obligation-card"
                          data-name="{{ obligation.nom|lower }}"
                          data-rate="{{ obligation.tauxInteret }}"
@@ -114,6 +114,15 @@
                 {% endfor %}
             {% endif %}
         </div>
+        
+        <!-- Pagination -->
+        {% if pagination is not empty and pagination.getTotalItemCount > 6 %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    {{ knp_pagination_render(pagination) }}
+                </div>
+            </div>
+        {% endif %}
     </div>
 </section>
 
@@ -256,7 +265,7 @@
         `;
         
         try {
-            const response = await fetch('/loan/obligation/api/obligation/recommendations');
+            const response = await fetch(Routing.generate('app_obligation_recommendations'));
             const data = await response.json();
             
             if (data.recommendations && data.recommendations.length > 0) {
@@ -329,7 +338,6 @@
         
         body.innerHTML = html;
         
-        // Add event listeners to radio buttons
         document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const addBtn = document.getElementById('addRecBtn');
@@ -338,11 +346,9 @@
                 }
                 selectedRecommendation = recommendations[parseInt(this.value)];
                 
-                // Remove selected class from all cards
                 document.querySelectorAll('.rec-card').forEach(card => {
                     card.classList.remove('selected');
                 });
-                // Add selected class to current card
                 const card = document.querySelector(`.rec-card[data-index="${this.value}"]`);
                 if (card) card.classList.add('selected');
             });
@@ -367,7 +373,7 @@
         addBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
         
         try {
-            const response = await fetch('/loan/obligation/api/obligation/recommendation/add', {
+            const response = await fetch(Routing.generate('app_obligation_recommendation_add'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -380,14 +386,9 @@
             const data = await response.json();
             
             if (data.success) {
-                // Close modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('recommendationModal'));
                 modal.hide();
-                
-                // Show success message
                 alert(`✅ "${selectedRecommendation.name}" has been added to your obligations!`);
-                
-                // Reload the page to show the new obligation
                 location.reload();
             } else {
                 alert('Error adding obligation. Please try again.');

@@ -8,6 +8,7 @@ use App\Repository\ObligationRepository;
 use App\Repository\InvestissementobligationRepository;
 use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,22 +20,29 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class ObligationController extends AbstractController
 {
     #[Route('/', name: 'app_obligation_index', methods: ['GET'])]
-    public function index(ObligationRepository $obligationRepository, Request $request): Response
-    {
+    public function index(
+        ObligationRepository $obligationRepository, 
+        Request $request,
+        PaginatorInterface $paginator
+    ): Response {
         $search = $request->query->get('search');
         
+        $queryBuilder = $obligationRepository->createQueryBuilder('o');
+        
         if ($search) {
-            $obligations = $obligationRepository->createQueryBuilder('o')
-                ->where('o.nom LIKE :search')
-                ->setParameter('search', '%' . $search . '%')
-                ->getQuery()
-                ->getResult();
-        } else {
-            $obligations = $obligationRepository->findAll();
+            $queryBuilder->where('o.nom LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
         }
+        
+        // Paginate the query (6 items per page for 2x3 grid)
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            3
+        );
 
         return $this->render('loan/obligation/index.html.twig', [
-            'obligations' => $obligations,
+            'pagination' => $pagination,
             'search' => $search,
         ]);
     }
