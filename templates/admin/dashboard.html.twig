@@ -397,6 +397,10 @@
 
         <div class="nav-section">Main</div>
         <a class="side-link active" href="{{ path('app_admin_dashboard') }}">Dashboard</a>
+        <a class="side-link {% if app.request.attributes.get('_route') == 'app_admin_overview_dashboard' %}active{% endif %}" 
+   href="{{ path('app_admin_overview_dashboard') }}">
+    Overview Dashboard
+</a>
         <a class="side-link" href="{{ path('app_admin_wallets') }}">Manage Wallets</a>
         <a class="side-link" href="{{ path('app_admin_objectifs') }}">Manage Objectifs</a>
         <a class="side-link" href="{{ path('app_admin_tickets') }}">Tickets & Messages</a>
