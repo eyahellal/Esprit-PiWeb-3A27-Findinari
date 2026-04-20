@@ -105,13 +105,6 @@ public function createTicket(
             $ticket->setDateCreation($createdAt);
             $ticket->setStatut('Open');
 
-            $deadline = $ticketSlaCalculator->calculateDeadline(
-                (string) $ticket->getPriorite(),
-                $createdAt
-            );
-
-            $ticket->setDeadline($deadline);
-
             $entityManager->persist($ticket);
             $entityManager->flush();
 

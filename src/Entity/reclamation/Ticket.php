@@ -14,8 +14,31 @@ use App\Repository\TicketRepository;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ORM\Table(name: 'ticket')]
+#[ORM\HasLifecycleCallbacks]
 class Ticket
 {
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateDeadline(): void
+    {
+        if ($this->dateCreation) {
+            $deadline = \DateTime::createFromInterface($this->dateCreation);
+            
+            switch ($this->priorite) {
+                case 'High':
+                    $deadline->modify('+2 hours');
+                    break;
+                case 'Medium':
+                    $deadline->modify('+24 hours');
+                    break;
+                case 'Low':
+                default:
+                    $deadline->modify('+48 hours');
+                    break;
+            }
+            $this->deadline = $deadline;
+        }
+    }
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -82,7 +105,27 @@ class Ticket
 
     public function getDeadline(): ?\DateTimeInterface
     {
-        return $this->deadline;
+        if (!$this->dateCreation) {
+            return null;
+        }
+
+        // We calculate it dynamically based on priority and created date
+        $deadline = \DateTime::createFromInterface($this->dateCreation);
+        
+        switch ($this->priorite) {
+            case 'High':
+                $deadline->modify('+2 hours');
+                break;
+            case 'Medium':
+                $deadline->modify('+24 hours');
+                break;
+            case 'Low':
+            default:
+                $deadline->modify('+48 hours');
+                break;
+        }
+
+        return $deadline;
     }
 
     public function setDeadline(?\DateTimeInterface $deadline): self
@@ -212,4 +255,12 @@ class Ticket
         return $this;
     }
 
+    public function isBreached(): bool
+    {
+        if (!$this->getDeadline() || in_array($this->statut, ['Fermé', 'Closed', 'CLOSED', 'Resolved', 'RESOLVED'])) {
+            return false;
+        }
+
+        return new \DateTime() > $this->getDeadline();
+    }
 }

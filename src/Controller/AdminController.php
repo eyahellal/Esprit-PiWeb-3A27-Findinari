@@ -482,12 +482,14 @@ class AdminController extends AbstractController
         Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager,
-        MailerInterface $mailer
+        MailerInterface $mailer,
+        TicketSlaCalculator $ticketSlaCalculator
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
     if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
         $oldStatus = $ticket->getStatut();
+        $oldPriority = $ticket->getPriorite();
 
         $newStatut = $request->request->get('statut');
         $newPriorite = $request->request->get('priorite');

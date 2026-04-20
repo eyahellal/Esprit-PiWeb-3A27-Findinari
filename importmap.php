@@ -36,6 +36,15 @@ return [
         'type' => 'css',
     ],
     'chart.js' => [
-        'version' => '3.9.1',
+        'version' => '4.5.1',
+    ],
+    '@symfony/ux-chartjs' => [
+        'version' => '2.35.0',
+    ],
+    '@kurkle/color' => [
+        'version' => '0.3.4',
+    ],
+    '@symfony/ux-dropzone' => [
+        'version' => '2.35.0',
     ],
 ];

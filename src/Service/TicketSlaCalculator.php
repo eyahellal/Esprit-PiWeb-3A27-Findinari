@@ -9,18 +9,17 @@ class TicketSlaCalculator
         $deadline = \DateTime::createFromInterface($createdAt);
 
         switch ($priority) {
-
             case 'High':
-                $deadline->modify('+24 hours');
+                $deadline->modify('+2 hours');
                 break;
 
             case 'Medium':
-                $deadline->modify('+48 hours');
+                $deadline->modify('+24 hours');
                 break;
 
             case 'Low':
             default:
-                $deadline->modify('+72 hours');
+                $deadline->modify('+48 hours');
                 break;
         }
 
