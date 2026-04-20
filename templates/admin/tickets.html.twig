@@ -789,13 +789,17 @@
 										</div>
 									</td>
 									<td>
+										{# Gestion de l'affichage du SLA / Deadline #}
 										{% if ticket.deadline %}
 											{% set isClosed = ticket.statut in ['Fermé', 'Closed', 'CLOSED'] %}
 
+											{# Si le ticket est fermé, on met un badge succès #}
 											{% if isClosed %}
 												<span class="badge bg-success">Closed</span>
+											{# Sinon, si isBreached() est vrai (calculé dans l'entité), on affiche BREACHED #}
 											{% elseif ticket.isBreached %}
 												<span class="badge bg-danger">BREACHED</span>
+											{# Sinon, on affiche le compte à rebours JS basé sur le deadline #}
 											{% else %}
 												<span class="sla-timer badge" data-deadline="{{ ticket.deadline|date('c') }}" data-ticket-id="{{ ticket.id }}">
 													Loading...
@@ -841,7 +845,7 @@
 					</table>
 				</div>
                 <div class="pagination-container" style="display:flex; justify-content:center; margin-top:20px;">
-                    {{ knp_pagination_render(tickets) }}
+                    {{ knp_pagination_render(tickets, 'reclamation/pagination.html.twig') }}
                 </div>
 			</div>		</main>
 	</div>

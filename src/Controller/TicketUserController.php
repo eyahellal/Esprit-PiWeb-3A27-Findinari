@@ -91,20 +91,19 @@ public function createTicket(
                         $this->getParameter('tickets_directory'),
                         $newFilename
                     );
-                } catch (FileException $e) {
-                    // ... handle exception if something happens during file upload
-                }
-
+                } catch (FileException $e) 
                 $ticket->setImageUrl($newFilename);
             }
 
             // Set other fields
-         $createdAt = new \DateTime();
+            // ICI : On définit la date de création actuelle
+            $createdAt = new \DateTime();
 
             $ticket->setUtilisateur($this->getUser());
-            $ticket->setDateCreation($createdAt);
+            $ticket->setDateCreation($createdAt); // L'entité utilisera cette date pour calculer le SLA
             $ticket->setStatut('Open');
 
+            
             $entityManager->persist($ticket);
             $entityManager->flush();
 
