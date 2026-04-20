@@ -65,7 +65,7 @@
 
         <!-- Investments Grid -->
         <div class="row" id="investmentsGrid">
-            {% if investments is empty %}
+            {% if pagination is empty or pagination.getTotalItemCount == 0 %}
                 <div class="col-12 text-center py-5">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>No investments found.
@@ -73,7 +73,7 @@
                     </div>
                 </div>
             {% else %}
-                {% for investment in investments %}
+                {% for investment in pagination %}
                     {% set currentDate = date() %}
                     {% set isMatured = currentDate > investment.dateMaturite %}
                     {% set obligation = obligations[investment.obligationId] %}
@@ -139,6 +139,15 @@
                 {% endfor %}
             {% endif %}
         </div>
+        
+        <!-- Pagination -->
+        {% if pagination is not empty and pagination.getTotalItemCount > 6 %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    {{ knp_pagination_render(pagination) }}
+                </div>
+            </div>
+        {% endif %}
     </div>
 </section>
 

@@ -12,6 +12,7 @@ use App\Repository\ObligationRepository;
 use App\Repository\WalletRepository;
 use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,7 +57,8 @@ class InvestissementobligationController extends AbstractController
         ObligationRepository $obligationRepo, 
         WalletRepository $walletRepository,
         Request $request, 
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        PaginatorInterface $paginator
     ): Response {
         $search = $request->query->get('search');
         $user = $this->getUserOrCreate($entityManager);
@@ -70,6 +72,7 @@ class InvestissementobligationController extends AbstractController
         
         // If user has no wallets, return empty
         if (empty($walletIds)) {
+            $pagination = null;
             $investments = [];
         } else {
             $qb = $repository->createQueryBuilder('i')
@@ -81,7 +84,14 @@ class InvestissementobligationController extends AbstractController
                    ->setParameter('search', '%' . $search . '%');
             }
             
-            $investments = $qb->getQuery()->getResult();
+            // Paginate the query (6 items per page for 2x3 grid)
+            $pagination = $paginator->paginate(
+                $qb,
+                $request->query->getInt('page', 1),
+                3
+            );
+            
+            $investments = $pagination->getItems();
         }
         
         // Get obligations for display
@@ -91,6 +101,7 @@ class InvestissementobligationController extends AbstractController
         }
 
         return $this->render('loan/investment/index.html.twig', [
+            'pagination' => $pagination,
             'investments' => $investments,
             'obligations' => $obligations,
             'search' => $search,
