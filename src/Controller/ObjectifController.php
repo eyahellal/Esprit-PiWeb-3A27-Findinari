@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ObjectifController extends AbstractController
 {
     // ── INDEX ─────────────────────────────────────────────────────────────
-    
+
     #[Route('', name: 'objectif_index', methods: ['GET'])]
     public function index(
         ObjectifRepository    $repo,
@@ -35,11 +35,11 @@ class ObjectifController extends AbstractController
         $user             = $this->getUser();
         $userId           = $user?->getId() ?? 1;
         $selectedWalletId = $request->query->get('wallet_id');
-     
+
         if ($selectedWalletId) {
             $request->getSession()->set('selected_wallet_id', $selectedWalletId);
         }
-     
+
         if ($this->isGranted('ROLE_ADMIN')) {
             $walletsRaw = $connection->fetchAllAssociative(
                 'SELECT id, pays, devise, solde FROM wallet'
@@ -50,12 +50,12 @@ class ObjectifController extends AbstractController
                 [$userId]
             );
         }
-     
+
         $wallets = [];
         foreach ($walletsRaw as $w) {
             $wallets[$w['id']] = $w;
         }
-     
+
         $qb = $repo->createQueryBuilder('o');
         if ($selectedWalletId) {
             $qb->where('o.walletId = :wid')->setParameter('wid', $selectedWalletId);
@@ -67,18 +67,18 @@ class ObjectifController extends AbstractController
                 $qb->where('1 = 0');
             }
         }
-     
+
         $objectifsPaginated = $paginator->paginate(
             $qb->getQuery(),
             $request->query->getInt('page', 1),
             3
         );
-     
+
         $notifService->generateForObjectifs(
             iterator_to_array($objectifsPaginated->getItems())
         );
-     
-        // ══ TOP CONTRIBUTEURS pour la section magazine ══
+
+        // ══ TOP CONTRIBUTEURS ══
         $allObjectifs   = $repo->findAll();
         $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
         $walletToUser   = [];
@@ -89,7 +89,7 @@ class ObjectifController extends AbstractController
                 $userPays[$w['utilisateur_id']] = $w['pays'] ?: '—';
             }
         }
-     
+
         $usersMap = [];
         foreach ($utilisateurRepository->findAll() as $u) {
             $usersMap[$u->getId()] = [
@@ -97,13 +97,13 @@ class ObjectifController extends AbstractController
                 'pays' => $userPays[$u->getId()] ?? '—',
             ];
         }
-     
+
         $byUser = [];
         foreach ($allObjectifs as $objectif) {
-            $wid   = $objectif->getWalletId();
-            $uid   = $walletToUser[$wid] ?? null;
+            $wid = $objectif->getWalletId();
+            $uid = $walletToUser[$wid] ?? null;
             if (!$uid || !isset($usersMap[$uid])) continue;
-     
+
             $stats = $goalStats->compute($objectif);
             if (!isset($byUser[$uid])) {
                 $byUser[$uid] = [
@@ -111,34 +111,34 @@ class ObjectifController extends AbstractController
                     'userName'          => $usersMap[$uid]['nom'],
                     'pays'              => $usersMap[$uid]['pays'],
                     'objectifsAtteints' => [],
+                    'totalCollected'    => 0,
                 ];
             }
             if ($stats['progressPct'] >= 100) {
                 $byUser[$uid]['objectifsAtteints'][] = ['objectif' => $objectif, 'stats' => $stats];
+                $byUser[$uid]['totalCollected'] += $stats['totalCollected'];
             }
         }
-     
-        // Trier par nombre d'objectifs atteints desc, puis montant collecté desc
+
+        // ── FIX : trier par totalCollected décroissant (et nb objectifs en priorité)
         usort($byUser, function ($a, $b) {
             $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
             if ($diff !== 0) return $diff;
-            $ta = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $a['objectifsAtteints']));
-            $tb = array_sum(array_map(fn($i) => $i['stats']['totalCollected'], $b['objectifsAtteints']));
-            return $tb <=> $ta;
+            return $b['totalCollected'] <=> $a['totalCollected'];
         });
-     
+
         // Garder uniquement ceux qui ont au moins 1 objectif atteint, top 3
         $topContributeurs = array_slice(
             array_values(array_filter($byUser, fn($u) => count($u['objectifsAtteints']) > 0)),
             0, 3
         );
-     
+
         return $this->render('objectif/index.html.twig', [
-            'objectifs'         => $objectifsPaginated,
-            'wallets'           => $wallets,
-            'selectedWalletId'  => $selectedWalletId,
-            'notifCount'        => $notifService->countUnread(),
-            'topContributeurs'  => $topContributeurs,
+            'objectifs'        => $objectifsPaginated,
+            'wallets'          => $wallets,
+            'selectedWalletId' => $selectedWalletId,
+            'notifCount'       => $notifService->countUnread(),
+            'topContributeurs' => $topContributeurs,
         ]);
     }
 
@@ -215,13 +215,13 @@ class ObjectifController extends AbstractController
         }
 
         // Récupérer les wallets de cet utilisateur
-        $walletsData  = $connection->fetchAllAssociative(
+        $walletsData = $connection->fetchAllAssociative(
             'SELECT id, pays FROM wallet WHERE utilisateur_id = ?', [$userId]
         );
-        $walletIds    = array_column($walletsData, 'id');
-        $pays         = $walletsData[0]['pays'] ?? '—';
+        $walletIds = array_column($walletsData, 'id');
+        $pays      = $walletsData[0]['pays'] ?? '—';
 
-        // Calculer le rang de cet utilisateur
+        // ── FIX : Calculer le rang correctement ──
         $allObjectifs   = $objectifRepo->findAll();
         $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id FROM wallet');
         $walletToUser   = [];
@@ -229,6 +229,7 @@ class ObjectifController extends AbstractController
             $walletToUser[$w['id']] = $w['utilisateur_id'];
         }
 
+        // Construire $byUser en conservant le userId comme clé séparée
         $byUser = [];
         foreach ($allObjectifs as $objectif) {
             $wid = $objectif->getWalletId();
@@ -237,7 +238,11 @@ class ObjectifController extends AbstractController
 
             $stats = $goalStats->compute($objectif);
             if (!isset($byUser[$uid])) {
-                $byUser[$uid] = ['objectifsAtteints' => [], 'totalCollected' => 0];
+                $byUser[$uid] = [
+                    'userId'            => $uid,
+                    'objectifsAtteints' => [],
+                    'totalCollected'    => 0,
+                ];
             }
             if ($stats['progressPct'] >= 100) {
                 $byUser[$uid]['objectifsAtteints'][] = true;
@@ -245,13 +250,20 @@ class ObjectifController extends AbstractController
             }
         }
 
-        usort($byUser, fn($a, $b) => count($b['objectifsAtteints']) - count($a['objectifsAtteints'])
-            ?: $b['totalCollected'] <=> $a['totalCollected']
-        );
+        // Filtrer ceux qui ont au moins 1 objectif atteint
+        $byUser = array_values(array_filter($byUser, fn($u) => count($u['objectifsAtteints']) > 0));
 
+        // Trier de la même façon que dans index()
+        usort($byUser, function ($a, $b) {
+            $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
+            if ($diff !== 0) return $diff;
+            return $b['totalCollected'] <=> $a['totalCollected'];
+        });
+
+        // ── FIX : chercher le rang via userId stocké dans chaque entrée
         $rank = 1;
-        foreach (array_keys($byUser) as $uid) {
-            if ((int)$uid === $userId) break;
+        foreach ($byUser as $entry) {
+            if ((int)$entry['userId'] === $userId) break;
             $rank++;
         }
 
@@ -346,7 +358,6 @@ class ObjectifController extends AbstractController
             return $b['dateAtteinte'] <=> $a['dateAtteinte'];
         });
 
-        // Deux paginateurs avec des noms de paramètre distincts
         $historiquePaginated = $paginator->paginate(
             $historique,
             $request->query->getInt('pageH', 1),
@@ -370,7 +381,7 @@ class ObjectifController extends AbstractController
         ]);
     }
 
-    // ── SIMULER (AI Advisor) ──────────────────────────────────────────────
+    // ── SIMULER ───────────────────────────────────────────────────────────
     #[Route('/{id}/simuler', name: 'objectif_simuler', methods: ['POST'])]
     public function simuler(
         Request               $request,
@@ -398,33 +409,29 @@ class ObjectifController extends AbstractController
         ]);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // NOUVELLE ROUTE : Événements pour le calendrier (FullCalendar)
-    // ══════════════════════════════════════════════════════════════════════
+    // ── EVENTS CALENDRIER ─────────────────────────────────────────────────
     #[Route('/{id}/events', name: 'objectif_events', methods: ['GET'])]
     public function events(Objectif $objectif): JsonResponse
     {
         $events = [];
 
-        // 1. Contributions
         foreach ($objectif->getContributiongoals() as $contrib) {
             $events[] = [
-                'title' => number_format($contrib->getMontant(), 2, ',', ' ') . ' €',
-                'start' => $contrib->getDate()->format('Y-m-d'),
-                'color' => '#1a9e6e',
-                'textColor' => '#fff',
+                'title'         => number_format($contrib->getMontant(), 2, ',', ' ') . ' €',
+                'start'         => $contrib->getDate()->format('Y-m-d'),
+                'color'         => '#1a9e6e',
+                'textColor'     => '#fff',
                 'extendedProps' => ['montant' => $contrib->getMontant()],
             ];
         }
 
-        // 2. Date d'atteinte réelle (si objectif terminé)
         if ($objectif->getStatut() === 'TERMINE') {
             $last = $objectif->getContributiongoals()->last();
             if ($last) {
                 $events[] = [
-                    'title' => '🏆 Objectif atteint',
-                    'start' => $last->getDate()->format('Y-m-d'),
-                    'color' => '#f39c12',
+                    'title'     => '🏆 Objectif atteint',
+                    'start'     => $last->getDate()->format('Y-m-d'),
+                    'color'     => '#f39c12',
                     'textColor' => '#fff',
                 ];
             }
@@ -433,7 +440,7 @@ class ObjectifController extends AbstractController
         return $this->json($events);
     }
 
-    // ── /{id} ROUTES EN DERNIER ───────────────────────────────────────────
+    // ── SHOW ──────────────────────────────────────────────────────────────
     #[Route('/{id}', name: 'objectif_show', methods: ['GET'])]
     public function show(Objectif $objectif, GoalStatisticsService $goalStats): Response
     {
@@ -444,6 +451,7 @@ class ObjectifController extends AbstractController
         ]);
     }
 
+    // ── EDIT ──────────────────────────────────────────────────────────────
     #[Route('/{id}/edit', name: 'objectif_edit', methods: ['GET', 'POST'])]
     public function edit(
         Request                $request,
@@ -466,6 +474,7 @@ class ObjectifController extends AbstractController
         ]);
     }
 
+    // ── DELETE ────────────────────────────────────────────────────────────
     #[Route('/{id}/delete', name: 'objectif_delete', methods: ['POST'])]
     public function delete(
         Request                $request,
@@ -491,6 +500,7 @@ class ObjectifController extends AbstractController
         return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
     }
 
+    // ── CONTRIBUER ────────────────────────────────────────────────────────
     #[Route('/{id}/contribuer', name: 'objectif_contribuer', methods: ['POST'])]
     public function contribuer(
         Request                $request,
@@ -549,6 +559,7 @@ class ObjectifController extends AbstractController
         return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
     }
 
+    // ── DELETE CONTRIBUTION ───────────────────────────────────────────────
     #[Route('/contrib/{id}/delete', name: 'contribution_delete', methods: ['POST'])]
     public function deleteContribution(
         Request                $request,
