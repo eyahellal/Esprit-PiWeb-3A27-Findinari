@@ -189,5 +189,95 @@ public function faceLogin(
     {
         throw new \LogicException('This is intercepted by Symfony logout.');
     }
+    #[Route('/register/voice-parse', name: 'app_register_voice_parse', methods: ['POST'])]
+public function parseVoiceData(
+    Request $request,
+    HttpClientInterface $httpClient
+): Response {
+    $data = json_decode($request->getContent(), true);
+    $transcript = trim((string) ($data['transcript'] ?? ''));
+
+    if (!$transcript) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Empty transcript.'
+        ], 400);
+    }
+
+    try {
+        $parsed = $this->parseWithOllama($transcript, $httpClient);
+
+        return $this->json([
+            'success' => true,
+            'transcript' => $transcript,
+            'prenom' => $parsed['prenom'] ?? null,
+            'nom' => $parsed['nom'] ?? null,
+            'gmail' => $parsed['gmail'] ?? null,
+        ]);
+    } catch (\Throwable $e) {
+        return $this->json([
+            'success' => false,
+            'message' => 'AI parsing failed: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+private function parseWithOllama(string $transcript, HttpClientInterface $httpClient): array
+{
+    $prompt = <<<PROMPT
+Extract the following fields from the user's speech:
+- prenom
+- nom
+- gmail
+
+Return JSON only with this exact structure:
+{"prenom":"","nom":"","gmail":""}
+
+Rules:
+- "prenom" = first name
+- "nom" = surname / family name
+- "gmail" = email address
+- If a field is missing, return it as an empty string
+- Do not add explanation
+- Do not add markdown
+- Output valid JSON only
+
+User speech:
+"$transcript"
+PROMPT;
+
+    $response = $httpClient->request('POST', 'http://localhost:11434/api/generate', [
+        'json' => [
+            'model' => 'gemma3:latest',
+            'prompt' => $prompt,
+            'stream' => false
+        ],
+        'timeout' => 60,
+    ]);
+
+    $data = $response->toArray(false);
+
+    $rawText = trim($data['response'] ?? '');
+
+    if (!$rawText) {
+        throw new \RuntimeException('Empty response from Ollama.');
+    }
+
+    // Remove possible markdown wrappers
+    $rawText = preg_replace('/^```json\s*/i', '', $rawText);
+    $rawText = preg_replace('/^```\s*/i', '', $rawText);
+    $rawText = preg_replace('/\s*```$/', '', $rawText);
+
+    $parsed = json_decode($rawText, true);
+
+    if (!is_array($parsed)) {
+        throw new \RuntimeException('Invalid JSON returned by Ollama: ' . $rawText);
+    }
+
+    return [
+        'prenom' => $parsed['prenom'] ?? '',
+        'nom' => $parsed['nom'] ?? '',
+        'gmail' => $parsed['gmail'] ?? '',
+    ];
+}
     
 }
