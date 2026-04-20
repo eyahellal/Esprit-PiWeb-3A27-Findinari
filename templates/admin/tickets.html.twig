@@ -794,6 +794,8 @@
 
 											{% if isClosed %}
 												<span class="badge bg-success">Closed</span>
+											{% elseif ticket.isBreached %}
+												<span class="badge bg-danger">BREACHED</span>
 											{% else %}
 												<span class="sla-timer badge" data-deadline="{{ ticket.deadline|date('c') }}" data-ticket-id="{{ ticket.id }}">
 													Loading...
