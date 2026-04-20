@@ -38,7 +38,7 @@ class ObligationController extends AbstractController
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
-            3
+            6
         );
 
         return $this->render('loan/obligation/index.html.twig', [

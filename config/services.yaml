@@ -1,5 +1,13 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     tickets_directory: '%kernel.project_dir%/public/uploads/tickets'
+    crypto_api_url: '%env(CRYPTO_API_URL)%'
+    news_api_url: '%env(NEWS_API_URL)%'
+    news_api_key: '%env(NEWS_API_KEY)%'
 
 services:
     # default configuration for services in *this* file
@@ -16,7 +24,26 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # Chatbot Controller configuration
+    # ==============================================
+    # API Controllers Configuration
+    # ==============================================
+    
+    # Crypto API Controller
+    App\Controller\Api\CryptoApiController:
+        arguments:
+            $cryptoApiUrl: '%crypto_api_url%'
+
+    # News API Controller
+    App\Controller\Api\NewsApiController:
+        arguments:
+            $newsApiUrl: '%news_api_url%'
+            $newsApiKey: '%news_api_key%'
+
+    # ==============================================
+    # Advanced Features Controllers
+    # ==============================================
+    
+    # Chatbot Controller Configuration
     App\Controller\advancedfeature\ChatbotController:
         arguments:
             $projectDir: '%kernel.project_dir%'
