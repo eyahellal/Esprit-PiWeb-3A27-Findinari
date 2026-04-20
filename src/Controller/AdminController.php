@@ -540,8 +540,9 @@ class AdminController extends AbstractController
             }
         } elseif ($becameResolved) {
             $user = $ticket->getUtilisateur();
-            $this->addFlash('warning', sprintf('Debug: Email block skipped. User: %s | Email: %s', 
-                $user ? $user->getPrenom() : 'NULL', 
+            $this->addFlash('warning', sprintf(
+                'Debug: Email block skipped. User: %s | Email: %s',
+                $user ? $user->getPrenom() : 'NULL',
                 $user ? $user->getGmail() : 'NULL'
             ));
         } else {
