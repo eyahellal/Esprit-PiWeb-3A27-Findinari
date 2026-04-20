@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Entity\reclamation\Ticket;
+
 class TicketSlaCalculator
 {
     public function calculateDeadline(string $priority, \DateTimeInterface $createdAt): \DateTime
@@ -9,15 +11,15 @@ class TicketSlaCalculator
         $deadline = \DateTime::createFromInterface($createdAt);
 
         switch ($priority) {
-            case 'High':
+            case Ticket::PRIORITY_HIGH:
                 $deadline->modify('+2 hours');
                 break;
 
-            case 'Medium':
+            case Ticket::PRIORITY_MEDIUM:
                 $deadline->modify('+24 hours');
                 break;
 
-            case 'Low':
+            case Ticket::PRIORITY_LOW:
             default:
                 $deadline->modify('+48 hours');
                 break;

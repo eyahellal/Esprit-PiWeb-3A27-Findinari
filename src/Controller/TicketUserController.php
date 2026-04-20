@@ -102,7 +102,7 @@ public function createTicket(
 
             $ticket->setUtilisateur($this->getUser());
             $ticket->setDateCreation($createdAt); // L'entité utilisera cette date pour calculer le SLA
-            $ticket->setStatut('Open');
+            $ticket->setStatut(Ticket::STATUS_OPEN);
 
             
             $entityManager->persist($ticket);
@@ -218,7 +218,7 @@ public function createTicket(
         }
 
         // Check if ticket can still be edited (not closed?)
-        if ($ticket->getStatut() === 'Fermé') {
+        if ($ticket->getStatut() === Ticket::STATUS_CLOSED) {
             $this->addFlash('danger', 'Closed tickets cannot be edited.');
             return $this->redirectToRoute('app_user_tickets');
         }

@@ -314,23 +314,11 @@
 			line-height: 1;
 		}
 
-		.card.c-green {
-			--card-accent: #dcfce7;
-		}
-		.card.c-green .card-icon svg {
-			color: var(--brand);
-		}
 		.card.c-blue {
 			--card-accent: #e6f6ff;
 		}
 		.card.c-blue .card-icon svg {
 			color: var(--info);
-		}
-		.card.c-amber {
-			--card-accent: #fff8e6;
-		}
-		.card.c-amber .card-icon svg {
-			color: var(--warning);
 		}
 
 		.section {
@@ -471,38 +459,9 @@
 			color: var(--warning);
 		}
 
-		.bg-success { background: var(--success) !important; color: #fff !important; }
-		.bg-danger { background: var(--danger) !important; color: #fff !important; }
-		.bg-warning { background: var(--warning) !important; color: #fff !important; }
-		.bg-info { background: var(--info) !important; color: #fff !important; }
-		.bg-secondary { background: var(--text-muted) !important; color: #fff !important; }
-		.bg-dark { background: var(--text-primary) !important; color: #fff !important; }
-
-		.currency-badge {
-			display: inline-flex;
-			align-items: center;
-			padding: 5px 11px;
-			border-radius: 999px;
-			font-size: 12px;
-			font-weight: 700;
-			background: var(--brand-light);
-			color: var(--brand-dark);
-		}
-
-		.country-cell {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-			font-weight: 600;
-		}
-
-		.balance-positive {
-			color: var(--brand-dark);
-			font-weight: 700;
-		}
-		.balance-zero {
-			color: var(--text-muted);
-			font-weight: 600;
+		.sla-text {
+			font-weight: 800;
+			font-size: 13.5px;
 		}
 
 		.btn {
@@ -526,216 +485,70 @@
 			filter: brightness(1.08);
 			transform: translateY(-1px);
 		}
-		.btn:active {
-			transform: translateY(0); filter: brightness(.97);
-		}
-		.btn-danger {
-			background: var(--danger);
-			color: #fff;
-			box-shadow: 0 4px 12px rgba(239, 68, 68, .25);
-		}
-		.btn-primary {
-			background: var(--brand);
-			color: #fff;
-			box-shadow: 0 4px 12px rgba(22, 163, 74, .28);
-		}
-		.btn svg {
-			width: 14px;
-			height: 14px;
-		}
-
-		.empty-state {
-			text-align: center;
-			padding: 48px 20px;
-			color: var(--text-muted);
-		}
-
-		.empty-state svg {
-			width: 48px;
-			height: 48px;
-			margin-bottom: 14px;
-			opacity: .4;
-		}
-		.empty-state p {
-			font-size: 14.5px;
-			font-weight: 600;
-		}
-		.empty-state span {
-			font-size: 13px;
-			color: var(--text-muted);
-			font-weight: 400;
-		}
-
-		.user-chip {
-			display: flex;
-			align-items: center;
-			gap: 9px;
-		}
-
-		.user-avatar-sm {
-			width: 30px;
-			height: 30px;
-			border-radius: 50%;
-			background: var(--brand-light);
-			color: var(--brand-dark);
-			font-weight: 800;
-			font-size: 12px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			flex-shrink: 0;
-		}
-
-		::-webkit-scrollbar {
-			width: 6px;
-			height: 6px;
-		}
-		::-webkit-scrollbar-track {
-			background: transparent;
-		}
-		::-webkit-scrollbar-thumb {
-			background: var(--border);
-			border-radius: 99px;
-		}
-		::-webkit-scrollbar-thumb:hover {
-			background: var(--text-muted);
-		}
+		.btn-danger { background: var(--danger); color: #fff; box-shadow: 0 4px 12px rgba(239, 68, 68, .25); }
+		.btn-primary { background: var(--brand); color: #fff; box-shadow: 0 4px 12px rgba(22, 163, 74, .28); }
+		
+		.empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+		.empty-state svg { width: 48px; height: 48px; margin-bottom: 14px; opacity: .4; }
+		
+		.user-chip { display: flex; align-items: center; gap: 9px; }
+		.user-avatar-sm { width: 30px; height: 30px; border-radius: 50%; background: var(--brand-light); color: var(--brand-dark); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 	</style>
 </head>
 <body>
-	<div
-		class="layout">
-
-		<!-- SIDEBAR -->
+	<div class="layout">
 		<aside class="sidebar">
 			<div class="brand">
-				<div class="brand-icon">
-					<img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
-				</div>
+				<div class="brand-icon"><img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo"></div>
 				<span class="brand-name">Fin-Dinari</span>
 			</div>
-
 			<div class="nav-section">Main</div>
 			<a class="side-link" href="{{ path('app_admin_dashboard') }}">
-				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
 				Dashboard
 			</a>
-			<a class="side-link" href="{{ path('app_admin_wallets') }}">
-				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-				Manage Wallets
-			</a>
-			<a class="side-link" href="{{ path('app_admin_objectifs') }}">
-				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-				Manage Objectifs
-			</a>
 			<a class="side-link active" href="{{ path('app_admin_tickets') }}">
-				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-				</svg>
+				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
 				Tickets & Messages
 			</a>
-			<a class="side-link" href="{{ path('app_admin_ticket_calendar') }}">
-				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <a class="side-link" href="{{ path('app_admin_ticket_calendar') }}">
+				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 				Ticket Calendar
 			</a>
 			<a class="side-link" href="{{ path('app_admin_ticket_stats') }}">
 				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
 				Ticket Statistics
 			</a>
-			<a class="side-link" href="{{ path('app_admin_obligations') }}">
-				<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
-				Manage Obligations
-			</a>
-
 			<div class="sidebar-footer">
-				<a class="side-link" href="{{ path('app_home') }}">
-					<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-					Back to site
-				</a>
-				<a class="side-link" href="{{ path('app_logout') }}">
-					<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-					Logout
-				</a>
+				<a class="side-link" href="{{ path('app_home') }}">Back to site</a>
+				<a class="side-link" href="{{ path('app_logout') }}">Logout</a>
 			</div>
 		</aside>
 
-		<!-- MAIN CONTENT -->
-		<main
-			class="content">
-
-			<!-- TOPBAR -->
+		<main class="content">
 			<div class="topbar">
-				<div>
-					<div class="topbar-title">Ticket
-						<span>Management</span>
-					</div>
-				</div>
+				<div class="topbar-title">Ticket <span>Management</span></div>
 				<div class="topbar-right">
-					<a href="{{ path('app_admin_dashboard') }}" class="btn btn-primary">
-						<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-						Dashboard
-					</a>
-					<div class="welcome-text">Welcome back,
-						<strong>{{ app.user.prenom }}
-							{{ app.user.nom }}</strong>
-					</div>
+					<div class="welcome-text">Welcome back, <strong>{{ app.user.prenom }}</strong></div>
 					<div class="avatar">{{ app.user.prenom|first|upper }}</div>
 				</div>
 			</div>
 
-			<!-- FLASH MESSAGES -->
-			{% for message in app.flashes('success') %}
-				<div class="flash success">
-					<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-					{{ message }}
-				</div>
-			{% endfor %}
-			{% for message in app.flashes('danger') %}
-				<div class="flash danger">
-					<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-					{{ message }}
-				</div>
-			{% endfor %}
-
-			<!-- STAT CARDS -->
 			<div class="cards">
 				<div class="card c-blue">
-					<div class="card-icon">
-						<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-						</svg>
-					</div>
+					<div class="card-icon"><svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
 					<div class="card-body">
 						<div class="card-label">Total Tickets</div>
-						<div class="card-value">{{ tickets|length }}</div>
+						<div class="card-value">{{ tickets.getTotalItemCount }}</div>
 					</div>
 				</div>
-
-
 			</div>
 
-			<!-- TICKETS TABLE -->
 			<div class="section">
 				<div class="section-header">
-					<div class="section-title">
-						<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-						</svg>
-						All Tickets
-					</div>
-					<div style="display: flex; gap: 12px; align-items: center;">
-						<form method="get" action="{{ path('app_admin_tickets') }}" id="sortForm">
-							<select name="sort" onchange="this.form.submit()" style="padding: 9px 12px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--text-secondary); background: #fafff9; cursor: pointer; outline: none; transition: border-color var(--transition);">
-								<option value="newest" {{ currentSort == 'newest' ? 'selected' : '' }}>Newest First</option>
-								<option value="oldest" {{ currentSort == 'oldest' ? 'selected' : '' }}>Oldest First</option>
-								<option value="priority_high" {{ currentSort == 'priority_high' ? 'selected' : '' }}>High Priority</option>
-								<option value="status_open" {{ currentSort == 'status_open' ? 'selected' : '' }}>Open Status</option>
-							</select>
-						</form>
-						<div class="search-wrap">
-							<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-							<input type="text" id="searchInput" placeholder="Search tickets…" oninput="filterTable(this.value)">
-						</div>
+					<div class="section-title">All Tickets</div>
+					<div class="search-wrap">
+						<input type="text" id="searchInput" placeholder="Search tickets…" oninput="filterTable(this.value)">
 					</div>
 				</div>
 				<div class="table-wrapper">
@@ -743,7 +556,6 @@
 						<thead>
 							<tr>
 								<th>User</th>
-								<th>Image</th>
 								<th>Title</th>
 								<th>Category</th>
 								<th>Status/Priority</th>
@@ -755,33 +567,15 @@
 							{% for ticket in tickets %}
 								<tr>
 									<td>
-										{% if ticket.utilisateur %}
-											<div class="user-chip">
-												<div class="user-avatar-sm">
-													{{ ticket.utilisateur.prenom|first|upper }}
-												</div>
-												<span style="font-weight:600;">{{ ticket.utilisateur.gmail }}</span>
-											</div>
-										{% else %}
-											<span style="color:var(--text-muted);font-style:italic;">No user</span>
-										{% endif %}
+										<div class="user-chip">
+											<div class="user-avatar-sm">{{ ticket.utilisateur ? ticket.utilisateur.prenom|first|upper : '?' }}</div>
+											<span style="font-weight:600;">{{ ticket.utilisateur ? ticket.utilisateur.gmail : 'Guest' }}</span>
+										</div>
 									</td>
 									<td>
-										{% if ticket.imageUrl %}
-											<div style="width: 40px; height: 40px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
-												<img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" alt="Ticket image" style="width: 100%; height: 100%; object-fit: cover;">
-											</div>
-										{% else %}
-											<div style="width: 40px; height: 40px; border-radius: 8px; background: var(--bg); display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 10px; text-transform: uppercase;">None</div>
-										{% endif %}
+										<div style="font-weight:600;">{{ ticket.titre }}</div>
 									</td>
-									<td>
-										<div style="font-weight:600; color: var(--text-primary);">{{ ticket.titre }}</div>
-										<div style="font-size: 12px; color: var(--text-muted); max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ ticket.description }}</div>
-									</td>
-									<td>
-										<span class="badge type">{{ ticket.type }}</span>
-									</td>
+									<td><span class="badge type">{{ ticket.type }}</span></td>
 									<td>
 										<div style="display:flex;gap:6px;flex-direction:column;align-items:start;">
 											<span class="badge status">{{ ticket.statut }}</span>
@@ -789,54 +583,27 @@
 										</div>
 									</td>
 									<td>
-										{# Gestion de l'affichage du SLA / Deadline #}
 										{% if ticket.deadline %}
-											{% set isClosed = ticket.statut in ['Fermé', 'Closed', 'CLOSED'] %}
-
-											{# Si le ticket est fermé, on met un badge succès #}
+											{% set isClosed = ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_CLOSED') %}
 											{% if isClosed %}
-												<span class="badge bg-success">Closed</span>
-											{# Sinon, si isBreached() est vrai (calculé dans l'entité), on affiche BREACHED #}
+												<span class="sla-text" style="color: #16a34a;">Closed</span>
 											{% elseif ticket.isBreached %}
-												<span class="badge bg-danger">BREACHED</span>
-											{# Sinon, on affiche le compte à rebours JS basé sur le deadline #}
+												<span class="sla-text" style="color: #dc2626;">BREACHED</span>
 											{% else %}
-												<span class="sla-timer badge" data-deadline="{{ ticket.deadline|date('c') }}" data-ticket-id="{{ ticket.id }}">
-													Loading...
-												</span>
+												<span class="sla-timer sla-text" data-deadline="{{ ticket.deadline|date('c') }}">Loading...</span>
 											{% endif %}
 										{% else %}
-											<span class="badge bg-light text-dark">No SLA</span>
+											<span style="color:var(--text-muted);font-style:italic;">No SLA</span>
 										{% endif %}
 									</td>
 									<td>
-										<div style="display: flex; gap: 8px;">
-											<a href="{{ path('app_admin_ticket_details', {id: ticket.id}) }}" class="btn btn-primary btn-sm" style="padding: 7px 11px;">
-												<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
-													<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-													<circle cx="12" cy="12" r="3"></circle>
-												</svg>
-												Details
-											</a>
-											<form method="post" action="{{ path('app_admin_ticket_delete', {id: ticket.id}) }}" onsubmit="return confirm('Are you sure you want to delete this ticket?');">
+										<div style="display:flex; gap:8px;">
+											<a href="{{ path('app_admin_ticket_details', {id: ticket.id}) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Details</a>
+											
+											<form method="post" action="{{ path('app_admin_ticket_delete', {id: ticket.id}) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this ticket?');">
 												<input type="hidden" name="_token" value="{{ csrf_token('delete_ticket_admin_' ~ ticket.id) }}">
-												<button class="btn btn-danger btn-sm" type="submit" style="padding: 7px 11px;">
-													<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-													Delete
-												</button>
+												<button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">Delete</button>
 											</form>
-										</div>
-									</td>
-								</tr>
-							{% else %}
-								<tr>
-									<td colspan="6">
-										<div class="empty-state">
-											<svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-												<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-											</svg>
-											<p>No tickets found.</p>
-											<span>Tickets will appear here once users submit them.</span>
 										</div>
 									</td>
 								</tr>
@@ -844,90 +611,59 @@
 						</tbody>
 					</table>
 				</div>
-                <div class="pagination-container" style="display:flex; justify-content:center; margin-top:20px;">
+                <div style="padding: 20px; display: flex; justify-content: center;">
                     {{ knp_pagination_render(tickets, 'reclamation/pagination.html.twig') }}
                 </div>
-			</div>		</main>
+			</div>
+		</main>
 	</div>
 
 	<script>
 		function filterTable(query) {
-const rows = document.querySelectorAll('#ticketsTable tbody tr');
-const q = query.toLowerCase().trim();
-rows.forEach(row => {
-const text = row.textContent.toLowerCase();
-row.style.display = (! q || text.includes(q)) ? '' : 'none';
-});
-}
+			const rows = document.querySelectorAll('#ticketsTable tbody tr');
+			const q = query.toLowerCase().trim();
+			rows.forEach(row => {
+				const text = row.textContent.toLowerCase();
+				row.style.display = (!q || text.includes(q)) ? '' : 'none';
+			});
+		}
+
+		document.addEventListener('DOMContentLoaded', function () {
+            const timers = document.querySelectorAll('.sla-timer');
+            const serverNow = new Date('{{ "now"|date("c") }}');
+            const timeOffset = serverNow.getTime() - new Date().getTime();
+
+            function formatDuration(totalSeconds) {
+                const absSeconds = Math.abs(totalSeconds);
+                const h = Math.floor(absSeconds / 3600);
+                const m = Math.floor((absSeconds % 3600) / 60);
+                const s = absSeconds % 60;
+                return (totalSeconds < 0 ? '- ' : '') + String(h).padStart(2, '0') + 'h ' + String(m).padStart(2, '0') + 'm ' + String(s).padStart(2, '0') + 's';
+            }
+
+            function updateTimer(element) {
+                const deadline = new Date(element.dataset.deadline);
+                const now = new Date(Date.now() + timeOffset);
+                const diff = deadline.getTime() - now.getTime();
+                const totalSeconds = Math.floor(diff / 1000);
+
+                if (totalSeconds <= 0) {
+                    element.textContent = "BREACHED";
+                    element.style.color = '#dc2626';
+                } else {
+                    element.textContent = formatDuration(totalSeconds);
+                    if (totalSeconds <= 3600) element.style.color = '#dc2626';
+                    else if (totalSeconds <= 4 * 3600) element.style.color = '#d97706';
+                    else if (totalSeconds <= 24 * 3600) element.style.color = '#0284c7';
+                    else element.style.color = '#16a34a';
+                }
+            }
+
+            timers.forEach(t => {
+                updateTimer(t);
+                setInterval(() => updateTimer(t), 1000);
+            });
+        });
 	</script>
-    <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const timers = document.querySelectorAll('.sla-timer');
-    
-    // Sync with server time to avoid local clock issues
-    const serverTimeStr = '{{ "now"|date("c") }}';
-    const serverNow = new Date(serverTimeStr);
-    const clientNow = new Date();
-    const timeOffset = serverNow.getTime() - clientNow.getTime();
-
-    function formatDuration(totalSeconds) {
-        const isNegative = totalSeconds < 0;
-        const absSeconds = Math.abs(totalSeconds);
-        
-        const days = Math.floor(absSeconds / 86400);
-        const hours = Math.floor((absSeconds % 86400) / 3600);
-        const minutes = Math.floor((absSeconds % 3600) / 60);
-        const seconds = absSeconds % 60;
-
-        let text = isNegative ? '- ' : '';
-        if (days > 0) text += days + 'd ';
-        text += String(hours).padStart(2, '0') + 'h ';
-        text += String(minutes).padStart(2, '0') + 'm ';
-        text += String(seconds).padStart(2, '0') + 's';
-        
-        return text;
-    }
-
-    function updateTimer(element) {
-        const deadlineString = element.dataset.deadline;
-        const deadline = new Date(deadlineString);
-        // Correct current time using the offset
-        const now = new Date(Date.now() + timeOffset);
-
-        const diff = deadline.getTime() - now.getTime();
-
-        if (isNaN(deadline.getTime())) {
-            element.textContent = 'Invalid SLA';
-            element.className = 'sla-timer badge bg-dark';
-            return;
-        }
-
-        const totalSeconds = Math.floor(diff / 1000);
-        element.textContent = formatDuration(totalSeconds);
-
-        if (totalSeconds <= 0) {
-            // BREACHED
-            element.className = 'sla-timer badge bg-danger';
-            // If it's more than 24h past due, maybe show a special style?
-        } else if (totalSeconds <= 3600) {
-            // Less than 1 hour remains - URGENT (Red)
-            element.className = 'sla-timer badge bg-danger';
-        } else if (totalSeconds <= 4 * 3600) {
-            // Less than 4 hours - Warning (Yellow)
-            element.className = 'sla-timer badge bg-warning text-dark';
-        } else if (totalSeconds <= 24 * 3600) {
-            // Less than 24 hours - Info (Blue)
-            element.className = 'sla-timer badge bg-info';
-        } else {
-            // More than 24 hours - OK (Green)
-            element.className = 'sla-timer badge bg-success';
-        }
-    }
-
-    timers.forEach((timer) => {
-        updateTimer(timer);
-        setInterval(() => updateTimer(timer), 1000);
-    });
-});
-</script>
-</body></html>
+</body>
+</html>
