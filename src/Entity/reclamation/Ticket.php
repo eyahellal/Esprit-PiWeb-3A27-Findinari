@@ -17,6 +17,7 @@ use App\Repository\TicketRepository;
 #[ORM\HasLifecycleCallbacks]
 class Ticket
 {
+  
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function updateDeadline(): void
@@ -26,16 +27,17 @@ class Ticket
             
             switch ($this->priorite) {
                 case 'High':
-                    $deadline->modify('+2 hours');
+                    $deadline->modify('+2 hours'); // 2 heures pour High
                     break;
                 case 'Medium':
-                    $deadline->modify('+24 hours');
+                    $deadline->modify('+24 hours'); // 24 heures pour Medium
                     break;
                 case 'Low':
                 default:
-                    $deadline->modify('+48 hours');
+                    $deadline->modify('+48 hours'); // 48 heures pour Low
                     break;
             }
+            // On met à jour la propriété deadline qui sera sauvegardée en DB
             $this->deadline = $deadline;
         }
     }
@@ -103,25 +105,30 @@ class Ticket
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $deadline = null;
 
+    /**
+     * Calcule le deadline dynamiquement. Même si on modifie la dateCreation ou la priorité
+     * directement en base de données, ce getter renverra toujours la valeur correcte.
+     */
     public function getDeadline(): ?\DateTimeInterface
     {
         if (!$this->dateCreation) {
-            return null;
+            return null; // Pas de date de création = pas de deadline possible
         }
 
-        // We calculate it dynamically based on priority and created date
+        // On crée un nouvel objet DateTime à partir de la date de création
         $deadline = \DateTime::createFromInterface($this->dateCreation);
         
+        // On applique la logique de délai (SLA) selon la priorité
         switch ($this->priorite) {
             case 'High':
-                $deadline->modify('+2 hours');
+                $deadline->modify('+2 hours'); // +2h pour High
                 break;
             case 'Medium':
-                $deadline->modify('+24 hours');
+                $deadline->modify('+24 hours'); // +24h pour Medium
                 break;
             case 'Low':
             default:
-                $deadline->modify('+48 hours');
+                $deadline->modify('+48 hours'); // +48h pour Low (par défaut)
                 break;
         }
 

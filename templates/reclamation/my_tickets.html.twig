@@ -228,7 +228,6 @@
                             <div class="ticket-meta">
                                 <span><i class="far fa-clock"></i> {{ ticket.dateCreation|ago }}</span>
                                 <span><i class="far fa-folder"></i> {{ ticket.type }}</span>
-                                <span><i class="fas fa-fingerprint"></i> #{{ ticket.id }}</span>
                             </div>
                             
                             <p class="ticket-desc">{{ ticket.description|length > 150 ? ticket.description|slice(0, 150) ~ '...' : ticket.description }}</p>
@@ -258,7 +257,7 @@
         </div>
         
         <div class="pagination-container" style="display:flex; justify-content:center; margin-top:30px;">
-            {{ knp_pagination_render(tickets) }}
+            {{ knp_pagination_render(tickets, 'reclamation/pagination.html.twig') }}
         </div>
     {% endif %}
 </div>

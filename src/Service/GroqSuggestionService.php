@@ -30,9 +30,11 @@ class GroqSuggestionService
             default => 'Formulate highly professional and concise replies for a support ticket interaction.',
         };
 
-        $userPrompt = empty($conversationText) 
-            ? "The conversation has just started. Suggest 3 professional opening greetings or initial help offers for a support chat."
-            : "Conversation context:\n" . implode("\n", $conversationText);
+        if (empty($conversationText)) {
+            $userPrompt = sprintf("The conversation has just started. As a %s, suggest 3 professional initial messages to start the interaction.", $role);
+        } else {
+            $userPrompt = "Conversation context:\n" . implode("\n", $conversationText);
+        }
 
         $systemPrompt = <<<PROMPT
 {$roleInstruction}
