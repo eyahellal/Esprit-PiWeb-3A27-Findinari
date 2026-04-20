@@ -55,6 +55,8 @@ Rules for Suggestions:
 - DO NOT invent information not present in the context
 -Provide meaningfull suggestions not just one words
 PROMPT;
+                $userPrompt = "Conversation context:\n" . implode("\n", $conversationText);
+
 
         $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
             'headers' => [
