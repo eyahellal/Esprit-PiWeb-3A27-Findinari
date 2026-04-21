@@ -10,6 +10,9 @@ services:
     _defaults:
         autowire: true
         autoconfigure: true
+        bind:
+            $ollamaApiUrl: '%ollama_api_url%'
+            $projectDir: '%kernel.project_dir%'
 
     # makes classes in src/ available to be used as services
     App\:
@@ -35,20 +38,10 @@ services:
             $newsApiKey: '%news_api_key%'
 
     # ==============================================
-    # Advanced Features Controllers
+    # Services Configuration
     # ==============================================
     
-    # Chatbot Controller Configuration
-    App\Controller\advancedfeature\ChatbotController:
+    # PDF Generator Service Configuration
+    App\Service\PdfGeneratorService:
         arguments:
             $projectDir: '%kernel.project_dir%'
-            $ollamaApiUrl: '%ollama_api_url%'
-    
-    # ==============================================
-    # Loan Controllers Configuration (ADD THIS)
-    # ==============================================
-    
-    # Obligation Controller Configuration
-    App\Controller\Loan\ObligationController:
-        arguments:
-            $ollamaApiUrl: '%ollama_api_url%'
