@@ -1,0 +1,165 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Make New Investment - Fin-Dinari{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Flatpickr CSS for beautiful date picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-calendar {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            font-family: inherit;
+        }
+        .flatpickr-day.selected {
+            background: #0d6efd;
+            border-color: #0d6efd;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">Make New Investment</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}">Services</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_investment_index') }}">My Investments</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="shadow rounded p-5 bg-white">
+                    <h3 class="mb-4">Make a New Investment</h3>
+                    
+                    {% if selected_obligation %}
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Selected Obligation:</strong> {{ selected_obligation.nom }} 
+                            ({{ selected_obligation.tauxInteret }}% interest for {{ selected_obligation.duree }} months)
+                        </div>
+                    {% endif %}
+                    
+                    {{ form_start(form) }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Wallet</label>
+                            {{ form_widget(form.walletId, {'attr': {'class': 'form-control'}}) }}
+                            <div class="text-danger">{{ form_errors(form.walletId) }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Obligation</label>
+                            {{ form_widget(form.obligationId, {'attr': {'class': 'form-control'}}) }}
+                            <div class="text-danger">{{ form_errors(form.obligationId) }}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Investment Amount (DT)</label>
+                            {{ form_widget(form.montantInvesti, {'attr': {'class': 'form-control', 'placeholder': 'Enter amount to invest'}}) }}
+                            <div class="text-danger">{{ form_errors(form.montantInvesti) }}</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Purchase Date</label>
+                                {{ form_widget(form.dateAchat, {'attr': {'class': 'form-control datepicker', 'placeholder': 'Select date'}}) }}
+                                <div class="text-danger">{{ form_errors(form.dateAchat) }}</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Maturity Date</label>
+                                <input type="text" class="form-control" id="maturity_date" placeholder="Will be auto-calculated" readonly disabled>
+                                <small class="text-muted">Automatically calculated based on obligation duration</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{{ path('app_investment_index') }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Make Investment</button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Flatpickr JS for beautiful date picker -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize date picker for purchase date
+            flatpickr(".datepicker", {
+                dateFormat: "d/m/Y",
+                allowInput: true,
+                locale: {
+                    firstDayOfWeek: 1
+                }
+            });
+            
+            // Auto-calculate maturity date when obligation or purchase date changes
+            const obligationSelect = document.querySelector('select[name="investissementobligation[obligationId]"]');
+            const purchaseDateInput = document.querySelector('input[name="investissementobligation[dateAchat]"]');
+            const maturityDateInput = document.getElementById('maturity_date');
+            
+            function calculateMaturityDate() {
+                const obligationId = obligationSelect ? obligationSelect.value : null;
+                const purchaseDate = purchaseDateInput ? purchaseDateInput.value : null;
+                
+                if (obligationId && purchaseDate) {
+                    // Get duration from selected obligation
+                    let durationMonths = 0;
+                    const selectedOption = obligationSelect.options[obligationSelect.selectedIndex];
+                    const obligationText = selectedOption ? selectedOption.text : '';
+                    
+                    if (obligationText.includes('12 months')) durationMonths = 12;
+                    else if (obligationText.includes('240 months')) durationMonths = 240;
+                    else if (obligationText.includes('10 months')) durationMonths = 10;
+                    else if (obligationText.includes('24 months')) durationMonths = 24;
+                    else if (obligationText.includes('36 months')) durationMonths = 36;
+                    
+                    if (durationMonths > 0 && purchaseDate) {
+                        // Parse date
+                        let parts = purchaseDate.split('/');
+                        if (parts.length === 3) {
+                            let date = new Date(parts[2], parts[1] - 1, parts[0]);
+                            date.setMonth(date.getMonth() + durationMonths);
+                            let day = String(date.getDate()).padStart(2, '0');
+                            let month = String(date.getMonth() + 1).padStart(2, '0');
+                            let year = date.getFullYear();
+                            maturityDateInput.value = day + '/' + month + '/' + year;
+                        }
+                    } else {
+                        maturityDateInput.value = '';
+                    }
+                } else {
+                    maturityDateInput.value = '';
+                }
+            }
+            
+            if (obligationSelect) {
+                obligationSelect.addEventListener('change', calculateMaturityDate);
+            }
+            if (purchaseDateInput) {
+                purchaseDateInput.addEventListener('change', calculateMaturityDate);
+            }
+        });
+    </script>
+{% endblock %}

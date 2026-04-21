@@ -1,0 +1,208 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Investments - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">My Investments</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}">Services</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_investment_index') }}">Loan Investment</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="section-title">
+                    <h1 class="text-primary">📊 My Investment Portfolio</h1>
+                    <p class="text-secondary">Track all your loan investments and monitor your returns</p>
+                </div>
+            </div>
+            <div class="col-lg-4 text-end">
+                <a href="{{ path('app_obligation_index') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>Browse Obligations
+                </a>
+            </div>
+        </div>
+
+        <!-- Search and Sort Bar -->
+        <div class="row mb-4">
+            <div class="col-lg-5 mx-auto">
+                <form method="get" action="{{ path('app_investment_index') }}" class="d-flex gap-2">
+                    <input type="text" name="search" class="form-control" placeholder="Search by obligation name..." value="{{ search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if search %}
+                        <a href="{{ path('app_investment_index') }}" class="btn btn-secondary">Clear</a>
+                    {% endif %}
+                </form>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select" id="sortSelect" onchange="sortInvestments()">
+                    <option value="name_asc">Sort by Name ↑</option>
+                    <option value="name_desc">Sort by Name ↓</option>
+                    <option value="amount_asc">Sort by Amount ↑</option>
+                    <option value="amount_desc">Sort by Amount ↓</option>
+                    <option value="date_asc">Sort by Date ↑</option>
+                    <option value="date_desc">Sort by Date ↓</option>
+                    <option value="status_active">Status: Active first</option>
+                    <option value="status_matured">Status: Matured first</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Investments Grid -->
+        <div class="row" id="investmentsGrid">
+            {% if investments is empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No investments found.
+                        <a href="{{ path('app_obligation_index') }}">Browse obligations to invest</a>
+                    </div>
+                </div>
+            {% else %}
+                {% for investment in investments %}
+                    {% set currentDate = date() %}
+                    {% set isMatured = currentDate > investment.dateMaturite %}
+                    {% set obligation = obligations[investment.obligationId] %}
+                    
+                    <div class="col-lg-4 col-md-6 mb-4 investment-card"
+                         data-name="{{ obligation ? obligation.nom|lower : '' }}"
+                         data-amount="{{ investment.montantInvesti }}"
+                         data-date="{{ investment.dateAchat|date('Y-m-d') }}"
+                         data-matured="{{ isMatured ? 1 : 0 }}">
+                        <div class="card h-100 shadow-sm border-success">
+                            <div class="card-body bg-white">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h4 class="card-title text-primary mb-0">
+                                        {% if obligation %}
+                                            {{ obligation.nom }}
+                                        {% else %}
+                                            Investment #{{ investment.idInvestissement }}
+                                        {% endif %}
+                                    </h4>
+                                    {% if isMatured %}
+                                        <span class="badge bg-success">Matured</span>
+                                    {% else %}
+                                        <span class="badge bg-primary text-white">Active</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <p class="mb-2">
+                                        <i class="fas fa-percent text-primary me-2"></i>
+                                        <strong class="text-primary">Interest Rate:</strong> 
+                                        <span class="text-primary">{% if obligation %}{{ obligation.tauxInteret }}%{% else %}--{% endif %}</span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-money-bill-wave text-primary me-2"></i>
+                                        <strong class="text-primary">Amount:</strong> 
+                                        <span class="text-success fw-bold">{{ investment.montantInvesti|number_format(2) }} DT</span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                        <strong class="text-primary">Purchase Date:</strong> 
+                                        <span class="text-primary">{{ investment.dateAchat|date('d/m/Y') }}</span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-calendar-check text-primary me-2"></i>
+                                        <strong class="text-primary">Maturity Date:</strong> 
+                                        <span class="text-primary">{{ investment.dateMaturite|date('d/m/Y') }}</span>
+                                    </p>
+                                </div>
+                                
+                                <hr class="border-success">
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ path('app_investment_show', {'idInvestissement': investment.idInvestissement}) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ path('app_investment_edit', {'idInvestissement': investment.idInvestissement}) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <form method="post" action="{{ path('app_investment_delete', {'idInvestissement': investment.idInvestissement}) }}" style="display: inline-block;" onsubmit="return confirm('Are you sure?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ investment.idInvestissement) }}">
+                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .card { border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
+    .card:hover { transform: translateY(-4px); }
+    .border-success { border-color: #28a745 !important; }
+    .text-primary { color: #2d6a4f !important; }
+    .btn-outline-primary { color: #2d6a4f; border-color: #2d6a4f; }
+    .btn-outline-primary:hover { background-color: #2d6a4f; border-color: #2d6a4f; color: white; }
+    .btn-primary { background-color: #2d6a4f; border-color: #2d6a4f; }
+    .btn-primary:hover { background-color: #1b4d3b; border-color: #1b4d3b; }
+    .bg-tertiary { background-color: #e8f5e9 !important; }
+    .badge.bg-primary { background-color: #2d6a4f !important; }
+    .badge.bg-success { background-color: #28a745 !important; }
+</style>
+
+<script>
+    function sortInvestments() {
+        const sortValue = document.getElementById('sortSelect').value;
+        const grid = document.getElementById('investmentsGrid');
+        const cards = Array.from(document.querySelectorAll('.investment-card'));
+        
+        cards.sort((a, b) => {
+            let aVal, bVal;
+            
+            switch(sortValue) {
+                case 'name_asc':
+                    aVal = a.getAttribute('data-name');
+                    bVal = b.getAttribute('data-name');
+                    return aVal.localeCompare(bVal);
+                case 'name_desc':
+                    aVal = a.getAttribute('data-name');
+                    bVal = b.getAttribute('data-name');
+                    return bVal.localeCompare(aVal);
+                case 'amount_asc':
+                    aVal = parseFloat(a.getAttribute('data-amount'));
+                    bVal = parseFloat(b.getAttribute('data-amount'));
+                    return aVal - bVal;
+                case 'amount_desc':
+                    aVal = parseFloat(a.getAttribute('data-amount'));
+                    bVal = parseFloat(b.getAttribute('data-amount'));
+                    return bVal - aVal;
+                case 'date_asc':
+                    aVal = a.getAttribute('data-date');
+                    bVal = b.getAttribute('data-date');
+                    return aVal.localeCompare(bVal);
+                case 'date_desc':
+                    aVal = a.getAttribute('data-date');
+                    bVal = b.getAttribute('data-date');
+                    return bVal.localeCompare(aVal);
+                case 'status_active':
+                    aVal = parseInt(a.getAttribute('data-matured'));
+                    bVal = parseInt(b.getAttribute('data-matured'));
+                    return aVal - bVal;
+                case 'status_matured':
+                    aVal = parseInt(a.getAttribute('data-matured'));
+                    bVal = parseInt(b.getAttribute('data-matured'));
+                    return bVal - aVal;
+                default:
+                    return 0;
+            }
+        });
+        
+        grid.innerHTML = '';
+        cards.forEach(card => grid.appendChild(card));
+    }
+</script>
+
+{% endblock %}

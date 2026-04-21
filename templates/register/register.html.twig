@@ -1,0 +1,57 @@
+{% extends 'front/layout.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="bg-white rounded shadow p-5">
+                    <h2 class="mb-4">Create Account</h2>
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('danger') %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
+
+                    {{ form_start(registrationForm) }}
+
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.nom) }}
+                            {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(registrationForm.nom) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.prenom) }}
+                            {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(registrationForm.prenom) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.gmail) }}
+                            {{ form_widget(registrationForm.gmail, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(registrationForm.gmail) }}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form_label(registrationForm.plainPassword) }}
+                            {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(registrationForm.plainPassword) }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            Register
+                        </button>
+
+                    {{ form_end(registrationForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

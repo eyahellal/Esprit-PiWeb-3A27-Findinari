@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    <meta name="description" content="{% block meta_description %}Fin-Dinari - Complete Personal Finance Ecosystem. Track expenses, invest, set goals, and join a community of like-minded individuals on their financial journey.{% endblock %}">
+    <meta name="author" content="Fin-Dinari">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/x-icon">
+    
+    <title>{% block title %}Fin-Dinari - Complete Personal Finance Ecosystem{% endblock %}</title>
+
+    {% block stylesheets %}
+        {% include 'partials/_stylesheets.html.twig' %}
+    {% endblock %}
+
+    {% block javascripts %}
+        {% include 'partials/_javascripts.html.twig' %}
+    {% endblock %}
+</head>
+<body>
+
+    {% include 'partials/_header.html.twig' %}
+
+    <main>
+        {% block body %}{% endblock %}
+    </main>
+
+    {% include 'partials/_footer.html.twig' %}
+
+    <!-- Extra scripts block for page-specific JS -->
+    {% block extra_javascripts %}{% endblock %}
+    
+</body>
+</html>
