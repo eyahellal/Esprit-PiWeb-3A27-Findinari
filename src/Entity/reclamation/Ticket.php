@@ -14,8 +14,43 @@ use App\Repository\TicketRepository;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ORM\Table(name: 'ticket')]
+#[ORM\HasLifecycleCallbacks]
 class Ticket
 {
+    // Status Constants
+    public const STATUS_OPEN = 'Open';
+    public const STATUS_IN_PROGRESS = 'In Progress';
+    public const STATUS_CLOSED = 'Closed';
+
+    // Priority Constants
+    public const PRIORITY_LOW = 'Low';
+    public const PRIORITY_MEDIUM = 'Medium';
+    public const PRIORITY_HIGH = 'High';
+
+  
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateDeadline(): void
+    {
+        if ($this->dateCreation) {
+            $deadline = \DateTime::createFromInterface($this->dateCreation);
+            
+            switch ($this->priorite) {
+                case self::PRIORITY_HIGH:
+                    $deadline->modify('+2 hours'); // 2 heures pour High
+                    break;
+                case self::PRIORITY_MEDIUM:
+                    $deadline->modify('+24 hours'); // 24 heures pour Medium
+                    break;
+                case self::PRIORITY_LOW:
+                default:
+                    $deadline->modify('+48 hours'); // 48 heures pour Low
+                    break;
+            }
+            // On met à jour la propriété deadline qui sera sauvegardée en DB
+            $this->deadline = $deadline;
+        }
+    }
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -80,9 +115,34 @@ class Ticket
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $deadline = null;
 
+    /**
+     * Calcule le deadline dynamiquement. Même si on modifie la dateCreation ou la priorité
+     * directement en base de données, ce getter renverra toujours la valeur correcte.
+     */
     public function getDeadline(): ?\DateTimeInterface
     {
-        return $this->deadline;
+        if (!$this->dateCreation) {
+            return null; // Pas de date de création = pas de deadline possible
+        }
+
+        // On crée un nouvel objet DateTime à partir de la date de création
+        $deadline = \DateTime::createFromInterface($this->dateCreation);
+        
+        // On applique la logique de délai (SLA) selon la priorité
+        switch ($this->priorite) {
+            case self::PRIORITY_HIGH:
+                $deadline->modify('+2 hours'); // +2h pour High
+                break;
+            case self::PRIORITY_MEDIUM:
+                $deadline->modify('+24 hours'); // +24h pour Medium
+                break;
+            case self::PRIORITY_LOW:
+            default:
+                $deadline->modify('+48 hours'); // +48h pour Low (par défaut)
+                break;
+        }
+
+        return $deadline;
     }
 
     public function setDeadline(?\DateTimeInterface $deadline): self
@@ -179,8 +239,8 @@ class Ticket
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'ticket')]
-    private Collection $messages;
+#[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'ticket', cascade: ['remove'])]  
+  private Collection $messages;
 
     public function __construct()
     {
@@ -212,4 +272,12 @@ class Ticket
         return $this;
     }
 
+    public function isBreached(): bool
+    {
+        if (!$this->getDeadline() || in_array($this->statut, [self::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'])) {
+            return false;
+        }
+
+        return new \DateTime() > $this->getDeadline();
+    }
 }

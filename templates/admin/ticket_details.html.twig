@@ -136,30 +136,102 @@
         }
 
         .chat-area {
-            display: flex; flex-direction: column; background: #fafafa;
+            display: flex; height: 100%; flex-direction: column; background: #ffffff;
+            border-left: 1px solid var(--border);
         }
 
         .chat-messages {
-            flex: 1; overflow-y: auto; padding: 26px;
-            display: flex; flex-direction: column; gap: 20px;
+            flex: 1; overflow-y: auto; padding: 32px 40px;
+            display: flex; flex-direction: column; gap: 32px;
+            background: #fdfdfd;
         }
 
-        .msg-container { display: flex; flex-direction: column; max-width: 85%; }
-        .msg-container.admin { align-self: flex-end; align-items: flex-end; }
-        .msg-container.user { align-self: flex-start; align-items: flex-start; }
+        .msg-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
 
-        .msg-meta { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
-        
+        .msg-container {
+            display: flex;
+            gap: 16px;
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+
+        .msg-container.admin {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .msg-container.user {
+            align-self: flex-start;
+        }
+
+        .msg-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 13px;
+            flex-shrink: 0;
+            border: 1.5px solid #e2e8f0;
+        }
+
+        .msg-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
         .msg-bubble {
-            padding: 12px 16px; border-radius: 16px; font-size: 14px;
-            line-height: 1.5; position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            padding: 16px 22px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.6;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            max-width: 100%;
+            width: fit-content;
+            min-width: 80px;
         }
 
-        .admin .msg-bubble { background: var(--brand); color: white; border-top-right-radius: 2px; }
-        .user .msg-bubble { background: white; color: var(--text-primary); border: 1px solid var(--border); border-top-left-radius: 2px; }
+        .admin .msg-bubble {
+            background: #22c55e;
+            color: white;
+            border-top-right-radius: 4px;
+        }
+
+        .user .msg-bubble {
+            background: #f8fafc;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+            border-top-left-radius: 4px;
+        }
+
+        .msg-sender-name {
+            font-weight: 800;
+            margin-bottom: 4px;
+            display: block;
+            color: #0f172a;
+        }
+
+        .msg-date {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .user .msg-date { text-align: right; }
 
         .chat-input-wrapper {
-            padding: 20px 26px; background: white; border-top: 1px solid var(--border);
+            padding: 0; background: white; border-top: 1px solid var(--border);
         }
 
         .modern-textarea {
@@ -178,6 +250,218 @@
         }
         .btn-primary { background: var(--brand); color: white; box-shadow: 0 4px 12px rgba(22,163,74,.2); }
         .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+        /* Redesigned Chat Input */
+        .reply-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .reply-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+
+        .modern-textarea-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .modern-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 18px 20px;
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            font-family: inherit;
+            font-size: 14.5px;
+            outline: none;
+            transition: all 0.2s;
+            background: #ffffff;
+            resize: vertical;
+        }
+
+        .modern-textarea:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.08);
+        }
+
+        .reply-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attach-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .attach-btn:hover {
+            color: var(--brand);
+            background: var(--brand-light);
+        }
+
+        .attach-btn svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .send-reply-btn {
+            background: #22c55e;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Voice Recorder Styles */
+        .recorder-controls {
+            display: none;
+            align-items: center;
+            gap: 15px;
+            background: #f0fdf4;
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid #bbf7d0;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .timer {
+            font-family: monospace;
+            font-weight: 700;
+            color: #166534;
+            font-size: 14px;
+        }
+
+        .mic-btn {
+            color: #64748b;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .mic-btn.recording {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        /* Audio Player Styles */
+        .voice-message-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.03);
+            padding: 10px 16px;
+            border-radius: 12px;
+            width: 100%;
+            min-width: 240px;
+            margin-top: 8px;
+            box-sizing: border-box;
+        }
+
+        .user .voice-message-player {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .play-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #22c55e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s;
+        }
+
+        .play-btn:active { transform: scale(0.9); }
+
+        .waveform-mock {
+            flex: 1;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            height: 60%;
+            background: currentColor;
+            opacity: 0.4;
+            border-radius: 2px;
+        }
+
+        .send-reply-btn:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        }
+
+        .file-preview {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--brand);
+            font-weight: 700;
+            display: none;
+        }
 
         .info-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; display: block; }
         .info-value { font-weight: 700; color: var(--text-primary); margin-bottom: 20px; }
@@ -209,6 +493,38 @@
         }
         .dropdown-item:hover { background: var(--brand-light); color: var(--brand); }
         .dropdown-item.danger:hover { background: #fff0f0; color: var(--danger); }
+        /* Modal Styles */
+        .summary-modal-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px); display: none; align-items: center;
+            justify-content: center; z-index: 9999; padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+        .summary-modal {
+            background: white; width: 100%; max-width: 600px;
+            border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .summary-modal-header {
+            padding: 24px 32px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .summary-modal-content { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+        .summary-item { display: flex; gap: 16px; }
+        .summary-icon {
+            width: 40px; height: 40px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .summary-text h5 { margin: 0 0 4px 0; font-size: 13px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+        .summary-text p { margin: 0; font-size: 15px; color: #1e293b; line-height: 1.6; font-weight: 500; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .animate-in {
+            animation: fadeIn 0.4s ease-out, slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
     </style>
 </head>
 <body>
@@ -220,16 +536,32 @@
         </div>
         <div class="nav-section">Main</div>
         <a class="side-link" href="{{ path('app_admin_dashboard') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             Dashboard
         </a>
         <a class="side-link" href="{{ path('app_admin_wallets') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
             Manage Wallets
         </a>
+        <a class="side-link" href="{{ path('app_admin_objectifs') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Manage Objectifs
+        </a>
         <a class="side-link active" href="{{ path('app_admin_tickets') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-            Ticket et message
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Tickets & Messages
+        </a>
+        <a class="side-link" href="{{ path('app_admin_ticket_calendar') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Ticket Calendar
+        </a>
+        <a class="side-link" href="{{ path('app_admin_ticket_stats') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Ticket Statistics
+        </a>
+        <a class="side-link" href="{{ path('app_admin_obligations') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+            Manage Obligations
         </a>
 
         <div class="sidebar-footer">
@@ -247,10 +579,21 @@
             </div>
         </div>
 
-        {% for message in app.flashes('success') %}
-            <div style="background:var(--brand-light); color:var(--brand-dark); padding:14px; border-radius:10px; margin-bottom:20px; font-weight:700;">
-                {{ message }}
-            </div>
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div style="
+                    padding:16px; 
+                    border-radius:12px; 
+                    margin-bottom:24px; 
+                    font-weight:700;
+                    {% if label == 'success' %} background:var(--brand-light); color:var(--brand-dark); border:1px solid rgba(22,163,74,0.2); 
+                    {% elseif label == 'danger' %} background:#fee2e2; color:#b91c1c; border:1px solid rgba(239,68,68,0.2); 
+                    {% elseif label == 'warning' %} background:#fef3c7; color:#92400e; border:1px solid rgba(245,158,11,0.2); 
+                    {% else %} background:#e0f2fe; color:#0369a1; border:1px solid rgba(14,165,233,0.2); {% endif %}
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endfor %}
 
         <div class="section">
@@ -275,6 +618,64 @@
                         {{ ticket.description }}
                     </div>
 
+                    <span class="info-label">SLA Status</span>
+                    <div style="margin-bottom:20px;">
+                        {% if ticket.deadline %}
+                            {% set isClosed = ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_CLOSED') or ticket.statut in ['Fermé', 'CLOSED'] %}
+                            {% if isClosed %}
+                                <span style="color: #16a34a; font-weight: 800; font-size: 15px;">Resolved on time</span>
+                            {% else %}
+                                <span class="sla-timer" data-deadline="{{ ticket.deadline|date('c') }}" style="font-size:18px; font-weight: 800;">
+                                    Loading...
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic;">No SLA defined</span>
+                        {% endif %}
+                    </div>
+
+                    <button type="button" id="summarizeBtn" class="btn" style="width:100%; margin-bottom:20px; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
+                        <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v19M5 8h14M5 16h14"/></svg>
+                        Get Smart Summary
+                    </button>
+
+                    <!-- Summary Modal -->
+                    <div id="summaryModalOverlay" class="summary-modal-overlay">
+                        <div class="summary-modal">
+                            <div class="summary-modal-header">
+                                <div style="display:flex; align-items:center; gap:12px;">
+                                    <div style="background:#dcfce7; color:#15803d; padding:8px; border-radius:10px;">
+                                        <svg style="width:20px; height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    </div>
+                                    <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">AI Smart Analysis</h3>
+                                </div>
+                                <button type="button" onclick="closeSummaryModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><svg style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                            </div>
+                            <div class="summary-modal-content">
+                                <div class="summary-item">
+                                    <div class="summary-icon" style="background:#fee2e2; color:#b91c1c;"><svg style="width:20px; height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg></div>
+                                    <div class="summary-text"><h5>The Problem</h5><p id="summaryProblem"></p></div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon" style="background:#e0f2fe; color:#0369a1;"><svg style="width:20px; height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                                    <div class="summary-text"><h5>The Process</h5><p id="summaryProcess"></p></div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon" style="background:#dcfce7; color:#15803d;"><svg style="width:20px; height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <div class="summary-text"><h5>The Solution</h5><p id="summarySolution"></p></div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-icon" style="background:#f1f5f9; color:#475569;"><svg style="width:20px; height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                                    <div class="summary-text"><h5>Current State</h5><p id="summaryState"></p></div>
+                                </div>
+                                <div id="summaryNoteWrapper" style="display:none; padding:16px; background:#fff7ed; border-radius:14px; border:1px solid #ffedd5; color:#9a3412; font-style:italic; font-size:14px;">
+                                    <svg style="width:18px; height:18px; margin-right:8px; vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    <span id="summaryNote"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {% if ticket.imageUrl %}
                     <span class="info-label">Attachment</span>
                     <div style="margin-bottom:24px;">
@@ -289,17 +690,17 @@
                                 <div>
                                     <label class="info-label">Statut</label>
                                     <select name="statut" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border);">
-                                        <option value="Ouvert" {% if ticket.statut == 'Ouvert' %}selected{% endif %}>Ouvert</option>
-                                        <option value="En cours" {% if ticket.statut == 'En cours' %}selected{% endif %}>En cours</option>
-                                        <option value="Fermé" {% if ticket.statut == 'Fermé' %}selected{% endif %}>Fermé</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::STATUS_OPEN') }}" {% if ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_OPEN') %}selected{% endif %}>Open</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::STATUS_IN_PROGRESS') }}" {% if ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_IN_PROGRESS') %}selected{% endif %}>In Progress</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::STATUS_CLOSED') }}" {% if ticket.statut == constant('App\\Entity\\reclamation\\Ticket::STATUS_CLOSED') %}selected{% endif %}>Closed</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label class="info-label">Priorité</label>
                                     <select name="priorite" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border);">
-                                        <option value="Faible" {% if ticket.priorite == 'Faible' %}selected{% endif %}>Faible</option>
-                                        <option value="Moyenne" {% if ticket.priorite == 'Moyenne' %}selected{% endif %}>Moyenne</option>
-                                        <option value="Haute" {% if ticket.priorite == 'Haute' %}selected{% endif %}>Haute</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::PRIORITY_LOW') }}" {% if ticket.priorite == constant('App\\Entity\\reclamation\\Ticket::PRIORITY_LOW') %}selected{% endif %}>Low</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::PRIORITY_MEDIUM') }}" {% if ticket.priorite == constant('App\\Entity\\reclamation\\Ticket::PRIORITY_MEDIUM') %}selected{% endif %}>Medium</option>
+                                        <option value="{{ constant('App\\Entity\\reclamation\\Ticket::PRIORITY_HIGH') }}" {% if ticket.priorite == constant('App\\Entity\\reclamation\\Ticket::PRIORITY_HIGH') %}selected{% endif %}>High</option>
                                     </select>
                                 </div>
                                 <button type="submit" class="btn btn-primary" style="width:100%;">update</button>
@@ -311,51 +712,100 @@
                 <div class="chat-area">
                     <div id="chatContainer" class="chat-messages">
                         {% for message in messages %}
-                            {% set isAdmin = message.typeSender == 'ADMIN' %}
-                            <div class="msg-container {{ isAdmin ? 'admin' : 'user' }}">
-                                <div class="msg-meta">
-                                    {{ isAdmin ? 'Support Team' : message.utilisateur.prenom }} &bull; {{ message.date|date('H:i') }}
-                                </div>
-                                <div style="display:flex; align-items:center; gap:8px; {{ isAdmin ? 'flex-direction:row-reverse' : '' }}">
-                                    <div class="msg-bubble" id="bubble-{{ message.id }}">
-                                        {{ message.contenu|nl2br }}
-                                    </div>
-
-                                    {% if isAdmin %}
-                                    <div style="position:relative;">
-                                        <div class="kebab-btn" onclick="toggleMenu({{ message.id }})">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:14px;"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                                        </div>
-                                        <div id="menu-{{ message.id }}" class="dropdown-menu">
-                                            <button class="dropdown-item" onclick="editMsg({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)">Edit</button>
-                                            <form method="POST" action="{{ path('app_admin_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ?')">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_message_admin_' ~ message.id) }}">
-                                                <button type="submit" class="dropdown-item danger">Delete</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <form id="edit-form-{{ message.id }}" method="POST" action="{{ path('app_admin_message_edit', {id: message.id}) }}" style="display:none; margin-top:8px;">
-                                    <textarea name="edit_contenu" style="width:200px; height:60px; padding:6px; border-radius:6px; border:1px solid var(--brand);"></textarea>
-                                    <div style="display:flex; gap:4px; margin-top:4px;">
-                                        <button type="submit" style="background:var(--brand); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:11px;">OK</button>
-                                        <button type="button" onclick="window.location.reload()" style="background:#eee; border:none; padding:4px 8px; border-radius:4px; font-size:11px;">Cancel</button>
-                                    </div>
-                                </form>
+                            {% include 'reclamation/_message_item_admin.html.twig' with {'message': message, 'ticket': ticket} %}
+                        {% else %}
+                            <div id="noMessagesPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); opacity: 0.6;">
+                                <svg style="width: 48px; height: 48px; margin-bottom: 12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                <p style="font-weight: 700; font-size: 15px; margin:0;">No messages yet.</p>
+                                <span style="font-size: 13px;">Customer is waiting for a response.</span>
                             </div>
                         {% endfor %}
                     </div>
 
                     <div class="chat-input-wrapper">
-                        {{ form_start(form, {'action': path('app_admin_message_new', {id: ticket.id}), 'attr': {'novalidate': 'novalidate', 'style': 'display:flex; gap:12px; align-items:flex-end;'}}) }}
-                            <div style="flex:1;">
-                                {{ form_widget(form.contenu, {'attr': {'class': 'modern-textarea', 'placeholder': 'Type your message here...'}}) }}
-                                <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form_errors(form.contenu) }}</div>
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="height:50px; padding:0 24px;">send</button>
-                        {{ form_end(form) }}
+                        <div class="reply-card">
+                            <div class="reply-title">Add a reply</div>
+                            
+                            {{ form_start(form, {
+                                'action': path('app_admin_message_new', {id: ticket.id}),
+                                'attr': {
+                                    'novalidate': 'novalidate',
+                                    'id': 'replyForm'
+                                },
+                                'multipart': true
+                            }) }}
+                                <div id="suggestionsBox" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; min-height:36px; align-items:center;"></div>
+                                <div class="modern-textarea-wrapper">
+                                    {{ form_widget(form.contenu, {
+                                        'attr': {
+                                            'class': 'modern-textarea',
+                                            'placeholder': 'Type your message here...'
+                                        }
+                                    }) }}
+                                    <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form_errors(form.contenu) }}</div>
+                                </div>
+
+                                <div class="reply-actions">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <label class="attach-btn" for="{{ form.attachment.vars.id }}" title="Attach a file">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 0 1-7.78-7.78l8.49-8.49a3.5 3.5 0 0 1 4.95 4.95l-8.5 8.49a1.5 1.5 0 0 1-2.12-2.12l7.78-7.78"/>
+                                            </svg>
+                                            <span>Attach file</span>
+                                        </label>
+
+                                        <div class="mic-btn" id="micBtn" title="Record voice message">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;">
+                                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div id="recorderPanel" class="recorder-controls">
+                                        <div class="recording-dot"></div>
+                                        <div class="timer" id="recordTimer">00:00</div>
+                                        <div style="flex:1;"></div>
+                                        <button type="button" id="cancelRecord" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; font-size:13px;">Cancel</button>
+                                        <button type="button" id="stopRecord" style="background:#22c55e; border:none; color:white; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;">Send Voice</button>
+                                    </div>
+                                    
+                                    <div style="display:none !important;">
+                                        {{ form_widget(form.attachment) }}
+                                    </div>
+
+                                    <div style="display:flex; gap:10px; align-items:center;">
+                                        <button type="button" class="btn transform-btn" data-mode="formalize" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-weight:700;" title="Formalize & Professionalize">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px; height:16px;">
+                                                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                                                <path d="M5 3v4"/><path d="m19 17v4"/><path d="M3 5h4"/><path d="m17 19h4"/>
+                                            </svg>
+                                            Formalize
+                                        </button>
+
+                                        <button type="button" class="btn transform-btn" data-mode="correct" style="background:#fffcf0; color:#854d0e; border:1px solid #fef08a; font-weight:700;" title="Correct Vocabulary & Grammar">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:16px; height:16px;">
+                                                <path d="m12 14 4-4"/><path d="m3.34 19 1.40-1.40"/><path d="m19.03 3.34-1.39 1.39"/><path d="m18.18 8.21.31-3.13-3.13.31"/><path d="M9.4 6.6l.3-3.1-3.1.3"/><path d="m3.75 3.75 16.5 16.5"/>
+                                            </svg>
+                                            Correct
+                                        </button>
+
+                                        <button type="submit" class="send-reply-btn" id="standardSendBtn">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px; height:18px;">
+                                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                            </svg>
+                                            Send Reply
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div id="fileNameDisplay" class="file-preview"></div>
+                                <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ form_errors(form.attachment) }}</div>
+                            {{ form_end(form) }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -380,12 +830,475 @@
         document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
     });
 
+    // Handle file selection display
+    const fileInput = document.getElementById('{{ form.attachment.vars.id }}');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
+                fileNameDisplay.style.display = 'block';
+            } else {
+                fileNameDisplay.style.display = 'none';
+            }
+        });
+    }
+
     function editMsg(id, content) {
         document.getElementById('bubble-' + id).style.display = 'none';
         const form = document.getElementById('edit-form-' + id);
         form.style.display = 'block';
         form.querySelector('textarea').value = content;
     }
+
+    // Voice Recording Logic
+    let mediaRecorder;
+    let audioChunks = [];
+    let startTime;
+    let timerInterval;
+
+    const micBtn = document.getElementById('micBtn');
+    const recorderPanel = document.getElementById('recorderPanel');
+    const standardSendBtn = document.getElementById('standardSendBtn');
+    const stopRecordBtn = document.getElementById('stopRecord');
+    const cancelRecordBtn = document.getElementById('cancelRecord');
+    const timerDisplay = document.getElementById('recordTimer');
+
+    micBtn.onclick = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'voice_message.webm');
+
+                try {
+                    const response = await fetch("{{ path('app_admin_message_voice', {id: ticket.id}) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+                    
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const result = await response.json();
+                        console.log('Voice upload response:', result);
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Upload failed: ' + (result.error || 'Unknown error'));
+                        }
+                    } else {
+                        // Probably HTML error page from Symfony
+                        const text = await response.text();
+                        console.error('Server returned non-JSON response:', text);
+                        alert('Server error: The server returned an invalid response. Please check your Cloudinary configuration in .env and clear your Symfony cache.');
+                    }
+                } catch (err) {
+                    console.error('Upload process failed:', err);
+                    alert('Could not send voice message: ' + err.message);
+                    
+                    // Reset UI on error
+                    recorderPanel.style.display = 'none';
+                    micBtn.style.display = 'flex';
+                    standardSendBtn.style.display = 'flex';
+                }
+            };
+
+            mediaRecorder.start();
+            micBtn.style.display = 'none';
+            standardSendBtn.style.display = 'none';
+            recorderPanel.style.display = 'flex';
+            
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const seconds = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                timerDisplay.textContent = `${m}:${s}`;
+            }, 1000);
+
+        } catch (err) {
+            console.error('Mic access denied:', err);
+            alert('Mic access denied. Please enable microphone permissions.');
+        }
+    };
+
+    stopRecordBtn.onclick = () => {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        clearInterval(timerInterval);
+    };
+
+    cancelRecordBtn.onclick = () => {
+        mediaRecorder.onstop = null; // Prevent upload
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        clearInterval(timerInterval);
+        recorderPanel.style.display = 'none';
+        micBtn.style.display = 'flex';
+        standardSendBtn.style.display = 'flex';
+        timerDisplay.textContent = '00:00';
+    };
+
+    // Shared Audio Player logic
+    let currentAudio = null;
+    window.toggleAudio = function(btn, url) {
+        if (currentAudio && currentAudio.src === url) {
+            if (currentAudio.paused) {
+                currentAudio.play();
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            } else {
+                currentAudio.pause();
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M8 5v14l11-7z"/></svg>';
+            }
+        } else {
+            if (currentAudio) currentAudio.pause();
+            currentAudio = new Audio(url);
+            currentAudio.play();
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+            
+            currentAudio.onended = () => {
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" style="width:16px; height:16px;"><path d="M8 5v14l11-7z"/></svg>';
+            };
+        }
+    };
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const suggestionsBox = document.getElementById('suggestionsBox');
+    // Robust textarea selector
+    const textarea = document.getElementById('{{ form.contenu.vars.id }}') || document.querySelector('#replyForm .modern-textarea');
+    const ticketId = {{ ticket.id }};
+    const suggestionsUrl = '{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}';
+
+    console.log('AI System: Initializing for Admin...', { suggestionsBox: !!suggestionsBox, textarea: !!textarea });
+
+    async function loadSuggestions() {
+        if (!suggestionsBox || !textarea) return;
+        
+        suggestionsBox.innerHTML = '<span style="color:#64748b;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;"><svg class="animate-spin" style="width:14px;height:14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" style="opacity:0.25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity:0.75"></path></svg> Getting AI suggestions...</span>';
+
+        try {
+            const response = await fetch(suggestionsUrl);
+            const data = await response.json();
+            console.log('AI Suggestions:', data);
+
+            if (data.suggestions && data.suggestions.length > 0) {
+                suggestionsBox.innerHTML = '';
+                data.suggestions.forEach(suggestion => {
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'suggestion-chip';
+                    chip.textContent = suggestion;
+                    chip.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap;';
+                    
+                    chip.onclick = () => {
+                        textarea.value = suggestion;
+                        textarea.focus();
+                    };
+                    suggestionsBox.appendChild(chip);
+                });
+            } else {
+                suggestionsBox.innerHTML = '<span style="color:#94a3b8;font-size:12px;font-style:italic;">No suggestions available</span>';
+            }
+        } catch (e) {
+            console.error('AI Error:', e);
+            suggestionsBox.innerHTML = '';
+        }
+    }
+
+    loadSuggestions();
+
+    // AI Transformation logic (Formalize & Correct)
+    document.querySelectorAll('.transform-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!textarea) return;
+            const currentText = textarea.value.trim();
+            if (!currentText) return;
+
+            console.log('AI Transformation: Starting...', btn.dataset.mode);
+            const mode = btn.dataset.mode;
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<svg class="animate-spin" style="width:14px;height:14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" style="opacity:0.25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity:0.75"></path></svg>';
+
+            try {
+                const response = await fetch('{{ path('app_message_reformulate') }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: currentText, mode: mode })
+                });
+                const data = await response.json();
+                console.log('AI Transformation Result:', data);
+                if (data.transformed) {
+                    textarea.value = data.transformed;
+                }
+            } catch (e) {
+                console.error('AI Transformation Error:', e);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        });
+    });
+
+    // Re-load suggestions after form submission
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) {
+        replyForm.addEventListener('submit', function() {
+            // Standard submit
+        });
+    }
+
+    // AI Summary logic
+    const summarizeBtn = document.getElementById('summarizeBtn');
+    const summaryModal = document.getElementById('summaryModalOverlay');
+    
+    console.log('AI Summary: Initializing...', { btn: !!summarizeBtn, modal: !!summaryModal });
+
+    // Admin Shortcuts (Abbreviations)
+    const shortcuts = {
+        '/done': 'Your ticket has been officially resolved. Thank you for choosing Fin-Dinari!',
+        '/greeting': 'Hello {{ ticket.utilisateur.prenom }}, we are currently investigating your request and will get back to you as soon as possible.',
+        '/moreinfo': 'Could you please provide additional details or a screenshot to help us better understand the situation?',
+        '/wait': 'Your request has been escalated to our technical department. We appreciate your patience during this process.',
+        '/verify': 'We have applied a correction. Could you please check if the issue is now resolved on your side?',
+        '/sorry': 'Please accept our sincere apologies for the inconvenience caused and the delay in our response.'
+    };
+
+    textarea.addEventListener('input', function(e) {
+        const value = textarea.value;
+        const words = value.split(/\s+/);
+        const lastWord = words[words.length - 1] === "" ? words[words.length - 2] : words[words.length - 1];
+        
+        // Only trigger if space was pressed and the word matches a shortcut
+        if (e.inputType === 'insertText' && e.data === ' ') {
+            const cursorPosition = textarea.selectionStart;
+            const textBeforeCursor = value.substring(0, cursorPosition).trim();
+            const lastWordBeforeSpace = textBeforeCursor.split(/\s+/).pop();
+
+            if (shortcuts[lastWordBeforeSpace]) {
+                const expansion = shortcuts[lastWordBeforeSpace];
+                const newText = textBeforeCursor.substring(0, textBeforeCursor.length - lastWordBeforeSpace.length) + expansion + ' ';
+                const textAfterCursor = value.substring(cursorPosition);
+                
+                textarea.value = newText + textAfterCursor;
+                // Move cursor to after expansion
+                const newPos = newText.length;
+                textarea.setSelectionRange(newPos, newPos);
+            }
+        }
+    });
+
+    window.closeSummaryModal = function() {
+        if (summaryModal) {
+            summaryModal.style.display = 'none';
+            summaryModal.style.opacity = '0';
+        }
+    };
+
+    if (summarizeBtn) {
+        summarizeBtn.addEventListener('click', async () => {
+            console.log('AI Summary: Clicked');
+            const originalContent = summarizeBtn.innerHTML;
+            summarizeBtn.disabled = true;
+            summarizeBtn.style.opacity = '0.7';
+            summarizeBtn.innerHTML = '<svg class="animate-spin" style="width:14px;height:14px;margin-right:8px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" style="opacity:0.25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" style="opacity:0.75"></path></svg> Analyzing...';
+
+            try {
+                const response = await fetch('{{ path('app_ticket_summary', {id: ticket.id}) }}');
+                const data = await response.json();
+                console.log('AI Summary Data:', data);
+                
+                if (data.problem || data.error) {
+                    if (data.error) {
+                        alert('Summary error: ' + data.error);
+                        return;
+                    }
+
+                    document.getElementById('summaryProblem').textContent = data.problem || 'N/A';
+                    document.getElementById('summaryProcess').textContent = data.process || 'N/A';
+                    document.getElementById('summarySolution').textContent = data.solution || 'N/A';
+                    document.getElementById('summaryState').textContent = data.state || 'N/A';
+                    
+                    const noteWrapper = document.getElementById('summaryNoteWrapper');
+                    if (data.adaptive_note) {
+                        document.getElementById('summaryNote').textContent = data.adaptive_note;
+                        noteWrapper.style.display = 'block';
+                    } else {
+                        noteWrapper.style.display = 'none';
+                    }
+                    
+                    if (summaryModal) {
+                        summaryModal.style.display = 'flex';
+                        setTimeout(() => summaryModal.style.opacity = '1', 10);
+                    }
+                }
+            } catch (e) {
+                console.error('AI Summary Error:', e);
+                alert('Connection error while fetching summary.');
+            } finally {
+                summarizeBtn.disabled = false;
+                summarizeBtn.style.opacity = '1';
+                summarizeBtn.innerHTML = originalContent;
+            }
+        });
+    }
+
+    if (summaryModal) {
+        summaryModal.addEventListener('click', (e) => {
+            if (e.target === summaryModal) closeSummaryModal();
+        });
+    }
+
+    // --- SLA Timer Logic ---
+    const timers = document.querySelectorAll('.sla-timer');
+    const serverTimeStr = '{{ "now"|date("c") }}';
+    const serverNow = new Date(serverTimeStr);
+    const clientNow = new Date();
+    const timeOffset = serverNow.getTime() - clientNow.getTime();
+
+    function formatDuration(totalSeconds) {
+        const isNegative = totalSeconds < 0;
+        const absSeconds = Math.abs(totalSeconds);
+        const days = Math.floor(absSeconds / 86400);
+        const hours = Math.floor((absSeconds % 86400) / 3600);
+        const minutes = Math.floor((absSeconds % 3600) / 60);
+        const seconds = absSeconds % 60;
+
+        let text = isNegative ? '- ' : '';
+        if (days > 0) text += days + 'd ';
+        text += String(hours).padStart(2, '0') + 'h ';
+        text += String(minutes).padStart(2, '0') + 'm ';
+        text += String(seconds).padStart(2, '0') + 's';
+        return text;
+    }
+
+    function updateTimer(element) {
+        const deadlineString = element.dataset.deadline;
+        const deadline = new Date(deadlineString);
+        const now = new Date(Date.now() + timeOffset);
+        const diff = deadline.getTime() - now.getTime();
+
+        if (isNaN(deadline.getTime())) {
+            element.textContent = 'Invalid SLA';
+            element.className = 'sla-timer badge bg-dark';
+            return;
+        }
+
+        const totalSeconds = Math.floor(diff / 1000);
+        element.textContent = formatDuration(totalSeconds);
+
+        if (totalSeconds <= 0) {
+            element.style.color = '#dc2626';
+            element.textContent = "BREACHED";
+        } else if (totalSeconds <= 3600) {
+            element.style.color = '#dc2626';
+        } else if (totalSeconds <= 4 * 3600) {
+            element.style.color = '#d97706';
+        } else if (totalSeconds <= 24 * 3600) {
+            element.style.color = '#0284c7';
+        } else {
+            element.style.color = '#16a34a';
+        }
+    }
+
+    if (timers.length > 0) {
+        timers.forEach(t => {
+            updateTimer(t);
+            setInterval(() => updateTimer(t), 1000);
+        });
+    }
+
+    // --- AJAX Polling for new messages ---
+    let lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
+    // Using a numeric placeholder that Symfony will accept as an 'int' if required
+    const fetchUrlPattern = "{{ path('app_ticket_fetch_new_messages', {id: ticket.id, lastId: 999999}) }}";
+
+    function pollMessages() {
+        const url = fetchUrlPattern.replace('999999', lastMessageId);
+        
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.count > 0) {
+                console.log(`Chat Polling: Found ${data.count} new messages.`);
+                const chatContainer = document.getElementById('chatContainer');
+                const noMessagesPlaceholder = document.getElementById('noMessagesPlaceholder');
+                
+                if (noMessagesPlaceholder) {
+                    noMessagesPlaceholder.remove();
+                }
+                
+                // Append new messages
+                chatContainer.insertAdjacentHTML('beforeend', data.html);
+                
+                // Update lastId
+                lastMessageId = data.lastId;
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        })
+        .catch(err => console.error('Chat Polling Error:', err));
+    }
+
+    // Check for new messages every 3 seconds
+    setInterval(pollMessages, 3000);
+});
+
+async function translateMsgToFR(messageId, btn) {
+    // If already translated → restore original
+    if (btn.dataset.translated === '1') {
+        document.getElementById('msg-text-' + messageId).innerHTML = btn.dataset.original;
+        btn.innerHTML = btn.dataset.btnOriginal;
+        btn.dataset.translated = '0';
+        btn.style.color = '';
+        return;
+    }
+
+    const originalHtml = btn.innerHTML;
+    btn.dataset.btnOriginal = originalHtml;
+    btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Translating…';
+    btn.disabled = true;
+    try {
+        const res = await fetch(`/message/${messageId}/translate`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await res.json();
+        if (data.translated) {
+            const msgEl = document.getElementById('msg-text-' + messageId);
+            btn.dataset.original = msgEl.innerHTML; // save original HTML
+            msgEl.innerHTML = data.translated.replace(/\n/g, '<br>');
+            btn.innerHTML = '↩ Show original';
+            btn.style.color = '#22c55e';
+            btn.dataset.translated = '1';
+            btn.disabled = false;
+        } else {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+            alert('Translation failed: ' + (data.error || 'Unknown error'));
+        }
+    } catch(e) {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+    }
+}
 </script>
 </body>
 </html>

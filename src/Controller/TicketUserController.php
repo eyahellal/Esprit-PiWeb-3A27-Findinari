@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\reclamation\Ticket;
 use App\Entity\reclamation\Message;
-use App\form\TicketType;
+use App\Form\TicketType;
+use App\Form\MessageType;
+use App\Service\TicketSlaCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -14,30 +16,64 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 use App\Repository\TicketRepository;
+use App\Service\TicketPriorityClassifierService;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class TicketUserController extends AbstractController
 {
-    #[Route('/user/tickets', name: 'app_user_tickets')]
-    public function myTickets(TicketRepository $ticketRepository): Response
+    #[Route('/user/ticket/classify-priority', name: 'app_user_ticket_classify_priority', methods: ['POST'])]
+    public function classifyPriorityAction(Request $request, TicketPriorityClassifierService $classifier): JsonResponse
     {
+        $data = json_decode($request->getContent(), true);
+        $title = $data['title'] ?? '';
+        $description = $data['description'] ?? '';
+
+        $result = $classifier->classifyPriority($title, $description);
+        $projectPriority = $classifier->mapToProjectPriority($result['priority']);
+
+        return new JsonResponse([
+            'priority' => $projectPriority,
+            'code' => $result['priority'],
+            'source' => $result['source'],
+            'raw' => $result['raw'],
+            'is_error' => $result['is_error'] ?? false
+        ]);
+    }
+
+    #[Route('/user/tickets', name: 'app_user_tickets')]
+    public function myTickets(
+        TicketRepository $ticketRepository,
+        Request $request,
+        \Knp\Component\Pager\PaginatorInterface $paginator
+    ): Response {
         $user = $this->getUser();
         
         if (!$user) {
-            return $this->redirectToRoute('app_login'); // Security measure to ensure the user is logged in
+            return $this->redirectToRoute('app_login');
         }
 
-        $tickets = $ticketRepository->findBy(
-            ['utilisateur' => $user],
-            ['dateCreation' => 'DESC']
+        $qb = $ticketRepository->createQueryBuilder('t')
+            ->where('t.utilisateur = :user')
+            ->setParameter('user', $user)
+            ->orderBy('t.dateCreation', 'DESC');
+
+        $pagination = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            5
         );
 
         return $this->render('reclamation/my_tickets.html.twig', [
-            'tickets' => $tickets,
+            'tickets' => $pagination,
         ]);
     }
     #[Route('/user/createticket', name: 'app_user_createticket')]
-    public function createTicket(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
-    {
+public function createTicket(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    SluggerInterface $slugger,
+    TicketSlaCalculator $ticketSlaCalculator
+): Response    {
         $ticket = new Ticket();
         $form = $this->createForm(TicketType::class, $ticket);
         $form->handleRequest($request);
@@ -55,18 +91,20 @@ class TicketUserController extends AbstractController
                         $this->getParameter('tickets_directory'),
                         $newFilename
                     );
+                    $ticket->setImageUrl($newFilename);
                 } catch (FileException $e) {
-                    // ... handle exception if something happens during file upload
                 }
-
-                $ticket->setImageUrl($newFilename);
             }
 
             // Set other fields
-            $ticket->setUtilisateur($this->getUser());
-            $ticket->setDateCreation(new \DateTime());
-            $ticket->setStatut('Open');
+            // ICI : On définit la date de création actuelle
+            $createdAt = new \DateTime();
 
+            $ticket->setUtilisateur($this->getUser());
+            $ticket->setDateCreation($createdAt); // L'entité utilisera cette date pour calculer le SLA
+            $ticket->setStatut(Ticket::STATUS_OPEN);
+
+            
             $entityManager->persist($ticket);
             $entityManager->flush();
 
@@ -80,30 +118,67 @@ class TicketUserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET'])]
+   
+    #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
         Ticket $ticket,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
     ): Response {
         $user = $this->getUser();
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
 
-        // Security check: ensure the ticket belongs to the connected user
         if ($ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException('You do not have access to this ticket.');
         }
 
         $message = new Message();
-        $form = $this->createForm(\App\form\MessageType::class, $message);
+        $form = $this->createForm(MessageType::class, $message);
+        $form->handleRequest($request);
 
-        $messages = $ticket->getMessages();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $message->setTicket($ticket);
+            $message->setUtilisateur($user);
+            $message->setDate(new \DateTime());
+            $message->setTypeSender('User');
+
+            $attachmentFile = $form->get('attachment')->getData();
+
+            if ($attachmentFile) {
+                $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $attachmentFile->guessExtension();
+
+                try {
+                    $attachmentFile->move(
+                        $this->getParameter('messages_directory'),
+                        $newFilename
+                    );
+
+                    $message->setUrlPieceJointe($newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('danger', 'Attachment upload failed.');
+                    return $this->redirectToRoute('app_user_ticket_details', [
+                        'id' => $ticket->getId(),
+                    ]);
+                }
+            }
+
+            $entityManager->persist($message);
+            $entityManager->flush();
+
+
+            return $this->redirectToRoute('app_user_ticket_details', [
+                'id' => $ticket->getId(),
+            ]);
+        }
 
         return $this->render('reclamation/my_ticket_details.html.twig', [
             'ticket' => $ticket,
-            'messages' => $messages,
+            'messages' => $ticket->getMessages(),
             'form' => $form->createView(),
         ]);
     }
@@ -143,7 +218,7 @@ class TicketUserController extends AbstractController
         }
 
         // Check if ticket can still be edited (not closed?)
-        if ($ticket->getStatut() === 'Fermé') {
+        if ($ticket->getStatut() === Ticket::STATUS_CLOSED) {
             $this->addFlash('danger', 'Closed tickets cannot be edited.');
             return $this->redirectToRoute('app_user_tickets');
         }

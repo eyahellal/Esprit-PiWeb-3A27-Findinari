@@ -81,16 +81,225 @@
     .msg-wrapper.admin { align-items: flex-start; }
 
     .msg-meta { font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 4px; padding: 0 4px; }
-    .msg-bubble { padding: 12px 16px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.5; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .msg-bubble { 
+        padding: 14px 20px; 
+        border-radius: 16px; 
+        max-width: 85%; 
+        min-width: 80px;
+        width: fit-content;
+        font-size: 15px; 
+        line-height: 1.6; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    }
 
     .msg-wrapper.user .msg-bubble { background: #22c55e; color: white; border-bottom-right-radius: 0; }
     .msg-wrapper.admin .msg-bubble { background: #ffffff; color: #1f2937; border: 1px solid #e5e7eb; border-bottom-left-radius: 0; }
 
-    .chat-form { padding: 20px 24px; border-top: 1px solid #e5e7eb; background: #ffffff; display: flex; gap: 12px; align-items: flex-end; }
-    .chat-form textarea { flex: 1; height: 48px; padding: 13px 16px; border-radius: 12px; border: 1.5px solid #e5e7eb; font-family: inherit; font-size: 14px; resize: vertical; outline: none; }
-    .chat-form textarea:focus { border-color: #22c55e; }
-    .chat-form button { background-color: #22c55e; color: white; border: none; height: 48px; padding: 0 24px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
     .chat-form button:hover { background-color: #16a34a; }
+
+    /* Redesigned Reply Form */
+    .reply-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 24px;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .reply-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 20px;
+    }
+
+    .modern-textarea-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .modern-textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 16px 20px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 16px;
+        font-family: inherit;
+        font-size: 14.5px;
+        outline: none;
+        transition: all 0.2s;
+        background: #ffffff;
+        resize: vertical;
+    }
+
+    .modern-textarea:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.08);
+    }
+
+    .reply-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .attach-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: none;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .attach-btn:hover {
+        color: #22c55e;
+        background: #f0fdf4;
+    }
+
+    .attach-btn i {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .send-reply-btn {
+        background: #22c55e;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 15px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Voice Recorder Styles */
+    .recorder-controls {
+        display: none;
+        align-items: center;
+        gap: 15px;
+        background: #f0fdf4;
+        padding: 8px 16px;
+        border-radius: 12px;
+        border: 1px solid #bbf7d0;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .recording-dot {
+        width: 10px;
+        height: 10px;
+        background: #ef4444;
+        border-radius: 50%;
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+
+    .mic-btn {
+        color: #64748b;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mic-btn:hover {
+        color: #ef4444;
+        background: #fee2e2;
+    }
+
+    /* Audio Player Styles */
+    .voice-message-player {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0,0,0,0.03);
+        padding: 10px 16px;
+        border-radius: 12px;
+        width: 100%;
+        min-width: 240px;
+        margin-top: 8px;
+        box-sizing: border-box;
+    }
+
+    .user .voice-message-player {
+        background: rgba(255,255,255,0.15);
+        color: white;
+    }
+
+    .play-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        transition: transform 0.1s;
+    }
+
+    .waveform-mock {
+        flex: 1;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .wave-bar {
+        width: 3px;
+        height: 60%;
+        background: currentColor;
+        opacity: 0.4;
+        border-radius: 2px;
+    }
+
+    .send-reply-btn:hover {
+        background: #16a34a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+    }
+
+    .file-preview {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #22c55e;
+        font-weight: 700;
+        display: none;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .animate-in {
+        animation: fadeIn 0.4s ease-out, slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 </style>
 
 {# Custom Support Header removed to show default navbar #}
@@ -100,7 +309,7 @@
         <a href="{{ path('app_home') }}">Home</a> &gt; 
         <a href="{{ path('support_center') }}">Support</a> &gt; 
         <a href="{{ path('app_user_tickets') }}">My Tickets</a> &gt; 
-        Ticket #{{ ticket.id }}
+        Details
     </div>
 
     <!-- FLASH MESSAGES -->
@@ -126,7 +335,7 @@
                 
                 <div class="info-group">
                     <span class="info-label">Status</span>
-                    <div class="status-badge {% if ticket.statut|lower == 'open' or ticket.statut == 'Ouvert' %}status-open{% elseif ticket.statut|lower == 'closed' or ticket.statut == 'Fermé' %}status-closed{% else %}status-in-progress{% endif %}">
+                    <div class="status-badge {% if ticket.statut|lower == 'open' %}status-open{% elseif ticket.statut|lower == 'closed' %}status-closed{% else %}status-in-progress{% endif %}">
                         {{ ticket.statut }}
                     </div>
                 </div>
@@ -134,9 +343,9 @@
                 <div class="info-group">
                     <span class="info-label">Priority</span>
                     <div class="info-value priority-{{ ticket.priorite|lower }}">
-                        {% if ticket.priorite == 'Haute' or ticket.priorite|lower == 'high' %}
+                        {% if ticket.priorite|lower == 'high' %}
                             <i class="fas fa-arrow-up"></i>
-                        {% elseif ticket.priorite == 'Moyenne' or ticket.priorite|lower == 'medium' %}
+                        {% elseif ticket.priorite|lower == 'medium' %}
                             <i class="fas fa-minus"></i>
                         {% else %}
                             <i class="fas fa-arrow-down"></i>
@@ -180,55 +389,9 @@
             
             <div id="chatContainer" class="chat-messages">
                 {% for message in messages %}
-                    {% set isUser = message.typeSender == 'USER' %}
-                    
-                    <div class="msg-wrapper {{ isUser ? 'user' : 'admin' }}">
-                        <div class="msg-meta">
-                            {% if isUser %}
-                                You &bull; {{ message.date|date('d M, H:i') }}
-                            {% else %}
-                                <span style="color: var(--primary-green); font-weight: 800;">Support Team</span> &bull; {{ message.date|date('d M, H:i') }}
-                            {% endif %}
-                        </div>
-                        
-                        <div style="display: flex; gap: 8px; align-items: center; {{ isUser ? 'flex-direction: row-reverse;' : '' }}">
-                            <div class="msg-bubble" id="msg-content-{{ message.id }}">
-                                {{ message.contenu|nl2br }}
-                            </div>
-
-                            {% if isUser %}
-                                <div style="position: relative;" class="message-actions-dropdown">
-                                    <button type="button" onclick="toggleMessageMenu({{ message.id }})" style="background:none; border:none; color: var(--gray-text); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-ellipsis-v" style="font-size: 14px;"></i>
-                                    </button>
-                                    
-                                    <div id="dropdown-{{ message.id }}" style="display: none; position: absolute; {{ isUser ? 'right: 0' : 'left: 0' }}; top: 100%; background: #fff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10; min-width: 120px; padding: 6px; flex-direction: column; gap: 4px;">
-                                        <button type="button" onclick="editMessage({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)" style="background:none; border:none; color: var(--dark-text); cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px;">
-                                            <i class="fas fa-edit" style="width:14px;"></i> Modifier
-                                        </button>
-                                        
-                                        <form method="post" action="{{ path('app_user_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ce message définitivement ?');">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_message_user_' ~ message.id) }}">
-                                            <button type="submit" style="background:none; border:none; color: #ef4444; cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px; width: 100%;">
-                                                <i class="fas fa-trash-alt" style="width:14px;"></i> Supprimer
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-
-                                <!-- Hidden edit form -->
-                                <form id="edit-form-{{ message.id }}" method="post" action="{{ path('app_user_message_edit', {id: message.id}) }}" style="display: none; align-items: flex-end; gap: 8px;">
-                                    <textarea name="edit_contenu" style="width: 250px; height: 60px; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); font-family: inherit; font-size: 13px; resize: vertical;" required></textarea>
-                                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                                        <button type="submit" style="padding: 4px 8px; font-size: 11px; background: var(--primary-green); color: white; border: none; border-radius: 4px; cursor: pointer;">Save</button>
-                                        <button type="button" onclick="cancelEdit({{ message.id }})" style="padding: 4px 8px; font-size: 11px; background: #eee; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
-                                    </div>
-                                </form>
-                            {% endif %}
-                        </div>
-                    </div>
+                    {% include 'reclamation/_message_item_user.html.twig' with {'message': message, 'ticket': ticket} %}
                 {% else %}
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-text); opacity: 0.6;">
+                    <div id="noMessagesPlaceholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-text); opacity: 0.6;">
                         <i class="far fa-comment-dots" style="font-size: 3rem; margin-bottom: 12px;"></i>
                         <p style="font-weight: 600; font-size: 15px; margin:0;">No messages yet.</p>
                         <span style="font-size: 13px;">Add a reply to follow up on your ticket.</span>
@@ -236,15 +399,75 @@
                 {% endfor %}
             </div>
 
-            {{ form_start(form, {'action': path('app_user_message_new', {id: ticket.id}), 'attr': {'class': 'chat-form', 'novalidate': 'novalidate'}}) }}
-                <div style="flex: 1; display: flex; flex-direction: column;">
-                    {{ form_widget(form.contenu) }}
-                    <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
-                </div>
-                <button type="submit">
-                    <i class="fas fa-paper-plane"></i> Send
-                </button>
-            {{ form_end(form) }}
+
+            <div class="reply-card">
+                <div class="reply-title">Add a reply</div>
+                
+                {{ form_start(form, {
+                    'action': path('app_user_message_new', {id: ticket.id}),
+                    'attr': {
+                        'novalidate': 'novalidate',
+                        'id': 'replyForm'
+                    },
+                    'multipart': true
+                }) }}
+                    <div id="suggestionsBox" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; min-height:36px; align-items:center;"></div>
+                    <div class="modern-textarea-wrapper">
+                        {{ form_widget(form.contenu, {
+                            'attr': {
+                                'class': 'modern-textarea',
+                                'placeholder': 'Type your message here...'
+                            }
+                        }) }}
+                        <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
+                    </div>
+
+                    <div class="reply-actions">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label class="attach-btn" for="{{ form.attachment.vars.id }}" title="Attach a file">
+                                <i class="fas fa-paperclip"></i>
+                                <span>Attach file</span>
+                            </label>
+
+                            <div class="mic-btn" id="micBtn" title="Record voice message">
+                                <i class="fas fa-microphone" style="font-size: 20px;"></i>
+                            </div>
+                        </div>
+
+                        <div id="recorderPanel" class="recorder-controls">
+                            <div class="recording-dot"></div>
+                            <div class="timer" id="recordTimer" style="font-family: monospace; font-weight: 700; color: #166534; font-size: 14px;">00:00</div>
+                            <div style="flex:1;"></div>
+                            <button type="button" id="cancelRecord" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; font-size:13px;">Cancel</button>
+                            <button type="button" id="stopRecord" style="background:#22c55e; border:none; color:white; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;">Send Voice</button>
+                        </div>
+                        
+                        <div style="display:none !important;">
+                            {{ form_widget(form.attachment) }}
+                        </div>
+
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button type="button" class="btn transform-btn" data-mode="formalize" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Formalize & Professionalize">
+                                <i class="fas fa-magic"></i>
+                                Formalize
+                            </button>
+
+                            <button type="button" class="btn transform-btn" data-mode="correct" style="background:#fffcf0; color:#854d0e; border:1px solid #fef08a; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Correct Vocabulary & Grammar">
+                                <i class="fas fa-spell-check"></i>
+                                Correct
+                            </button>
+
+                            <button type="submit" class="send-reply-btn" id="standardSendBtn">
+                                <i class="fas fa-paper-plane"></i>
+                                Send Reply
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="fileNameDisplay" class="file-preview"></div>
+                    <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.attachment) }}</div>
+                {{ form_end(form) }}
+            </div>
         </div>
 
     </div>
@@ -286,5 +509,296 @@
         document.getElementById('msg-content-' + id).style.visibility = 'visible';
         document.getElementById('edit-form-' + id).style.display = 'none';
     }
+
+    async function translateMsgToFR(messageId, btn) {
+        // If already translated → restore original
+        if (btn.dataset.translated === '1') {
+            document.getElementById('msg-text-' + messageId).innerHTML = btn.dataset.original;
+            btn.innerHTML = btn.dataset.btnOriginal;
+            btn.dataset.translated = '0';
+            btn.style.color = '';
+            return;
+        }
+
+        const originalHtml = btn.innerHTML;
+        btn.dataset.btnOriginal = originalHtml;
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Translating…';
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/message/${messageId}/translate`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (data.translated) {
+                const msgEl = document.getElementById('msg-text-' + messageId);
+                btn.dataset.original = msgEl.innerHTML; // save original HTML
+                msgEl.innerHTML = data.translated.replace(/\n/g, '<br>');
+                btn.innerHTML = '↩ Show original';
+                btn.style.color = '#22c55e';
+                btn.dataset.translated = '1';
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                alert('Translation failed: ' + (data.error || 'Unknown error'));
+            }
+        } catch(e) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+
+    // Voice Recording Logic
+    let mediaRecorder;
+    let audioChunks = [];
+    let startTime;
+    let timerInterval;
+
+    const micBtn = document.getElementById('micBtn');
+    const recorderPanel = document.getElementById('recorderPanel');
+    const standardSendBtn = document.getElementById('standardSendBtn');
+    const stopRecordBtn = document.getElementById('stopRecord');
+    const cancelRecordBtn = document.getElementById('cancelRecord');
+    const timerDisplay = document.getElementById('recordTimer');
+
+    micBtn.onclick = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'voice_message.webm');
+
+                try {
+                    const response = await fetch("{{ path('app_user_message_voice', {id: ticket.id}) }}", {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+                    
+                    const contentType = response.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const result = await response.json();
+                        console.log('Voice upload response:', result);
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                            alert('Upload failed: ' + (result.error || 'Unknown error'));
+                        }
+                    } else {
+                        const text = await response.text();
+                        console.error('Server returned non-JSON response:', text);
+                        alert('Server error: Could not process voice message. Please check the console for details.');
+                    }
+                } catch (err) {
+                    console.error('Upload process failed:', err);
+                    alert('Could not send voice message: ' + err.message);
+                    
+                    recorderPanel.style.display = 'none';
+                    micBtn.style.display = 'flex';
+                    standardSendBtn.style.display = 'flex';
+                }
+            };
+
+            mediaRecorder.start();
+            micBtn.style.display = 'none';
+            standardSendBtn.style.display = 'none';
+            recorderPanel.style.display = 'flex';
+            
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const seconds = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                timerDisplay.textContent = `${m}:${s}`;
+            }, 1000);
+
+        } catch (err) {
+            console.error('Mic access denied:', err);
+            alert('Mic access denied. Please enable microphone permissions.');
+        }
+    };
+
+    stopRecordBtn.onclick = () => {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        clearInterval(timerInterval);
+    };
+
+    cancelRecordBtn.onclick = () => {
+        mediaRecorder.onstop = null;
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(t => t.stop());
+        clearInterval(timerInterval);
+        recorderPanel.style.display = 'none';
+        micBtn.style.display = 'flex';
+        standardSendBtn.style.display = 'flex';
+        timerDisplay.textContent = '00:00';
+    };
+
+    // Shared Audio Player logic
+    let currentAudio = null;
+    window.toggleAudio = function(btn, url) {
+        if (currentAudio && currentAudio.src === url) {
+            if (currentAudio.paused) {
+                currentAudio.play();
+                btn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                currentAudio.pause();
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        } else {
+            if (currentAudio) currentAudio.pause();
+            currentAudio = new Audio(url);
+            currentAudio.play();
+            btn.innerHTML = '<i class="fas fa-pause"></i>';
+            
+            currentAudio.onended = () => {
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            };
+        }
+    };
+
+    // Handle file selection display
+    const fileInputElement = document.getElementById('{{ form.attachment.vars.id }}');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    
+    if (fileInputElement) {
+        fileInputElement.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
+                fileNameDisplay.style.display = 'block';
+            } else {
+                fileNameDisplay.style.display = 'none';
+            }
+        });
+    }
+
+    // AI Suggestions Logic
+    document.addEventListener('DOMContentLoaded', function () {
+        const suggestionsBox = document.getElementById('suggestionsBox');
+        const textarea = document.getElementById('{{ form.contenu.vars.id }}');
+        const suggestionsUrl = '{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}';
+
+        async function loadSuggestions() {
+            if (!suggestionsBox || !textarea) return;
+
+            suggestionsBox.innerHTML = '<span style="color:#64748b;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;"><i class="fas fa-spinner fa-spin"></i> Getting AI suggestions...</span>';
+
+            try {
+                const response = await fetch(suggestionsUrl);
+                const data = await response.json();
+                console.log('Detected Role:', data.detected_role);
+                console.log('Groq Suggestions Response:', data);
+
+                if (data.suggestions && data.suggestions.length > 0) {
+                    suggestionsBox.innerHTML = '';
+                    data.suggestions.forEach(suggestion => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'suggestion-chip';
+                        btn.textContent = suggestion;
+                        btn.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap; border: 1px solid #22c55e33;';
+                        
+                        btn.onmouseover = () => { btn.style.background = '#dcfce7'; btn.style.transform = 'translateY(-1px)'; };
+                        btn.onmouseout = () => { btn.style.background = '#f0fdf4'; btn.style.transform = 'none'; };
+                        
+                        btn.onclick = () => {
+                            textarea.value = suggestion;
+                            textarea.focus();
+                        };
+                        suggestionsBox.appendChild(btn);
+                    });
+                } else {
+                    suggestionsBox.innerHTML = '<span style="color:#94a3b8;font-size:12px;font-style:italic;">No suggestions available</span>';
+                }
+            } catch (e) {
+                console.error('Groq Error:', e);
+                suggestionsBox.innerHTML = '';
+            }
+        }
+
+        loadSuggestions();
+
+        // AI Transformation logic (Formalize & Correct)
+        document.querySelectorAll('.transform-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const currentText = textarea.value.trim();
+                if (!currentText) return;
+
+                const mode = btn.dataset.mode;
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                try {
+                    const response = await fetch('{{ path('app_message_reformulate') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: currentText, mode: mode })
+                    });
+                    const data = await response.json();
+                    if (data.transformed) {
+                        textarea.value = data.transformed;
+                        textarea.style.height = 'auto';
+                        textarea.style.height = textarea.scrollHeight + 'px';
+                    }
+                } catch (e) {
+                    console.error('Transformation error:', e);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            });
+        });
+
+        // --- AJAX Polling for new messages ---
+        let lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
+        const fetchUrlPattern = "{{ path('app_ticket_fetch_new_messages', {id: ticket.id, lastId: 999999}) }}";
+
+        function pollMessages() {
+            const url = fetchUrlPattern.replace('999999', lastMessageId);
+            
+            fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.count > 0) {
+                    console.log(`Chat Polling: Found ${data.count} new messages.`);
+                    const chatContainer = document.getElementById('chatContainer');
+                    const noMessagesPlaceholder = document.getElementById('noMessagesPlaceholder');
+                    
+                    if (noMessagesPlaceholder) {
+                        noMessagesPlaceholder.remove();
+                    }
+                    
+                    // Append new messages
+                    chatContainer.insertAdjacentHTML('beforeend', data.html);
+                    
+                    // Update lastId
+                    lastMessageId = data.lastId;
+                    
+                    // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            })
+            .catch(err => console.error('Chat Polling Error:', err));
+        }
+
+        // Check for new messages every 3 seconds
+        setInterval(pollMessages, 3000);
+    });
 </script>
 {% endblock %}

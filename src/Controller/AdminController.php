@@ -8,7 +8,7 @@ use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
 use App\Entity\user\Feedback;
 use App\Entity\user\Utilisateur;
-use App\form\MessageType;
+use App\Form\MessageType;
 use App\Repository\FeedbackRepository;
 use App\Repository\InvestissementobligationRepository;
 use App\Repository\ObligationRepository;
@@ -16,6 +16,7 @@ use App\Repository\ObjectifRepository;
 use App\Repository\TicketRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\WalletRepository;
+use App\Service\TicketSlaCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Knp\Component\Pager\PaginatorInterface;
@@ -24,6 +25,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 class AdminController extends AbstractController
 {
@@ -370,7 +375,8 @@ class AdminController extends AbstractController
     #[Route('/admin/ticket', name: 'app_admin_tickets')]
     public function tickets(
         Request $request,
-        TicketRepository $ticketRepository
+        TicketRepository $ticketRepository,
+        \Knp\Component\Pager\PaginatorInterface $paginator
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -394,9 +400,159 @@ class AdminController extends AbstractController
                 break;
         }
 
+        $pagination = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            10
+        );
+
         return $this->render('admin/tickets.html.twig', [
             'tickets' => $qb->getQuery()->getResult(),
+            'tickets'     => $pagination,
             'currentSort' => $sort,
+        ]);
+    }
+
+    #[Route('/admin/ticket-calendar', name: 'app_admin_ticket_calendar')]
+    public function ticketCalendar(TicketRepository $ticketRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $tickets = $ticketRepository->createQueryBuilder('t')
+            ->where('t.statut NOT IN (:closed)')
+            ->setParameter('closed', [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'])
+            ->getQuery()
+            ->getResult();
+
+        $events = [];
+        foreach ($tickets as $ticket) {
+            $events[] = [
+                'id' => $ticket->getId(),
+                'title' => $ticket->getTitre() ?: 'Untitled Ticket',
+                'start' => $ticket->getDateCreation() ? $ticket->getDateCreation()->format('Y-m-d\TH:i:s') : date('Y-m-d\TH:i:s'),
+                'url' => $this->generateUrl('app_admin_ticket_details', ['id' => $ticket->getId()]),
+                'className' => 'priority-' . strtolower($ticket->getPriorite() ?: 'low'),
+                'extendedProps' => [
+                    'status'   => $ticket->getStatut(),
+                    'priority' => $ticket->getPriorite(),
+                    'user'     => $ticket->getUtilisateur() ? $ticket->getUtilisateur()->getPrenom() . ' ' . $ticket->getUtilisateur()->getNom() : 'Anonymous'
+                ]
+            ];
+        }
+
+        return $this->render('admin/ticket_calendar.html.twig', [
+            'events'      => json_encode($events),
+            'ticketCount' => count($tickets)
+        ]);
+    }
+
+    #[Route('/admin/ticket-stats', name: 'app_admin_ticket_stats')]
+    public function ticketStats(
+        TicketRepository $ticketRepository,
+        ChartBuilderInterface $chartBuilder
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $tickets = $ticketRepository->findAll();
+
+        $statuses = [];
+        $priorities = [];
+        $sla = ['On Time' => 0, 'Delayed' => 0];
+
+        $now = new \DateTime();
+
+        foreach ($tickets as $ticket) {
+            $rawStatut = strtolower(trim((string) $ticket->getStatut()));
+            if (in_array($rawStatut, ['en cours', 'in progress'])) {
+                $statut = Ticket::STATUS_IN_PROGRESS;
+            } elseif (in_array($rawStatut, ['fermé', 'closed', 'resolved'])) {
+                $statut = Ticket::STATUS_CLOSED;
+            } else {
+                $statut = Ticket::STATUS_OPEN;
+            }
+            $statuses[$statut] = ($statuses[$statut] ?? 0) + 1;
+
+            $rawPriority = strtolower(trim((string) $ticket->getPriorite()));
+            if (in_array($rawPriority, ['high', 'haute', 'urgent', 'urgente'])) {
+                $priorite = Ticket::PRIORITY_HIGH;
+            } elseif (in_array($rawPriority, ['medium', 'moyenne'])) {
+                $priorite = Ticket::PRIORITY_MEDIUM;
+            } else {
+                $priorite = Ticket::PRIORITY_LOW;
+            }
+            $priorities[$priorite] = ($priorities[$priorite] ?? 0) + 1;
+
+            $deadline = $ticket->getDeadline();
+            if ($deadline) {
+                if ($statut === 'Closed') {
+                    $closedAt = $ticket->getDateFermeture() ?: $now;
+                    if ($closedAt > $deadline) {
+                        $sla['Delayed']++;
+                    } else {
+                        $sla['On Time']++;
+                    }
+                } else {
+                    if ($now > $deadline) {
+                        $sla['Delayed']++;
+                    } else {
+                        $sla['On Time']++;
+                    }
+                }
+            }
+        }
+
+        $statusChart = $chartBuilder->createChart(Chart::TYPE_PIE);
+        $statusChart->setData([
+            'labels' => array_keys($statuses),
+            'datasets' => [
+                [
+                    'label' => 'Ticket Statuses',
+                    'backgroundColor' => ['#4ade80', '#fbbf24', '#f87171', '#60a5fa', '#a78bfa', '#9ca3af', '#f472b6'],
+                    'data' => array_values($statuses),
+                ],
+            ],
+        ]);
+        $statusChart->setOptions(['responsive' => true, 'maintainAspectRatio' => false]);
+
+        $priorityChart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $priorityChart->setData([
+            'labels' => array_keys($priorities),
+            'datasets' => [
+                [
+                    'label' => 'Tickets by Priority',
+                    'backgroundColor' => ['#f87171', '#fbbf24', '#60a5fa', '#9ca3af'],
+                    'data' => array_values($priorities),
+                ],
+            ],
+        ]);
+        $priorityChart->setOptions([
+            'responsive' => true, 
+            'maintainAspectRatio' => false, 
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['stepSize' => 1]
+                ]
+            ]
+        ]);
+
+        $slaChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $slaChart->setData([
+            'labels' => array_keys($sla),
+            'datasets' => [
+                [
+                    'label' => 'SLA Adherence',
+                    'backgroundColor' => ['#4ade80', '#f87171'],
+                    'data' => array_values($sla),
+                ],
+            ],
+        ]);
+        $slaChart->setOptions(['responsive' => true, 'maintainAspectRatio' => false]);
+
+        return $this->render('admin/ticket_statistics.html.twig', [
+            'statusChart'   => $statusChart,
+            'priorityChart' => $priorityChart,
+            'slaChart'      => $slaChart,
         ]);
     }
 
@@ -418,12 +574,14 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_tickets');
     }
-
+//mailer envoie un protocle stmp avec brevo 
     #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
         Ticket $ticket,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        MailerInterface $mailer,
+        TicketSlaCalculator $ticketSlaCalculator
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -437,15 +595,15 @@ class AdminController extends AbstractController
             if ($newPriorite) {
                 $ticket->setPriorite($newPriorite);
             }
+    if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
+        $oldStatus = $ticket->getStatut();
+        $oldPriority = $ticket->getPriorite();
 
-            if (in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
-                $ticket->setDateFermeture(new \DateTime());
-            }
+        $newStatut = $request->request->get('statut');
+        $newPriorite = $request->request->get('priorite');
 
-            $entityManager->flush();
-            $this->addFlash('success', 'Ticket updated successfully.');
-
-            return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+        if ($newStatut) {
+            $ticket->setStatut($newStatut);
         }
 
         $message = new Message();
@@ -455,9 +613,76 @@ class AdminController extends AbstractController
             'ticket' => $ticket,
             'messages' => $ticket->getMessages(),
             'form' => $form->createView(),
+        if ($newPriorite) {
+            $ticket->setPriorite($newPriorite);
+        }
+
+        if (in_array($newStatut, [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
+            $ticket->setDateFermeture(new \DateTime());
+        }
+
+        $resolvedStatuses = [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'];
+
+        $becameResolved =
+            !in_array($oldStatus, $resolvedStatuses, true)
+            && in_array($ticket->getStatut(), $resolvedStatuses, true);
+
+        $entityManager->flush();
+
+        if (
+            $becameResolved &&
+            $ticket->getUtilisateur() &&
+            $ticket->getUtilisateur()->getGmail()
+        ) {
+            try {
+                $recipient = $ticket->getUtilisateur()->getGmail();
+                $sender = $_ENV['MAIL_FROM_ADDRESS'] ?? 'eyahellal8@gmail.com';
+
+                $email = (new TemplatedEmail())
+                    ->from($sender)
+                    ->to($recipient)
+                    ->subject('Your ticket has been resolved')
+                    ->htmlTemplate('emails/ticket_resolved.html.twig')
+                    ->context([
+                        'ticket' => $ticket,
+                        'user' => $ticket->getUtilisateur(),
+                    ]);
+
+                $mailer->send($email);
+                $this->addFlash('info', sprintf('Debug: Mailer->send() logic reached. FROM: %s | TO: %s', $sender, $recipient));
+            } catch (\Throwable $e) {
+                $this->addFlash('danger', sprintf('Debug: Mailer Exception! %s: %s', get_class($e), $e->getMessage()));
+            }
+        } elseif ($becameResolved) {
+            $user = $ticket->getUtilisateur();
+            $this->addFlash('warning', sprintf(
+                'Debug: Email block skipped. User: %s | Email: %s',
+                $user ? $user->getPrenom() : 'NULL',
+                $user ? $user->getGmail() : 'NULL'
+            ));
+        } else {
+             $this->addFlash('secondary', 'Debug: Ticket status updated but "becameResolved" is FALSE (Email not triggered).');
+        }
+
+        $this->addFlash('success', sprintf('Ticket updated successfully. (Resolution detected: %s | User Found: %s)', 
+            $becameResolved ? 'YES' : 'NO',
+            $ticket->getUtilisateur() ? 'YES' : 'NO'
+        ));
+
+        return $this->redirectToRoute('app_admin_ticket_details', [
+            'id' => $ticket->getId(),
         ]);
     }
 
+    $message = new Message();
+    $form = $this->createForm(MessageType::class, $message);
+
+    return $this->render('admin/ticket_details.html.twig', [
+        'ticket' => $ticket,
+        'messages' => $ticket->getMessages(),
+        'form' => $form->createView(),
+    ]);
+}
     #[Route('/admin/obligations', name: 'app_admin_obligations')]
     public function obligations(
         ObligationRepository $obligationRepository,
