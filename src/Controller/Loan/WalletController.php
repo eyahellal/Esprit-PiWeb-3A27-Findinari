@@ -6,6 +6,7 @@ use App\Entity\management\Wallet;
 use App\form\WalletType;
 use App\Entity\user\Utilisateur;
 use App\Repository\WalletRepository;
+use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -69,7 +70,7 @@ class WalletController extends AbstractController
     }
 
     #[Route('/new', name: 'app_wallet_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
     {
         $wallet = new Wallet();
         $user = $this->getUserOrCreate($entityManager);
@@ -81,6 +82,13 @@ class WalletController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($wallet);
             $entityManager->flush();
+
+            // Add notification
+            $notificationService->addNotification(
+                '💳 New Wallet Created',
+                sprintf('New wallet in %s with balance %.2f %s', $wallet->getPays(), $wallet->getSolde(), $wallet->getDevise()),
+                'success'
+            );
 
             $this->addFlash('success', 'Wallet created successfully!');
             return $this->redirectToRoute('app_wallet_index');

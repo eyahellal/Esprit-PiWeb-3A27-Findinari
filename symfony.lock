@@ -35,6 +35,22 @@
             "./migrations/.gitignore"
         ]
     },
+    "friendsofsymfony/jsrouting-bundle": {
+        "version": "3.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "3.0",
+            "ref": "03986bbad9dcc3e367036a6b4f48ec469a4b1bf4"
+        },
+        "files": [
+            "./config/routes/fos_js_routing.yaml"
+        ]
+    },
+    
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.10.0"
+    },
     "karser/karser-recaptcha3-bundle": {
         "version": "0.3",
         "recipe": {

@@ -4,18 +4,35 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <!-- Flatpickr CSS for beautiful date picker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
-        .flatpickr-calendar {
+        .calculator-card {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #28a745;
+        }
+        .profit-positive {
+            color: #28a745;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .info-badge {
             background: white;
             border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            font-family: inherit;
+            padding: 10px 15px;
+            margin: 5px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .flatpickr-day.selected {
-            background: #0d6efd;
-            border-color: #0d6efd;
+        .live-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 10px;
         }
     </style>
 {% endblock %}
@@ -31,6 +48,7 @@
                     <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
                     <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}">Services</a></li>
                     <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_investment_index') }}">My Investments</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_investment_edit', {'idInvestissement': investment.idInvestissement}) }}">Edit</a></li>
                 </ul>
             </div>
         </div>
@@ -44,43 +62,106 @@
                 <div class="shadow rounded p-5 bg-white">
                     <h3 class="mb-4">Edit Investment</h3>
                     
-                
-                    
                     {{ form_start(form) }}
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Select Wallet</label>
                             {{ form_widget(form.walletId, {'attr': {'class': 'form-control'}}) }}
-                            <div class="text-danger">{{ form_errors(form.walletId) }}</div>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Select Obligation</label>
-                            {{ form_widget(form.obligationId, {'attr': {'class': 'form-control'}}) }}
-                            <div class="text-danger">{{ form_errors(form.obligationId) }}</div>
+                            {{ form_widget(form.obligationId, {'attr': {'class': 'form-control', 'id': 'obligationSelect'}}) }}
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Investment Amount (DT)</label>
-                            {{ form_widget(form.montantInvesti, {'attr': {'class': 'form-control', 'placeholder': 'Enter amount to invest'}}) }}
-                            <div class="text-danger">{{ form_errors(form.montantInvesti) }}</div>
+                            {{ form_widget(form.montantInvesti, {'attr': {'class': 'form-control', 'placeholder': 'Enter amount to invest', 'step': '0.01', 'id': 'amountInput'}}) }}
                         </div>
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Purchase Date</label>
-                                {{ form_widget(form.dateAchat, {'attr': {'class': 'form-control datepicker', 'placeholder': 'Select date'}}) }}
-                                <div class="text-danger">{{ form_errors(form.dateAchat) }}</div>
+                                {{ form_widget(form.dateAchat, {'attr': {'class': 'form-control datepicker', 'placeholder': 'Select date', 'id': 'dateInput'}}) }}
                             </div>
-                            
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Maturity Date</label>
-                                <input type="text" class="form-control" id="maturity_date" placeholder="Will be auto-calculated" readonly disabled value="{{ investment.dateMaturite|date('d/m/Y') }}">
-                                <small class="text-muted">Automatically calculated based on obligation duration</small>
+                                <input type="text" class="form-control" id="maturity_date" readonly disabled placeholder="Will appear after selecting obligation">
+                                <small class="text-muted">Auto-calculated based on obligation duration</small>
                             </div>
                         </div>
                         
-                        <div class="d-flex justify-content-between mt-3">
+                        <!-- Real-time Calculator - Always visible -->
+                        <div class="calculator-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="fas fa-calculator me-2"></i>Live Profit Calculator
+                                </h5>
+                                <span class="live-badge">LIVE</span>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-badge">
+                                        <small class="text-muted">📊 Interest Rate</small>
+                                        <div class="fw-bold fs-4 text-primary" id="displayRate">
+                                            {% if obligation %}
+                                                {{ obligation.tauxInteret }}%
+                                            {% else %}
+                                                --%
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-badge">
+                                        <small class="text-muted">⏱️ Duration</small>
+                                        <div class="fw-bold fs-4 text-primary" id="displayDuration">
+                                            {% if obligation %}
+                                                {{ obligation.duree }} months
+                                            {% else %}
+                                                -- months
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-badge">
+                                        <small class="text-muted">💰 Amount Invested</small>
+                                        <div class="fw-bold fs-4" id="displayAmount">{{ investment.montantInvesti|number_format(2) }} DT</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="info-badge">
+                                        <small class="text-muted">📈 Expected Profit</small>
+                                        <div class="profit-positive" id="displayProfit">
+                                            {% if obligation %}
+                                                {{ (investment.montantInvesti * obligation.tauxInteret / 100)|number_format(2) }} DT
+                                            {% else %}
+                                                0 DT
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="info-badge bg-white">
+                                        <small class="text-muted">💰 Total Return (Principal + Profit)</small>
+                                        <div class="fw-bold fs-2 text-success" id="displayTotal">
+                                            {% if obligation %}
+                                                {{ (investment.montantInvesti * (1 + obligation.tauxInteret / 100))|number_format(2) }} DT
+                                            {% else %}
+                                                {{ investment.montantInvesti|number_format(2) }} DT
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info mt-2 mb-0 py-2">
+                                <i class="fas fa-info-circle me-1"></i>
+                                <small>Select an obligation and enter an amount to see your potential profit in real-time!</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
                             <a href="{{ path('app_investment_index') }}" class="btn btn-secondary">Cancel</a>
                             <button type="submit" class="btn btn-primary">Update Investment</button>
                         </div>
@@ -95,65 +176,97 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <!-- Flatpickr JS for beautiful date picker -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize date picker for purchase date
-            flatpickr(".datepicker", {
-                dateFormat: "d/m/Y",
-                allowInput: true,
-                locale: {
-                    firstDayOfWeek: 1
+    // Get obligations data from PHP
+    const obligationsData = {{ obligationsData|json_encode|raw }};
+    
+    console.log('Obligations Data:', obligationsData);
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Find the obligation select element - try multiple selectors
+        let obligationSelect = document.getElementById('obligationSelect');
+        
+        // If not found by ID, try by name
+        if (!obligationSelect) {
+            obligationSelect = document.querySelector('select[name="investissementobligation[obligationId]"]');
+        }
+        
+        // If still not found, try any select element
+        if (!obligationSelect) {
+            obligationSelect = document.querySelector('select');
+        }
+        
+        const amountInput = document.querySelector('input[name="investissementobligation[montantInvesti]"]');
+        const dateInput = document.querySelector('input[name="investissementobligation[dateAchat]"]');
+        const maturityDate = document.getElementById('maturity_date');
+        
+        // Log to see if elements were found
+        console.log('Obligation select found:', obligationSelect);
+        console.log('Amount input found:', amountInput);
+        
+        let currentRate = 0;
+        let currentDuration = 0;
+        
+        function updateAll() {
+            const amount = parseFloat(amountInput?.value) || 0;
+            const profit = amount * (currentRate / 100);
+            const total = amount + profit;
+            
+            const displayAmount = document.getElementById('displayAmount');
+            const displayProfit = document.getElementById('displayProfit');
+            const displayTotal = document.getElementById('displayTotal');
+            
+            if (displayAmount) displayAmount.innerHTML = amount.toFixed(2) + ' DT';
+            if (displayProfit) displayProfit.innerHTML = profit.toFixed(2) + ' DT';
+            if (displayTotal) displayTotal.innerHTML = total.toFixed(2) + ' DT';
+            
+            // Update maturity date
+            const purchaseDate = dateInput?.value;
+            if (purchaseDate && currentDuration > 0 && maturityDate) {
+                let parts = purchaseDate.split('/');
+                if (parts.length === 3) {
+                    let date = new Date(parts[2], parts[1] - 1, parts[0]);
+                    date.setMonth(date.getMonth() + currentDuration);
+                    maturityDate.value = date.toLocaleDateString('fr-FR');
                 }
-            });
+            }
+        }
+        
+        function onObligationChange() {
+            if (!obligationSelect) return;
             
-            // Auto-calculate maturity date when obligation or purchase date changes
-            const obligationSelect = document.querySelector('select[name="investissementobligation[obligationId]"]');
-            const purchaseDateInput = document.querySelector('input[name="investissementobligation[dateAchat]"]');
-            const maturityDateInput = document.getElementById('maturity_date');
+            const selectedId = obligationSelect.value;
+            console.log('Selected ID:', selectedId);
             
-            function calculateMaturityDate() {
-                const obligationId = obligationSelect ? obligationSelect.value : null;
-                const purchaseDate = purchaseDateInput ? purchaseDateInput.value : null;
+            if (selectedId && obligationsData[selectedId]) {
+                currentRate = obligationsData[selectedId].rate;
+                currentDuration = obligationsData[selectedId].duration;
                 
-                if (obligationId && purchaseDate) {
-                    // Get duration from selected obligation
-                    let durationMonths = 0;
-                    const selectedOption = obligationSelect.options[obligationSelect.selectedIndex];
-                    const obligationText = selectedOption ? selectedOption.text : '';
-                    
-                    if (obligationText.includes('12 months')) durationMonths = 12;
-                    else if (obligationText.includes('240 months')) durationMonths = 240;
-                    else if (obligationText.includes('10 months')) durationMonths = 10;
-                    else if (obligationText.includes('24 months')) durationMonths = 24;
-                    else if (obligationText.includes('36 months')) durationMonths = 36;
-                    
-                    if (durationMonths > 0 && purchaseDate) {
-                        // Parse date
-                        let parts = purchaseDate.split('/');
-                        if (parts.length === 3) {
-                            let date = new Date(parts[2], parts[1] - 1, parts[0]);
-                            date.setMonth(date.getMonth() + durationMonths);
-                            let day = String(date.getDate()).padStart(2, '0');
-                            let month = String(date.getMonth() + 1).padStart(2, '0');
-                            let year = date.getFullYear();
-                            maturityDateInput.value = day + '/' + month + '/' + year;
-                        }
-                    } else {
-                        maturityDateInput.value = '';
-                    }
-                } else {
-                    maturityDateInput.value = '';
-                }
+                const displayRate = document.getElementById('displayRate');
+                const displayDuration = document.getElementById('displayDuration');
+                
+                if (displayRate) displayRate.innerHTML = currentRate + '%';
+                if (displayDuration) displayDuration.innerHTML = currentDuration + ' months';
+                
+                updateAll();
             }
-            
-            if (obligationSelect) {
-                obligationSelect.addEventListener('change', calculateMaturityDate);
-            }
-            if (purchaseDateInput) {
-                purchaseDateInput.addEventListener('change', calculateMaturityDate);
-            }
-        });
-    </script>
+        }
+        
+        if (obligationSelect) {
+            obligationSelect.addEventListener('change', onObligationChange);
+        }
+        
+        if (amountInput) {
+            amountInput.addEventListener('input', updateAll);
+        }
+        
+        if (dateInput) {
+            dateInput.addEventListener('change', updateAll);
+        }
+        
+        // Run initial update
+        setTimeout(onObligationChange, 500);
+    });
+</script>
 {% endblock %}

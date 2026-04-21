@@ -366,7 +366,7 @@ PROMPT;
 
         $response = $httpClient->request('POST', 'http://localhost:11434/api/generate', [
             'json' => [
-                'model' => 'gemma3:latest',
+                'model' => 'gemma3:1b',
                 'prompt' => $prompt,
                 'stream' => false
             ],
