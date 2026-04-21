@@ -235,12 +235,15 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_wallets');
     }
 
+// app/Controller/AdminController.php
+
 #[Route('/admin/objectifs', name: 'app_admin_objectifs')]
 public function objectifs(
     ObjectifRepository $objectifRepository,
     WalletRepository $walletRepository,
+    UtilisateurRepository $utilisateurRepository,  // ← ajouter
     Request $request,
-    AnomalyDetectorService $anomalyDetector  // ← ajouter ça
+    AnomalyDetectorService $anomalyDetector
 ): Response {
     $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -275,14 +278,36 @@ public function objectifs(
     $stats     = null;
 
     if ($request->isMethod('POST')) {
-        // Extraire toutes les contributions de tous les objectifs
+        // Construire un map walletId → utilisateur
+        $walletUserMap = [];
+        foreach ($walletRepository->findAll() as $w) {
+            // Si Wallet a une relation vers Utilisateur
+            $user = $w->getUtilisateur(); // adapte selon ton getter
+            if ($user) {
+                $walletUserMap[$w->getId()] = [
+                    'nom'    => $user->getNom() . ' ' . $user->getPrenom(),
+                    'pays'   => $w->getPays(),
+                ];
+            } else {
+                $walletUserMap[$w->getId()] = [
+                    'nom'  => 'Inconnu',
+                    'pays' => $w->getPays() ?? '—',
+                ];
+            }
+        }
+
         $allContributions = [];
         foreach ($objectifRepository->findAll() as $obj) {
+            $walletId   = $obj->getWalletId();
+            $userInfo   = $walletUserMap[$walletId] ?? ['nom' => 'Inconnu', 'pays' => '—'];
+
             foreach ($obj->getContributiongoals() as $c) {
                 $allContributions[] = [
                     'objectif_id'    => $obj->getId(),
                     'objectif_titre' => $obj->getTitre(),
-                    'wallet_id'      => $obj->getWalletId(),
+                    'wallet_id'      => $walletId,
+                    'user_nom'       => $userInfo['nom'],   // ← nouveau
+                    'user_pays'      => $userInfo['pays'],  // ← nouveau
                     'montant'        => $c->getMontant(),
                     'date'           => $c->getDate()?->format('Y-m-d'),
                 ];
@@ -295,7 +320,7 @@ public function objectifs(
             $stats = [
                 'total_contributions' => count($allContributions),
                 'total_anomalies'     => count($anomalies),
-                'eleve'  => count(array_filter($anomalies, fn($a) => strtoupper($a['niveau_risque']) === 'ÉLEVÉ' || strtoupper($a['niveau_risque']) === 'ELEVE')),
+                'eleve'  => count(array_filter($anomalies, fn($a) => in_array(strtoupper($a['niveau_risque']), ['ÉLEVÉ','ELEVE']))),
                 'moyen'  => count(array_filter($anomalies, fn($a) => strtoupper($a['niveau_risque']) === 'MOYEN')),
                 'moyenne'=> count($montants) > 0 ? array_sum($montants) / count($montants) : 0,
             ];

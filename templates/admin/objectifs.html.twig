@@ -1176,11 +1176,32 @@
                                     <div class="method-tag">{{ a.methode }}</div>
                                 </div>
                                 <div class="anomaly-meta">
-                                    <span class="meta-pill">Objectif #{{ a.objectif_id }}</span>
-                                    <span class="meta-pill">{{ a.objectif_titre }}</span>
-                                    <span class="meta-pill">Wallet #{{ a.wallet_id }}</span>
-                                    {% if a.date %}<span class="meta-pill">{{ a.date }}</span>{% endif %}
-                                </div>
+    <span class="meta-pill">Objectif #{{ a.objectif_id }}</span>
+    <span class="meta-pill">{{ a.objectif_titre }}</span>
+    <span class="meta-pill">Wallet #{{ a.wallet_id }}</span>
+    {% if a.user_nom is defined and a.user_nom %}
+        <span class="meta-pill" style="background:#ede9fe;border-color:#c4b5fd;color:#6d28d9;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px;">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            {{ a.user_nom }}
+        </span>
+    {% endif %}
+    {% if a.user_pays is defined and a.user_pays %}
+        <span class="meta-pill" style="background:#fef3c7;border-color:#fde68a;color:#92400e;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px;">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+            </svg>
+            {{ a.user_pays }}
+        </span>
+    {% endif %}
+    {% if a.date %}<span class="meta-pill">{{ a.date }}</span>{% endif %}
+</div>
                                 <div class="anomaly-reason">{{ a.raison }}</div>
                                 <div class="score-bar">
                                     <span class="score-label">Score</span>
