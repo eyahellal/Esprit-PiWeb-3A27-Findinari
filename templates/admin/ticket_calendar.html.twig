@@ -185,34 +185,48 @@
         .fc-v-event {
             border: none !important;
             border-radius: 12px !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important;
-            padding: 12px !important;
-            margin: 2px !important;
-            transition: transform 0.2s, box-shadow 0.2s !important;
-            color: #1e293b !important; /* Force dark text */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+            padding: 6px 10px !important;
+            margin: 1px 2px !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-left-width: 4px !important;
+            overflow: hidden !important;
         }
-        .fc-v-event * { color: #1e293b !important; }
-        .fc-v-event:hover { transform: scale(1.02); z-index: 10 !important; box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
+        .fc-v-event:hover { transform: scale(1.02); z-index: 50 !important; box-shadow: 0 8px 16px rgba(0,0,0,0.08) !important; }
         
-        .fc-event-main { padding: 0 !important; }
-        .fc-event-main-frame { height: 100%; display: flex; flex-direction: column; gap: 4px; }
-        .fc-event-title { font-weight: 800 !important; font-size: 13px !important; line-height: 1.2 !important; color: #1e293b !important; }
-        .fc-event-time { font-size: 11px !important; font-weight: 700 !important; color: #64748b !important; opacity: 1 !important; }
+        .fc-event-main { padding: 0 !important; width: 100%; }
+        .fc-event-main-frame { height: 100%; display: flex; flex-direction: column; gap: 0px; }
+        .fc-event-title { 
+            font-weight: 700 !important; 
+            font-size: 12px !important; 
+            line-height: 1.2 !important; 
+            color: #1e293b !important;
+            white-space: nowrap !important;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+        .fc-event-time { 
+            font-size: 9.5px !important; 
+            font-weight: 700 !important; 
+            color: #94a3b8 !important; 
+            text-transform: uppercase;
+            margin-bottom: 0px;
+        }
 
-        /* Priority Colors - Applied via classes */
-        .priority-urgent { background: #fef2f2 !important; border-left: 4px solid #ef4444 !important; }
-        .priority-high { background: #fff8e6 !important; border-left: 4px solid #f59e0b !important; }
-        .priority-medium { background: #eff6ff !important; border-left: 4px solid #3b82f6 !important; }
-        .priority-low { background: #f1f5f9 !important; border-left: 4px solid #94a3b8 !important; }
+        /* Priority Colors - Compact & Clear */
+        .priority-urgent { background: #fff1f2 !important; border-left: 4px solid #f43f5e !important; }
+        .priority-high { background: #fffcf0 !important; border-left: 4px solid #f59e0b !important; }
+        .priority-medium { background: #f0f9ff !important; border-left: 4px solid #0ea5e9 !important; }
+        .priority-low { background: #f8fafc !important; border-left: 4px solid #94a3b8 !important; }
 
         /* TimeGrid Styling (Week View) */
-        .fc-timegrid-slot { height: 80px !important; border-bottom: 1px solid #f1f5f9 !important; }
+        .fc-timegrid-slot { height: 60px !important; border-bottom: 1px solid #f1f5f9 !important; }
         .fc-timegrid-slot-label-cushion { 
-            font-size: 11px !important; font-weight: 700 !important; color: #94a3b8 !important; 
+            font-size: 10px !important; font-weight: 700 !important; color: #94a3b8 !important; 
             text-transform: uppercase; letter-spacing: 0.5px;
         }
         
-        .fc-timegrid-axis-frame { color: #94a3b8 !important; font-weight: 700 !important; font-size: 11px !important; }
+        .fc-timegrid-axis-frame { color: #94a3b8 !important; font-weight: 700 !important; font-size: 10px !important; }
         .fc-timegrid-now-indicator-line { border-color: var(--brand) !important; border-width: 2px !important; }
         .fc-timegrid-now-indicator-arrow { border-color: var(--brand) !important; border-top-color: transparent !important; border-bottom-color: transparent !important; }
 
@@ -315,6 +329,10 @@
             height: 'auto',
             firstDay: 1, 
             dayMaxEvents: 4,
+            slotMinTime: '07:00:00',
+            slotMaxTime: '21:00:00',
+            eventMinHeight: 30,
+            nowIndicator: true,
             events: events,
             
             // Apply priority class to the entire event element
@@ -325,6 +343,18 @@
                 else if (p === 'High') priorityClass = 'priority-high';
                 else if (p === 'Medium') priorityClass = 'priority-medium';
                 return [ priorityClass ];
+            },
+
+            eventContent: function(arg) {
+                if (arg.view.type === 'dayGridMonth') return; 
+                return {
+                    html: `
+                        <div class="fc-event-main-frame">
+                            <div class="fc-event-time">${arg.timeText}</div>
+                            <div class="fc-event-title">${arg.event.title}</div>
+                        </div>
+                    `
+                };
             },
 
             datesSet: function(info) {

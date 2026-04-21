@@ -476,7 +476,7 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_tickets');
     }
-
+//mailer envoie un protocle stmp avec brevo 
     #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
         Ticket $ticket,
