@@ -3,7 +3,7 @@
 namespace App\Controller\Loan;
 
 use App\Entity\management\Wallet;
-use App\form\WalletType;
+use App\Form\WalletType;
 use App\Entity\user\Utilisateur;
 use App\Repository\WalletRepository;
 use App\Service\SimpleNotificationService;
