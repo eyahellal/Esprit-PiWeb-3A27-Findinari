@@ -1,6 +1,6 @@
 <?php
 
-namespace App\form;
+namespace App\Form;
 
 use App\Entity\management\Budget;
 use App\Entity\management\Categorie;

@@ -407,7 +407,6 @@ class AdminController extends AbstractController
         );
 
         return $this->render('admin/tickets.html.twig', [
-            'tickets' => $qb->getQuery()->getResult(),
             'tickets'     => $pagination,
             'currentSort' => $sort,
         ]);
@@ -585,16 +584,6 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
-            $newStatut = $request->request->get('statut');
-            $newPriorite = $request->request->get('priorite');
-
-            if ($newStatut) {
-                $ticket->setStatut($newStatut);
-            }
-            if ($newPriorite) {
-                $ticket->setPriorite($newPriorite);
-            }
     if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
         $oldStatus = $ticket->getStatut();
         $oldPriority = $ticket->getPriorite();
@@ -606,13 +595,6 @@ class AdminController extends AbstractController
             $ticket->setStatut($newStatut);
         }
 
-        $message = new Message();
-        $form = $this->createForm(MessageType::class, $message);
-
-        return $this->render('admin/ticket_details.html.twig', [
-            'ticket' => $ticket,
-            'messages' => $ticket->getMessages(),
-            'form' => $form->createView(),
         if ($newPriorite) {
             $ticket->setPriorite($newPriorite);
         }
