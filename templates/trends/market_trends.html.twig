@@ -5,75 +5,181 @@
 
 {% block stylesheets %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
     :root {
-        --bg: #0d0f14;
-        --card: #161a22;
-        --border: #232734;
-        --accent: #f0c040;
-        --green: #22c55e;
+        --brand: #16a34a;
+        --brand-light: #dcfce7;
+        --brand-dark: #15803d;
+        --info: #0ea5e9;
+        --info-light: #e6f6ff;
+        --bg: #f4f7f4;
+        --surface: #ffffff;
+        --border: #e4ebe4;
+        --text-primary: #1a2e1a;
+        --text-secondary: #4b6b4b;
+        --text-muted: #8faa8f;
+        --green: #16a34a;
         --red: #ef4444;
-        --text: #e8eaf0;
-        --muted: #6b7280;
+        --warning: #f59e0b;
+        --warning-light: #fff8e6;
+        --radius-sm: 8px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --shadow-card: 0 2px 16px rgba(22,163,74,.07);
+        --shadow-hover: 0 8px 28px rgba(22,163,74,.20);
+        --transition: .22s cubic-bezier(.4,0,.2,1);
     }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
         background: var(--bg);
-        color: var(--text);
-        font-family: 'Syne', sans-serif;
+        color: var(--text-primary);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 14.5px;
+        line-height: 1.6;
     }
 
+    /* ── HEADER ── */
     .market-header {
-        padding: 3rem 0 1.5rem;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 2.5rem;
-    }
-
-    .market-header h1 {
-        font-size: 2.8rem;
-        font-weight: 800;
-        letter-spacing: -1px;
-    }
-
-    .market-header h1 span {
-        color: var(--accent);
-    }
-
-    .category-title {
-        font-family: 'Space Mono', monospace;
-        font-size: 0.75rem;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        color: var(--accent);
-        margin-bottom: 1rem;
-        margin-top: 2.5rem;
-    }
-
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .quote-card {
-        background: var(--card);
+        background: var(--surface);
+        border-radius: var(--radius-lg);
         border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.25rem 1.5rem;
-        text-decoration: none;
-        color: inherit;
-        display: block;
-        transition: border-color 0.2s, transform 0.2s;
+        box-shadow: var(--shadow-card);
+        padding: 32px 36px;
+        margin-bottom: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
         position: relative;
         overflow: hidden;
     }
 
+    .market-header::after {
+        content: '';
+        position: absolute;
+        top: 0; right: 0;
+        width: 200px; height: 200px;
+        border-radius: 50%;
+        background: var(--brand-light);
+        transform: translate(60px, -60px);
+        opacity: .5;
+    }
+
+    .market-header-text { position: relative; z-index: 1; }
+
+    .market-header h1 {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: var(--text-primary);
+        margin-bottom: 6px;
+    }
+
+    .market-header h1 span { color: var(--brand); }
+
+    .market-header p {
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 13.5px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .market-header p::before {
+        content: '';
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    .market-header-badge {
+        position: relative; z-index: 1;
+        background: var(--brand-light);
+        border: 1px solid #bbf7d0;
+        border-radius: var(--radius-md);
+        padding: 14px 22px;
+        text-align: center;
+    }
+
+    .market-header-badge .badge-val {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--brand-dark);
+        letter-spacing: -1px;
+        font-family: 'Space Mono', monospace;
+    }
+
+    .market-header-badge .badge-lbl {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    /* ── CATEGORY TITLE ── */
+    .category-section { margin-bottom: 30px; }
+
+    .category-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--brand-dark);
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .category-title::before {
+        content: '';
+        display: inline-block;
+        width: 14px; height: 14px;
+        border-radius: 4px;
+        background: var(--brand);
+        flex-shrink: 0;
+    }
+
+    /* ── CARDS GRID ── */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+    }
+
+    /* ── QUOTE CARD ── */
+    .quote-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 20px 22px;
+        text-decoration: none;
+        color: var(--text-primary);
+        display: block;
+        transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-card);
+    }
+
     .quote-card:hover {
-        border-color: var(--accent);
-        transform: translateY(-2px);
-        color: inherit;
+        border-color: var(--brand);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-hover);
+        color: var(--text-primary);
         text-decoration: none;
     }
 
@@ -82,121 +188,217 @@
         position: absolute;
         top: 0; left: 0; right: 0;
         height: 3px;
-        background: var(--accent);
+        background: linear-gradient(90deg, var(--brand), #4ade80);
         opacity: 0;
-        transition: opacity 0.2s;
+        transition: opacity var(--transition);
     }
 
-    .quote-card:hover::before {
-        opacity: 1;
+    .quote-card:hover::before { opacity: 1; }
+
+    .quote-card::after {
+        content: '';
+        position: absolute;
+        top: 0; right: 0;
+        width: 70px; height: 70px;
+        border-radius: 50%;
+        background: var(--brand-light);
+        transform: translate(22px, -22px);
+        opacity: .6;
+    }
+
+    /* ── CARD HEADER ROW ── */
+    .card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        position: relative;
+        z-index: 1;
     }
 
     .card-symbol {
         font-family: 'Space Mono', monospace;
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-bottom: 0.3rem;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        background: #f4faf6;
+        border: 1px solid var(--border);
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: .5px;
+    }
+
+    .card-currency {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--info);
+        background: var(--info-light);
+        border: 1px solid #bae6fd;
+        padding: 3px 8px;
+        border-radius: 6px;
     }
 
     .card-name {
         font-weight: 700;
-        font-size: 1rem;
-        margin-bottom: 0.8rem;
+        font-size: 14px;
+        margin-bottom: 10px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: var(--text-primary);
+        position: relative;
+        z-index: 1;
     }
 
     .card-price {
-        font-size: 1.5rem;
+        font-size: 26px;
         font-weight: 800;
         font-family: 'Space Mono', monospace;
+        color: var(--text-primary);
+        letter-spacing: -1px;
+        line-height: 1;
+        margin-bottom: 6px;
+        position: relative;
+        z-index: 1;
     }
 
     .card-change {
         font-family: 'Space Mono', monospace;
-        font-size: 0.8rem;
+        font-size: 12px;
         font-weight: 700;
-        margin-top: 0.3rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        position: relative;
+        z-index: 1;
     }
 
-    .up   { color: var(--green); }
-    .down { color: var(--red); }
+    .up   { color: #166534; background: var(--brand-light); }
+    .down { color: #9b1c1c; background: #fef2f2; }
 
     .card-error {
-        color: var(--muted);
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-top: 8px;
+        font-weight: 600;
+        font-style: italic;
     }
 
+    /* ── TREND BUTTON ── */
     .btn-trend {
-        display: inline-block;
-        margin-top: 0.8rem;
-        font-size: 0.72rem;
-        font-family: 'Space Mono', monospace;
-        letter-spacing: 1px;
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--muted);
-        padding: 0.3rem 0.75rem;
-        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 14px;
+        font-size: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        background: var(--brand-light);
+        border: 1px solid #bbf7d0;
+        color: var(--brand-dark);
+        padding: 7px 14px;
+        border-radius: var(--radius-sm);
         text-decoration: none;
-        transition: border-color 0.2s, color 0.2s;
+        transition: background var(--transition), border-color var(--transition), color var(--transition), transform var(--transition);
+        position: relative;
+        z-index: 1;
     }
 
     .btn-trend:hover {
-        border-color: var(--accent);
-        color: var(--accent);
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #fff;
         text-decoration: none;
+        transform: translateY(-1px);
     }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="container" style="padding: 28px 20px;">
+
+    <!-- ── HEADER ── -->
     <div class="market-header">
-        <h1>Tendances du <span>Marché</span></h1>
-        <p style="color: var(--muted); margin-top: 0.5rem;">
-            Données en temps réel — mis à jour toutes les 5 minutes
-        </p>
+        <div class="market-header-text">
+            <h1>Tendances du <span>Marché</span></h1>
+            <p>Données en temps réel — mis à jour toutes les 5 minutes</p>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;position:relative;z-index:1;">
+            {% set totalSymbols = 0 %}
+            {% set totalCategories = 0 %}
+            {% for categoryName, symbols in categories %}
+                {% set totalCategories = totalCategories + 1 %}
+                {% for symbol in symbols %}
+                    {% set totalSymbols = totalSymbols + 1 %}
+                {% endfor %}
+            {% endfor %}
+            <div class="market-header-badge">
+                <div class="badge-val">{{ totalSymbols }}</div>
+                <div class="badge-lbl">Actifs suivis</div>
+            </div>
+            <div class="market-header-badge">
+                <div class="badge-val">{{ totalCategories }}</div>
+                <div class="badge-lbl">Catégories</div>
+            </div>
+        </div>
     </div>
 
+    <!-- ── CATEGORIES & CARDS ── -->
     {% for categoryName, symbols in categories %}
-        <div class="category-title">{{ categoryName }}</div>
-        <div class="cards-grid">
-            {% for symbol in symbols %}
-                {% set q = quotes[symbol] ?? null %}
+        <div class="category-section">
+            <div class="category-title">{{ categoryName }}</div>
+            <div class="cards-grid">
+                {% for symbol in symbols %}
+                    {% set q = quotes[symbol] ?? null %}
 
-                <div class="quote-card">
-                    <div class="card-symbol">{{ symbol }}</div>
+                    <div class="quote-card">
+                        {% if q is not null and q['name'] is defined %}
 
-                    {% if q is not null and q['name'] is defined %}
-                        <div class="card-name">{{ q['name'] }}</div>
-                        <div class="card-price">
-                            {{ q['close']|number_format(2, '.', ' ') }}
-                            <small style="font-size:0.6em; color: var(--muted);">
-                                {{ q['currency'] ?? 'USD' }}
-                            </small>
-                        </div>
+                            <div class="card-top">
+                                <span class="card-symbol">{{ symbol }}</span>
+                                <span class="card-currency">{{ q['currency'] ?? 'USD' }}</span>
+                            </div>
 
-                        {% set change = q['percent_change'] ?? 0 %}
-                        <div class="card-change {{ change >= 0 ? 'up' : 'down' }}">
-                            {{ change >= 0 ? '▲' : '▼' }}
-                            {{ change|number_format(2, '.', '') }}%
-                            aujourd'hui
-                        </div>
+                            <div class="card-name">{{ q['name'] }}</div>
 
-                        <a href="{{ path('stock_trend', {symbol: symbol}) }}" class="btn-trend">
-                            Voir tendance →
-                        </a>
-                    {% else %}
-                        <div class="card-name">{{ symbol }}</div>
-                        <div class="card-error">Données indisponibles</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+                            <div class="card-price">
+                                {{ q['close']|number_format(2, '.', ' ') }}
+                            </div>
+
+                            {% set change = q['percent_change'] ?? 0 %}
+                            <div class="card-change {{ change >= 0 ? 'up' : 'down' }}">
+                                {{ change >= 0 ? '▲' : '▼' }}
+                                {{ change|number_format(2, '.', '') }}% aujourd'hui
+                            </div>
+
+                            <a href="{{ path('stock_trend', {symbol: symbol}) }}" class="btn-trend">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;flex-shrink:0;"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                                Voir tendance
+                            </a>
+
+                        {% else %}
+
+                            <div class="card-top">
+                                <span class="card-symbol">{{ symbol }}</span>
+                            </div>
+                            <div class="card-name">{{ symbol }}</div>
+                            <div class="card-error">Données indisponibles</div>
+
+                        {% endif %}
+                    </div>
+
+                {% endfor %}
+            </div>
         </div>
     {% endfor %}
-</div>
 
+</div>
 {% endblock %}
