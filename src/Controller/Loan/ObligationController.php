@@ -3,7 +3,7 @@
 namespace App\Controller\Loan;
 
 use App\Entity\Loan\Obligation;
-use App\form\ObligationType;
+use App\Form\ObligationType;
 use App\Repository\ObligationRepository;
 use App\Repository\InvestissementobligationRepository;
 use App\Service\SimpleNotificationService;
@@ -22,12 +22,13 @@ class ObligationController extends AbstractController
 {
     private $httpClient;
     private $logger;
+    private $ollamaApiUrl;
     
-    // Simple constructor - only what's needed
-    public function __construct(HttpClientInterface $httpClient, LoggerInterface $logger)
+    public function __construct(HttpClientInterface $httpClient, LoggerInterface $logger, string $ollamaApiUrl)
     {
         $this->httpClient = $httpClient;
         $this->logger = $logger;
+        $this->ollamaApiUrl = $ollamaApiUrl;
     }
 
     #[Route('/', name: 'app_obligation_index', methods: ['GET'])]
@@ -159,30 +160,21 @@ class ObligationController extends AbstractController
         return $this->redirectToRoute('app_obligation_index');
     }
 
-    #[Route('/api/obligation/recommendations', name: 'app_obligation_recommendations', methods: ['GET'])]
+    #[Route('/api/recommendations', name: 'app_obligation_recommendations', methods: ['GET'])]
     public function getRecommendations(): JsonResponse
     {
-        // Try multiple ways to get the Ollama URL
-        $ollamaApiUrl = 'http://localhost:11434/api/generate'; // Default fallback
+        // First, try to return default recommendations immediately (for testing)
+        // Comment this out once you confirm the endpoint is working
+        return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
         
-        // Try to get from parameters
-        if ($this->hasParameter('ollama_api_url')) {
-            $ollamaApiUrl = $this->getParameter('ollama_api_url');
-        }
-        // Try from environment variable
-        elseif (isset($_ENV['OLLAMA_API_URL'])) {
-            $ollamaApiUrl = $_ENV['OLLAMA_API_URL'];
-        }
-        elseif (getenv('OLLAMA_API_URL')) {
-            $ollamaApiUrl = getenv('OLLAMA_API_URL');
-        }
-        
+        // Your Ollama code below - uncomment once the endpoint is confirmed working
+        /*
         $prompt = "Generate 3 investment obligation recommendations for a financial platform. Each recommendation should have: a creative name, an interest rate between 3% and 15% (as a float number), and a duration in months between 6 and 60 (as an integer). Format the response as valid JSON only, no other text. Example format: [{\"name\":\"Example Bond\",\"rate\":8.5,\"duration\":24}]";
         
         try {
-            $this->logger->info('Calling Ollama API at: ' . $ollamaApiUrl);
+            $this->logger->info('Calling Ollama API at: ' . $this->ollamaApiUrl);
             
-            $response = $this->httpClient->request('POST', $ollamaApiUrl, [
+            $response = $this->httpClient->request('POST', $this->ollamaApiUrl, [
                 'json' => [
                     'model' => 'gemma3:1b',
                     'prompt' => $prompt,
@@ -193,55 +185,29 @@ class ObligationController extends AbstractController
                 'timeout' => 30
             ]);
             
-            $statusCode = $response->getStatusCode();
-            $this->logger->info('Ollama response status: ' . $statusCode);
-            
-            if ($statusCode !== 200) {
-                $this->logger->error('Ollama returned non-200 status: ' . $statusCode);
-                return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
-            }
-            
             $data = $response->toArray();
             $output = trim($data['response'] ?? '');
-            
-            $this->logger->info('Ollama raw response: ' . $output);
-            
-            if (empty($output)) {
-                $this->logger->warning('Empty response from Ollama');
-                return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
-            }
             
             preg_match('/\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\]/s', $output, $matches);
             $jsonString = $matches[0] ?? '';
             
-            if (empty($jsonString)) {
-                $this->logger->warning('No JSON found in Ollama response');
-                return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
-            }
-            
-            $recommendations = json_decode($jsonString, true);
-            
-            if (!is_array($recommendations) || empty($recommendations)) {
-                $this->logger->warning('Invalid JSON structure from Ollama');
-                return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
-            }
-            
-            foreach ($recommendations as $rec) {
-                if (!isset($rec['name']) || !isset($rec['rate']) || !isset($rec['duration'])) {
-                    $this->logger->warning('Missing fields in recommendation');
-                    return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
+            if (!empty($jsonString)) {
+                $recommendations = json_decode($jsonString, true);
+                if (is_array($recommendations) && !empty($recommendations)) {
+                    return $this->json(['recommendations' => $recommendations]);
                 }
             }
             
-            return $this->json(['recommendations' => $recommendations]);
+            return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
             
         } catch (\Exception $e) {
             $this->logger->error('Ollama API error: ' . $e->getMessage());
             return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
         }
+        */
     }
 
-    #[Route('/api/obligation/recommendation/add', name: 'app_obligation_recommendation_add', methods: ['POST'])]
+    #[Route('/api/recommendation/add', name: 'app_obligation_recommendation_add', methods: ['POST'])]
     public function addRecommendation(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -250,15 +216,20 @@ class ObligationController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Missing required fields'], 400);
         }
         
-        $obligation = new Obligation();
-        $obligation->setNom($data['name']);
-        $obligation->setTauxInteret($data['rate']);
-        $obligation->setDuree($data['duration']);
-        
-        $entityManager->persist($obligation);
-        $entityManager->flush();
-        
-        return $this->json(['success' => true, 'id' => $obligation->getIdObligation()]);
+        try {
+            $obligation = new Obligation();
+            $obligation->setNom($data['name']);
+            $obligation->setTauxInteret($data['rate']);
+            $obligation->setDuree($data['duration']);
+            
+            $entityManager->persist($obligation);
+            $entityManager->flush();
+            
+            return $this->json(['success' => true, 'id' => $obligation->getIdObligation()]);
+        } catch (\Exception $e) {
+            $this->logger->error('Error saving recommendation: ' . $e->getMessage());
+            return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 
     private function getDefaultRecommendations(): array
@@ -267,6 +238,8 @@ class ObligationController extends AbstractController
             ['name' => 'Eco Green Bond', 'rate' => 6.5, 'duration' => 24],
             ['name' => 'Tech Growth Bond', 'rate' => 9.0, 'duration' => 36],
             ['name' => 'Secure Plus Bond', 'rate' => 4.5, 'duration' => 12],
+            ['name' => 'Digital Future Bond', 'rate' => 7.8, 'duration' => 48],
+            ['name' => 'Stable Income Bond', 'rate' => 5.2, 'duration' => 18],
         ];
     }
 }

@@ -15,6 +15,7 @@
     {% endblock %}
 
     {% block javascripts %}
+        {{ importmap('app') }}
         {% include 'partials/_javascripts.html.twig' %}
     {% endblock %}
 </head>
@@ -476,17 +477,6 @@
             display: flex;
         }
         
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
         .chatbot-header {
             background: linear-gradient(135deg, #2d6a4f 0%, #1b4d3b 100%);
             color: white;
@@ -614,6 +604,9 @@
             border-radius: 50%;
             animation: typing 1.4s infinite;
         }
+        
+        .chatbot-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .chatbot-typing span:nth-child(3) { animation-delay: 0.4s; }
         
         @keyframes typing {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
@@ -814,9 +807,15 @@
                 sendChatbotMessage();
             }
         }
+        
+        // Check for alerts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Small delay before checking alerts
+            setTimeout(checkMaturityAlerts, 1000);
+        });
     </script>
 
-<script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
-<script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+    <script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>
+    <script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
 </body>
 </html>

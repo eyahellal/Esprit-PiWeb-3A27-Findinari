@@ -59,3 +59,7 @@ services:
     App\Service\PdfGeneratorService:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    App\Controller\Loan\ObligationController:
+        arguments:
+            $ollamaApiUrl: '%ollama_api_url%'

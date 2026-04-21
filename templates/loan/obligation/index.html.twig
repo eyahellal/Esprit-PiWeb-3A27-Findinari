@@ -265,7 +265,8 @@
         `;
         
         try {
-            const response = await fetch(Routing.generate('app_obligation_recommendations'));
+            // UPDATED URL - Removed /obligation from the path
+            const response = await fetch('/loan/obligation/api/recommendations');
             const data = await response.json();
             
             if (data.recommendations && data.recommendations.length > 0) {
@@ -279,10 +280,14 @@
                 `;
             }
         } catch (error) {
+            console.error('Error loading recommendations:', error);
             body.innerHTML = `
                 <div class="alert alert-danger text-center">
                     <i class="fas fa-times-circle fa-2x mb-2 d-block"></i>
                     <p>Error loading recommendations. Please try again.</p>
+                    <button class="btn btn-primary mt-2" onclick="loadRecommendations()">
+                        <i class="fas fa-sync-alt me-1"></i>Try Again
+                    </button>
                 </div>
             `;
         }
@@ -373,7 +378,8 @@
         addBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
         
         try {
-            const response = await fetch(Routing.generate('app_obligation_recommendation_add'), {
+            // UPDATED URL - Removed /obligation from the path
+            const response = await fetch('/loan/obligation/api/recommendation/add', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -396,6 +402,7 @@
                 addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Selected Obligation';
             }
         } catch (error) {
+            console.error('Error adding recommendation:', error);
             alert('Error adding obligation. Please try again.');
             addBtn.disabled = false;
             addBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add Selected Obligation';
