@@ -21,14 +21,12 @@ use Psr\Log\LoggerInterface;
 class ObligationController extends AbstractController
 {
     private $httpClient;
-    private $ollamaApiUrl;
     private $logger;
     
-    // Constructor with $ollamaApiUrl parameter
-    public function __construct(HttpClientInterface $httpClient, string $ollamaApiUrl, LoggerInterface $logger)
+    // Simple constructor - only what's needed
+    public function __construct(HttpClientInterface $httpClient, LoggerInterface $logger)
     {
         $this->httpClient = $httpClient;
-        $this->ollamaApiUrl = $ollamaApiUrl;
         $this->logger = $logger;
     }
 
@@ -47,7 +45,6 @@ class ObligationController extends AbstractController
                 ->setParameter('search', '%' . $search . '%');
         }
         
-        // Paginate the query (6 items per page for 2x3 grid)
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
@@ -71,7 +68,6 @@ class ObligationController extends AbstractController
             $entityManager->persist($obligation);
             $entityManager->flush();
 
-            // Add notification
             $notificationService->addNotification(
                 '📋 New Obligation Created',
                 sprintf('Obligation "%s" has been created with %.2f%% interest rate', $obligation->getNom(), $obligation->getTauxInteret()),
@@ -117,7 +113,6 @@ class ObligationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
             
-            // Add notification
             $notificationService->addNotification(
                 '✏️ Obligation Updated',
                 sprintf('Obligation "%s" has been updated', $obligation->getNom()),
@@ -144,17 +139,14 @@ class ObligationController extends AbstractController
         }
         
         if ($this->isCsrfTokenValid('delete'.$obligation->getIdObligation(), $request->request->get('_token'))) {
-            // First delete all related investments
             $investments = $investmentRepository->findBy(['obligationId' => $obligation->getIdObligation()]);
             foreach ($investments as $investment) {
                 $entityManager->remove($investment);
             }
             
-            // Then delete the obligation
             $entityManager->remove($obligation);
             $entityManager->flush();
             
-            // Add notification
             $notificationService->addNotification(
                 '🗑️ Obligation Deleted',
                 sprintf('Obligation "%s" has been deleted', $obligation->getNom()),
@@ -170,12 +162,27 @@ class ObligationController extends AbstractController
     #[Route('/api/obligation/recommendations', name: 'app_obligation_recommendations', methods: ['GET'])]
     public function getRecommendations(): JsonResponse
     {
+        // Try multiple ways to get the Ollama URL
+        $ollamaApiUrl = 'http://localhost:11434/api/generate'; // Default fallback
+        
+        // Try to get from parameters
+        if ($this->hasParameter('ollama_api_url')) {
+            $ollamaApiUrl = $this->getParameter('ollama_api_url');
+        }
+        // Try from environment variable
+        elseif (isset($_ENV['OLLAMA_API_URL'])) {
+            $ollamaApiUrl = $_ENV['OLLAMA_API_URL'];
+        }
+        elseif (getenv('OLLAMA_API_URL')) {
+            $ollamaApiUrl = getenv('OLLAMA_API_URL');
+        }
+        
         $prompt = "Generate 3 investment obligation recommendations for a financial platform. Each recommendation should have: a creative name, an interest rate between 3% and 15% (as a float number), and a duration in months between 6 and 60 (as an integer). Format the response as valid JSON only, no other text. Example format: [{\"name\":\"Example Bond\",\"rate\":8.5,\"duration\":24}]";
         
         try {
-            $this->logger->info('Calling Ollama API at: ' . $this->ollamaApiUrl);
+            $this->logger->info('Calling Ollama API at: ' . $ollamaApiUrl);
             
-            $response = $this->httpClient->request('POST', $this->ollamaApiUrl, [
+            $response = $this->httpClient->request('POST', $ollamaApiUrl, [
                 'json' => [
                     'model' => 'gemma3:1b',
                     'prompt' => $prompt,
@@ -204,7 +211,6 @@ class ObligationController extends AbstractController
                 return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
             }
             
-            // Try to extract JSON from response
             preg_match('/\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\]/s', $output, $matches);
             $jsonString = $matches[0] ?? '';
             
@@ -220,7 +226,6 @@ class ObligationController extends AbstractController
                 return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
             }
             
-            // Validate each recommendation has required fields
             foreach ($recommendations as $rec) {
                 if (!isset($rec['name']) || !isset($rec['rate']) || !isset($rec['duration'])) {
                     $this->logger->warning('Missing fields in recommendation');
