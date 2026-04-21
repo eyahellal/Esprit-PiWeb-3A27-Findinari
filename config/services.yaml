@@ -11,28 +11,22 @@ parameters:
     hf_api_token: '%env(HF_API_TOKEN)%'
     hf_api_url: '%env(HF_API_URL)%'
 
-
-
 services:
-    # default configuration for services in *this* file
     _defaults:
         autowire: true
         autoconfigure: true
         bind:
             $ollamaApiUrl: '%ollama_api_url%'
             $projectDir: '%kernel.project_dir%'
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-        bind:
             $cloudinaryUrl: '%cloudinary_url%'
 
-    # makes classes in src/ available to be used as services
     App\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
     App\Service\GroqSuggestionService:
         arguments:
             $groqApiKey: '%groq_api_key%'
@@ -47,31 +41,21 @@ services:
         arguments:
             $groqApiKey: '%groq_api_key%'
             $groqModel: '%groq_model%'
+
     App\Service\TicketPriorityClassifierService:
         arguments:
             $groqApiKey: '%groq_api_key%'
             $groqModel: '%groq_model%'
 
-    # ==============================================
-    # API Controllers Configuration
-    # ==============================================
-    
-    # Crypto API Controller
     App\Controller\Api\CryptoApiController:
         arguments:
             $cryptoApiUrl: '%crypto_api_url%'
 
-    # News API Controller
     App\Controller\Api\NewsApiController:
         arguments:
             $newsApiUrl: '%news_api_url%'
             $newsApiKey: '%news_api_key%'
 
-    # ==============================================
-    # Services Configuration
-    # ==============================================
-    
-    # PDF Generator Service Configuration
     App\Service\PdfGeneratorService:
         arguments:
             $projectDir: '%kernel.project_dir%'
