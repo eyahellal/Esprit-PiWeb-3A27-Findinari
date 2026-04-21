@@ -14,6 +14,7 @@ class CommentaireType extends AbstractType
     {
         $builder->add('contenu', TextareaType::class, [
             'label' => false,
+            'required' => false,
             'attr' => [
                 'rows' => 3,
                 'maxlength' => 1000,

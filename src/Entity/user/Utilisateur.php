@@ -185,6 +185,58 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
 
+    public function getCommunityRole(): string
+    {
+        return strtoupper((string) ($this->role ?? 'USER'));
+    }
+
+    public function isCommunityAdmin(): bool
+    {
+        return $this->getCommunityRole() === 'ADMIN';
+    }
+
+    public function isCommunityInfluencer(): bool
+    {
+        return $this->getCommunityRole() === 'INFLUENCER';
+    }
+
+    public function canCreateCommunityPost(): bool
+    {
+        return $this->isCommunityInfluencer();
+    }
+
+    public function canCommentInCommunity(): bool
+    {
+        return $this->isCommunityInfluencer() || $this->getCommunityRole() === 'USER';
+    }
+
+    public function canLikeInCommunity(): bool
+    {
+        return $this->isCommunityInfluencer() || $this->getCommunityRole() === 'USER';
+    }
+
+
+    public function isCanCreateCommunityPost(): bool
+    {
+        return $this->canCreateCommunityPost();
+    }
+
+    public function isCanCommentInCommunity(): bool
+    {
+        return $this->canCommentInCommunity();
+    }
+
+    public function isCanLikeInCommunity(): bool
+    {
+        return $this->canLikeInCommunity();
+    }
+
+    public function getCommunityAdmin(): bool
+    {
+        return $this->isCommunityAdmin();
+    }
+
+
    public function getRoles(): array
 {
    $role = strtoupper($this->role ?? 'USER');
