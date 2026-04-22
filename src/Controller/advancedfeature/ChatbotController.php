@@ -190,27 +190,27 @@ YOUR RESPONSE (be helpful and concise):
 PROMPT;
     }
     
-    private function callOllama(string $prompt): string
-    {
-        try {
-            $response = $this->httpClient->request('POST', $this->ollamaApiUrl, [
-                'json' => [
-                    'model' => 'gemma3:1b',
-                    'prompt' => $prompt,
-                    'stream' => false,
-                    'temperature' => 0.3,
-                    'max_tokens' => 800
-                ],
-                'timeout' => 60
-            ]);
-            
-            $data = $response->toArray();
-            return trim($data['response'] ?? 'I apologize, but I encountered an issue generating a response. Please try again.');
-            
-        } catch (\Exception $e) {
-            return 'Sorry, the chatbot service is temporarily unavailable. Please make sure Ollama is running with the command: ollama serve';
-        }
+   private function callOllama(string $prompt): string
+{
+    try {
+        $response = $this->httpClient->request('POST', rtrim($this->ollamaApiUrl, '/') . '/api/generate', [
+            'json' => [
+                'model' => 'gemma3:1b',
+                'prompt' => $prompt,
+                'stream' => false,
+                'temperature' => 0.3,
+            ],
+            'timeout' => 60,
+        ]);
+
+        $data = $response->toArray();
+
+        return trim($data['response'] ?? 'I apologize, but I encountered an issue generating a response. Please try again.');
+
+    } catch (\Throwable $e) {
+        return 'REAL ERROR: ' . $e->getMessage();
     }
+}
     
     private function getFallbackKnowledgeBase(): string
     {
