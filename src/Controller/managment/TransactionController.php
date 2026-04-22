@@ -45,6 +45,20 @@ class TransactionController extends AbstractController
 
         return $user;
     }
+   #[Route('/weather', name: 'app_weather_index', methods: ['GET'])]
+public function weather(): Response
+{
+    return $this->render('management/weather/index.html.twig', [
+        'groq_api_key' => $_ENV['GROQ_API_KEY'] ?? '',
+    ]);
+}
+#[Route('/holiday', name: 'app_holiday_index', methods: ['GET'])]
+public function holiday(): Response
+{
+    return $this->render('management/holiday/index.html.twig', [
+        'groq_api_key' => $_ENV['GROQ_API_KEY'] ?? '',
+    ]);
+}
 
   #[Route('/', name: 'app_transaction_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
@@ -279,7 +293,43 @@ if ($isRecurring) {
 
         $session->remove('transaction_wallet_id');
         $session->remove('transaction_type');
+// Check if any budget is exceeded after this transaction
+if ($type === 'depense' && $transaction->getCategorie()) {
+    $budgetForCategory = $entityManager->getRepository(\App\Entity\management\Budget::class)
+        ->createQueryBuilder('b')
+        ->where('b.wallet = :wallet')
+        ->andWhere('b.categorie = :categorie')
+        ->setParameter('wallet', $wallet)
+        ->setParameter('categorie', $transaction->getCategorie())
+        ->getQuery()
+        ->getOneOrNullResult();
 
+    if ($budgetForCategory) {
+        $totalSpentNow = $entityManager->getRepository(Transaction::class)
+            ->createQueryBuilder('t')
+            ->select('SUM(t.montant)')
+            ->where('t.wallet = :wallet')
+            ->andWhere('t.categorie = :categorie')
+            ->andWhere('t.type = :type')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('categorie', $transaction->getCategorie())
+            ->setParameter('type', 'depense')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+
+        // Add current transaction amount (not yet persisted)
+        $totalSpentNow += $transaction->getMontant();
+
+        if ($totalSpentNow > $budgetForCategory->getMontantMax()) {
+            $this->addFlash('budget_alert', json_encode([
+                'title' => 'Budget Exceeded!',
+                'message' => $transaction->getCategorie()->getNom() . ' budget exceeded: ' .
+                    number_format($totalSpentNow, 2) . ' / ' .
+                    number_format($budgetForCategory->getMontantMax(), 2) . ' ' . $wallet->getDevise(),
+            ]));
+        }
+    }
+}
         $this->addFlash('success', 'Transaction added successfully!');
         return $this->redirectToRoute('app_transaction_index');
     }
