@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Entity\Message;
+use App\Entity\reclamation\Message;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +16,16 @@ class MessageRepository extends ServiceEntityRepository
         parent::__construct($registry, Message::class);
     }
 
-    //    /**
-    //     * @return Message[] Returns an array of Message objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('m')
-    //            ->andWhere('m.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('m.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Message
-    //    {
-    //        return $this->createQueryBuilder('m')
-    //            ->andWhere('m.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    public function findMessagesAfterId(int $ticketId, int $lastId): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.ticket = :ticketId')
+            ->andWhere('m.id > :lastId')
+            ->setParameter('ticketId', $ticketId)
+            ->setParameter('lastId', $lastId)
+            ->orderBy('m.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

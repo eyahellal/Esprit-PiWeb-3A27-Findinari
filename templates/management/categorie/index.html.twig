@@ -1,0 +1,254 @@
+{% extends 'management/dashboard.html.twig' %}
+
+{% block title %}Categories - Fin-Dinari{% endblock %}
+
+{% set active_tab = 'categorie' %}
+
+{% block content %}
+
+<turbo-frame id="content-frame">
+
+    {# Header #}
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-1" style="color: #26474E;">
+                <i class="fas fa-folder me-2"></i>Categories
+            </h1>
+            <p class="text-muted mb-0">Manage your spending categories</p>
+        </div>
+        <div class="col-lg-4 text-end">
+            <a href="{{ path('app_categorie_new') }}" class="btn btn-lg px-4"
+               style="background: linear-gradient(135deg, #F27438, #F9968B); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(242,116,56,0.3);">
+                <i class="fas fa-plus me-2"></i>New Category
+            </a>
+        </div>
+    </div>
+
+    {# Stats Bar #}
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #26474E; box-shadow: 0 4px 20px rgba(38,71,78,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Categories</p>
+                        <h2 class="fw-bold mb-0">{{ categories|length }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-folder fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #2d6a4f; box-shadow: 0 4px 20px rgba(45,106,79,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Active</p>
+                        <h2 class="fw-bold mb-0">
+                            {{ categories|filter(c => c.statut == 'Active')|length }}
+                        </h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #c0392b; box-shadow: 0 4px 20px rgba(192,57,43,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Inactive</p>
+                        <h2 class="fw-bold mb-0">
+                            {{ categories|filter(c => c.statut == 'Inactive')|length }}
+                        </h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-times-circle fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{# Search + Filter Bar #}
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <form method="get" action="{{ path('app_categorie_index') }}"
+              data-turbo-frame="content-frame"
+              class="d-flex gap-2 align-items-center">
+
+            {# Search Input #}
+            <div class="input-group" style="height: 44px;">
+                <span class="input-group-text border-0 bg-white"
+                      style="border-radius: 12px 0 0 12px;">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" name="search" class="form-control border-0 shadow-sm"
+                       placeholder="Search by name..."
+                       value="{{ search ?? '' }}"
+                       style="height: 44px;">
+            </div>
+
+           {# Filter by Status #}
+<select name="statut" class="form-select shadow-sm"
+        style="border-radius: 12px; 
+               width: 160px; 
+               height: 44px; 
+               border: none;
+               flex-shrink: 0;
+               background-color: white;
+               color: #26474E;
+               font-weight: 600;
+               cursor: pointer;
+               appearance: none;
+               background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><path fill=%22%23F27438%22 d=%22M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z%22/></svg>');
+               background-repeat: no-repeat;
+               background-position: right 12px center;
+               background-size: 12px;
+               padding-right: 36px;">
+    <option value="" style="color: #26474E;">All Status</option>
+    <option value="Active" 
+            {{ (statut ?? '') == 'Active' ? 'selected' : '' }}
+            style="color: #2d6a4f; font-weight: 600;">
+        Active
+    </option>
+    <option value="Inactive" 
+            {{ (statut ?? '') == 'Inactive' ? 'selected' : '' }}
+            style="color: #c0392b; font-weight: 600;">
+        Inactive
+    </option>
+</select>
+            {# Search Button #}
+            <button type="submit" class="btn px-4 shadow-sm"
+                    style="background: #F27438; color: white; border-radius: 12px; height: 44px; white-space: nowrap; flex-shrink: 0;">
+                <i class="fas fa-search me-1"></i>Search
+            </button>
+
+            {# Clear Button #}
+            {% if (search ?? '') or (statut ?? '') %}
+                <a href="{{ path('app_categorie_index') }}"
+                   class="btn btn-outline-secondary shadow-sm"
+                   style="border-radius: 12px; height: 44px; white-space: nowrap; flex-shrink: 0;">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            {% endif %}
+
+        </form>
+    </div>
+</div>
+
+    {# Categories Grid #}
+    <div class="row">
+        {% if categories is empty %}
+            <div class="col-12 text-center py-5">
+                <div class="rounded-4 p-5" style="background: #f8fffe; border: 2px dashed #F27438;">
+                    <i class="fas fa-folder-open fa-3x mb-3" style="color: #F27438;"></i>
+                    <h4 style="color: #26474E;">No categories found</h4>
+                    <p class="text-muted">Start by creating your first category</p>
+                    <a href="{{ path('app_categorie_new') }}" class="btn mt-2"
+                       style="background: #F27438; color: white; border-radius: 12px;">
+                        <i class="fas fa-plus me-2"></i>Create Category
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            {% for categorie in categories %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 border-0 rounded-4 categorie-card"
+                         style="box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+
+                        {# Card Header #}
+                        <div class="rounded-top-4 p-4 text-white"
+                             style="background: {{ categorie.color is not null ? categorie.color : '#F27438' }};">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="mb-1 opacity-75 small text-uppercase fw-semibold">Category</p>
+                                    <h4 class="fw-bold mb-0">{{ categorie.nom }}</h4>
+                                </div>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                                    <i class="fas {{ categorie.icon is not null ? categorie.icon : 'fa-folder' }} fa-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Card Body #}
+                        <div class="card-body p-4">
+
+                            {% if categorie.description %}
+                                <p class="text-muted small mb-3">{{ categorie.description }}</p>
+                            {% else %}
+                                <p class="text-muted small mb-3 fst-italic">No description</p>
+                            {% endif %}
+
+                            {# Status Badge #}
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                {% if categorie.statut == 'Active' %}
+                                    <span class="badge rounded-pill px-3 py-2"
+                                          style="background: #e8f5e9; color: #2d6a4f;">
+                                        <i class="fas fa-check-circle me-1"></i>Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge rounded-pill px-3 py-2"
+                                          style="background: #fde8e8; color: #c0392b;">
+                                        <i class="fas fa-times-circle me-1"></i>Inactive
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <hr class="my-3">
+
+                            {# Actions #}
+                            <div class="d-flex gap-2">
+                                <a href="{{ path('app_categorie_edit', {'id': categorie.id}) }}"
+                                   class="btn btn-sm flex-fill edit-btn"
+                                   style="background: #e3f2fd; color: #1e3a5f; border-radius: 10px;">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                <form method="post" action="{{ path('app_categorie_delete', {'id': categorie.id}) }}"
+                                      onsubmit="return confirm('Are you sure?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
+                                    <button class="btn btn-sm delete-btn"
+                                            style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+</turbo-frame>
+
+<style>
+    .categorie-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(242, 116, 56, 0.2) !important;
+    }
+    .rounded-top-4 { border-radius: 1rem 1rem 0 0 !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .edit-btn:hover { background: #F27438 !important; color: white !important; }
+    .delete-btn:hover { background: #c0392b !important; color: white !important; }
+    select.form-select:focus {
+    border-color: #F27438 !important;
+    box-shadow: 0 0 0 0.2rem rgba(242, 116, 56, 0.2) !important;
+    outline: none;
+}
+
+select.form-select option:hover {
+    background-color: #F27438 !important;
+    color: white !important;
+}
+</style>
+
+{% endblock %}

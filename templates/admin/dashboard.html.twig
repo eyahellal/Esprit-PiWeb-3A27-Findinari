@@ -69,16 +69,8 @@
             margin-bottom: 18px;
         }
 
-        .brand-icon {
-            width: 40px;
-            height: 40px;
-        }
-
-        .brand-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        .brand-icon { width: 40px; height: 40px; }
+        .brand-icon img { width: 100%; height: 100%; object-fit: contain; }
 
         .brand-name {
             font-size: 22px;
@@ -112,19 +104,8 @@
             position: relative;
         }
 
-        .side-link:hover {
-            background: var(--brand-light);
-            color: var(--brand);
-            transform: translateX(2px);
-        }
-
-        .side-link.active {
-            background: var(--brand-light);
-            color: var(--brand);
-            box-shadow: inset 3px 0 0 var(--brand);
-        }
-
-        .side-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .side-link:hover { background: var(--brand-light); color: var(--brand); transform: translateX(2px); }
+        .side-link.active { background: var(--brand-light); color: var(--brand); box-shadow: inset 3px 0 0 var(--brand); }
 
         .sidebar-footer {
             margin-top: auto;
@@ -132,12 +113,7 @@
             border-top: 1px solid var(--border);
         }
 
-        .content {
-            margin-left: var(--sidebar-width);
-            flex: 1;
-            padding: 28px;
-            min-width: 0;
-        }
+        .content { margin-left: var(--sidebar-width); flex: 1; padding: 28px; min-width: 0; }
 
         .topbar {
             background: var(--surface);
@@ -153,7 +129,6 @@
 
         .topbar-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
         .topbar-title span { color: var(--brand); }
-
         .topbar-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 
         .avatar {
@@ -180,17 +155,10 @@
             gap: 10px;
             font-size: 14px;
             border: 1px solid transparent;
-            animation: fadeSlideDown .3s ease;
-        }
-
-        @keyframes fadeSlideDown {
-            from { opacity: 0; transform: translateY(-8px); }
-            to   { opacity: 1; transform: translateY(0); }
         }
 
         .flash.success { background: var(--success-light); color: #166534; border-color: #b2f5d1; }
         .flash.danger  { background: var(--danger-light);  color: #9b1c1c; border-color: #fdb9b9; }
-        .flash svg { flex-shrink: 0; width: 18px; height: 18px; }
 
         .cards {
             display: grid;
@@ -224,32 +192,17 @@
             opacity: .55;
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .card-icon {
-            width: 46px; height: 46px;
-            border-radius: 14px;
-            background: var(--card-accent, var(--brand-light));
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .card-icon svg { width: 22px; height: 22px; }
+        .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
 
         .card-body { flex: 1; min-width: 0; }
         .card-label { font-size: 12.5px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
         .card-value { font-size: 32px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1; }
 
-        .card-link { text-decoration: none; }
-
-        .card.c-purple  { --card-accent: #dcfce7; } .card.c-purple  .card-icon svg { color: var(--brand); }
-        .card.c-green   { --card-accent: #d1fae5; } .card.c-green   .card-icon svg { color: var(--brand-dark); }
-        .card.c-amber   { --card-accent: #fff8e6; } .card.c-amber   .card-icon svg { color: var(--warning); }
-        .card.c-blue    { --card-accent: #e6f6ff; } .card.c-blue    .card-icon svg { color: var(--info); }
-        .card.c-red     { --card-accent: #fef2f2; } .card.c-red     .card-icon svg { color: var(--danger); }
+        .card.c-purple  { --card-accent: #dcfce7; }
+        .card.c-green   { --card-accent: #d1fae5; }
+        .card.c-amber   { --card-accent: #fff8e6; }
+        .card.c-blue    { --card-accent: #e6f6ff; }
+        .card.c-red     { --card-accent: #fef2f2; }
 
         .section {
             background: var(--surface);
@@ -279,8 +232,6 @@
             gap: 9px;
         }
 
-        .section-title svg { width: 18px; height: 18px; color: var(--brand); }
-
         .section-body { padding: 24px 26px; }
 
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
@@ -289,11 +240,7 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
 
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        select,
-        textarea {
+        input[type="text"], input[type="email"], input[type="password"], select, textarea {
             width: 100%;
             padding: 11px 14px;
             border: 1.5px solid var(--border);
@@ -313,8 +260,6 @@
             background: #fff;
         }
 
-        input::placeholder { color: var(--text-muted); font-weight: 400; }
-
         .btn {
             display: inline-flex;
             align-items: center;
@@ -328,32 +273,18 @@
             font-size: 13.5px;
             font-weight: 700;
             text-decoration: none;
-            transition: filter var(--transition), transform var(--transition), box-shadow var(--transition);
             white-space: nowrap;
         }
 
-        .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
-        .btn:active { transform: translateY(0); filter: brightness(.97); }
-
-        .btn-primary   { background: var(--brand);   color: #fff; box-shadow: 0 4px 14px rgba(34,197,94,.35); }
-        .btn-danger    { background: var(--danger);   color: #fff; box-shadow: 0 4px 14px rgba(239,68,68,.28); }
-        .btn-success   { background: var(--success);  color: #fff; box-shadow: 0 4px 14px rgba(34,197,94,.28); }
-        .btn-secondary { background: #f0f2f7;         color: var(--text-secondary); }
-        .btn-warning   { background: var(--warning);  color: #fff; box-shadow: 0 4px 14px rgba(245,158,11,.28); }
+        .btn-primary   { background: var(--brand); color: #fff; }
+        .btn-danger    { background: var(--danger); color: #fff; }
+        .btn-success   { background: var(--success); color: #fff; }
+        .btn-secondary { background: #f0f2f7; color: var(--text-secondary); }
         .btn-sm        { padding: 7px 13px; font-size: 12.5px; border-radius: 6px; }
-        .btn svg       { width: 15px; height: 15px; }
 
         .table-wrapper { overflow-x: auto; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead tr {
-            background: #f8f9fd;
-            border-bottom: 2px solid var(--border);
-        }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { background: #f8f9fd; border-bottom: 2px solid var(--border); }
 
         th {
             text-align: left;
@@ -373,13 +304,6 @@
             color: var(--text-primary);
         }
 
-        tbody tr {
-            transition: background var(--transition);
-        }
-
-        tbody tr:hover { background: #fafbff; }
-        tbody tr:last-child td { border-bottom: none; }
-
         .badge {
             display: inline-flex;
             align-items: center;
@@ -391,142 +315,103 @@
             letter-spacing: .3px;
         }
 
-        .badge.admin       { background: var(--brand-light);   color: var(--brand-dark); }
-        .badge.user        { background: var(--info-light);     color: var(--info); }
-        .badge.influencer  { background: var(--warning-light);  color: var(--warning); }
+        .badge.admin       { background: var(--brand-light); color: var(--brand-dark); }
+        .badge.user        { background: var(--info-light); color: var(--info); }
+        .badge.influencer  { background: var(--warning-light); color: var(--warning); }
         .badge.active      { background: #dcfce7; color: #166534; }
         .badge.inactive    { background: #fef2f2; color: #b91c1c; }
+        .badge.badge-termine  { background: #dcfce7; color: #166534; }
+        .badge.badge-en-cours { background: #fff8e6; color: #b45309; }
 
-        .badge::before {
-            content: '';
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
+        .role-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .role-form select { padding: 7px 10px; border-radius: 6px; margin: 0; font-size: 13px; min-width: 110px; }
 
-        .role-form,
-        .status-form {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .role-form select {
-            padding: 7px 10px;
-            border-radius: 6px;
-            margin: 0;
-            font-size: 13px;
-            min-width: 110px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-        }
-
-        .empty-state svg { width: 44px; height: 44px; margin-bottom: 12px; opacity: .45; }
-        .empty-state p { font-size: 14px; font-weight: 600; }
-
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
         .stars { display: inline-flex; gap: 2px; }
         .star { color: #d1d5db; font-size: 14px; }
         .star.filled { color: var(--warning); }
 
-        .form-divider { height: 1px; background: var(--border); margin: 18px 0; }
+        .filters-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+        .filters-bar .form-group.flex-grow { flex: 1; min-width: 260px; }
+        .filters-bar .form-group.fixed-width { min-width: 220px; }
+        .filters-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-        .filters-bar {
+        .action-icons { display: flex; align-items: center; gap: 8px; }
+        .action-icons a, .action-icons button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .pagination {
             display: flex;
-            gap: 12px;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0;
             flex-wrap: wrap;
-            align-items: end;
         }
 
-        .filters-bar .form-group.flex-grow {
-            flex: 1;
-            min-width: 260px;
+        .pagination span,
+        .pagination a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-weight: 700;
         }
 
-        .filters-bar .form-group.fixed-width {
-            min-width: 220px;
+        .pagination .current {
+            background: var(--brand);
+            color: #fff;
+            border-color: var(--brand);
         }
 
-        .filters-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .ajax-loading {
+            opacity: .6;
+            pointer-events: none;
+            transition: opacity .2s ease;
         }
     </style>
 </head>
 <body>
 <div class="layout">
 
-   <aside class="sidebar">
-    <div class="brand">
-        <div class="brand-icon">
-            <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
+            </div>
+            <span class="brand-name">Fin-Dinari</span>
         </div>
-        <span class="brand-name">Fin-Dinari</span>
-    </div>
 
-    <div class="nav-section">Main</div>
+        <div class="nav-section">Main</div>
+        <a class="side-link active" href="{{ path('app_admin_dashboard') }}">Dashboard</a>
+        <a class="side-link {% if app.request.attributes.get('_route') == 'app_admin_overview_dashboard' %}active{% endif %}" 
+   href="{{ path('app_admin_overview_dashboard') }}">
+    Overview Dashboard
+</a>
+        <a class="side-link" href="{{ path('app_admin_wallets') }}">Manage Wallets</a>
+        <a class="side-link" href="{{ path('app_admin_objectifs') }}">Manage Objectifs</a>
+        <a class="side-link" href="{{ path('app_admin_tickets') }}">Tickets & Messages</a>
+        <a class="side-link" href="{{ path('app_admin_obligations') }}">Manage Obligations</a>
 
-    <!-- DASHBOARD -->
-    <a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}"
-       href="{{ path('app_admin_dashboard') }}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="7" height="7"/>
-            <rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
-        </svg>
-        Dashboard
-    </a>
+        <div class="sidebar-footer">
+            <a class="side-link" href="{{ path('app_home') }}">Back to site</a>
+            <a class="side-link" href="{{ path('app_logout') }}">Logout</a>
+        </div>
+    </aside>
 
-    <!-- WALLETS -->
-    <a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_wallets' ? 'active' : '' }}"
-       href="{{ path('app_admin_wallets') }}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="5" width="20" height="14" rx="2"/>
-            <path d="M2 10h20"/>
-        </svg>
-        Manage Wallets
-    </a>
-
-    <!-- OBLIGATIONS -->
-    <a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_obligations' ? 'active' : '' }}"
-       href="{{ path('app_admin_obligations') }}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-            <circle cx="12" cy="12" r="3"/>
-        </svg>
-        Manage Obligations
-    </a>
-
-    <div class="sidebar-footer">
-        <a class="side-link" href="{{ path('app_home') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            Back to site
-        </a>
-
-        <a class="side-link" href="{{ path('app_logout') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            Logout
-        </a>
-    </div>
-</aside>
     <main class="content">
 
         <div class="topbar">
@@ -534,322 +419,286 @@
                 <div class="topbar-title">Admin <span>Dashboard</span></div>
             </div>
             <div class="topbar-right">
-                <a href="{{ path('app_admin_wallets') }}" class="btn btn-primary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-                    Wallets
-                </a>
+                <a href="{{ path('app_admin_wallets') }}" class="btn btn-primary">Wallets</a>
                 <div class="welcome-text">Welcome back, <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong></div>
                 <div class="avatar">{{ app.user.prenom|first|upper }}</div>
             </div>
         </div>
 
         {% for message in app.flashes('success') %}
-            <div class="flash success">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                {{ message }}
-            </div>
+            <div class="flash success">{{ message }}</div>
         {% endfor %}
         {% for message in app.flashes('danger') %}
-            <div class="flash danger">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                {{ message }}
-            </div>
+            <div class="flash danger">{{ message }}</div>
         {% endfor %}
 
         <div class="cards">
             <div class="card c-purple">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                </div>
                 <div class="card-body">
                     <div class="card-label">Total Users</div>
                     <div class="card-value">{{ totalUsers }}</div>
                 </div>
             </div>
-
             <div class="card c-blue">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                </div>
                 <div class="card-body">
                     <div class="card-label">Total Feedbacks</div>
                     <div class="card-value">{{ totalFeedbacks }}</div>
                 </div>
             </div>
-
             <div class="card c-red">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </div>
                 <div class="card-body">
                     <div class="card-label">Admins</div>
                     <div class="card-value">{{ adminCount }}</div>
                 </div>
             </div>
-
             <div class="card c-amber">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </div>
                 <div class="card-body">
                     <div class="card-label">Influencers</div>
                     <div class="card-value">{{ influencerCount }}</div>
                 </div>
             </div>
-
-            <a class="card c-green card-link" href="{{ path('app_admin_wallets') }}" style="text-decoration:none;">
-                <div class="card-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-                </div>
-                <div class="card-body">
-                    <div class="card-label">Wallets</div>
-                    <div class="card-value" style="font-size:15px;font-weight:700;color:var(--brand);padding-top:4px;">Manage →</div>
-                </div>
-            </a>
         </div>
 
         <div class="section">
             <div class="section-header">
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                    Create Admin Account
-                </div>
+                <div class="section-title">Create Admin Account</div>
             </div>
             <div class="section-body">
                 <form method="post" action="{{ path('app_admin_create_admin') }}">
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Last name</label>
-                            <input type="text" name="nom" placeholder="e.g. Dupont" required>
+                            <input type="text" name="nom" required>
                         </div>
                         <div class="form-group">
                             <label>First name</label>
-                            <input type="text" name="prenom" placeholder="e.g. Marie" required>
+                            <input type="text" name="prenom" required>
                         </div>
                     </div>
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Email address</label>
-                            <input type="email" name="gmail" placeholder="admin@example.com" required>
+                            <input type="email" name="gmail" required>
                         </div>
                         <div class="form-group">
                             <label>Password</label>
-                            <input type="password" name="password" placeholder="Min. 8 characters" required>
+                            <input type="password" name="password" required>
                         </div>
                     </div>
-                    <div class="form-divider"></div>
-                    <button class="btn btn-primary" type="submit">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                        Create Admin
-                    </button>
+                    <button class="btn btn-primary" type="submit">Create Admin</button>
                 </form>
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                    All Users
-                </div>
-                <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
-                    {{ filteredUsersCount|default(users|length) }} shown / {{ totalUsers }} total
-                </span>
-            </div>
-
-            <div class="section-body" style="padding-bottom: 0;">
-                <form method="get" action="{{ path('app_admin_dashboard') }}" class="filters-bar">
-                    <div class="form-group flex-grow">
-                        <label>Search user by name</label>
-                        <input type="text" name="q" value="{{ search|default('') }}" placeholder="Search by first name or last name">
-                    </div>
-
-                    <div class="form-group fixed-width">
-                        <label>Sort by</label>
-                        <select name="sort">
-                            <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name A → Z</option>
-                            <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name Z → A</option>
-                            <option value="role_asc" {% if sort == 'role_asc' %}selected{% endif %}>Role A → Z</option>
-                            <option value="role_desc" {% if sort == 'role_desc' %}selected{% endif %}>Role Z → A</option>
-                            <option value="status_asc" {% if sort == 'status_asc' %}selected{% endif %}>Status A → Z</option>
-                            <option value="status_desc" {% if sort == 'status_desc' %}selected{% endif %}>Status Z → A</option>
-                            <option value="id_asc" {% if sort == 'id_asc' %}selected{% endif %}>Oldest ID</option>
-                            <option value="id_desc" {% if sort == 'id_desc' %}selected{% endif %}>Newest ID</option>
-                        </select>
-                    </div>
-
-                    <div class="filters-actions">
-                        <button class="btn btn-primary" type="submit">Apply</button>
-                        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-secondary">Reset</a>
-                    </div>
-                </form>
-            </div>
-
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Change Role</th>
-                            <th>Activate / Deactivate</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for user in users %}
-                        <tr>
-                            <td style="color:var(--text-muted);font-weight:700;">{{ user.id }}</td>
-                            <td>
-                    <a href="{{ path('app_admin_user_show', {id: user.id}) }}" style="text-decoration:none;color:inherit;">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <div style="width:34px;height:34px;border-radius:50%;background:var(--brand-light);color:var(--brand-dark);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
-                                {{ user.prenom|first|upper }}
-                            </div>
-                            <span style="font-weight:700;color:var(--brand-dark);">
-                                {{ user.prenom }} {{ user.nom }}
-                            </span>
-                        </div>
-                    </a>
-                </td>
-                            <td style="color:var(--text-secondary);">{{ user.gmail }}</td>
-
-                            <td>
-                                <span class="badge {% if user.role == 'ADMIN' %}admin{% elseif user.role == 'INFLUENCER' %}influencer{% else %}user{% endif %}">
-                                    {{ user.role }}
-                                </span>
-                            </td>
-
-                            <td>
-                                {% if user.statut == 'ACTIF' %}
-                                    <span class="badge active">ACTIF</span>
-                                {% else %}
-                                    <span class="badge inactive">INACTIF</span>
-                                {% endif %}
-                            </td>
-
-                            <td>
-                                <form method="post" action="{{ path('app_admin_user_role', {id: user.id}) }}" class="role-form">
-                                    <select name="role">
-                                        <option value="USER" {% if user.role == 'USER' %}selected{% endif %}>USER</option>
-                                        <option value="ADMIN" {% if user.role == 'ADMIN' %}selected{% endif %}>ADMIN</option>
-                                        <option value="INFLUENCER" {% if user.role == 'INFLUENCER' %}selected{% endif %}>INFLUENCER</option>
-                                    </select>
-                                    <button class="btn btn-success btn-sm" type="submit">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                        Save
-                                    </button>
-                                </form>
-                            </td>
-
-                            <td>
-                                <form method="post" action="{{ path('app_admin_user_status', {id: user.id}) }}" class="status-form">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_status_' ~ user.id) }}">
-                                    <input type="hidden" name="statut" value="{% if user.statut == 'ACTIF' %}INACTIF{% else %}ACTIF{% endif %}">
-
-                                    {% if user.statut == 'ACTIF' %}
-                                        <button class="btn btn-warning btn-sm" type="submit" onclick="return confirm('Deactivate this account?');">
-                                            Deactivate
-                                        </button>
-                                    {% else %}
-                                        <button class="btn btn-success btn-sm" type="submit" onclick="return confirm('Activate this account?');">
-                                            Activate
-                                        </button>
-                                    {% endif %}
-                                </form>
-                            </td>
-
-                            <td>
-                                <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
-                                    <button class="btn btn-danger btn-sm" type="submit">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                        Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="8">
-                                <div class="empty-state">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                                    <p>No users found for this search.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        {% include 'admin/_users_table.html.twig' %}
 
         <div class="section">
             <div class="section-header">
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                    Feedbacks
-                </div>
+                <div class="section-title">Feedbacks</div>
                 <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ totalFeedbacks }} total</span>
             </div>
             <div class="table-wrapper">
                 <table>
                     <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>User</th>
-                            <th>Rating</th>
-                            <th>Message</th>
-                            <th>Date</th>
-                            <th>Action</th>
-                        </tr>
+                        <tr><th>#</th><th>User</th><th>Rating</th><th>Message</th><th>Date</th><th>Action</th></tr>
                     </thead>
                     <tbody>
                     {% for feedback in feedbacks %}
                         <tr>
-                            <td style="color:var(--text-muted);font-weight:700;">{{ feedback.id }}</td>
-                            <td style="color:var(--text-secondary);font-weight:600;">{{ feedback.userEmail }}</td>
+                            <td>{{ feedback.id }}</td>
+                            <td>{{ feedback.userEmail }}</td>
                             <td>
                                 <div class="stars">
                                     {% for i in 1..5 %}
                                         <span class="star {% if i <= feedback.rating %}filled{% endif %}">★</span>
                                     {% endfor %}
                                 </div>
-                                <div style="font-size:11.5px;color:var(--text-muted);font-weight:700;margin-top:2px;">{{ feedback.rating }}/5</div>
+                                <div>{{ feedback.rating }}/5</div>
                             </td>
-                            <td style="max-width:280px;color:var(--text-secondary);">{{ feedback.message }}</td>
-                            <td style="color:var(--text-muted);font-size:13px;font-weight:600;white-space:nowrap;">
-                                {{ feedback.createdAt ? feedback.createdAt|date('d M Y, H:i') : '—' }}
-                            </td>
+                            <td>{{ feedback.message }}</td>
+                            <td>{{ feedback.createdAt ? feedback.createdAt|date('d M Y, H:i') : '—' }}</td>
                             <td>
                                 <form method="post" action="{{ path('app_admin_feedback_delete', {id: feedback.id}) }}" onsubmit="return confirm('Delete this feedback?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback_admin_' ~ feedback.id) }}">
-                                    <button class="btn btn-danger btn-sm" type="submit">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                        Delete
-                                    </button>
+                                    <button class="btn btn-danger btn-sm" type="submit">Delete</button>
                                 </form>
                             </td>
                         </tr>
                     {% else %}
-                        <tr>
-                            <td colspan="6">
-                                <div class="empty-state">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                                    <p>No feedbacks found yet.</p>
-                                </div>
-                            </td>
-                        </tr>
+                        <tr><td colspan="6"><div class="empty-state"><p>No feedbacks found yet.</p></div></td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <div style="padding:18px 26px;">
+                {{ knp_pagination_render(feedbacks) }}
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Objectifs</div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:13px;color:var(--text-muted);font-weight:600;">{{ objectifs.getTotalItemCount }} total</span>
+                    <a href="{{ path('app_admin_objectifs') }}" class="btn btn-primary btn-sm">Gérer les objectifs →</a>
+                </div>
+            </div>
+
+            <div class="section-body" style="padding-bottom:0; border-bottom:1px solid var(--border);">
+                <form method="get" action="{{ path('app_admin_dashboard') }}" class="filters-bar">
+                    <div class="form-group fixed-width">
+                        <label>Statut objectif</label>
+                        <select name="obj_statut" onchange="this.form.submit()">
+                            <option value="">Tous les statuts</option>
+                            <option value="EN_COURS" {{ app.request.query.get('obj_statut') == 'EN_COURS' ? 'selected' : '' }}>En cours</option>
+                            <option value="TERMINE" {{ app.request.query.get('obj_statut') == 'TERMINE' ? 'selected' : '' }}>Terminé</option>
+                        </select>
+                    </div>
+                    {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+                    {% if userSort %}<input type="hidden" name="user_sort" value="{{ userSort }}">{% endif %}
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th><th>Wallet ID</th><th>Titre</th><th>Montant</th><th>Date début</th><th>Durée (mois)</th><th>Statut</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for obj in objectifs %}
+                        <tr>
+                            <td>{{ obj.id }}</td>
+                            <td>{{ obj.walletId }}</td>
+                            <td><strong>{{ obj.titre }}</strong></td>
+                            <td>{{ obj.montant|number_format(2, ',', ' ') }}</td>
+                            <td>{{ obj.dateDebut ? obj.dateDebut|date('d/m/Y') : '—' }}</td>
+                            <td>{{ obj.duree }}</td>
+                            <td>
+                                <span class="badge {{ obj.statut == 'TERMINE' ? 'badge-termine' : 'badge-en-cours' }}">
+                                    {{ obj.statut == 'TERMINE' ? 'Terminé' : 'En cours' }}
+                                </span>
+                            </td>
+                            <td class="action-icons">
+                                <a href="{{ path('objectif_edit', {id: obj.id}) }}" title="Modifier">✏️</a>
+                                <form method="post" action="{{ path('objectif_delete', {id: obj.id}) }}" style="display:inline" onsubmit="return confirm('Supprimer cet objectif ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ obj.id) }}">
+                                    <button type="submit" title="Supprimer">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="8"><div class="empty-state"><p>Aucun objectif trouvé.</p></div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="padding:18px 26px;">
+                {{ knp_pagination_render(objectifs) }}
             </div>
         </div>
 
     </main>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function initUsersAjax() {
+        const usersSection = document.getElementById('users-section');
+        if (!usersSection) {
+            return;
+        }
+
+        const form = document.getElementById('users-filter-form');
+        const searchInput = document.getElementById('ajax-search');
+        const sortSelect = document.getElementById('ajax-sort');
+        const resetBtn = document.getElementById('ajax-reset');
+
+        if (!form || !searchInput || !sortSelect) {
+            return;
+        }
+
+        let debounceTimer = null;
+
+        function loadUsers(page = 1) {
+            usersSection.classList.add('ajax-loading');
+
+            const params = new URLSearchParams();
+            params.set('q', searchInput.value || '');
+            params.set('user_sort', sortSelect.value || 'name_asc');
+            params.set('users_page', page);
+
+            fetch("{{ path('app_admin_ajax_users') }}?" + params.toString(), {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('AJAX request failed');
+                }
+                return response.text();
+            })
+            .then(function (html) {
+                const currentSection = document.getElementById('users-section');
+                if (currentSection) {
+                    currentSection.outerHTML = html;
+                    initUsersAjax();
+                }
+            })
+            .catch(function (error) {
+                console.error(error);
+            })
+            .finally(function () {
+                const refreshedSection = document.getElementById('users-section');
+                if (refreshedSection) {
+                    refreshedSection.classList.remove('ajax-loading');
+                }
+            });
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            loadUsers(1);
+        });
+
+        searchInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                loadUsers(1);
+            }, 350);
+        });
+
+        sortSelect.addEventListener('change', function () {
+            loadUsers(1);
+        });
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                searchInput.value = '';
+                sortSelect.value = 'name_asc';
+                loadUsers(1);
+            });
+        }
+
+        const paginationLinks = document.querySelectorAll('#users-section .pagination a');
+        paginationLinks.forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const url = new URL(this.href);
+                const page = url.searchParams.get('users_page') || 1;
+                loadUsers(page);
+            });
+        });
+    }
+
+    initUsersAjax();
+});
+</script>
 </body>
 </html>

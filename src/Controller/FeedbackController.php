@@ -7,6 +7,7 @@ use App\Entity\user\Utilisateur;
 use App\Form\FeedbackType;
 use App\Repository\FeedbackRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +19,8 @@ class FeedbackController extends AbstractController
     public function index(
         Request $request,
         FeedbackRepository $feedbackRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        PaginatorInterface $paginator
     ): Response {
         /** @var Utilisateur|null $user */
         $user = $this->getUser();
@@ -44,8 +46,18 @@ class FeedbackController extends AbstractController
             $formView = $form->createView();
         }
 
+        $queryBuilder = $feedbackRepository
+            ->createQueryBuilder('f')
+            ->orderBy('f.createdAt', 'DESC');
+
+        $feedbacks = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            6
+        );
+
         return $this->render('feedback/index.html.twig', [
-            'feedbacks' => $feedbackRepository->findAllOrdered(),
+            'feedbacks' => $feedbacks,
             'feedbackForm' => $formView,
         ]);
     }
