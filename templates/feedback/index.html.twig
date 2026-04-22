@@ -17,18 +17,56 @@
             </div>
         {% endfor %}
 
+        {% for message in app.flashes('danger') %}
+            <div style="max-width:800px; margin:0 auto 20px auto; padding:14px 16px; border-radius:12px; background:#fdeaea; color:#a12626; font-weight:700;">
+                {{ message }}
+            </div>
+        {% endfor %}
+
         {% if app.user and feedbackForm %}
             <div style="max-width:800px; margin:0 auto 35px auto; background:#fff; border-radius:20px; padding:28px; box-shadow:0 20px 50px rgba(0,0,0,.08);">
                 <h2 style="margin:0 0 18px; color:#173b2f;">Add your feedback</h2>
 
-                {{ form_start(feedbackForm) }}
-                    {{ form_widget(feedbackForm.rating, {'attr': {'style': 'width:100%; padding:14px; border:1px solid #cdebd7; border-radius:12px; margin-bottom:14px; box-sizing:border-box; background:#fff;'}}) }}
-                    {{ form_widget(feedbackForm.message, {'attr': {'style': 'width:100%; padding:14px; border:1px solid #cdebd7; border-radius:12px; margin-bottom:14px; box-sizing:border-box; resize:none;'}}) }}
+               {{ form_start(feedbackForm) }}
 
-                    <button type="submit" style="padding:14px 22px; background:#28a745; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">
-                        Publish Feedback
-                    </button>
-                {{ form_end(feedbackForm) }}
+    <label style="display:block; font-weight:800; color:#173b2f; margin-bottom:10px;">
+        Rating
+    </label>
+
+    <div id="star-rating" style="display:flex; gap:8px; margin-bottom:16px;">
+        {% set selectedRating = feedbackForm.rating.vars.value|default(0) %}
+        {% for i in 1..5 %}
+            <span class="star-choice"
+                  data-value="{{ i }}"
+                  style="font-size:34px; color:{% if i <= selectedRating %}#f5b301{% else %}#d8d8d8{% endif %}; cursor:pointer; user-select:none; transition: color .2s ease;">
+                ★
+            </span>
+        {% endfor %}
+    </div>
+
+    <input
+        type="hidden"
+        id="rating_input"
+        name="{{ feedbackForm.rating.vars.full_name }}"
+        value="{{ feedbackForm.rating.vars.value|default('') }}"
+    >
+
+    {{ form_errors(feedbackForm.rating) }}
+
+    {{ form_widget(feedbackForm.message, {
+        'attr': {
+            'style': 'width:100%; padding:14px; border:1px solid #cdebd7; border-radius:12px; margin-bottom:14px; box-sizing:border-box; resize:none;'
+        }
+    }) }}
+    {{ form_errors(feedbackForm.message) }}
+
+    {{ form_widget(feedbackForm._token) }}
+
+    <button type="submit" style="padding:14px 22px; background:#28a745; color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">
+        Publish Feedback
+    </button>
+
+{{ form_end(feedbackForm, {'render_rest': false}) }}
             </div>
         {% else %}
             <div style="max-width:800px; margin:0 auto 35px auto; background:#fff; border-radius:20px; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,.08); text-align:center;">
@@ -41,12 +79,20 @@
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px;">
             {% for feedback in feedbacks %}
                 <div style="background:#fff; border-radius:20px; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,.08); border:1px solid #e8f5ed;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:12px;">
                         <div style="font-size:15px; color:#567468; font-weight:700;">
                             {{ feedback.userEmail }}
                         </div>
-                        <div style="background:#edf9f2; color:#16924f; padding:8px 12px; border-radius:999px; font-weight:800;">
-                            {{ feedback.rating }}/5
+
+                        <div style="display:flex; align-items:center; gap:2px;">
+                            {% for i in 1..5 %}
+                                <span style="font-size:20px; color:{% if i <= feedback.rating %}#f5b301{% else %}#d8d8d8{% endif %};">
+                                    ★
+                                </span>
+                            {% endfor %}
+                            <span style="margin-left:6px; font-weight:800; color:#16924f;">
+                                {{ feedback.rating }}/5
+                            </span>
                         </div>
                     </div>
 
@@ -79,6 +125,89 @@
                 </div>
             {% endfor %}
         </div>
+
+        <div style="display:flex; justify-content:center; margin-top:30px;">
+            <div style="
+                background:#fff;
+                border-radius:14px;
+                padding:14px 18px;
+                box-shadow:0 12px 30px rgba(0,0,0,.06);
+            ">
+                {{ knp_pagination_render(feedbacks) }}
+            </div>
+        </div>
     </div>
 </section>
+
+<style>
+    .pagination {
+        display: flex;
+        gap: 8px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .pagination span,
+    .pagination a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        height: 38px;
+        padding: 0 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        border: 1px solid #cdebd7;
+        background: #fff;
+        color: #1f6b3d;
+        font-weight: 800;
+    }
+
+    .pagination .current {
+        background: #28a745;
+        color: #fff;
+        border-color: #28a745;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const stars = document.querySelectorAll('.star-choice');
+    const input = document.getElementById('rating_input');
+
+    if (!stars.length || !input) {
+        return;
+    }
+
+    function paintStars(value) {
+        const selected = parseInt(value || 0, 10);
+
+        stars.forEach((star) => {
+            const starValue = parseInt(star.dataset.value, 10);
+            star.style.color = starValue <= selected ? '#f5b301' : '#d8d8d8';
+        });
+    }
+
+    paintStars(input.value);
+
+    stars.forEach((star) => {
+        star.addEventListener('click', function () {
+            const value = this.dataset.value;
+            input.value = value;
+            paintStars(value);
+        });
+
+        star.addEventListener('mouseenter', function () {
+            paintStars(this.dataset.value);
+        });
+
+        star.addEventListener('mouseleave', function () {
+            paintStars(input.value);
+        });
+    });
+});
+</script>
 {% endblock %}

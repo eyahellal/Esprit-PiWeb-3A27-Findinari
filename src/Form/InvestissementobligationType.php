@@ -29,10 +29,8 @@ class InvestissementobligationType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // Get current user
         $user = $this->security->getUser();
         
-        // Fallback to user ID 1
         if (!$user) {
             $user = $this->walletRepository->getEntityManager()->getRepository(Utilisateur::class)->find(1);
         }
@@ -45,11 +43,19 @@ class InvestissementobligationType extends AbstractType
             $walletChoices[$wallet->getPays() . ' - ' . number_format($wallet->getSolde(), 2) . ' ' . $wallet->getDevise()] = (string) $wallet->getId();
         }
 
-        // Get all obligations
+        // Get all obligations with data attributes
         $obligations = $this->obligationRepository->findAll();
         $obligationChoices = [];
+        $obligationData = [];
+        
         foreach ($obligations as $obligation) {
-            $obligationChoices[$obligation->getNom() . ' - ' . $obligation->getTauxInteret() . '% for ' . $obligation->getDuree() . ' months'] = $obligation->getIdObligation();
+            $label = $obligation->getNom() . ' - ' . $obligation->getTauxInteret() . '% for ' . $obligation->getDuree() . ' months';
+            $obligationChoices[$label] = $obligation->getIdObligation();
+            $obligationData[$obligation->getIdObligation()] = [
+                'rate' => $obligation->getTauxInteret(),
+                'duration' => $obligation->getDuree(),
+                'name' => $obligation->getNom()
+            ];
         }
 
         $builder
@@ -62,19 +68,23 @@ class InvestissementobligationType extends AbstractType
             ->add('obligationId', ChoiceType::class, [
                 'label' => false,
                 'choices' => $obligationChoices,
-                'attr' => ['class' => 'form-control'],
+                'attr' => [
+                    'class' => 'form-control',
+                    'id' => 'obligationSelect',
+                    'data-obligations' => json_encode($obligationData)
+                ],
                 'placeholder' => '-- Choose an obligation --'
             ])
             ->add('montantInvesti', NumberType::class, [
                 'label' => false,
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Enter amount to invest', 'step' => '0.01']
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Enter amount to invest', 'step' => '0.01', 'id' => 'amountInput']
             ])
             ->add('dateAchat', DateType::class, [
                 'label' => false,
                 'widget' => 'single_text',
                 'html5' => false,
                 'format' => 'dd/MM/yyyy',
-                'attr' => ['class' => 'form-control datepicker', 'placeholder' => 'Select date']
+                'attr' => ['class' => 'form-control datepicker', 'placeholder' => 'Select date', 'id' => 'dateInput']
             ]);
     }
 

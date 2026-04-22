@@ -247,7 +247,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                 <div class="infl-error">⚠️ {{ error }}</div>
             {% endif %}
 
-            <form method="POST">
+            <form method="POST" action="{{ path('objectif_inflation') }}" id="inflationForm">
                 <div class="field">
                     <label>Montant actuel</label>
                     <input type="number" name="montant" placeholder="Ex: 10 000"
@@ -274,9 +274,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                     </div>
                 </div>
 
-                <button type="submit" class="btn-simulate">
-                    📊 Calculer l'impact de l'inflation
-                </button>
+               {# Dans inflation.html.twig - remplace le bouton #}
+<button type="button" onclick="document.getElementById('inflationForm').submit()" class="btn-simulate">
+    📊 Calculer l'impact de l'inflation
+</button>
             </form>
         </div>
 

@@ -422,6 +422,8 @@ class ObjectifController extends AbstractController
                 'color'         => '#1a9e6e',
                 'textColor'     => '#fff',
                 'extendedProps' => ['montant' => $contrib->getMontant()],
+                'type'    => 'contribution',
+                'montant' => $contrib->getMontant(),
             ];
         }
 
@@ -433,6 +435,7 @@ class ObjectifController extends AbstractController
                     'start'     => $last->getDate()->format('Y-m-d'),
                     'color'     => '#f39c12',
                     'textColor' => '#fff',
+                    'extendedProps'   => ['type' => 'atteint'],
                 ];
             }
         }

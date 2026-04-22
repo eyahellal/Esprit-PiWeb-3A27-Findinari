@@ -255,7 +255,6 @@
         }
 
         .wt-label svg { width: 15px; height: 15px; color: var(--brand); flex-shrink: 0; }
-
         .wt-select-wrap { position: relative; flex: 1; max-width: 300px; min-width: 190px; }
 
         .wt-select-wrap select {
@@ -457,7 +456,6 @@
            AI ANOMALY DETECTOR STYLES
            ═══════════════════════════════════ */
 
-        /* HERO */
         .hero-card {
             background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #15803d 100%);
             border-radius: var(--radius-lg);
@@ -493,7 +491,6 @@
         .hero-sub { font-size: 14px; opacity: .75; max-width: 500px; line-height: 1.6; }
         .hero-action { position: relative; z-index: 1; }
 
-        /* AI STATS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -529,7 +526,6 @@
         .stat-card.success .stat-value { color: var(--brand-dark); }
         .stat-card.info    .stat-value { color: #0369a1; }
 
-        /* COUNT BADGE */
         .count-badge {
             display: inline-flex; align-items: center; gap: 6px;
             padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 700;
@@ -539,7 +535,6 @@
         .count-danger  { background: var(--danger-light); color: #b91c1c; }
         .count-success { background: var(--brand-light);  color: var(--brand-dark); }
 
-        /* ANOMALY GRID */
         .anomaly-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -606,7 +601,6 @@
         .score-fill.faible { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
         .score-val { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
 
-        /* INITIAL / EMPTY STATES */
         .initial-state { text-align: center; padding: 64px 20px; }
         .initial-icon {
             width: 80px; height: 80px;
@@ -628,7 +622,6 @@
         .empty-ai-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
         .empty-ai-sub { color: var(--text-muted); font-size: 14px; }
 
-        /* LOADING OVERLAY */
         .loading-overlay {
             display: none; position: fixed; inset: 0;
             background: rgba(15,23,42,.6); z-index: 999;
@@ -698,6 +691,14 @@
         <a class="side-link active" href="{{ path('app_admin_objectifs') }}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             Manage Objectifs
+        </a>
+        <a class="side-link" href="{{ path('app_admin_tickets') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Tickets & Messages
+        </a>
+        <a class="side-link" href="{{ path('app_admin_obligations') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+            Manage Obligations
         </a>
 
         <div class="sidebar-footer">
@@ -1166,8 +1167,7 @@
 
                             {% set scoreMax = 15 %}
                             {% set scorePct = ((a.score / scoreMax) * 100)|round %}
-{% if scorePct > 100 %}{% set scorePct = 100 %}{% endif %}
-                            
+                            {% if scorePct > 100 %}{% set scorePct = 100 %}{% endif %}
 
                             <div class="anomaly-card risk-{{ riskClass }}">
                                 <div class="risk-tag {{ riskClass }}">{{ a.niveau_risque }}</div>
@@ -1176,32 +1176,23 @@
                                     <div class="method-tag">{{ a.methode }}</div>
                                 </div>
                                 <div class="anomaly-meta">
-    <span class="meta-pill">Objectif #{{ a.objectif_id }}</span>
-    <span class="meta-pill">{{ a.objectif_titre }}</span>
-    <span class="meta-pill">Wallet #{{ a.wallet_id }}</span>
-    {% if a.user_nom is defined and a.user_nom %}
-        <span class="meta-pill" style="background:#ede9fe;border-color:#c4b5fd;color:#6d28d9;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px;">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-            </svg>
-            {{ a.user_nom }}
-        </span>
-    {% endif %}
-    {% if a.user_pays is defined and a.user_pays %}
-        <span class="meta-pill" style="background:#fef3c7;border-color:#fde68a;color:#92400e;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px;">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="2" y1="12" x2="22" y2="12"/>
-                <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-            </svg>
-            {{ a.user_pays }}
-        </span>
-    {% endif %}
-    {% if a.date %}<span class="meta-pill">{{ a.date }}</span>{% endif %}
-</div>
+                                    <span class="meta-pill">Objectif #{{ a.objectif_id }}</span>
+                                    <span class="meta-pill">{{ a.objectif_titre }}</span>
+                                    <span class="meta-pill">Wallet #{{ a.wallet_id }}</span>
+                                    {% if a.user_nom is defined and a.user_nom %}
+                                        <span class="meta-pill" style="background:#ede9fe;border-color:#c4b5fd;color:#6d28d9;">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px;"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                            {{ a.user_nom }}
+                                        </span>
+                                    {% endif %}
+                                    {% if a.user_pays is defined and a.user_pays %}
+                                        <span class="meta-pill" style="background:#fef3c7;border-color:#fde68a;color:#92400e;">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                                            {{ a.user_pays }}
+                                        </span>
+                                    {% endif %}
+                                    {% if a.date %}<span class="meta-pill">{{ a.date }}</span>{% endif %}
+                                </div>
                                 <div class="anomaly-reason">{{ a.raison }}</div>
                                 <div class="score-bar">
                                     <span class="score-label">Score</span>
@@ -1262,11 +1253,9 @@ function switchTab(tab) {
         document.getElementById('tab-ai').classList.add('active-ai');
     }
 
-    // Save active tab in sessionStorage so it survives form submission
     sessionStorage.setItem('activeTab', tab);
 }
 
-// Restore tab after page reload (e.g. after AI analysis form submit)
 window.addEventListener('DOMContentLoaded', () => {
     const saved = sessionStorage.getItem('activeTab');
     if (saved && saved !== 'objectifs') {
@@ -1323,7 +1312,7 @@ function closeModalOnBg(e) {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-/* ── LOADING OVERLAY (AI Analysis) ── */
+/* ── LOADING OVERLAY ── */
 function showLoading() {
     sessionStorage.setItem('activeTab', 'ai');
     document.getElementById('loadingOverlay').classList.add('show');

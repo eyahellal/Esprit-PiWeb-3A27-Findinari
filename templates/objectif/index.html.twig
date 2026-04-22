@@ -1307,49 +1307,76 @@ document.addEventListener('DOMContentLoaded', function() {
     window.currentCalendar = null;
     window.currentModal = document.getElementById('calendarModal');
 
-    window.openCalendarModal = function(objectifId, titre) {
-        console.log('Ouverture calendrier pour', objectifId, titre);
-        if (!window.currentModal) {
-            console.error('Modal introuvable');
-            return;
-        }
-        if (typeof FullCalendar === 'undefined') {
-            console.error('FullCalendar non chargé');
-            alert('Le calendrier n\'a pas pu être chargé. Vérifiez votre connexion internet.');
-            return;
-        }
-        document.getElementById('calendarModalTitle').innerHTML = '📅 ' + titre + ' — Contributions';
-        window.currentModal.style.display = 'block';
+     window.openCalendarModal = function(objectifId, titre) {
+    if (typeof FullCalendar === 'undefined') {
+        alert('FullCalendar non chargé.');
+        return;
+    }
 
-        if (window.currentCalendar) {
-            window.currentCalendar.destroy();
-        }
+    const modal = document.getElementById('calendarModal');
+    const container = document.getElementById('calendarContainer');
 
-        let container = document.getElementById('calendarContainer');
-        container.innerHTML = '';
-        let div = document.createElement('div');
-        div.id = 'tempCal';
-        container.appendChild(div);
+    document.getElementById('calendarModalTitle').innerHTML = '📅 ' + titre + ' — Contributions';
 
-        window.currentCalendar = new FullCalendar.Calendar(div, {
-            initialView: 'dayGridMonth',
-            locale: 'fr',
-            events: '/objectif/' + objectifId + '/events',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek'
-            },
-            eventClick: function(info) {
-                alert(info.event.title);
-            },
-            eventFailure: function(error) {
-                console.error('Erreur chargement événements', error);
-                alert('Impossible de charger les contributions. Vérifiez la route /objectif/' + objectifId + '/events');
-            }
+    // Détruire l'ancien calendrier
+    if (window.currentCalendar) {
+        window.currentCalendar.destroy();
+        window.currentCalendar = null;
+    }
+
+    // Vider le conteneur
+    container.innerHTML = '';
+    const div = document.createElement('div');
+    div.id = 'tempCal';
+    container.appendChild(div);
+
+    // ✅ Afficher la modal D'ABORD
+    modal.style.display = 'block';
+
+    // ✅ Attendre que le navigateur ait rendu la modal (requestAnimationFrame x2)
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            window.currentCalendar = new FullCalendar.Calendar(div, {
+                initialView:   'dayGridMonth',
+                locale:        'fr',
+                height:        'auto',
+                headerToolbar: {
+                    left:   'prev,next today',
+                    center: 'title',
+                    right:  'dayGridMonth,listMonth'
+                },
+                events: {
+                    url: '/objectif/' + objectifId + '/events',
+                    failure: function() {
+                        container.innerHTML = '<p style="color:#b83030;padding:1rem;text-align:center;">❌ Impossible de charger les contributions.</p>';
+                    }
+                },
+                eventDidMount: function(info) {
+                    const type = info.event.extendedProps.type;
+                    if (type === 'contribution') {
+                        info.el.title = 'Contribution : ' + info.event.extendedProps.montant + ' TND';
+                    } else if (type === 'atteint') {
+                        info.el.title = '🏆 Objectif atteint ce jour !';
+                    } else if (type === 'prediction') {
+                        info.el.title = '🔮 Date estimée d\'atteinte';
+                    }
+                },
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                }
+            });
+
+            window.currentCalendar.render();
+
+            // ✅ Forcer le recalcul de taille après render
+            setTimeout(function() {
+                if (window.currentCalendar) {
+                    window.currentCalendar.updateSize();
+                }
+            }, 150);
         });
-        window.currentCalendar.render();
-    };
+    });
+};
 
     window.closeCalendarModal = function() {
         if (window.currentModal) window.currentModal.style.display = 'none';
