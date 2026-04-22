@@ -387,13 +387,13 @@
 <body>
 <div class="layout">
 
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">
-                <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
-            </div>
-            <span class="brand-name">Fin-Dinari</span>
+   <aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">
+            <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
         </div>
+        <span class="brand-name">Fin-Dinari</span>
+    </div>
 
         <div class="nav-section">Main</div>
         <a class="side-link active" href="{{ path('app_admin_dashboard') }}">Dashboard</a>
@@ -402,6 +402,7 @@
     Overview Dashboard
 </a>
         <a class="side-link" href="{{ path('app_admin_wallets') }}">Manage Wallets</a>
+        <a class="side-link" href="{{  path('app_admin_management')  }}">Manage Transactions</a>
         <a class="side-link" href="{{ path('app_admin_objectifs') }}">Manage Objectifs</a>
         <a class="side-link" href="{{ path('app_admin_tickets') }}">Tickets & Messages</a>
         <a class="side-link" href="{{ path('app_admin_obligations') }}">Manage Obligations</a>

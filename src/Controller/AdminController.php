@@ -1,18 +1,29 @@
 <?php
 
 namespace App\Controller;
+<<<<<<< HEAD
 
 use App\Entity\Loan\Obligation;
+=======
+use App\Entity\Loan\Obligation;
+use App\Repository\ObligationRepository;
+use App\Repository\InvestissementobligationRepository;
+>>>>>>> dev_malek
 use App\Entity\Loan\Wallet;
 use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
 use App\Entity\user\Feedback;
 use App\Entity\user\Utilisateur;
+<<<<<<< HEAD
 use App\Form\MessageType;
 use App\Repository\FeedbackRepository;
 use App\Repository\InvestissementobligationRepository;
 use App\Repository\ObligationRepository;
 use App\Repository\ObjectifRepository;
+=======
+use App\form\MessageType;
+use App\Repository\FeedbackRepository;
+>>>>>>> dev_malek
 use App\Repository\TicketRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\WalletRepository;
@@ -159,7 +170,7 @@ class AdminController extends AbstractController
 
         if ($q !== '') {
             $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
-               ->setParameter('q', '%' . $q . '%');
+               ->setParameter('q', '%'.$q.'%');
         }
 
         switch ($userSort) {
@@ -195,7 +206,50 @@ class AdminController extends AbstractController
                 break;
         }
 
+<<<<<<< HEAD
         return $qb;
+=======
+        $users = $qb->getQuery()->getResult();
+        $allUsers = $utilisateurRepository->findAll();
+        $feedbacks = $feedbackRepository->findAll();
+
+        $adminCount = 0;
+        $userCount = 0;
+        $influencerCount = 0;
+        $activeUsersCount = 0;
+        $inactiveUsersCount = 0;
+
+        foreach ($allUsers as $u) {
+            if ($u->getRole() === 'ADMIN') {
+                ++$adminCount;
+            } elseif ($u->getRole() === 'INFLUENCER') {
+                ++$influencerCount;
+            } else {
+                ++$userCount;
+            }
+
+            if (in_array($u->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
+                ++$activeUsersCount;
+            } else {
+                ++$inactiveUsersCount;
+            }
+        }
+
+        return $this->render('admin/dashboard.html.twig', [
+            'users' => $users,
+            'feedbacks' => $feedbacks,
+            'totalUsers' => count($allUsers),
+            'filteredUsersCount' => count($users),
+            'totalFeedbacks' => count($feedbacks),
+            'adminCount' => $adminCount,
+            'userCount' => $userCount,
+            'influencerCount' => $influencerCount,
+            'activeUsersCount' => $activeUsersCount,
+            'inactiveUsersCount' => $inactiveUsersCount,
+            'search' => $q,
+            'sort' => $sort,
+        ]);
+>>>>>>> dev_malek
     }
 
     #[Route('/admin/user/{id}/delete', name: 'app_admin_user_delete', methods: ['POST'])]
@@ -204,9 +258,13 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+<<<<<<< HEAD
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if ($this->isCsrfTokenValid('delete_user_' . $utilisateur->getId(), (string) $request->request->get('_token'))) {
+=======
+        if ($this->isCsrfTokenValid('delete_user_'.$utilisateur->getId(), (string) $request->request->get('_token'))) {
+>>>>>>> dev_malek
             $entityManager->remove($utilisateur);
             $entityManager->flush();
             $this->addFlash('success', 'User deleted successfully.');
@@ -245,14 +303,21 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+<<<<<<< HEAD
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+=======
+>>>>>>> dev_malek
         $newStatus = strtoupper(trim((string) $request->request->get('statut')));
 
         if (in_array($newStatus, ['ACTIF', 'ACTIVE', 'INACTIF', 'INACTIVE', 'BANNED'], true)) {
             $utilisateur->setStatut($newStatus);
             $utilisateur->setDateModification(new \DateTime());
             $entityManager->flush();
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev_malek
             $this->addFlash('success', 'User status updated successfully.');
         } else {
             $this->addFlash('danger', 'Invalid status selected.');
@@ -279,7 +344,13 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
+<<<<<<< HEAD
         $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy(['gmail' => $gmail]);
+=======
+        $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy([
+            'gmail' => $gmail,
+        ]);
+>>>>>>> dev_malek
 
         if ($existing) {
             $this->addFlash('danger', 'Email already exists.');
@@ -309,9 +380,13 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+<<<<<<< HEAD
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         if ($this->isCsrfTokenValid('delete_feedback_admin_' . $feedback->getId(), (string) $request->request->get('_token'))) {
+=======
+        if ($this->isCsrfTokenValid('delete_feedback_admin_'.$feedback->getId(), (string) $request->request->get('_token'))) {
+>>>>>>> dev_malek
             $entityManager->remove($feedback);
             $entityManager->flush();
             $this->addFlash('success', 'Feedback deleted successfully.');
@@ -361,7 +436,11 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+<<<<<<< HEAD
         if ($this->isCsrfTokenValid('delete_wallet_admin_' . $wallet->getId(), (string) $request->request->get('_token'))) {
+=======
+        if ($this->isCsrfTokenValid('delete_wallet_admin_'.$wallet->getId(), (string) $request->request->get('_token'))) {
+>>>>>>> dev_malek
             $entityManager->remove($wallet);
             $entityManager->flush();
             $this->addFlash('success', 'Wallet deleted successfully.');
@@ -375,8 +454,12 @@ class AdminController extends AbstractController
     #[Route('/admin/ticket', name: 'app_admin_tickets')]
     public function tickets(
         Request $request,
+<<<<<<< HEAD
         TicketRepository $ticketRepository,
         \Knp\Component\Pager\PaginatorInterface $paginator
+=======
+        TicketRepository $ticketRepository
+>>>>>>> dev_malek
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -400,6 +483,7 @@ class AdminController extends AbstractController
                 break;
         }
 
+<<<<<<< HEAD
         $pagination = $paginator->paginate(
             $qb->getQuery(),
             $request->query->getInt('page', 1),
@@ -408,10 +492,15 @@ class AdminController extends AbstractController
 
         return $this->render('admin/tickets.html.twig', [
             'tickets'     => $pagination,
+=======
+        return $this->render('admin/tickets.html.twig', [
+            'tickets' => $qb->getQuery()->getResult(),
+>>>>>>> dev_malek
             'currentSort' => $sort,
         ]);
     }
 
+<<<<<<< HEAD
     #[Route('/admin/ticket-calendar', name: 'app_admin_ticket_calendar')]
     public function ticketCalendar(TicketRepository $ticketRepository): Response
     {
@@ -555,6 +644,8 @@ class AdminController extends AbstractController
         ]);
     }
 
+=======
+>>>>>>> dev_malek
     #[Route('/admin/ticket/{id}/delete', name: 'app_admin_ticket_delete', methods: ['POST'])]
     public function deleteTicketAdmin(
         Ticket $ticket,
@@ -563,9 +654,16 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+<<<<<<< HEAD
         if ($this->isCsrfTokenValid('delete_ticket_admin_' . $ticket->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($ticket);
             $entityManager->flush();
+=======
+        if ($this->isCsrfTokenValid('delete_ticket_admin_'.$ticket->getId(), (string) $request->request->get('_token'))) {
+            $entityManager->remove($ticket);
+            $entityManager->flush();
+
+>>>>>>> dev_malek
             $this->addFlash('success', 'Ticket deleted successfully.');
         } else {
             $this->addFlash('danger', 'Invalid CSRF token.');
@@ -573,11 +671,16 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_tickets');
     }
+<<<<<<< HEAD
 //mailer envoie un protocle stmp avec brevo 
+=======
+
+>>>>>>> dev_malek
     #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
         Ticket $ticket,
         Request $request,
+<<<<<<< HEAD
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
         TicketSlaCalculator $ticketSlaCalculator
@@ -663,6 +766,103 @@ class AdminController extends AbstractController
         'ticket' => $ticket,
         'messages' => $ticket->getMessages(),
         'form' => $form->createView(),
+=======
+        EntityManagerInterface $entityManager
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
+            $newStatut = $request->request->get('statut');
+            $newPriorite = $request->request->get('priorite');
+
+            if ($newStatut) {
+                $ticket->setStatut($newStatut);
+            }
+
+            if ($newPriorite) {
+                $ticket->setPriorite($newPriorite);
+            }
+
+            if (in_array($newStatut, ['Fermé', 'CLOSED', 'Closed'], true)) {
+                $ticket->setDateFermeture(new \DateTime());
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Ticket updated successfully.');
+
+            return $this->redirectToRoute('app_admin_ticket_details', [
+                'id' => $ticket->getId(),
+            ]);
+        }
+
+        $message = new Message();
+        $form = $this->createForm(MessageType::class, $message);
+
+        return $this->render('admin/ticket_details.html.twig', [
+            'ticket' => $ticket,
+            'messages' => $ticket->getMessages(),
+            'form' => $form->createView(),
+        ]);
+    }
+    #[Route('/admin/obligations', name: 'app_admin_obligations')]
+public function obligations(
+    ObligationRepository $obligationRepository,
+    InvestissementobligationRepository $investmentRepository
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    $obligations = $obligationRepository->findAll();
+
+    $avgRate = 0;
+    if (count($obligations) > 0) {
+        $totalRate = 0;
+        foreach ($obligations as $obligation) {
+            $totalRate += $obligation->getTauxInteret();
+        }
+        $avgRate = round($totalRate / count($obligations), 2);
+    }
+
+    $totalInvestments = count($investmentRepository->findAll());
+
+    return $this->render('admin/obligations.html.twig', [
+        'obligations' => $obligations,
+        'avgInterestRate' => $avgRate,
+        'totalInvestments' => $totalInvestments,
+    ]);
+}
+
+#[Route('/admin/obligation/{id}/delete', name: 'app_admin_obligation_delete', methods: ['POST'])]
+public function deleteObligationAdmin(
+    Obligation $obligation,
+    Request $request,
+    EntityManagerInterface $entityManager,
+    InvestissementobligationRepository $investmentRepository
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    if ($this->isCsrfTokenValid('delete_obligation_admin_'.$obligation->getIdObligation(), (string) $request->request->get('_token'))) {
+        $investments = $investmentRepository->findBy(['obligationId' => $obligation->getIdObligation()]);
+        foreach ($investments as $investment) {
+            $entityManager->remove($investment);
+        }
+
+        $entityManager->remove($obligation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Obligation and all related investments deleted successfully.');
+    } else {
+        $this->addFlash('danger', 'Invalid CSRF token.');
+    }
+
+    return $this->redirectToRoute('app_admin_obligations');
+}
+  #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
+public function showUser(
+    Utilisateur $utilisateur
+): Response {
+    return $this->render('admin/user_show.html.twig', [
+        'selectedUser' => $utilisateur,
+>>>>>>> dev_malek
     ]);
 }
     #[Route('/admin/obligations', name: 'app_admin_obligations')]

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Form;
+namespace App\form;
 
-use App\Entity\management\Wallet;
+use App\Entity\Loan\Wallet;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
