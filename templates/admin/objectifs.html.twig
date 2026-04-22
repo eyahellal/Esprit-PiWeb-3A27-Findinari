@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Objectifs — Fin-Dinari</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand: #16a34a;
+            --brand-light: #dcfce7;
+            --brand-dark: #15803d;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --success: #22c55e;
+            --success-light: #dcfce7;
+            --warning: #f59e0b;
+            --warning-light: #fff8e6;
+            --info: #0ea5e9;
+            --info-light: #e6f6ff;
+            --bg: #f4f7f4;
+            --surface: #ffffff;
+            --border: #e4ebe4;
+            --text-primary: #1a2e1a;
+            --text-secondary: #4b6b4b;
+            --text-muted: #8faa8f;
+            --sidebar-width: 270px;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-card: 0 2px 16px rgba(22,163,74,.07);
+            --shadow-hover: 0 8px 28px rgba(22,163,74,.20);
+            --transition: .22s cubic-bezier(.4,0,.2,1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-size: 14.5px;
+            line-height: 1.6;
+        }
+
+        .layout { display: flex; min-height: 100vh; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+            padding: 28px 18px 24px;
+            overflow-y: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 10px 28px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        .brand-icon { width: 40px; height: 40px; }
+        .brand-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .brand-name { font-size: 22px; font-weight: 800; color: var(--brand); letter-spacing: -0.5px; }
+
+        .nav-section {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.9px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 8px 12px 6px;
+            margin-top: 4px;
+        }
+
+        .side-link {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            padding: 11px 14px;
+            border-radius: var(--radius-md);
+            margin-bottom: 4px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background var(--transition), color var(--transition), transform var(--transition);
+        }
+
+        .side-link:hover { background: var(--brand-light); color: var(--brand); transform: translateX(2px); }
+        .side-link.active { background: var(--brand-light); color: var(--brand-dark); box-shadow: inset 3px 0 0 var(--brand); }
+        .side-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+        .sidebar-footer { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--border); }
+
+        /* ── CONTENT ── */
+        .content { margin-left: var(--sidebar-width); flex: 1; padding: 28px; min-width: 0; }
+
+        .topbar {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 26px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
+        }
+
+        .topbar-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+        .topbar-title span { color: var(--brand); }
+        .topbar-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+        .avatar {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: var(--brand-light);
+            color: var(--brand-dark);
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+            border: 2px solid var(--brand);
+        }
+
+        .welcome-text { font-size: 13.5px; color: var(--text-secondary); font-weight: 600; }
+        .welcome-text strong { color: var(--text-primary); }
+
+        /* ── FLASH ── */
+        .flash {
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            border: 1px solid transparent;
+            animation: fadeSlideDown .3s ease;
+        }
+
+        @keyframes fadeSlideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .flash.success { background: var(--success-light); color: #166534; border-color: #b2f5d1; }
+        .flash.danger  { background: var(--danger-light);  color: #9b1c1c; border-color: #fdb9b9; }
+        .flash svg { flex-shrink: 0; width: 18px; height: 18px; }
+
+        /* ── STAT CARDS ── */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 26px;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: transform var(--transition), box-shadow var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: var(--card-accent, var(--brand-light));
+            transform: translate(25px, -25px);
+            opacity: .5;
+        }
+
+        .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+        .card-icon {
+            width: 46px; height: 46px;
+            border-radius: 14px;
+            background: var(--card-accent, var(--brand-light));
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .card-icon svg { width: 22px; height: 22px; }
+        .card-body { flex: 1; }
+        .card-label { font-size: 12.5px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+        .card-value { font-size: 32px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1; }
+
+        .card.c-green  { --card-accent: #dcfce7; } .card.c-green  .card-icon svg { color: var(--brand); }
+        .card.c-blue   { --card-accent: #e6f6ff; } .card.c-blue   .card-icon svg { color: var(--info); }
+        .card.c-amber  { --card-accent: #fff8e6; } .card.c-amber  .card-icon svg { color: var(--warning); }
+
+        /* ── SECTION ── */
+        .section {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-card);
+            margin-bottom: 26px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 22px 26px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .section-title svg { width: 18px; height: 18px; color: var(--brand); }
+
+        /* ── WALLET TOOLBAR ── */
+        .wallet-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            padding: 14px 18px;
+            background: #f4faf6;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border);
+            margin-bottom: 18px;
+        }
+
+        .wt-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .wt-label svg { width: 15px; height: 15px; color: var(--brand); flex-shrink: 0; }
+
+        .wt-select-wrap {
+            position: relative;
+            flex: 1;
+            max-width: 300px;
+            min-width: 190px;
+        }
+
+        .wt-select-wrap select {
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            padding: 9px 34px 9px 14px;
+            font-size: 13.5px;
+            font-family: inherit;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-primary);
+            cursor: pointer;
+            outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .wt-select-wrap select:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(22,163,74,.13);
+        }
+
+        .wt-chevron {
+            position: absolute;
+            right: 10px; top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-muted);
+        }
+
+        .wt-chevron svg { width: 14px; height: 14px; display: block; }
+
+        .wt-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .wt-divider { width: 1px; height: 26px; background: var(--border); flex-shrink: 0; }
+
+        .wpill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 13px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            white-space: nowrap;
+        }
+
+        .wpill .pl { color: var(--text-muted); font-weight: 600; margin-right: 1px; }
+        .wpill .pv { color: var(--text-primary); }
+        .wpill.solde .pv { color: var(--brand-dark); }
+
+        /* ── FILTERS BAR ── */
+        .filters-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+
+        .fg { display: flex; flex-direction: column; gap: 6px; }
+        .fg label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
+        .fg.grow { flex: 1; min-width: 200px; }
+        .fg.fixed { min-width: 170px; }
+
+        input[type="text"], select {
+            padding: 9px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(22,163,74,.13);
+        }
+
+        input::placeholder { color: var(--text-muted); font-weight: 400; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 9px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: filter var(--transition), transform var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); filter: brightness(.97); }
+        .btn-primary   { background: var(--brand);   color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,.28); }
+        .btn-danger    { background: var(--danger);   color: #fff; box-shadow: 0 4px 12px rgba(239,68,68,.25); }
+        .btn-secondary { background: #f0f2f7;         color: var(--text-secondary); }
+        .btn svg { width: 14px; height: 14px; }
+
+        /* ── SEARCH INLINE ── */
+        .search-wrap { position: relative; min-width: 210px; }
+        .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted); pointer-events: none; }
+        .search-wrap input { padding-left: 34px; width: 100%; }
+
+        /* ── ACTIVE FILTER BANNER ── */
+        .filter-banner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 10px 16px;
+            background: var(--brand-light);
+            border-radius: var(--radius-sm);
+            margin: 16px 0 4px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--brand-dark);
+            border: 1px solid #bbf7d0;
+        }
+
+        .filter-banner svg { width: 14px; height: 14px; flex-shrink: 0; }
+        .filter-banner strong { background: #bbf7d0; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+
+        /* ── TABLE ── */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { background: #f4faf6; border-bottom: 2px solid var(--border); }
+
+        th {
+            text-align: left;
+            padding: 13px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            color: var(--text-primary);
+        }
+
+        tbody tr { transition: background var(--transition); }
+        tbody tr:hover { background: #f9fdf9; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* ── BADGES ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+        .badge-termine  { background: var(--success-light); color: #166534; }
+        .badge-en-cours { background: var(--warning-light); color: #92400e; }
+        .badge-pause    { background: var(--info-light);    color: #0369a1; }
+
+        /* ── WALLET CHIP ── */
+        .wallet-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--info-light);
+            color: #0369a1;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* ── PROGRESS ── */
+        .progress-wrap { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+        .progress-bar { flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--brand), #4ade80); transition: width .4s ease; }
+        .progress-fill.full { background: linear-gradient(90deg, #15803d, #22c55e); }
+        .progress-pct { font-size: 12px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; min-width: 34px; text-align: right; }
+
+        /* ── CONTRIB PILL ── */
+        .contrib-count {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--brand-light);
+            color: var(--brand-dark);
+            border: none;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+
+        .contrib-count:hover { background: #bbf7d0; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+        .empty-state svg { width: 48px; height: 48px; margin: 0 auto 14px; display: block; opacity: .4; }
+        .empty-state p { font-size: 14.5px; font-weight: 600; }
+        .empty-state span { font-size: 13px; }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.35);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-overlay.open { display: flex; animation: fadeIn .18s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,.18);
+            width: 100%;
+            max-width: 540px;
+            margin: 20px;
+            overflow: hidden;
+            animation: slideUp .22s cubic-bezier(.4,0,.2,1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 22px 26px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title { font-size: 17px; font-weight: 800; }
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            transition: background var(--transition), color var(--transition);
+        }
+        .modal-close:hover { background: var(--danger-light); color: var(--danger); }
+
+        .modal-body { padding: 24px 26px; }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-key { font-size: 12.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+        .detail-val { font-weight: 600; color: var(--text-primary); text-align: right; }
+
+        .contribs-list { margin-top: 18px; }
+        .contribs-list-title { font-size: 13px; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+
+        .contrib-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 14px;
+            background: #f9fdf9;
+            border-radius: var(--radius-sm);
+            margin-bottom: 7px;
+            border: 1px solid var(--border);
+            font-size: 13.5px;
+        }
+
+        .contrib-amount { font-weight: 800; color: var(--brand-dark); }
+        .contrib-date   { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
+            </div>
+            <span class="brand-name">Fin-Dinari</span>
+        </div>
+
+        <div class="nav-section">Main</div>
+        <a class="side-link" href="{{ path('app_admin_dashboard') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Dashboard
+        </a>
+        <a class="side-link" href="{{ path('app_admin_wallets') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            Manage Wallets
+        </a>
+        <a class="side-link active" href="{{ path('app_admin_objectifs') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Manage Objectifs
+        </a>
+        <a class="side-link" href="{{ path('app_admin_tickets') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Tickets & Messages
+        </a>
+        <a class="side-link" href="{{ path('app_admin_obligations') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+            Manage Obligations
+        </a>
+
+        <div class="sidebar-footer">
+            <a class="side-link" href="{{ path('app_home') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Back to site
+            </a>
+            <a class="side-link" href="{{ path('app_logout') }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="content">
+
+        <!-- TOPBAR -->
+        <div class="topbar">
+            <div class="topbar-title">Objectif <span>Management</span></div>
+            <div class="topbar-right">
+                <a href="{{ path('app_admin_dashboard') }}" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Dashboard
+                </a>
+                <div class="welcome-text">Welcome back, <strong>{{ app.user.prenom }} {{ app.user.nom }}</strong></div>
+                <div class="avatar">{{ app.user.prenom|first|upper }}</div>
+            </div>
+        </div>
+
+        <!-- FLASH -->
+        {% for message in app.flashes('success') %}
+            <div class="flash success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="flash danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <!-- STAT CARDS -->
+        {% set totalObjectifs = objectifs|length %}
+        {% set termines       = objectifs|filter(o => o.statut == 'TERMINE')|length %}
+        {% set enCours        = objectifs|filter(o => o.statut == 'EN_COURS')|length %}
+        {% set totalContribs  = 0 %}
+        {% for o in objectifs %}
+            {% set totalContribs = totalContribs + o.contributiongoals|length %}
+        {% endfor %}
+
+        <div class="cards">
+            <div class="card c-green">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-label">Total Objectifs</div>
+                    <div class="card-value">{{ totalObjectifs }}</div>
+                </div>
+            </div>
+            <div class="card c-blue">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-label">En Cours</div>
+                    <div class="card-value">{{ enCours }}</div>
+                </div>
+            </div>
+            <div class="card c-green">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-label">Terminés</div>
+                    <div class="card-value">{{ termines }}</div>
+                </div>
+            </div>
+            <div class="card c-amber">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <div class="card-body">
+                    <div class="card-label">Contributions</div>
+                    <div class="card-value">{{ totalContribs }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ TABLE SECTION ═══ -->
+        <div class="section">
+
+            <!-- Section header -->
+            <div class="section-header">
+                <div class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    All Objectifs
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span style="font-size:13px;color:var(--text-muted);font-weight:600;">
+                        {{ totalObjectifs }} result{{ totalObjectifs != 1 ? 's' : '' }}
+                    </span>
+                    <!-- Live client-side search (does not reset server filters) -->
+                    <div class="search-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="searchInput" placeholder="Search in results…" oninput="filterTable(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters body -->
+            <div style="padding: 22px 26px; border-bottom: 1px solid var(--border);">
+                <form method="get" action="{{ path('app_admin_objectifs') }}">
+
+                    <!-- ── WALLET TOOLBAR ── -->
+                    <div class="wallet-toolbar">
+                        <div class="wt-label">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="14" r="1" fill="currentColor"/></svg>
+                            Wallet
+                        </div>
+
+                        <div class="wt-select-wrap">
+                            <select name="wallet_id" id="walletSelect" onchange="onWalletChange(this)">
+                                <option value="">— All wallets —</option>
+                                {% for id, w in wallets %}
+                                    <option
+                                        value="{{ id }}"
+                                        data-pays="{{ w.pays }}"
+                                        data-devise="{{ w.devise }}"
+                                        data-solde="{{ w.solde }}"
+                                        {{ filterWalletId == id ? 'selected' : '' }}
+                                    >
+                                        Wallet #{{ id }} — {{ w.pays }} / {{ w.devise }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="wt-chevron">
+                                <svg viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                        </div>
+
+                        <!-- Info pills — populated by JS on change, pre-filled by Twig on reload -->
+                        <div class="wt-pills" id="walletPills" style="{{ filterWalletId ? '' : 'display:none;' }}">
+                            <div class="wt-divider"></div>
+                            <div class="wpill">
+                                <span class="pl">Pays</span>
+                                <span class="pv" id="pillPays">{% if filterWalletId and wallets[filterWalletId] is defined %}{{ wallets[filterWalletId].pays }}{% endif %}</span>
+                            </div>
+                            <div class="wpill">
+                                <span class="pl">Devise</span>
+                                <span class="pv" id="pillDevise">{% if filterWalletId and wallets[filterWalletId] is defined %}{{ wallets[filterWalletId].devise }}{% endif %}</span>
+                            </div>
+                            <div class="wpill solde">
+                                <span class="pl">Solde</span>
+                                <span class="pv" id="pillSolde">
+                                    {% if filterWalletId and wallets[filterWalletId] is defined %}
+                                        {{ wallets[filterWalletId].solde|number_format(2, ',', ' ') }} {{ wallets[filterWalletId].devise }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── OTHER FILTERS ── -->
+                    <div class="filters-bar">
+                        <div class="fg grow">
+                            <label>Search by title</label>
+                            <input type="text" name="q" value="{{ searchObjectif|default('') }}" placeholder="Objectif title…">
+                        </div>
+                        <div class="fg fixed">
+                            <label>Statut</label>
+                            <select name="status">
+                                <option value="">All status</option>
+                                <option value="EN_COURS" {{ filterStatut == 'EN_COURS' ? 'selected' : '' }}>En cours</option>
+                                <option value="TERMINE"  {{ filterStatut == 'TERMINE'  ? 'selected' : '' }}>Terminé</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:flex-end;">
+                            <button class="btn btn-primary" type="submit">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                Apply
+                            </button>
+                            <a href="{{ path('app_admin_objectifs') }}" class="btn btn-secondary">Reset</a>
+                        </div>
+                    </div>
+
+                    <!-- Active filter banner -->
+                    {% if filterWalletId or filterStatut or searchObjectif %}
+                    <div class="filter-banner">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        Filtered by:
+                        {% if filterWalletId %}
+                            <strong>
+                                Wallet #{{ filterWalletId }}{% if wallets[filterWalletId] is defined %} · {{ wallets[filterWalletId].pays }} / {{ wallets[filterWalletId].devise }}{% endif %}
+                            </strong>
+                        {% endif %}
+                        {% if filterStatut %}
+                            <strong>{{ filterStatut == 'TERMINE' ? 'Terminés' : 'En cours' }}</strong>
+                        {% endif %}
+                        {% if searchObjectif %}
+                            <strong>"{{ searchObjectif }}"</strong>
+                        {% endif %}
+                        — {{ totalObjectifs }} result{{ totalObjectifs != 1 ? 's' : '' }}
+                    </div>
+                    {% endif %}
+
+                </form>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-wrapper">
+                <table id="objectifsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Wallet</th>
+                            <th>Target</th>
+                            <th>Progress</th>
+                            <th>Date début</th>
+                            <th>Durée</th>
+                            <th>Statut</th>
+                            
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for objectif in objectifs %}
+                        {% set totalContrib = 0 %}
+                        {% for c in objectif.contributiongoals %}
+                            {% set totalContrib = totalContrib + c.montant %}
+                        {% endfor %}
+                        {% set pct = objectif.montant > 0 ? ((totalContrib / objectif.montant) * 100)|round(0) : 0 %}
+                        {% set pct = pct > 100 ? 100 : pct %}
+                        {% set wi  = wallets[objectif.walletId] is defined ? wallets[objectif.walletId] : null %}
+
+                        <tr>
+                            <td style="color:var(--text-muted);font-weight:700;">{{ objectif.id }}</td>
+
+                            <td style="font-weight:700;">{{ objectif.titre }}</td>
+
+                            <td>
+                                {% if wi %}
+                                    <div style="display:flex;flex-direction:column;gap:3px;">
+                                        <span class="wallet-chip">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;flex-shrink:0;"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                                            #{{ objectif.walletId }}
+                                        </span>
+                                        <span style="font-size:11.5px;color:var(--text-muted);font-weight:600;">{{ wi.pays }} · {{ wi.devise }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="wallet-chip">#{{ objectif.walletId }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td style="font-weight:700;">
+                                {{ objectif.montant|number_format(2, '.', ',') }}
+                                {% if wi %}<span style="font-size:11.5px;color:var(--text-muted);font-weight:600;margin-left:3px;">{{ wi.devise }}</span>{% endif %}
+                            </td>
+
+                            <td>
+                                <div class="progress-wrap">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill {{ pct >= 100 ? 'full' : '' }}" style="width:{{ pct }}%;"></div>
+                                    </div>
+                                    <span class="progress-pct">{{ pct }}%</span>
+                                </div>
+                                <div style="font-size:11.5px;color:var(--text-muted);font-weight:600;margin-top:3px;">
+                                    {{ totalContrib|number_format(2, '.', ',') }} / {{ objectif.montant|number_format(2, '.', ',') }}
+                                </div>
+                            </td>
+
+                            <td style="color:var(--text-secondary);font-weight:600;white-space:nowrap;">
+                                {{ objectif.dateDebut ? objectif.dateDebut|date('d M Y') : '—' }}
+                            </td>
+
+                            <td style="font-weight:600;color:var(--text-secondary);">
+                                {{ objectif.duree }} day{{ objectif.duree > 1 ? 's' : '' }}
+                            </td>
+
+                            <td>
+                                {% if objectif.statut == 'TERMINE' %}
+                                    <span class="badge badge-termine">TERMINÉ</span>
+                                {% elseif objectif.statut == 'EN_COURS' %}
+                                    <span class="badge badge-en-cours">EN COURS</span>
+                                {% else %}
+                                    <span class="badge badge-pause">{{ objectif.statut }}</span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <button class="contrib-count" onclick="openModal({{ objectif.id }})" title="View contributions">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;flex-shrink:0;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                                    {{ objectif.contributiongoals|length }}
+                                </button>
+                            </td>
+
+                            <td>
+                                <form method="post" action="{{ path('objectif_delete', {id: objectif.id}) }}" onsubmit="return confirm('Delete this objectif and refund all contributions?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ objectif.id) }}">
+                                    <button class="btn btn-danger" type="submit">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <!-- Modal data template for this objectif -->
+                        <template id="modal-data-{{ objectif.id }}">
+                            <div class="modal-body">
+                                <div class="detail-row">
+                                    <span class="detail-key">ID</span>
+                                    <span class="detail-val">#{{ objectif.id }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-key">Title</span>
+                                    <span class="detail-val">{{ objectif.titre }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-key">Wallet</span>
+                                    <span class="detail-val">#{{ objectif.walletId }}{% if wi %} — {{ wi.pays }} / {{ wi.devise }}{% endif %}</span>
+                                </div>
+                                {% if wi %}
+                                <div class="detail-row">
+                                    <span class="detail-key">Solde wallet</span>
+                                    <span class="detail-val" style="color:var(--brand-dark);">{{ wi.solde|number_format(2, '.', ',') }} {{ wi.devise }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="detail-row">
+                                    <span class="detail-key">Target</span>
+                                    <span class="detail-val">{{ objectif.montant|number_format(2, '.', ',') }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-key">Collected</span>
+                                    <span class="detail-val">{{ totalContrib|number_format(2, '.', ',') }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-key">Progress</span>
+                                    <span class="detail-val" style="color:{{ pct >= 100 ? 'var(--brand)' : 'var(--text-primary)' }};">{{ pct }}%</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-key">Start Date</span>
+                                    <span class="detail-val">{{ objectif.dateDebut ? objectif.dateDebut|date('d M Y') : '—' }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-key">Duration</span>
+                                    <span class="detail-val">{{ objectif.duree }} day{{ objectif.duree > 1 ? 's' : '' }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-key">Status</span>
+                                    <span class="detail-val">{{ objectif.statut }}</span>
+                                </div>
+
+                                {% if objectif.contributiongoals|length > 0 %}
+                                <div class="contribs-list">
+                                    <div class="contribs-list-title">Contributions ({{ objectif.contributiongoals|length }})</div>
+                                    {% for contrib in objectif.contributiongoals %}
+                                        <div class="contrib-item">
+                                            <span class="contrib-amount">+{{ contrib.montant|number_format(2, '.', ',') }}</span>
+                                            <span class="contrib-date">{{ contrib.date ? contrib.date|date('d M Y') : '—' }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div style="margin-top:16px;text-align:center;color:var(--text-muted);font-size:13px;font-weight:600;">
+                                    No contributions yet.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </template>
+
+                    {% else %}
+                        <tr>
+                            <td colspan="10">
+                                <div class="empty-state">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                    <p>No objectifs found.</p>
+                                    <span>Try adjusting your filters or reset them.</span>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- ═══ CONTRIBUTIONS MODAL ═══ -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnBg(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">Objectif Details</div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div id="modalContent" style="max-height:70vh;overflow-y:auto;"></div>
+    </div>
+</div>
+
+<script>
+/* ── Wallet toolbar: update pills on dropdown change ── */
+function onWalletChange(sel) {
+    const opt   = sel.options[sel.selectedIndex];
+    const pills = document.getElementById('walletPills');
+
+    if (!opt.value) {
+        pills.style.display = 'none';
+        return;
+    }
+
+    document.getElementById('pillPays').textContent   = opt.dataset.pays   || '—';
+    document.getElementById('pillDevise').textContent = opt.dataset.devise || '—';
+    document.getElementById('pillSolde').textContent  =
+        parseFloat(opt.dataset.solde || 0)
+            .toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        + ' ' + (opt.dataset.devise || '');
+
+    pills.style.display = 'flex';
+}
+
+/* ── Client-side live search within already-filtered rows ── */
+function filterTable(query) {
+    const rows = document.querySelectorAll('#objectifsTable tbody tr');
+    const q = query.toLowerCase().trim();
+    rows.forEach(row => {
+        if (row.querySelector('td')) {
+            row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+        }
+    });
+}
+
+/* ── Contributions Modal ── */
+function openModal(id) {
+    const tpl = document.getElementById('modal-data-' + id);
+    if (!tpl) return;
+    document.getElementById('modalTitle').textContent = 'Objectif #' + id + ' — Details';
+    document.getElementById('modalContent').innerHTML = tpl.innerHTML;
+    document.getElementById('modalOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function closeModalOnBg(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

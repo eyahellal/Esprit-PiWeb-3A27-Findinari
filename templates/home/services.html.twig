@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+ {% extends 'base.html.twig' %}
 
 {% block title %}Our Services - Fin-Dinari Complete Financial Ecosystem{% endblock %}
 
@@ -50,7 +50,7 @@
         </div>
         <h3 class="mb-3">Budget Management</h3>
         <p class="mb-4">Track your income and expenses with AI-powered categorization. Real-time balance updates across all accounts.</p>
-        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_wallet_index') }}">View Details <i class="las la-arrow-right ms-1"></i></a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_dashboard') }}">View Details <i class="las la-arrow-right ms-1"></i></a>
     </div>
 </div>
 
@@ -65,14 +65,19 @@
     		</div>
 			</div>
 			
-			<!-- Service 3: Objective Management -->
+			<!-- ============================================================ -->
+			<!-- Service 3: Objective Management — LIEN MODIFIÉ → objectif_index -->
+			<!-- ============================================================ -->
 			<div class="icon-box-item text-center col-lg-4 col-md-6 mb-4">
 				<div class="rounded shadow py-5 px-4">
 					<div class="icon"> <i class="fas fa-bullseye"></i>
 					</div>
 					<h3 class="mb-3">Objective Management</h3>
 					<p class="mb-4">Set financial goals - short, medium, or long term. Track progress with visual analytics, get AI-powered savings suggestions, and celebrate milestones.</p>
-					<a class="btn btn-sm btn-outline-primary" href="{{ path('app_service_details', {id: 3}) }}">View Details <i class="las la-arrow-right ms-1"></i></a>
+					{# ← MODIFIÉ : pointe vers le CRUD Objectif au lieu de app_service_details #}
+					<a class="btn btn-sm btn-outline-primary" href="{{ path('objectif_index') }}">
+						Gérer mes objectifs <i class="las la-arrow-right ms-1"></i>
+					</a>
 				</div>
 			</div>
 			

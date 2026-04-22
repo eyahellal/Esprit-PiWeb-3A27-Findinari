@@ -1,0 +1,304 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Tickets - FinDinari{% endblock %}
+
+{% block body %}
+<style>
+    .tickets-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+        padding-top: 120px;
+    }
+
+    .breadcrumb {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        margin-bottom: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .breadcrumb a { color: #94a3b8; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb a:hover { color: #22c55e; }
+    
+    .page-header {
+        margin-bottom: 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    
+    .header-left h1 {
+        font-size: 2.75rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0 0 8px;
+        letter-spacing: -0.04em;
+    }
+    
+    .header-left p { color: #64748b; font-size: 1.1rem; }
+
+    .tickets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 32px;
+    }
+    
+    .ticket-card {
+        background: #ffffff;
+        border-radius: 32px;
+        padding: 0;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .ticket-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 6px;
+        z-index: 10;
+    }
+    .priority-high-bar::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .priority-medium-bar::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .priority-low-bar::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    
+    .ticket-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12);
+        border-color: #22c55e;
+    }
+    
+    .ticket-image-wrapper {
+        width: 100%;
+        height: 200px;
+        position: relative;
+        overflow: hidden;
+        background: #f8fafc;
+    }
+    
+    .ticket-thumbnail {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+    .ticket-card:hover .ticket-thumbnail { transform: scale(1.1); }
+
+    .badge-overlay {
+        position: absolute;
+        top: 20px; right: 20px;
+        z-index: 20;
+        backdrop-filter: blur(8px);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .ticket-body {
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .ticket-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 12px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .ticket-description {
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 24px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .ticket-footer {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .footer-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .meta-item {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .meta-item i { color: #22c55e; font-size: 0.9rem; }
+
+    .action-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-circle {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-view { background: #f0fdf4; color: #22c55e; }
+    .btn-view:hover { background: #22c55e; color: white; transform: rotate(15deg); }
+
+    .btn-edit { background: #f8fafc; color: #64748b; }
+    .btn-edit:hover { background: #0f172a; color: white; transform: rotate(-15deg); }
+
+    .btn-delete { background: #fff1f2; color: #ef4444; }
+    .btn-delete:hover { background: #ef4444; color: white; transform: scale(1.1); }
+
+    .btn-create-new {
+        background: linear-gradient(135deg, #0f172a, #1e293b);
+        color: white !important;
+        padding: 18px 36px;
+        border-radius: 20px;
+        font-weight: 800;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .btn-create-new:hover { 
+        background: #22c55e; 
+        transform: scale(1.05) translateY(-4px); 
+        box-shadow: 0 15px 30px rgba(34,197,94,0.3);
+    }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        background: white;
+        padding: 100px 40px;
+        border-radius: 40px;
+        text-align: center;
+        border: 2px dashed #e2e8f0;
+    }
+    .empty-state i { font-size: 5rem; color: #e2e8f0; margin-bottom: 30px; display: block; }
+</style>
+
+<div class="tickets-container">
+    <div class="breadcrumb">
+        <a href="{{ path('app_home') }}">Home</a> &gt; 
+        <a href="{{ path('support_center') }}">Support</a> &gt; 
+        My Tickets
+    </div>
+    
+    <div class="page-header">
+        <div class="header-left">
+            <h1 class="page-title">Support Tickets</h1>
+            <p>Track, manage, and resolve your inquiries with our expert support team.</p>
+        </div>
+        <a href="{{ path('app_user_createticket') }}" class="btn-create-new">
+            <i class="fas fa-plus"></i> New Ticket
+        </a>
+    </div>
+    
+    {% if tickets is empty %}
+        <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <h3>No tickets found</h3>
+            <p>You haven't submitted any support requests yet. We're here to help whenever you need us.</p>
+            <a href="{{ path('app_user_createticket') }}" class="btn-create-new">Submit your first ticket</a>
+        </div>
+    {% else %}
+        <div class="tickets-grid">
+            {% for ticket in tickets %}
+                <div class="ticket-card priority-{{ ticket.priorite|lower }}-bar">
+                    <div class="ticket-image-wrapper">
+                        {% if ticket.imageUrl %}
+                            <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" alt="{{ ticket.titre }}" class="ticket-thumbnail">
+                        {% else %}
+                            <img src="{{ asset('images/placeholder-image-icon.png') }}" alt="No thumbnail" class="ticket-thumbnail" style="opacity:0.3; object-fit: contain; padding: 40px;">
+                        {% endif %}
+                        <div class="badge-overlay status-{{ ticket.statut|lower == 'open' ? 'open' : (ticket.statut|lower == 'closed' ? 'closed' : 'in-progress') }}">
+                            {{ ticket.statut }}
+                        </div>
+                    </div>
+
+                    <div class="ticket-body">
+                        <h3 class="ticket-title">{{ ticket.titre }}</h3>
+                        <p class="ticket-description">{{ ticket.description|length > 120 ? ticket.description|slice(0, 120) ~ '...' : ticket.description }}</p>
+                        
+                        <div class="ticket-footer">
+                            <div class="footer-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-history"></i>
+                                    {{ ticket.dateCreation|ago }}
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-tag"></i>
+                                    {{ ticket.type }}
+                                </div>
+                            </div>
+
+                            <div class="action-group">
+                                <a href="{{ path('app_user_ticket_details', {id: ticket.id}) }}" class="btn-circle btn-view" title="View Details">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                                
+                                {% if ticket.statut != 'Fermé' %}
+                                    <a href="{{ path('app_user_ticket_edit', {id: ticket.id}) }}" class="btn-circle btn-edit" title="Edit Ticket">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                {% endif %}
+                                
+                                <form method="post" action="{{ path('app_user_ticket_delete', {id: ticket.id}) }}" onsubmit="return confirm('Delete this ticket?')" style="display:inline;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_ticket_' ~ ticket.id) }}">
+                                    <button type="submit" class="btn-circle btn-delete" title="Delete Ticket">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="pagination-container" style="display:flex; justify-content:center; margin-top:60px;">
+            {{ knp_pagination_render(tickets, 'reclamation/pagination.html.twig') }}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

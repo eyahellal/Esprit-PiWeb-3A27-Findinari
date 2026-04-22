@@ -35,8 +35,32 @@
             "./migrations/.gitignore"
         ]
     },
+    "friendsofsymfony/jsrouting-bundle": {
+        "version": "3.6",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "3.0",
+            "ref": "03986bbad9dcc3e367036a6b4f48ec469a4b1bf4"
+        },
+        "files": [
+            "./config/routes/fos_js_routing.yaml"
+        ]
+    },
+    "karser/karser-recaptcha3-bundle": {
+        "version": "0.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "c51ce07c10331d506762efe25b6f5843c1a5ea17"
+        }
+    },
     "knplabs/knp-paginator-bundle": {
         "version": "v6.10.0"
+    },
+    "knplabs/knp-time-bundle": {
+        "version": "2.5.0"
     },
     "phpunit/phpunit": {
         "version": "11.5",
@@ -111,7 +135,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "6.4",
-            "ref": "32126346f25e1cee607cc4aa6783d46034920554"
+            "ref": "08c492c28925bf921d98bc26fd815ae8a38b33d9"
         },
         "files": [
             "./config/packages/cache.yaml",
@@ -208,7 +232,7 @@
         ]
     },
     "symfony/stimulus-bundle": {
-        "version": "2.34",
+        "version": "2.35",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -247,8 +271,14 @@
             "./templates/base.html.twig"
         ]
     },
+    "symfony/ux-chartjs": {
+        "version": "v2.35.0"
+    },
+    "symfony/ux-dropzone": {
+        "version": "v2.35.0"
+    },
     "symfony/ux-turbo": {
-        "version": "2.34",
+        "version": "2.35",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -279,18 +309,6 @@
         "files": [
             "./config/packages/web_profiler.yaml",
             "./config/routes/web_profiler.yaml"
-        ]
-    },
-    "symfony/webapp-pack": {
-        "version": "1.4",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "main",
-            "version": "1.0",
-            "ref": "b9e6cc8e7b6069d0e8a816665809a423864eb4dd"
-        },
-        "files": [
-            "./config/packages/messenger.yaml"
         ]
     },
     "twig/extra-bundle": {
