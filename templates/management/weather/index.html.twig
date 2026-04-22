@@ -1,0 +1,557 @@
+{% extends 'management/dashboard.html.twig' %}
+
+{% block title %}Weather - Fin-Dinari{% endblock %}
+
+{% set active_tab = 'weather' %}
+
+{% block content %}
+
+<turbo-frame id="content-frame">
+
+    {# Header #}
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-1" style="color: #26474E;">
+                <i class="fas fa-cloud-sun me-2"></i>Weather
+            </h1>
+            <p class="text-muted mb-0">Check the weather in your country for smarter spending decisions</p>
+        </div>
+    </div>
+
+    {# Country Selector #}
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 rounded-4" style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                <div class="rounded-top-4 p-4 text-white" style="background: #26474E;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 opacity-75 small text-uppercase fw-semibold">Select Location</p>
+                            <h4 class="fw-bold mb-0">Where are you?</h4>
+                        </div>
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                            <i class="fas fa-location-dot fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" style="color: #26474E;">Country</label>
+                        <select id="weatherCountrySelect" class="form-select"
+                                onchange="fetchWeather()"
+                                style="border-color: #76CDCD; color: #26474E; background-color: #f8f9fa;">
+                            <option value="">Loading countries...</option>
+                        </select>
+                    </div>
+                    {#<button class="btn w-100" onclick="detectLocation()"
+                            style="background: #e8f5f5; color: #26474E; border-radius: 10px;">
+                        <i class="fas fa-crosshairs me-2"></i>Detect My Location
+                    </button>#}
+                </div>
+            </div>
+        </div>
+
+        {# Weather Display #}
+        <div class="col-lg-6">
+            <div id="weatherResult" style="display: none;">
+                <div class="card border-0 rounded-4 h-100" style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                    <div class="rounded-top-4 p-4 text-white" id="weatherHeader"
+                         style="background: linear-gradient(135deg, #2CCED2, #76CDCD);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-1 opacity-75 small text-uppercase fw-semibold" id="weatherCity">—</p>
+                                <h2 class="fw-bold mb-0" id="weatherTemp">—°C</h2>
+                                <p class="mb-0 opacity-75" id="weatherDesc">—</p>
+                            </div>
+                            <img id="weatherIcon" src="" alt="" style="width: 80px; height: 80px;">
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="rounded-3 p-3 text-center" style="background: #f8f9fa;">
+                                    <i class="fas fa-temperature-half mb-1" style="color: #F27438;"></i>
+                                    <p class="text-muted small mb-0">Feels Like</p>
+                                    <p class="fw-bold mb-0" id="weatherFeels" style="color: #26474E;">—°C</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="rounded-3 p-3 text-center" style="background: #f8f9fa;">
+                                    <i class="fas fa-droplet mb-1" style="color: #2CCED2;"></i>
+                                    <p class="text-muted small mb-0">Humidity</p>
+                                    <p class="fw-bold mb-0" id="weatherHumidity" style="color: #26474E;">—%</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="rounded-3 p-3 text-center" style="background: #f8f9fa;">
+                                    <i class="fas fa-wind mb-1" style="color: #76CDCD;"></i>
+                                    <p class="text-muted small mb-0">Wind</p>
+                                    <p class="fw-bold mb-0" id="weatherWind" style="color: #26474E;">— km/h</p>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="rounded-3 p-3 text-center" style="background: #f8f9fa;">
+                                    <i class="fas fa-eye mb-1" style="color: #26474E;"></i>
+                                    <p class="text-muted small mb-0">Visibility</p>
+                                    <p class="fw-bold mb-0" id="weatherVisibility" style="color: #26474E;">— km</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Loading State #}
+            <div id="weatherLoading" style="display: none;">
+                <div class="card border-0 rounded-4 h-100 d-flex align-items-center justify-content-center"
+                     style="box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-height: 300px;">
+                    <div class="text-center">
+                        <div class="spinner-border mb-3" style="color: #F27438;"></div>
+                        <p class="text-muted fw-bold">Fetching weather data...</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Empty State #}
+            <div id="weatherEmpty">
+                <div class="card border-0 rounded-4 h-100 d-flex align-items-center justify-content-center"
+                     style="box-shadow: 0 4px 20px rgba(0,0,0,0.08); min-height: 300px; border: 2px dashed #76CDCD;">
+                    <div class="text-center p-4">
+                        <i class="fas fa-cloud-sun fa-3x mb-3" style="color: #2CCED2;"></i>
+                        <h5 style="color: #26474E;">Select a country</h5>
+                        <p class="text-muted">Choose a country or detect your location to see the weather</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# 5-Day Forecast #}
+    <div class="row mb-4" id="forecastSection" style="display: none;">
+        <div class="col-12">
+            <div class="card border-0 rounded-4" style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3" style="color: #26474E;">
+                        <i class="fas fa-calendar-week me-2" style="color: #F27438;"></i>5-Day Forecast
+                    </h5>
+                    <div class="d-flex gap-3 flex-wrap justify-content-between" id="forecastCards"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Spending Recommendation #}
+    <div class="row mb-4" id="recommendationSection" style="display: none;">
+        <div class="col-12">
+            <div class="card border-0 rounded-4" style="box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+                <div class="rounded-top-4 p-4 text-white" style="background: #F27438;">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Spending Recommendations Based on Weather
+                    </h5>
+                </div>
+                <div class="card-body p-4" id="recommendationContent"></div>
+            </div>
+        </div>
+    </div>
+
+</turbo-frame>
+
+<style>
+    .rounded-top-4 { border-radius: 1rem 1rem 0 0 !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .forecast-card {
+        flex: 1;
+        min-width: 140px;
+        text-align: center;
+        padding: 16px 12px;
+        border-radius: 12px;
+        background: #f8f9fa;
+        transition: all 0.2s;
+    }
+    .forecast-card:hover {
+        background: #e8f5f5;
+        transform: translateY(-3px);
+    }
+    #weatherCountrySelect:focus {
+        border-color: #F27438 !important;
+        box-shadow: 0 0 0 0.2rem rgba(242,116,56,0.2) !important;
+    }
+</style>
+
+<script>
+let countriesCapitals = {};
+
+// Load countries and fetch them in the drop down 
+async function loadWeatherCountries() {
+    try {
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,capital,flag');
+        const countries = await response.json();
+
+        countries.sort((a, b) => {
+            const nameA = a?.name?.common || '';
+            const nameB = b?.name?.common || '';
+            return nameA.localeCompare(nameB);
+        });
+        // get the selected country 
+        const select = document.getElementById('weatherCountrySelect');
+        select.innerHTML = '<option value="">-- Choose a country --</option>';
+
+        countries.forEach(country => {
+            if (!country?.name?.common || !country?.capital?.[0]) return;
+
+            countriesCapitals[country.name.common] = country.capital[0];
+
+            const option = document.createElement('option');
+            option.value = country.name.common;
+            option.textContent = `${country.flag || ''} ${country.name.common}`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading countries:', error);
+    }
+}
+
+// Fetch weather by country name
+async function fetchWeather() {
+    const country = document.getElementById('weatherCountrySelect').value;
+    if (!country || !countriesCapitals[country]) return;
+
+    const city = countriesCapitals[country];
+    await getWeatherData(city, country);
+}
+
+// Detect user location
+function detectLocation() {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser');
+        return;
+    }
+
+    document.getElementById('weatherEmpty').style.display = 'none';
+    document.getElementById('weatherResult').style.display = 'none';
+    document.getElementById('weatherLoading').style.display = 'block';
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            try {
+                const response = await fetch(
+                    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${'8c95655b4614ae5d949d0ab123e67137'}}`
+                );
+                const data = await response.json();
+
+                if (data.cod === 200) {
+                    displayWeather(data);
+                    await getForecast(data.name);
+                    generateRecommendations(data);
+                }
+            } catch (error) {
+                console.error('Weather error:', error);
+                alert('Error fetching weather data');
+            }
+
+            document.getElementById('weatherLoading').style.display = 'none';
+        },
+        (error) => {
+            alert('Unable to detect your location. Please select a country manually.');
+            document.getElementById('weatherLoading').style.display = 'none';
+            document.getElementById('weatherEmpty').style.display = 'block';
+        }
+    );
+}
+
+// Get weather data by city
+async function getWeatherData(city, country) {
+    document.getElementById('weatherEmpty').style.display = 'none';
+    document.getElementById('weatherResult').style.display = 'none';
+    document.getElementById('weatherLoading').style.display = 'block';
+
+    try {
+        // Current weather
+        const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${'8c95655b4614ae5d949d0ab123e67137'}`
+        );
+        const data = await response.json();
+
+        if (data.cod === 200) {
+            displayWeather(data);
+            await getForecast(city);
+            generateRecommendations(data);
+        } else {
+            alert('Weather data not found for ' + city);
+            document.getElementById('weatherEmpty').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Weather error:', error);
+        alert('Error fetching weather data');
+        document.getElementById('weatherEmpty').style.display = 'block';
+    }
+
+    document.getElementById('weatherLoading').style.display = 'none';
+}
+
+// Display current weather
+function displayWeather(data) {
+    document.getElementById('weatherCity').textContent = data.name + ', ' + data.sys.country;
+    document.getElementById('weatherTemp').textContent = Math.round(data.main.temp) + '°C';
+    document.getElementById('weatherDesc').textContent = data.weather[0].description;
+    document.getElementById('weatherFeels').textContent = Math.round(data.main.feels_like) + '°C';
+    document.getElementById('weatherHumidity').textContent = data.main.humidity + '%';
+    document.getElementById('weatherWind').textContent = Math.round(data.wind.speed * 3.6) + ' km/h';
+    document.getElementById('weatherVisibility').textContent = (data.visibility / 1000).toFixed(1) + ' km';
+    document.getElementById('weatherIcon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+    // Change header color based on weather
+    const header = document.getElementById('weatherHeader');
+    const temp = data.main.temp;
+    if (temp > 35) {
+        header.style.background = 'linear-gradient(135deg, #c0392b, #e74c3c)';
+    } else if (temp > 25) {
+        header.style.background = 'linear-gradient(135deg, #F27438, #f39c12)';
+    } else if (temp > 15) {
+        header.style.background = 'linear-gradient(135deg, #2d6a4f, #2CCED2)';
+    } else if (temp > 5) {
+        header.style.background = 'linear-gradient(135deg, #2CCED2, #76CDCD)';
+    } else {
+        header.style.background = 'linear-gradient(135deg, #26474E, #2CCED2)';
+    }
+
+    document.getElementById('weatherResult').style.display = 'block';
+}
+
+// Get 5-day forecast
+async function getForecast(city) {
+    try {
+        const response = await fetch(
+            `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${'8c95655b4614ae5d949d0ab123e67137'}`
+        );
+        const data = await response.json();
+
+        if (data.cod === '200') {
+            const dailyForecasts = {};
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            data.list.forEach(item => {
+                const date = new Date(item.dt * 1000);
+                const dayKey = date.toISOString().split('T')[0];
+
+                if (!dailyForecasts[dayKey]) {
+                    dailyForecasts[dayKey] = {
+                        day: days[date.getDay()],
+                        date: date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+                        temp: Math.round(item.main.temp),
+                        icon: item.weather[0].icon,
+                        desc: item.weather[0].description,
+                        tempMin: Math.round(item.main.temp_min),
+                        tempMax: Math.round(item.main.temp_max),
+                    };
+                }
+            });
+
+            const forecastCards = document.getElementById('forecastCards');
+            forecastCards.innerHTML = '';
+
+            Object.values(dailyForecasts).slice(0, 5).forEach(forecast => {
+                forecastCards.innerHTML += `
+                    <div class="forecast-card">
+                        <p class="fw-bold mb-1" style="color: #26474E;">${forecast.day}</p>
+                        <p class="small text-muted mb-2">${forecast.date}</p>
+                        <img src="https://openweathermap.org/img/wn/${forecast.icon}@2x.png"
+                             alt="${forecast.desc}" style="width: 50px; height: 50px;">
+                        <p class="fw-bold mb-0" style="color: #26474E;">${forecast.temp}°C</p>
+                        <p class="small text-muted mb-0">${forecast.tempMin}° / ${forecast.tempMax}°</p>
+                    </div>
+                `;
+            });
+
+            document.getElementById('forecastSection').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Forecast error:', error);
+    }
+}
+const GROQ_API_KEY = '{{ groq_api_key }}';
+
+async function generateRecommendations(weatherData) {
+    const container = document.getElementById('recommendationContent');
+    container.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border mb-3" style="color: #F27438;"></div>
+            <p class="text-muted fw-bold">AI is analyzing weather data...</p>
+        </div>
+    `;
+    document.getElementById('recommendationSection').style.display = 'block';
+
+    const temp = weatherData.main.temp;
+    const weather = weatherData.weather[0].description;
+    const humidity = weatherData.main.humidity;
+    const wind = Math.round(weatherData.wind.speed * 3.6);
+    const city = weatherData.name;
+    const country = weatherData.sys.country;
+
+    const prompt = `You are a smart financial advisor for a budgeting app called Fin-Dinari. Based on the current weather data, give exactly 4 spending recommendations. Each recommendation should help the user save money or spend wisely based on the weather.
+
+Current weather in ${city}, ${country}:
+- Temperature: ${temp}°C
+- Condition: ${weather}
+- Humidity: ${humidity}%
+- Wind: ${wind} km/h
+
+Respond ONLY with a valid JSON array of 4 objects. No markdown, no backticks, no explanation before or after. Just the JSON array.
+Each object must have:
+- "icon": a Font Awesome icon class (like "fa-sun", "fa-umbrella", "fa-utensils", "fa-bus", "fa-bolt", "fa-leaf", "fa-snowflake", "fa-fire", "fa-droplet", "fa-piggy-bank", "fa-cart-shopping", "fa-house")
+- "color": a hex color that matches the mood
+- "title": short title (max 5 words)
+- "text": the recommendation (2-3 sentences, practical and specific)`;
+
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + GROQ_API_KEY,
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.7,
+                max_tokens: 1000,
+            })
+        });
+
+        const data = await response.json();
+        let text = data.choices[0].message.content.trim();
+
+        // Clean up response
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        const recommendations = JSON.parse(text);
+
+        container.innerHTML = '';
+        recommendations.forEach(rec => {
+            container.innerHTML += `
+                <div class="d-flex gap-3 align-items-start mb-3 p-3 rounded-3" style="background: #f8f9fa;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                         style="width: 44px; height: 44px; background: ${rec.color}20;">
+                        <i class="fas ${rec.icon}" style="color: ${rec.color};"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color: #26474E;">${rec.title}</h6>
+                        <p class="text-muted small mb-0">${rec.text}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML += `
+            <div class="text-end mt-2">
+                <span class="badge rounded-pill px-3 py-2" style="background: #e8f5f5; color: #26474E;">
+                    <i class="fas fa-robot me-1"></i>Powered by Groq AI
+                </span>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('AI Error:', error);
+        fallbackRecommendations(weatherData, container);
+    }
+}
+
+function fallbackRecommendations(weatherData, container) {
+    const temp = weatherData.main.temp;
+    const weather = weatherData.weather[0].main.toLowerCase();
+    const recommendations = [];
+
+    if (temp > 30) {
+        recommendations.push({ icon: 'fa-sun', color: '#F27438', title: 'Hot Weather Alert', text: 'Budget extra for cold drinks and AC. Consider free indoor activities like libraries or malls to stay cool.' });
+    } else if (temp > 20) {
+        recommendations.push({ icon: 'fa-leaf', color: '#2d6a4f', title: 'Pleasant Day', text: 'Walk or cycle instead of driving to save on transport. Great weather for free outdoor activities.' });
+    } else {
+        recommendations.push({ icon: 'fa-snowflake', color: '#2CCED2', title: 'Cold Weather', text: 'Cook warm meals at home to save money. Check heating budget and consider layering up.' });
+    }
+
+    if (weather.includes('rain')) {
+        recommendations.push({ icon: 'fa-umbrella', color: '#3498db', title: 'Rainy Day Savings', text: 'Stay in and meal prep. Great time for online deal hunting instead of impulse shopping.' });
+    } else {
+        recommendations.push({ icon: 'fa-piggy-bank', color: '#2d6a4f', title: 'Save Today', text: 'Take advantage of good weather for free activities like walking, parks, or outdoor exercise.' });
+    }
+
+    container.innerHTML = '';
+    recommendations.forEach(rec => {
+        container.innerHTML += `
+            <div class="d-flex gap-3 align-items-start mb-3 p-3 rounded-3" style="background: #f8f9fa;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width: 44px; height: 44px; background: ${rec.color}20;">
+                    <i class="fas ${rec.icon}" style="color: ${rec.color};"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1" style="color: #26474E;">${rec.title}</h6>
+                    <p class="text-muted small mb-0">${rec.text}</p>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML += `
+        <div class="text-end mt-2">
+            <span class="badge rounded-pill px-3 py-2" style="background: #fff3ee; color: #F27438;">
+                <i class="fas fa-info-circle me-1"></i>Basic mode — AI unavailable
+            </span>
+        </div>
+    `;
+}
+
+// Fallback if AI fails
+function fallbackRecommendations(weatherData, container) {
+    const temp = weatherData.main.temp;
+    const weather = weatherData.weather[0].main.toLowerCase();
+    const recommendations = [];
+
+    if (temp > 30) {
+        recommendations.push({ icon: 'fa-sun', color: '#F27438', title: 'Hot Weather Alert', text: 'Budget extra for cold drinks and AC. Consider free indoor activities like libraries or malls to stay cool.' });
+    } else if (temp > 20) {
+        recommendations.push({ icon: 'fa-leaf', color: '#2d6a4f', title: 'Pleasant Day', text: 'Walk or cycle instead of driving to save on transport. Great weather for free outdoor activities.' });
+    } else {
+        recommendations.push({ icon: 'fa-snowflake', color: '#2CCED2', title: 'Cold Weather', text: 'Cook warm meals at home to save money. Check heating budget and consider layering up.' });
+    }
+
+    if (weather.includes('rain')) {
+        recommendations.push({ icon: 'fa-umbrella', color: '#3498db', title: 'Rainy Day Savings', text: 'Stay in and meal prep. Great time for online deal hunting instead of impulse shopping.' });
+    } else {
+        recommendations.push({ icon: 'fa-piggy-bank', color: '#2d6a4f', title: 'Save Today', text: 'Take advantage of good weather for free activities like walking, parks, or outdoor exercise.' });
+    }
+
+    container.innerHTML = '';
+    recommendations.forEach(rec => {
+        container.innerHTML += `
+            <div class="d-flex gap-3 align-items-start mb-3 p-3 rounded-3" style="background: #f8f9fa;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                     style="width: 44px; height: 44px; background: ${rec.color}20;">
+                    <i class="fas ${rec.icon}" style="color: ${rec.color};"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1" style="color: #26474E;">${rec.title}</h6>
+                    <p class="text-muted small mb-0">${rec.text}</p>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML += `
+        <div class="text-end mt-2">
+            <span class="badge rounded-pill px-3 py-2" style="background: #fff3ee; color: #F27438;">
+                <i class="fas fa-info-circle me-1"></i>Basic mode — AI unavailable
+            </span>
+        </div>
+    `;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', loadWeatherCountries);
+</script>
+
+{% endblock %}

@@ -20,7 +20,7 @@
         {# Navigation Tabs #}
         <div class="row mb-4">
             <div class="col-12">
-                <div class="d-flex gap-2 border-bottom pb-3">
+                <div class="d-flex gap-2 border-bottom pb-3 align-items-center">
                     <a href="{{ path('app_wallet_index') }}"
                        class="btn {{ active_tab == 'wallet' ? 'btn-primary' : 'btn-outline-primary' }}"
                        data-turbo-frame="content-frame"
@@ -45,6 +45,60 @@
                        style="border-radius: 10px;">
                         <i class="fas fa-exchange-alt me-1"></i>Transactions
                     </a>
+                    <a href="{{ path('app_stats_index') }}"
+                       class="btn {{ active_tab == 'stats' ? 'btn-primary' : 'btn-outline-primary' }}"
+                       data-turbo-frame="content-frame"
+                       style="border-radius: 10px;">
+                        <i class="fas fa-chart-bar me-1"></i>Statistics
+                    </a>
+                    <a href="{{ path('app_weather_index') }}"
+   class="btn {{ active_tab == 'weather' ? 'btn-primary' : 'btn-outline-primary' }}"
+   data-turbo-frame="content-frame"
+   style="border-radius: 10px;">
+    <i class="fas fa-cloud-sun me-1"></i>Weather
+</a>
+<a href="{{ path('app_holiday_index') }}"
+   class="btn {{ active_tab == 'holiday' ? 'btn-primary' : 'btn-outline-primary' }}"
+   data-turbo-frame="content-frame"
+   style="border-radius: 10px;">
+    <i class="fas fa-calendar-check me-1"></i>Holidays
+</a>
+                    {# Notification Bell #}
+                    <div class="ms-auto position-relative">
+                        <button class="btn position-relative" id="notifBell"
+                                onclick="toggleNotifications()"
+                                style="background: none; border: none; font-size: 1.3rem; color: #26474E;">
+                            <i class="fas fa-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                                  id="notifCount"
+                                  style="background: #c0392b; display: none; font-size: 0.6rem;">
+                                0
+                            </span>
+                        </button>
+
+                        {# Notification Dropdown #}
+                        <div id="notifDropdown" class="position-absolute end-0 mt-2 rounded-4"
+                             style="display: none; width: 360px; background: white; box-shadow: 0 8px 30px rgba(0,0,0,0.15); z-index: 1000; max-height: 400px; overflow-y: auto;">
+
+                            <div class="p-3 d-flex justify-content-between align-items-center"
+                                 style="border-bottom: 1px solid #f0f0f0;">
+                                <h6 class="fw-bold mb-0" style="color: #26474E;">
+                                    <i class="fas fa-bell me-1" style="color: #F27438;"></i>Notifications
+                                </h6>
+                                <button class="btn btn-sm" onclick="clearNotifications()"
+                                        style="color: #999; font-size: 0.75rem;">
+                                    Clear all
+                                </button>
+                            </div>
+
+                            <div id="notifList">
+                                <div class="p-4 text-center text-muted small" id="notifEmpty">
+                                    <i class="fas fa-check-circle fa-2x mb-2" style="color: #2d6a4f;"></i>
+                                    <p class="mb-0">No new notifications</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -56,5 +110,141 @@
 
     </div>
 </section>
+
+{# Load notifications from flash messages #}
+{% for message in app.flashes('budget_alert') %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            addNotification('budget', {{ message|raw }});
+        });
+    </script>
+{% endfor %}
+
+<style>
+    #notifBell:hover {
+        color: #F27438 !important;
+    }
+    .notif-item {
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .notif-item:hover {
+        background: #fff8f5 !important;
+    }
+    .notif-item.unread {
+        border-left: 3px solid #F27438;
+    }
+</style>
+
+<script>
+// Notification system
+let notifications = JSON.parse(localStorage.getItem('findinari_notifications') || '[]');
+
+function renderNotifications() {
+    const list = document.getElementById('notifList');
+    const count = document.getElementById('notifCount');
+    const empty = document.getElementById('notifEmpty');
+
+    const unread = notifications.filter(n => !n.read).length;
+
+    if (unread > 0) {
+        count.textContent = unread > 9 ? '9+' : unread;
+        count.style.display = 'block';
+    } else {
+        count.style.display = 'none';
+    }
+
+    if (notifications.length === 0) {
+        list.innerHTML = '<div class="p-4 text-center text-muted small" id="notifEmpty">' +
+            '<i class="fas fa-check-circle fa-2x mb-2" style="color: #2d6a4f;"></i>' +
+            '<p class="mb-0">No new notifications</p></div>';
+        return;
+    }
+
+    let html = '';
+    notifications.slice().reverse().forEach((notif, index) => {
+        const realIndex = notifications.length - 1 - index;
+        const icon = notif.type === 'budget' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+        const color = notif.type === 'budget' ? '#c0392b' : '#F27438';
+        const bgColor = notif.type === 'budget' ? '#fde8e8' : '#fff3ee';
+
+        html += '<div class="notif-item p-3 ' + (notif.read ? '' : 'unread') + '" ' +
+            'style="border-bottom: 1px solid #f5f5f5;" ' +
+            'onclick="markAsRead(' + realIndex + ')">' +
+            '<div class="d-flex gap-3 align-items-start">' +
+            '<div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" ' +
+            'style="width:36px; height:36px; background:' + bgColor + ';">' +
+            '<i class="fas ' + icon + '" style="color:' + color + ';"></i></div>' +
+            '<div class="flex-fill">' +
+            '<p class="mb-0 small fw-bold" style="color: #26474E;">' + notif.title + '</p>' +
+            '<p class="mb-0 small text-muted">' + notif.message + '</p>' +
+            '<p class="mb-0 small text-muted" style="font-size: 0.7rem;">' + notif.time + '</p>' +
+            '</div>' +
+            (notif.read ? '' : '<span class="rounded-circle" style="width:8px; height:8px; background:#F27438; flex-shrink:0; margin-top:6px;"></span>') +
+            '</div></div>';
+    });
+
+    list.innerHTML = html;
+}
+
+function addNotification(type, data) {
+    const now = new Date();
+    const time = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'});
+
+    notifications.push({
+        type: type,
+        title: data.title || 'Notification',
+        message: data.message || '',
+        time: time,
+        read: false,
+    });
+
+    // Keep max 20 notifications
+    if (notifications.length > 20) {
+        notifications = notifications.slice(-20);
+    }
+
+    localStorage.setItem('findinari_notifications', JSON.stringify(notifications));
+    renderNotifications();
+
+    // Animate bell
+    const bell = document.getElementById('notifBell');
+    bell.style.color = '#c0392b';
+    bell.classList.add('fa-shake');
+    setTimeout(() => {
+        bell.style.color = '#26474E';
+        bell.classList.remove('fa-shake');
+    }, 2000);
+}
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notifDropdown');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+function markAsRead(index) {
+    notifications[index].read = true;
+    localStorage.setItem('findinari_notifications', JSON.stringify(notifications));
+    renderNotifications();
+}
+
+function clearNotifications() {
+    notifications = [];
+    localStorage.setItem('findinari_notifications', JSON.stringify(notifications));
+    renderNotifications();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const bell = document.getElementById('notifBell');
+    const dropdown = document.getElementById('notifDropdown');
+    if (!bell.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+// Render on page load
+document.addEventListener('DOMContentLoaded', renderNotifications);
+</script>
 
 {% endblock %}

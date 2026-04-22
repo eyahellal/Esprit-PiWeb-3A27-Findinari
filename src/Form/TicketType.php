@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Form;
+namespace App\form;
 
 use App\Entity\reclamation\Ticket;
 use Symfony\Component\Form\AbstractType;
@@ -38,13 +38,13 @@ class TicketType extends AbstractType
             ->add('priorite', ChoiceType::class, [
                 'label' => 'Priority',
                 'choices' => [
-                    'Low' => Ticket::PRIORITY_LOW,
-                    'Medium' => Ticket::PRIORITY_MEDIUM,
-                    'High' => Ticket::PRIORITY_HIGH,
+                    'Low' => 'Low',
+                    'Medium' => 'Medium',
+                    'High' => 'High',
                 ],
                 'expanded' => true, // This will render as radio buttons, we can style them as buttons in Twig
                 'multiple' => false,
-                'data' => Ticket::PRIORITY_MEDIUM,
+                'data' => 'Medium',
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',

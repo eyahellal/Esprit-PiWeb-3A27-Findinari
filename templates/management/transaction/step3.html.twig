@@ -101,11 +101,22 @@
                                 </div>
                             </div>
                         </div>
-
+{# General errors display #}
+{% if errors is defined %}
+    {% for error in errors %}
+        {% if error.propertyPath not in ['montant', 'categorie'] %}
+            <div class="alert alert-danger small py-2">
+                <i class="fas fa-exclamation-circle me-1"></i>
+                {{ error.propertyPath }}: {{ error.message }}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
                         <form method="post"
                               action="{{ path('app_transaction_new_step3') }}"
                               id="transactionForm"
-                              onsubmit="return validateTransaction()">
+                              onsubmit="return validateTransaction()"
+                              novalidate>
 
                             {# Hidden JS data #}
                             <input type="hidden" id="walletSolde" value="{{ wallet.solde }}">
@@ -172,25 +183,102 @@
                                     </div>
                                 </div>
                             {% endif %}
+                            {% if errors is defined %}
+    {% for error in errors %}
+        {% if error.propertyPath == 'categorie' %}
+            <div class="text-danger small mt-1">{{ error.message }}</div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
-                            {# Amount #}
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="color: #26474E;">
-                                    Amount <span class="text-muted fw-normal">({{ wallet.devise }})</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text"
-                                          style="background: #e8f5f5; border-color: #76CDCD; color: #26474E;">
-                                        <i class="fas fa-money-bill-wave"></i>
-                                    </span>
-                                    <input type="number" name="montant" id="montantInput"
-                                           class="form-control"
-                                           placeholder="Enter amount"
-                                           step="0.01" min="0.01" required
-                                           style="border-color: #76CDCD;">
-                                </div>
-                            </div>
+                           {# Amount — FIXED #}
+<div class="mb-3">
+    <label class="form-label fw-bold" style="color: #26474E;">
+        Amount <span class="text-muted fw-normal">({{ wallet.devise }})</span>
+    </label>
+    <div class="input-group">
+        <span class="input-group-text"
+              style="background: #e8f5f5; border-color: #76CDCD; color: #26474E;">
+            <i class="fas fa-money-bill-wave"></i>
+        </span>
+        <input type="number" name="montant" id="montantInput"
+               class="form-control"
+               placeholder="Enter amount"
+               style="border-color: #76CDCD;">
+    </div>
+    {% if errors is defined %}
+        {% for error in errors %}
+            {% if error.propertyPath == 'montant' %}
+                <div class="text-danger small mt-1">{{ error.message }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</div>
+{# Currency Converter #}
+<div class="mb-3">
+    <div class="rounded-4 p-3" style="background: #f8f9fa; border: 1px solid #e0e0e0;">
+        <label class="form-label fw-bold small" style="color: #26474E;">
+            <i class="fas fa-exchange-alt me-1" style="color: #F27438;"></i>Currency Converter
+        </label>
 
+        <div class="row g-2 mb-2">
+            {# Amount to convert #}
+            <div class="col-4">
+                <input type="number" id="convertAmount" class="form-control form-control-sm"
+                       placeholder="Amount" step="0.01" style="border-color: #76CDCD;">
+            </div>
+
+            {# From currency #}
+          <div class="col-3">
+    <select id="fromCurrency" class="form-select form-select-sm"
+            style="border-color: #76CDCD; color: #26474E; background-color: #f8f9fa;">
+        <option value="" style="color: #26474E;">From</option>
+    </select>
+</div>
+            {# Arrow #}
+            <div class="col-1 d-flex align-items-center justify-content-center">
+                <i class="fas fa-arrow-right" style="color: #F27438;"></i>
+            </div>
+
+            {# To currency (wallet currency, readonly) #}
+            <div class="col-4">
+                <input type="text" id="toCurrency" class="form-control form-control-sm"
+                       value="{{ wallet.devise }}" readonly
+                       style="border-color: #76CDCD; background: #e8f5f5; font-weight: bold; color: #26474E;">
+            </div>
+        </div>
+
+        {# Convert button #}
+        <div class="d-flex gap-2 align-items-center">
+            <button type="button" class="btn btn-sm px-3"
+                    onclick="convertCurrency()"
+                    style="background: #F27438; color: white; border-radius: 10px;">
+                <i class="fas fa-calculator me-1"></i>Convert
+            </button>
+
+            {# Result #}
+            <div id="conversionResult" style="display: none;"
+                 class="flex-fill d-flex align-items-center justify-content-between rounded-3 p-2"
+                 style="background: white;">
+                <span id="conversionText" class="small fw-bold" style="color: #26474E;"></span>
+                <button type="button" class="btn btn-sm px-3"
+                        onclick="useConvertedAmount()"
+                        style="background: #e8f5e9; color: #2d6a4f; border-radius: 10px;">
+                    <i class="fas fa-check me-1"></i>Use
+                </button>
+            </div>
+
+            {# Loading #}
+            <div id="conversionLoading" style="display: none;">
+                <span class="spinner-border spinner-border-sm" style="color: #F27438;"></span>
+                <span class="small text-muted ms-1">Converting...</span>
+            </div>
+
+            {# Error #}
+            <div id="conversionError" style="display: none;" class="small text-danger"></div>
+        </div>
+    </div>
+</div>
                             {# Description #}
                             <div class="mb-4">
                                 <label class="form-label fw-bold" style="color: #26474E;">
@@ -202,7 +290,47 @@
                                           rows="2"
                                           style="border-color: #76CDCD;"></textarea>
                             </div>
+{# Recurring Options  #}
+<div class="mb-4">
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="recurringToggle"
+               name="isRecurring" value="1" onchange="toggleRecurringOptions()">
+        <label class="form-check-label fw-bold" for="recurringToggle" style="color: #26474E;">
+            <i class="fas fa-sync-alt me-1" style="color: #F27438;"></i>Make this recurring
+        </label>
+    </div>
 
+    <div id="recurringOptions" style="display: none;">
+        <div class="rounded-4 p-3" style="background: #fff3ee; border: 1px solid #F27438;">
+            {# Frequency #}
+            <div class="mb-3">
+                <label class="form-label fw-bold small" style="color: #26474E;">Frequency</label>
+                <div class="d-flex gap-2 flex-wrap">
+                    {% set frequencies = {daily: 'fa-sun', weekly: 'fa-calendar-week', monthly: 'fa-calendar-alt', yearly: 'fa-calendar'} %}
+                    {% for freq, icon in frequencies %}
+                        <div class="flex-fill">
+                            <input type="radio" name="frequency" id="freq_{{ freq }}" value="{{ freq }}" class="d-none freq-radio">
+                            <label for="freq_{{ freq }}" class="freq-option w-100 text-center p-2 rounded-3"
+                                   style="border: 2px solid #e0e0e0; cursor: pointer; background: white;">
+                                <i class="fas {{ icon }} small" style="color: #26474E;"></i>
+                                <p class="mb-0 fw-bold small" style="color: #26474E;">{{ freq | capitalize }}</p>
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {# End Date #}
+            <div class="mb-0">
+                <label class="form-label fw-bold small" style="color: #26474E;">
+                    End Date <span class="text-muted fw-normal">(optional)</span>
+                </label>
+                <input type="date" name="endDate" class="form-control form-control-sm" style="border-color: #76CDCD;">
+                <small class="text-muted">Leave empty for no end date</small>
+            </div>
+        </div>
+    </div>
+</div>
                             <hr class="my-3">
 
                             <div class="d-flex justify-content-between">
@@ -240,6 +368,24 @@
         border-color: #F27438 !important;
         box-shadow: 0 0 0 0.2rem rgba(242,116,56,0.2) !important;
     }
+    .freq-radio:checked + .freq-option {
+        border-color: #F27438 !important;
+        background: #fff3ee !important;
+    }
+    .freq-option:hover {
+        border-color: #F27438 !important;
+    }
+    #fromCurrency {
+    color: #26474E !important;
+    background-color: #f8f9fa !important;
+}
+#fromCurrency option {
+    color: #26474E;
+    background-color: white;
+    padding: 4px;
+
+}
+
 </style>
 <script>
 function validateTransaction() {
@@ -253,7 +399,7 @@ function validateTransaction() {
     // Hide previous error
     errorDiv.style.display = 'none';
 
-    // ❌ Check 1 — Wallet balance exceeded — BLOCK
+    // Check 1 — Wallet balance exceeded — BLOCK
     if (type === 'depense' && montant > walletSolde) {
         document.getElementById('walletErrorMsg').innerHTML =
             'Insufficient balance! Your wallet "<strong>' + walletPays + '</strong>" has only <strong>' +
@@ -263,7 +409,7 @@ function validateTransaction() {
         return false;
     }
 
-    // ⚠️ Check 2 — Budget exceeded — confirm dialog
+    //  Check 2 — Budget exceeded — confirm dialog
     if (type === 'depense') {
         const budgetsDataEl = document.getElementById('budgetsData');
         if (budgetsDataEl && budgetsDataEl.value && budgetsDataEl.value !== '[]') {
@@ -294,6 +440,110 @@ function validateTransaction() {
 
     return true;
 }
+function toggleRecurringOptions() {
+    const toggle = document.getElementById('recurringToggle');
+    const options = document.getElementById('recurringOptions');
+    options.style.display = toggle.checked ? 'block' : 'none';
+}
+let lastConvertedAmount = 0;
+
+async function loadCurrencies() {
+    try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+
+        if (data.rates) {
+            const select = document.getElementById('fromCurrency');
+            const currencies = Object.keys(data.rates).sort();
+
+            currencies.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency;
+                option.textContent = currency;
+                option.style.color = '#26474E';
+                select.appendChild(option);
+            });
+
+            // Check wallet currency
+            const walletCurrency = document.getElementById('toCurrency').value.toUpperCase().trim();
+            if (!data.rates[walletCurrency]) {
+                console.warn('Wallet currency "' + walletCurrency + '" not found in API');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading currencies:', error);
+    }
+}
+
+async function convertCurrency() {
+    const amount = parseFloat(document.getElementById('convertAmount').value);
+    const from = document.getElementById('fromCurrency').value;
+    const to = document.getElementById('toCurrency').value.toUpperCase().trim();
+    const resultDiv = document.getElementById('conversionResult');
+    const loadingDiv = document.getElementById('conversionLoading');
+    const errorDiv = document.getElementById('conversionError');
+    const resultText = document.getElementById('conversionText');
+
+    resultDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+        errorDiv.textContent = 'Please enter a valid amount';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    if (!from) {
+        errorDiv.textContent = 'Please select a source currency';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    if (from === to) {
+        lastConvertedAmount = amount;
+        resultText.innerHTML = amount.toFixed(2) + ' ' + from + ' = <strong>' + amount.toFixed(2) + ' ' + to + '</strong>';
+        resultDiv.style.display = 'flex';
+        return;
+    }
+
+    loadingDiv.style.display = 'block';
+
+    try {
+        // Map common non-standard codes
+        const currencyMap = { 'DT': 'TND', 'DA': 'DZD', 'LE': 'EGP', 'LD': 'LYD' };
+        const targetCode = currencyMap[to] || to;
+
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/' + from);
+        const data = await response.json();
+
+        if (data.rates && data.rates[targetCode]) {
+            const rate = data.rates[targetCode];
+            const converted = amount * rate;
+            lastConvertedAmount = converted;
+
+            resultText.innerHTML =
+                amount.toFixed(2) + ' ' + from +
+                ' = <strong>' + converted.toFixed(2) + ' ' + to + '</strong>' +
+                ' <span class="text-muted small">(1 ' + from + ' = ' + rate.toFixed(4) + ' ' + to + ')</span>';
+            resultDiv.style.display = 'flex';
+        } else {
+            errorDiv.textContent = 'Currency "' + to + '" not supported. Try a standard code like TND, EUR, USD.';
+            errorDiv.style.display = 'block';
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Conversion failed. Check your internet connection.';
+        errorDiv.style.display = 'block';
+    }
+
+    loadingDiv.style.display = 'none';
+}
+
+function useConvertedAmount() {
+    document.getElementById('montantInput').value = lastConvertedAmount.toFixed(2);
+    const input = document.getElementById('montantInput');
+    input.style.background = '#e8f5e9';
+    setTimeout(() => { input.style.background = 'white'; }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', loadCurrencies);
 </script>
 
 {% endblock %}
