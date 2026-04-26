@@ -294,6 +294,34 @@
         display: none;
     }
 
+    /* Summary Modal Styles */
+    .summary-modal-overlay {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px); display: none; align-items: center;
+        justify-content: center; z-index: 9999; padding: 20px;
+        animation: fadeIn 0.3s ease;
+    }
+    .summary-modal {
+        background: white; width: 100%; max-width: 600px;
+        border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        overflow: hidden; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .summary-modal-header {
+        padding: 24px 32px; background: #f8fafc; border-bottom: 1px solid #e5e7eb;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .summary-modal-content { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+    .summary-item { display: flex; gap: 16px; }
+    .summary-icon {
+        width: 40px; height: 40px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .summary-text h5 { margin: 0 0 4px 0; font-size: 13px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+    .summary-text p { margin: 0; font-size: 15px; color: #1e293b; line-height: 1.6; font-weight: 500; }
+    
+    .sla-timer { font-size: 1.2rem; font-weight: 800; color: #22c55e; }
+
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
@@ -361,7 +389,61 @@
 
                 <div class="info-group">
                     <span class="info-label">Created At</span>
-                    <div class="info-value" style="color: var(--gray-text);">{{ ticket.dateCreation|date('d M Y, H:i') }}</div>
+                    <div class="info-value" style="color: #6b7280;">{{ ticket.dateCreation|date('d M Y, H:i') }}</div>
+                </div>
+
+                <div class="info-group">
+                    <span class="info-label">Time Remaining (SLA)</span>
+                    {% if ticket.deadline %}
+                        {% set isClosed = ticket.statut|lower in ['closed', 'fermé'] %}
+                        {% if isClosed %}
+                            <div class="info-value" style="color: #22c55e;">Resolved</div>
+                        {% else %}
+                            <div class="sla-timer" data-deadline="{{ ticket.deadline|date('c') }}">
+                                Loading...
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="info-value" style="color: #94a3b8; font-style: italic;">No deadline set</div>
+                    {% endif %}
+                </div>
+
+                <button type="button" id="summarizeBtn" class="btn" style="width:100%; margin-top:10px; margin-bottom:20px; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; border-radius:12px; padding:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fas fa-magic"></i>
+                    AI Smart Summary
+                </button>
+
+                <!-- Summary Modal -->
+                <div id="summaryModalOverlay" class="summary-modal-overlay">
+                    <div class="summary-modal">
+                        <div class="summary-modal-header">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="background:#dcfce7; color:#15803d; padding:8px; border-radius:10px;">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h3 style="margin:0; font-size:18px; font-weight:800; color:#0f172a;">AI Analysis</h3>
+                            </div>
+                            <button type="button" onclick="closeSummaryModal()" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="summary-modal-content">
+                            <div class="summary-item">
+                                <div class="summary-icon" style="background:#fee2e2; color:#b91c1c;"><i class="fas fa-exclamation-circle"></i></div>
+                                <div class="summary-text"><h5>Issue</h5><p id="summaryProblem"></p></div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-icon" style="background:#e0f2fe; color:#0369a1;"><i class="fas fa-sync-alt"></i></div>
+                                <div class="summary-text"><h5>Progress</h5><p id="summaryProcess"></p></div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-icon" style="background:#dcfce7; color:#15803d;"><i class="fas fa-check-circle"></i></div>
+                                <div class="summary-text"><h5>Solution</h5><p id="summarySolution"></p></div>
+                            </div>
+                            <div id="summaryNoteWrapper" style="display:none; padding:16px; background:#fff7ed; border-radius:14px; border:1px solid #ffedd5; color:#9a3412; font-style:italic; font-size:14px;">
+                                <i class="fas fa-lightbulb" style="margin-right:8px;"></i>
+                                <span id="summaryNote"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="info-group" style="margin-top: 25px; padding-top: 25px; border-top: 1px dashed var(--border-color);">
@@ -474,44 +556,30 @@
 </div>
 
 <script>
-    // Auto-scroll chat to bottom
-    const chatContainer = document.getElementById('chatContainer');
-    if (chatContainer) {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    function toggleMessageMenu(id) {
+(function() {
+    // Global functions exposed to window
+    window.toggleMessageDropdown = function(id) {
         const dropdown = document.getElementById('dropdown-' + id);
+        if (!dropdown) return;
         const isOpen = dropdown.style.display === 'flex';
-        
-        // Close all other dropdowns
         document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.style.display = 'none');
-        
         dropdown.style.display = isOpen ? 'none' : 'flex';
-    }
+    };
 
-    // Close dropdowns on outside click
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.message-actions-dropdown')) {
-            document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.style.display = 'none');
-        }
-    });
-
-    function editMessage(id, content) {
+    window.editMessage = function(id, content) {
         document.getElementById('msg-content-' + id).style.visibility = 'hidden';
         document.getElementById('dropdown-' + id).style.display = 'none';
         const form = document.getElementById('edit-form-' + id);
         form.style.display = 'flex';
         form.querySelector('textarea').value = content;
-    }
+    };
 
-    function cancelEdit(id) {
+    window.cancelEdit = function(id) {
         document.getElementById('msg-content-' + id).style.visibility = 'visible';
         document.getElementById('edit-form-' + id).style.display = 'none';
-    }
+    };
 
-    async function translateMsgToFR(messageId, btn) {
-        // If already translated → restore original
+    window.translateMsgToFR = async function(messageId, btn) {
         if (btn.dataset.translated === '1') {
             document.getElementById('msg-text-' + messageId).innerHTML = btn.dataset.original;
             btn.innerHTML = btn.dataset.btnOriginal;
@@ -522,7 +590,7 @@
 
         const originalHtml = btn.innerHTML;
         btn.dataset.btnOriginal = originalHtml;
-        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;animation:spin 1s linear infinite"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg> Translating…';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating…';
         btn.disabled = true;
         try {
             const res = await fetch(`/message/${messageId}/translate`, {
@@ -532,209 +600,79 @@
             const data = await res.json();
             if (data.translated) {
                 const msgEl = document.getElementById('msg-text-' + messageId);
-                btn.dataset.original = msgEl.innerHTML; // save original HTML
+                btn.dataset.original = msgEl.innerHTML;
                 msgEl.innerHTML = data.translated.replace(/\n/g, '<br>');
                 btn.innerHTML = '↩ Show original';
                 btn.style.color = '#22c55e';
                 btn.dataset.translated = '1';
-                btn.disabled = false;
             } else {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
                 alert('Translation failed: ' + (data.error || 'Unknown error'));
+                btn.innerHTML = originalHtml;
             }
         } catch(e) {
             btn.innerHTML = originalHtml;
+        } finally {
             btn.disabled = false;
         }
-    }
-
-    // Voice Recording Logic
-    let mediaRecorder;
-    let audioChunks = [];
-    let startTime;
-    let timerInterval;
-
-    const micBtn = document.getElementById('micBtn');
-    const recorderPanel = document.getElementById('recorderPanel');
-    const standardSendBtn = document.getElementById('standardSendBtn');
-    const stopRecordBtn = document.getElementById('stopRecord');
-    const cancelRecordBtn = document.getElementById('cancelRecord');
-    const timerDisplay = document.getElementById('recordTimer');
-
-    micBtn.onclick = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-                const formData = new FormData();
-                formData.append('audio', audioBlob, 'voice_message.webm');
-
-                try {
-                    const response = await fetch("{{ path('app_user_message_voice', {id: ticket.id}) }}", {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: formData
-                    });
-                    
-                    const contentType = response.headers.get("content-type");
-                    if (contentType && contentType.indexOf("application/json") !== -1) {
-                        const result = await response.json();
-                        console.log('Voice upload response:', result);
-                        if (result.success) {
-                            window.location.reload();
-                        } else {
-                            alert('Upload failed: ' + (result.error || 'Unknown error'));
-                        }
-                    } else {
-                        const text = await response.text();
-                        console.error('Server returned non-JSON response:', text);
-                        alert('Server error: Could not process voice message. Please check the console for details.');
-                    }
-                } catch (err) {
-                    console.error('Upload process failed:', err);
-                    alert('Could not send voice message: ' + err.message);
-                    
-                    recorderPanel.style.display = 'none';
-                    micBtn.style.display = 'flex';
-                    standardSendBtn.style.display = 'flex';
-                }
-            };
-
-            mediaRecorder.start();
-            micBtn.style.display = 'none';
-            standardSendBtn.style.display = 'none';
-            recorderPanel.style.display = 'flex';
-            
-            startTime = Date.now();
-            timerInterval = setInterval(() => {
-                const seconds = Math.floor((Date.now() - startTime) / 1000);
-                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-                const s = (seconds % 60).toString().padStart(2, '0');
-                timerDisplay.textContent = `${m}:${s}`;
-            }, 1000);
-
-        } catch (err) {
-            console.error('Mic access denied:', err);
-            alert('Mic access denied. Please enable microphone permissions.');
-        }
     };
 
-    stopRecordBtn.onclick = () => {
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(t => t.stop());
-        clearInterval(timerInterval);
-    };
-
-    cancelRecordBtn.onclick = () => {
-        mediaRecorder.onstop = null;
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(t => t.stop());
-        clearInterval(timerInterval);
-        recorderPanel.style.display = 'none';
-        micBtn.style.display = 'flex';
-        standardSendBtn.style.display = 'flex';
-        timerDisplay.textContent = '00:00';
-    };
-
-    // Shared Audio Player logic
-    let currentAudio = null;
     window.toggleAudio = function(btn, url) {
-        if (currentAudio && currentAudio.src === url) {
-            if (currentAudio.paused) {
-                currentAudio.play();
+        if (window.currentAudio && window.currentAudio.src === url) {
+            if (window.currentAudio.paused) {
+                window.currentAudio.play();
                 btn.innerHTML = '<i class="fas fa-pause"></i>';
             } else {
-                currentAudio.pause();
+                window.currentAudio.pause();
                 btn.innerHTML = '<i class="fas fa-play"></i>';
             }
         } else {
-            if (currentAudio) currentAudio.pause();
-            currentAudio = new Audio(url);
-            currentAudio.play();
+            if (window.currentAudio) window.currentAudio.pause();
+            window.currentAudio = new Audio(url);
+            window.currentAudio.play();
             btn.innerHTML = '<i class="fas fa-pause"></i>';
-            
-            currentAudio.onended = () => {
-                btn.innerHTML = '<i class="fas fa-play"></i>';
-            };
+            window.currentAudio.onended = () => { btn.innerHTML = '<i class="fas fa-play"></i>'; };
         }
     };
 
-    // Handle file selection display
-    const fileInputElement = document.getElementById('{{ form.attachment.vars.id }}');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    
-    if (fileInputElement) {
-        fileInputElement.addEventListener('change', function() {
-            if (this.files && this.files.length > 0) {
-                fileNameDisplay.textContent = 'Selected: ' + this.files[0].name;
-                fileNameDisplay.style.display = 'block';
-            } else {
-                fileNameDisplay.style.display = 'none';
-            }
-        });
-    }
+    function initTicketDetails() {
+        console.log("Initializing Ticket Details (Admin-aligned)...");
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // AI Suggestions Logic
-    document.addEventListener('DOMContentLoaded', function () {
         const suggestionsBox = document.getElementById('suggestionsBox');
         const textarea = document.getElementById('{{ form.contenu.vars.id }}');
-        const suggestionsUrl = '{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}';
-
+        
+        // Load Suggestions once
         async function loadSuggestions() {
-            if (!suggestionsBox || !textarea) return;
-
-            suggestionsBox.innerHTML = '<span style="color:#64748b;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;"><i class="fas fa-spinner fa-spin"></i> Getting AI suggestions...</span>';
-
+            if (!suggestionsBox) return;
+            suggestionsBox.innerHTML = '<span style="font-size:12px;color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Analyzing conversation...</span>';
             try {
-                const response = await fetch(suggestionsUrl);
+                const response = await fetch('{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}');
                 const data = await response.json();
-                console.log('Detected Role:', data.detected_role);
-                console.log('Groq Suggestions Response:', data);
-
-                if (data.suggestions && data.suggestions.length > 0) {
-                    suggestionsBox.innerHTML = '';
-                    data.suggestions.forEach(suggestion => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'suggestion-chip';
-                        btn.textContent = suggestion;
-                        btn.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap; border: 1px solid #22c55e33;';
-                        
-                        btn.onmouseover = () => { btn.style.background = '#dcfce7'; btn.style.transform = 'translateY(-1px)'; };
-                        btn.onmouseout = () => { btn.style.background = '#f0fdf4'; btn.style.transform = 'none'; };
-                        
-                        btn.onclick = () => {
-                            textarea.value = suggestion;
-                            textarea.focus();
-                        };
-                        suggestionsBox.appendChild(btn);
-                    });
-                } else {
-                    suggestionsBox.innerHTML = '<span style="color:#94a3b8;font-size:12px;font-style:italic;">No suggestions available</span>';
-                }
-            } catch (e) {
-                console.error('Groq Error:', e);
                 suggestionsBox.innerHTML = '';
-            }
+                if (data.suggestions && data.suggestions.length > 0) {
+                    data.suggestions.forEach(suggestion => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'suggestion-chip';
+                        chip.textContent = suggestion;
+                        chip.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; margin-right:8px; transition:all 0.2s;';
+                        chip.onclick = () => { textarea.value = suggestion; textarea.focus(); };
+                        suggestionsBox.appendChild(chip);
+                    });
+                }
+            } catch (e) { suggestionsBox.innerHTML = ''; }
         }
 
-        loadSuggestions();
+        if (textarea) loadSuggestions();
 
-        // AI Transformation logic (Formalize & Correct)
+        // AI Transformations
         document.querySelectorAll('.transform-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
+            btn.onclick = async () => {
+                if (!textarea) return;
                 const currentText = textarea.value.trim();
                 if (!currentText) return;
 
-                const mode = btn.dataset.mode;
                 const originalContent = btn.innerHTML;
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -743,62 +681,223 @@
                     const response = await fetch('{{ path('app_message_reformulate') }}', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: currentText, mode: mode })
+                        body: JSON.stringify({ content: currentText, mode: btn.dataset.mode })
                     });
                     const data = await response.json();
-                    if (data.transformed) {
-                        textarea.value = data.transformed;
-                        textarea.style.height = 'auto';
-                        textarea.style.height = textarea.scrollHeight + 'px';
-                    }
+                    if (data.transformed) textarea.value = data.transformed;
                 } catch (e) {
-                    console.error('Transformation error:', e);
+                    console.error('AI Transform Error:', e);
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = originalContent;
                 }
-            });
+            };
         });
 
-        // --- AJAX Polling for new messages ---
-        let lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
-        const fetchUrlPattern = "{{ path('app_ticket_fetch_new_messages', {id: ticket.id, lastId: 999999}) }}";
-
+        // Polling
+        var lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
         function pollMessages() {
-            const url = fetchUrlPattern.replace('999999', lastMessageId);
-            
-            fetch(url, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
+            const url = "{{ path('app_ticket_fetch_new_messages', {id: ticket.id, lastId: '999999'}) }}".replace('999999', lastMessageId);
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.json())
             .then(data => {
                 if (data.count > 0) {
-                    console.log(`Chat Polling: Found ${data.count} new messages.`);
                     const chatContainer = document.getElementById('chatContainer');
-                    const noMessagesPlaceholder = document.getElementById('noMessagesPlaceholder');
+                    const placeholder = document.getElementById('noMessagesPlaceholder');
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.html, 'text/html');
+                    const newMessages = doc.querySelectorAll('[id^="msg-wrapper-"]');
                     
-                    if (noMessagesPlaceholder) {
-                        noMessagesPlaceholder.remove();
+                    let appended = false;
+                    newMessages.forEach(msg => {
+                        if (!document.getElementById(msg.id)) {
+                            if (placeholder) placeholder.remove();
+                            chatContainer.appendChild(msg);
+                            appended = true;
+                        }
+                    });
+
+                    if (appended) {
+                        lastMessageId = data.lastId;
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                        // Refresh suggestions when new messages arrive
+                        loadSuggestions();
+                    } else if (data.lastId > lastMessageId) {
+                        lastMessageId = data.lastId;
                     }
-                    
-                    // Append new messages
-                    chatContainer.insertAdjacentHTML('beforeend', data.html);
-                    
-                    // Update lastId
-                    lastMessageId = data.lastId;
-                    
-                    // Scroll to bottom
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
-            })
-            .catch(err => console.error('Chat Polling Error:', err));
+            }).catch(e => {});
         }
 
-        // Check for new messages every 3 seconds
-        setInterval(pollMessages, 3000);
+        if (window.chatPollingInterval) clearInterval(window.chatPollingInterval);
+        window.chatPollingInterval = setInterval(pollMessages, 3000);
+
+        // --- SLA Timer Logic ---
+        const timers = document.querySelectorAll('.sla-timer');
+        const serverTimeStr = '{{ "now"|date("c") }}';
+        const serverNow = new Date(serverTimeStr);
+        const clientNow = new Date();
+        const timeOffset = serverNow.getTime() - clientNow.getTime();
+
+        function formatDuration(totalSeconds) {
+            const isNegative = totalSeconds < 0;
+            const absSeconds = Math.abs(totalSeconds);
+            const days = Math.floor(absSeconds / 86400);
+            const hours = Math.floor((absSeconds % 86400) / 3600);
+            const minutes = Math.floor((absSeconds % 3600) / 60);
+            const seconds = absSeconds % 60;
+            let text = isNegative ? '- ' : '';
+            if (days > 0) text += days + 'd ';
+            text += String(hours).padStart(2, '0') + 'h ' + String(minutes).padStart(2, '0') + 'm ' + String(seconds).padStart(2, '0') + 's';
+            return text;
+        }
+
+        function updateTimer(element) {
+            const deadline = new Date(element.dataset.deadline);
+            const now = new Date(Date.now() + timeOffset);
+            const diff = deadline.getTime() - now.getTime();
+            const totalSeconds = Math.floor(diff / 1000);
+            element.textContent = formatDuration(totalSeconds);
+            if (totalSeconds <= 0) {
+                element.style.color = '#ef4444';
+                element.textContent = "BREACHED";
+            } else if (totalSeconds <= 3600) element.style.color = '#ef4444';
+            else if (totalSeconds <= 24 * 3600) element.style.color = '#f59e0b';
+            else element.style.color = '#22c55e';
+        }
+
+        if (timers.length > 0) {
+            timers.forEach(t => {
+                updateTimer(t);
+                setInterval(() => updateTimer(t), 1000);
+            });
+        }
+
+        // AI Summary logic
+        const summarizeBtn = document.getElementById('summarizeBtn');
+        const summaryModal = document.getElementById('summaryModalOverlay');
+        
+        window.closeSummaryModal = function() {
+            if (summaryModal) summaryModal.style.display = 'none';
+        };
+
+        if (summarizeBtn) {
+            summarizeBtn.addEventListener('click', async () => {
+                const originalContent = summarizeBtn.innerHTML;
+                summarizeBtn.disabled = true;
+                summarizeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+
+                try {
+                    const response = await fetch('{{ path('app_ticket_summary', {id: ticket.id}) }}');
+                    const data = await response.json();
+                    if (data.problem) {
+                        document.getElementById('summaryProblem').textContent = data.problem;
+                        document.getElementById('summaryProcess').textContent = data.process;
+                        document.getElementById('summarySolution').textContent = data.solution;
+                        const noteWrapper = document.getElementById('summaryNoteWrapper');
+                        if (data.adaptive_note) {
+                            document.getElementById('summaryNote').textContent = data.adaptive_note;
+                            noteWrapper.style.display = 'block';
+                        } else noteWrapper.style.display = 'none';
+                        if (summaryModal) summaryModal.style.display = 'flex';
+                    }
+                } catch (e) {
+                    alert('Connection error while fetching summary.');
+                } finally {
+                    summarizeBtn.disabled = false;
+                    summarizeBtn.innerHTML = originalContent;
+                }
+            });
+        }
+
+        if (summaryModal) {
+            summaryModal.addEventListener('click', (e) => {
+                if (e.target === summaryModal) closeSummaryModal();
+            });
+        }
+
+        // Form Submit
+        const replyForm = document.getElementById('replyForm');
+        if (replyForm) {
+            replyForm.onsubmit = () => {
+                clearInterval(window.chatPollingInterval);
+            };
+        }
+
+        // Voice
+        let mediaRecorder;
+        let audioChunks = [];
+        let startTime;
+        let timerInterval;
+        const micBtn = document.getElementById('micBtn');
+        const recorderPanel = document.getElementById('recorderPanel');
+        const standardSendBtn = document.getElementById('standardSendBtn');
+        const stopRecordBtn = document.getElementById('stopRecord');
+        const cancelRecordBtn = document.getElementById('cancelRecord');
+        const timerDisplay = document.getElementById('recordTimer');
+
+        if (micBtn) {
+            micBtn.onclick = async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob, 'voice.webm');
+                        try {
+                            const res = await fetch("{{ path('app_user_message_voice', {id: ticket.id}) }}", {
+                                method: 'POST',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                body: formData
+                            });
+                            const result = await res.json();
+                            if (result.success) window.location.reload();
+                            else alert('Failed: ' + result.error);
+                        } catch (err) { alert('Upload error'); }
+                    };
+                    mediaRecorder.start();
+                    micBtn.style.display = 'none';
+                    standardSendBtn.style.display = 'none';
+                    recorderPanel.style.display = 'flex';
+                    startTime = Date.now();
+                    timerInterval = setInterval(() => {
+                        const sec = Math.floor((Date.now() - startTime) / 1000);
+                        timerDisplay.textContent = `${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`;
+                    }, 1000);
+                } catch (e) { alert('Mic denied'); }
+            };
+            stopRecordBtn.onclick = () => {
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                }
+                clearInterval(timerInterval);
+            };
+            cancelRecordBtn.onclick = () => {
+                if (mediaRecorder) {
+                    mediaRecorder.onstop = null;
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                }
+                clearInterval(timerInterval);
+                recorderPanel.style.display = 'none';
+                micBtn.style.display = 'flex';
+                standardSendBtn.style.display = 'flex';
+            };
+        }
+    }
+
+    document.addEventListener('turbo:load', initTicketDetails);
+    if (document.readyState !== 'loading') initTicketDetails();
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.message-actions-dropdown')) {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.style.display = 'none');
+        }
     });
+})();
 </script>
 {% endblock %}
