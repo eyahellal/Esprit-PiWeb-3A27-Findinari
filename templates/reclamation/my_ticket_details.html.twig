@@ -645,23 +645,44 @@
         // Load Suggestions once
         async function loadSuggestions() {
             if (!suggestionsBox) return;
-            suggestionsBox.innerHTML = '<span style="font-size:12px;color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Analyzing conversation...</span>';
+            
+            // Keep old suggestions but dim them to show we are loading
+            const oldSuggestions = suggestionsBox.innerHTML;
+            const loadingHtml = '<span style="font-size:12px;color:#64748b;margin-left:5px;"><i class="fas fa-spinner fa-spin"></i> Refreshing AI ideas...</span>';
+            
+            if (!oldSuggestions.trim()) {
+                suggestionsBox.innerHTML = loadingHtml;
+            }
+
             try {
                 const response = await fetch('{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}');
+                if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
-                suggestionsBox.innerHTML = '';
+                
                 if (data.suggestions && data.suggestions.length > 0) {
+                    suggestionsBox.innerHTML = '';
                     data.suggestions.forEach(suggestion => {
                         const chip = document.createElement('button');
                         chip.type = 'button';
                         chip.className = 'suggestion-chip';
                         chip.textContent = suggestion;
-                        chip.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; margin-right:8px; transition:all 0.2s;';
+                        chip.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; margin-right:8px; transition:all 0.2s; border-bottom: 2px solid #22c55e33;';
+                        chip.onmouseover = () => { chip.style.background = '#dcfce7'; chip.style.transform = 'translateY(-1px)'; };
+                        chip.onmouseout = () => { chip.style.background = '#f0fdf4'; chip.style.transform = 'none'; };
                         chip.onclick = () => { textarea.value = suggestion; textarea.focus(); };
                         suggestionsBox.appendChild(chip);
                     });
+                } else if (!oldSuggestions.trim()) {
+                    suggestionsBox.innerHTML = '<span style="font-size:11px;color:#94a3b8;font-style:italic;">No suggestions right now. Try typing something first!</span>';
+                } else {
+                    // If no new suggestions found, just keep the old ones or show a retry
                 }
-            } catch (e) { suggestionsBox.innerHTML = ''; }
+            } catch (e) { 
+                console.error('Suggestion Error:', e);
+                if (!oldSuggestions.trim()) {
+                    suggestionsBox.innerHTML = '<button onclick="loadSuggestions()" style="background:none; border:none; color:#16a34a; font-size:12px; cursor:pointer; font-weight:700;"><i class="fas fa-redo"></i> Retry suggestions</button>';
+                }
+            }
         }
 
         if (textarea) loadSuggestions();
@@ -720,8 +741,6 @@
                     if (appended) {
                         lastMessageId = data.lastId;
                         chatContainer.scrollTop = chatContainer.scrollHeight;
-                        // Refresh suggestions when new messages arrive
-                        loadSuggestions();
                     } else if (data.lastId > lastMessageId) {
                         lastMessageId = data.lastId;
                     }
