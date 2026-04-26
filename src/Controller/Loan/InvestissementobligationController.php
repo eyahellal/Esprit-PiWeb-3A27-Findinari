@@ -6,7 +6,7 @@ use App\Entity\Loan\Investissementobligation;
 use App\Entity\Loan\Obligation;
 use App\Entity\management\Wallet;
 use App\Entity\user\Utilisateur;
-use App\form\InvestissementobligationType;
+use App\Form\InvestissementobligationType;
 use App\Repository\InvestissementobligationRepository;
 use App\Repository\ObligationRepository;
 use App\Repository\WalletRepository;
