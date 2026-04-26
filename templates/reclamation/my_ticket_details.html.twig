@@ -641,7 +641,26 @@
 
         const suggestionsBox = document.getElementById('suggestionsBox');
         const textarea = document.getElementById('{{ form.contenu.vars.id }}');
+        const fileInput = document.getElementById('{{ form.attachment.vars.id }}');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
         
+        if (fileInput && fileNameDisplay) {
+            fileInput.onchange = () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    const name = fileInput.files[0].name;
+                    fileNameDisplay.style.display = 'flex';
+                    fileNameDisplay.innerHTML = `<i class="fas fa-file-alt" style="margin-right:8px;"></i> Attached: <strong style="margin-left:4px;">${name}</strong> <i class="fas fa-times" style="margin-left:auto; cursor:pointer; color:#ef4444;" onclick="window.clearAttachment()"></i>`;
+                } else {
+                    fileNameDisplay.style.display = 'none';
+                }
+            };
+        }
+
+        window.clearAttachment = function() {
+            if (fileInput) fileInput.value = '';
+            if (fileNameDisplay) fileNameDisplay.style.display = 'none';
+        };
+
         // Load Suggestions once
         async function loadSuggestions() {
             if (!suggestionsBox) return;
