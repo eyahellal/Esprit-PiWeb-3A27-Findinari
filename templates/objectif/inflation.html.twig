@@ -29,7 +29,6 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); }
 
-/* Topbar */
 .topbar {
     background: var(--green-deep);
     border-bottom: 1px solid rgba(255,255,255,.06);
@@ -60,7 +59,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .tb-btn-back:hover { background: rgba(255,255,255,.1); color: #fff; }
 
-/* Layout */
 .infl-page { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
 .infl-header { margin-bottom: 2.5rem; }
 .infl-eyebrow {
@@ -77,11 +75,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .infl-title em { color: var(--green); font-style: italic; }
 .infl-sub { font-size: 14px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
 
-/* Grid */
 .infl-grid { display: grid; grid-template-columns: 420px 1fr; gap: 1.5rem; align-items: start; }
 @media (max-width: 900px) { .infl-grid { grid-template-columns: 1fr; } }
 
-/* Card */
 .infl-card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 22px; padding: 2rem;
@@ -99,7 +95,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     font-size: 18px; flex-shrink: 0;
 }
 
-/* Form */
 .field { margin-bottom: 1.25rem; }
 .field label {
     display: block; font-size: 12px; font-weight: 600;
@@ -135,7 +130,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 }
 .btn-simulate:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,158,110,.45); }
 
-/* Error */
 .infl-error {
     background: var(--red-light); border: 1px solid rgba(184,48,48,.2);
     color: var(--red); border-radius: 10px; padding: 12px 16px;
@@ -143,17 +137,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     display: flex; align-items: center; gap: 8px;
 }
 
-/* Result cards */
 .result-summary {
     display: grid; grid-template-columns: repeat(3, 1fr);
     gap: 10px; margin-bottom: 1.5rem;
 }
 @media (max-width: 600px) { .result-summary { grid-template-columns: 1fr 1fr; } }
 
-.res-card {
-    border-radius: 14px; padding: 1.1rem 1.25rem;
-    border: 1px solid var(--border);
-}
+.res-card { border-radius: 14px; padding: 1.1rem 1.25rem; border: 1px solid var(--border); }
 .res-card--green { background: linear-gradient(135deg, #d0f0e4, #e8f7f0); border-color: rgba(26,158,110,.2); }
 .res-card--red   { background: linear-gradient(135deg, #fce8e8, #faeaea); border-color: rgba(184,48,48,.2); }
 .res-card--gold  { background: linear-gradient(135deg, #faeeda, #fff8ec); border-color: rgba(201,146,10,.2); }
@@ -167,7 +157,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .res-val--blue  { color: #185fa5; }
 .res-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-/* Source */
 .infl-source {
     font-size: 11px; color: var(--muted);
     background: var(--bg); border-radius: 8px;
@@ -175,11 +164,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     display: flex; align-items: center; gap: 6px;
 }
 
-/* Timeline */
-.timeline-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 15px; font-weight: 700; margin-bottom: 1rem;
-}
+.timeline-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; margin-bottom: 1rem; }
 .timeline { display: flex; flex-direction: column; gap: 8px; }
 .tl-row {
     display: flex; align-items: center; gap: 12px;
@@ -188,31 +173,23 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     transition: background .15s;
 }
 .tl-row:hover { background: var(--green-light); border-color: rgba(26,158,110,.2); }
-.tl-year {
-    font-family: 'Playfair Display', serif; font-size: 15px;
-    font-weight: 700; color: var(--green); min-width: 55px;
-}
+.tl-year { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--green); min-width: 55px; }
 .tl-bar-wrap { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
 .tl-bar { height: 100%; background: linear-gradient(90deg, var(--green), #34d399); border-radius: 4px; }
 .tl-val { font-size: 13px; font-weight: 600; color: var(--text); min-width: 80px; text-align: right; }
 
-/* Conseil */
 .conseil-box {
     background: linear-gradient(135deg, #d0f0e4, #e8f7f0);
     border: 1px solid rgba(26,158,110,.2); border-radius: 14px;
     padding: 1.25rem 1.5rem; margin-top: 1.5rem;
 }
-.conseil-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 14px; font-weight: 700; color: #0f6e56; margin-bottom: 6px;
-}
+.conseil-title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: #0f6e56; margin-bottom: 6px; }
 .conseil-text { font-size: 13px; color: #0f6e56; line-height: 1.6; }
 </style>
 {% endblock %}
 
 {% block body %}
 
-{# TOPBAR #}
 <nav class="topbar">
     <div class="topbar-inner">
         <a href="{{ path('objectif_index') }}" class="topbar-brand">Findi<em>nari</em></a>
@@ -230,7 +207,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
 <div class="infl-page">
 
-    {# HEADER #}
     <div class="infl-header">
         <div class="infl-eyebrow">Outil financier</div>
         <h1 class="infl-title">Simulateur d'<em>Inflation</em></h1>
@@ -239,7 +215,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
     <div class="infl-grid">
 
-        {# FORMULAIRE #}
         <div class="infl-card">
             <div class="infl-card-title"><span>🌍</span> Paramètres de simulation</div>
 
@@ -247,20 +222,29 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                 <div class="infl-error">⚠️ {{ error }}</div>
             {% endif %}
 
-            <form method="POST" action="{{ path('objectif_inflation') }}" id="inflationForm">
+            {# ✅ FIX TURBO : data-turbo="false" + type="submit" #}
+            <form method="POST"
+                  action="{{ path('objectif_inflation') }}"
+                  id="inflationForm"
+                  data-turbo="false">
+
                 <div class="field">
                     <label>Montant actuel</label>
-                    <input type="number" name="montant" placeholder="Ex: 10 000"
+                    <input type="number" name="montant"
+                           placeholder="Ex: 10 000"
                            min="1" step="0.01"
-                           value="{{ result ? result.montant_initial : '' }}" required>
+                           value="{{ result ? result.montant_initial : '' }}"
+                           required>
                 </div>
 
                 <div class="field-row">
                     <div class="field">
                         <label>Durée (années)</label>
-                        <input type="number" name="annees" placeholder="Ex: 5"
+                        <input type="number" name="annees"
+                               placeholder="Ex: 5"
                                min="1" max="50"
-                               value="{{ result ? result.annees : '' }}" required>
+                               value="{{ result ? result.annees : '' }}"
+                               required>
                     </div>
                     <div class="field">
                         <label>Pays</label>
@@ -274,22 +258,20 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                     </div>
                 </div>
 
-               {# Dans inflation.html.twig - remplace le bouton #}
-<button type="button" onclick="document.getElementById('inflationForm').submit()" class="btn-simulate">
-    📊 Calculer l'impact de l'inflation
-</button>
+                {# ✅ type="submit" normal #}
+                <button type="submit" class="btn-simulate">
+                    📊 Calculer l'impact de l'inflation
+                </button>
+
             </form>
         </div>
 
-        {# RÉSULTATS #}
         {% if result %}
         <div>
-            {# Source #}
             <div class="infl-source">
                 📡 Source : {{ result.source }} — Données {{ result.annee_donnee }} pour {{ result.country_name }}
             </div>
 
-            {# Résumé #}
             <div class="result-summary">
                 <div class="res-card res-card--green">
                     <div class="res-lbl">Taux d'inflation</div>
@@ -308,7 +290,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                 </div>
             </div>
 
-            {# Conseil contribution #}
             <div class="infl-card" style="margin-bottom: 1.25rem;">
                 <div class="res-card res-card--blue" style="margin-bottom:0">
                     <div class="res-lbl">💡 Contribution mensuelle recommandée</div>
@@ -319,7 +300,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                 </div>
             </div>
 
-            {# Timeline année par année #}
             <div class="infl-card">
                 <div class="timeline-title">📅 Évolution année par année</div>
                 {% set maxVal = result.history|last %}
@@ -348,6 +328,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                 </div>
             </div>
         </div>
+
         {% else %}
         <div class="infl-card" style="display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:1rem;text-align:center;">
             <div style="font-size:56px;">📉</div>
@@ -360,4 +341,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
     </div>
 </div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+// ✅ Désactive Turbo sur ce formulaire au cas où
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('inflationForm');
+    if (form) {
+        form.setAttribute('data-turbo', 'false');
+    }
+});
+</script>
 {% endblock %}

@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class InflationController extends AbstractController
 {
@@ -83,7 +84,10 @@ class InflationController extends AbstractController
         'SN' => ['taux' => 2.1,   'source' => 'ANSD 2024'],
     ];
 
-    // ✅ Plus besoin de HttpClientInterface — supprimé
+    public function __construct(
+        private HttpClientInterface $client
+    ) {}
+
     #[Route('/objectif/inflation', name: 'objectif_inflation', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
@@ -102,6 +106,7 @@ class InflationController extends AbstractController
             } elseif (!isset(self::COUNTRIES[$country])) {
                 $error = 'Pays invalide.';
             } else {
+                // ✅ Essaie l'API, sinon fallback automatique
                 $inflationInfo = $this->getInflationData($country);
                 $taux          = $inflationInfo['taux'];
                 $tauxDecimal   = $taux / 100;
@@ -143,16 +148,44 @@ class InflationController extends AbstractController
         ]);
     }
 
-    // ✅ Utilise directement les taux locaux — pas d'appel HTTP
     private function getInflationData(string $country): array
     {
+        
+        try {
+            $response = $this->client->request(
+                'GET',
+                "https://api.worldbank.org/v2/country/{$country}/indicator/FP.CPI.TOTL.ZG",
+                [
+                    'query'   => ['format' => 'json', 'mrv' => 5],
+                    'timeout' => 2, // 2 secondes max
+                ]
+            );
+
+            $data = $response->toArray();
+
+            if (isset($data[1]) && is_array($data[1])) {
+                foreach ($data[1] as $entry) {
+                    if ($entry['value'] !== null && $entry['value'] > 0) {
+                        return [
+                            'taux'   => round((float) $entry['value'], 2),
+                            'annee'  => $entry['date'],
+                            'source' => '🌐 World Bank (temps réel)',
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // API indisponible → fallback silencieux
+        }
+
+        // ✅ Fallback fiable si API indisponible
         $fallback = self::FALLBACK_RATES[$country]
             ?? ['taux' => 3.0, 'source' => 'Estimation mondiale'];
 
         return [
             'taux'   => $fallback['taux'],
             'annee'  => '2024',
-            'source' => $fallback['source'],
+            'source' => '📊 ' . $fallback['source'],
         ];
     }
 }

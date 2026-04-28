@@ -368,7 +368,7 @@ class ObjectifController extends AbstractController
         $enCoursPaginated = $paginator->paginate(
             $enCours,
             $request->query->getInt('pageE', 1),
-            4,
+            1,
             ['pageParameterName' => 'pageE']
         );
 
