@@ -54,8 +54,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $gmail = null;
 
+<<<<<<< HEAD
     #[ORM\Column(name: 'mdp', type: 'string', length: 255)]
     private ?string $mdp = null;
+=======
+   #[ORM\Column(name: 'mdp', type: 'string', length: 255)]
+private ?string $mdp = null;
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
     #[ORM\Column(name: 'role', type: 'string', length: 50, options: ['default' => 'USER'])]
     #[Assert\NotBlank(message: "Le rôle est obligatoire.")]

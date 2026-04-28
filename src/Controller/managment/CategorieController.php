@@ -14,18 +14,58 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/categorie')]
 class CategorieController extends AbstractController
 {
+<<<<<<< HEAD
     #[Route('/', name: 'app_categorie_index', methods: ['GET'])]
+=======
+#[Route('/', name: 'app_categorie_index', methods: ['GET'])]
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 public function index(CategorieRepository $categorieRepository, Request $request): Response
 {
     $search = $request->query->get('search', '');
     $statut = $request->query->get('statut', '');
+<<<<<<< HEAD
 
     $categories = $categorieRepository->findByFilters($search, $statut);
+=======
+    $page = $request->query->getInt('page', 1);
+    $limit = 6;
+
+    $qb = $categorieRepository->createQueryBuilder('c');
+
+    if ($search) {
+        $qb->andWhere('c.nom LIKE :search')
+           ->setParameter('search', '%' . $search . '%');
+    }
+
+    if ($statut) {
+        $qb->andWhere('c.statut = :statut')
+           ->setParameter('statut', $statut);
+    }
+
+    // Count total
+    $total = (clone $qb)->select('COUNT(c.id)')->getQuery()->getSingleScalarResult();
+    $totalPages = max(1, ceil($total / $limit));
+
+    if ($page < 1) $page = 1;
+    if ($page > $totalPages) $page = $totalPages;
+
+    // Get paginated results
+    $categories = $qb->setFirstResult(($page - 1) * $limit)
+                     ->setMaxResults($limit)
+                     ->getQuery()
+                     ->getResult();
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
     return $this->render('management/categorie/index.html.twig', [
         'categories' => $categories,
         'search' => $search,
         'statut' => $statut,
+<<<<<<< HEAD
+=======
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'total' => $total,
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     ]);
 }
 

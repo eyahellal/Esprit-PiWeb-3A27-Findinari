@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+<<<<<<< HEAD
+=======
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
 #[Route('/transaction')]
 class TransactionController extends AbstractController
@@ -44,6 +48,7 @@ class TransactionController extends AbstractController
 
         return $user;
     }
+<<<<<<< HEAD
 
     #[Route('/', name: 'app_transaction_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager, Request $request): Response
@@ -56,6 +61,44 @@ class TransactionController extends AbstractController
 
         // Get all transactions of those wallets
         $transactions = [];
+=======
+   #[Route('/weather', name: 'app_weather_index', methods: ['GET'])]
+public function weather(): Response
+{
+    return $this->render('management/weather/index.html.twig', [
+        'groq_api_key' => $_ENV['GROQ_API_KEY'] ?? '',
+    ]);
+}
+#[Route('/holiday', name: 'app_holiday_index', methods: ['GET'])]
+public function holiday(): Response
+{
+    return $this->render('management/holiday/index.html.twig', [
+        'groq_api_key' => $_ENV['GROQ_API_KEY'] ?? '',
+    ]);
+}
+
+  #[Route('/', name: 'app_transaction_index', methods: ['GET'])]
+    public function index(EntityManagerInterface $entityManager, Request $request): Response
+    {
+        $user = $this->getUserOrCreate($entityManager);
+        $this->executeRecurringTransactions($entityManager, $user);
+
+        $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
+            ->findBy(['utilisateur' => $user]);
+
+        $transactions = [];
+        $total = 0;
+        $totalIncome = 0;
+        $totalExpense = 0;
+        $page = $request->query->getInt('page', 1);
+        $limit = 8;
+        $totalPages = 1;
+        $type = $request->query->get('type', '');
+
+        // Collect all transaction data for JS conversion
+        $transactionsData = [];
+
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
         if (!empty($wallets)) {
             $qb = $entityManager->getRepository(Transaction::class)
                 ->createQueryBuilder('t')
@@ -63,13 +106,17 @@ class TransactionController extends AbstractController
                 ->setParameter('wallets', $wallets)
                 ->orderBy('t.date', 'DESC');
 
+<<<<<<< HEAD
             // Filter by type
             $type = $request->query->get('type', '');
+=======
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
             if ($type) {
                 $qb->andWhere('t.type = :type')
                    ->setParameter('type', $type);
             }
 
+<<<<<<< HEAD
             $transactions = $qb->getQuery()->getResult();
         }
 
@@ -82,16 +129,52 @@ class TransactionController extends AbstractController
             } else {
                 $totalExpense += $t->getMontant();
             }
+=======
+            $allTransactions = (clone $qb)->getQuery()->getResult();
+            foreach ($allTransactions as $t) {
+                $transactionsData[] = [
+                    'type' => $t->getType(),
+                    'montant' => $t->getMontant(),
+                    'devise' => $t->getDevise(),
+                ];
+                if ($t->getType() === 'income') {
+                    $totalIncome += $t->getMontant();
+                } else {
+                    $totalExpense += $t->getMontant();
+                }
+            }
+
+            $total = count($allTransactions);
+            $totalPages = max(1, ceil($total / $limit));
+
+            if ($page < 1) $page = 1;
+            if ($page > $totalPages) $page = $totalPages;
+
+            $transactions = $qb->setFirstResult(($page - 1) * $limit)
+                               ->setMaxResults($limit)
+                               ->getQuery()
+                               ->getResult();
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
         }
 
         return $this->render('management/transaction/index.html.twig', [
             'transactions' => $transactions,
             'totalIncome' => $totalIncome,
             'totalExpense' => $totalExpense,
+<<<<<<< HEAD
             'type' => $type ?? '',
         ]);
     }
 
+=======
+            'type' => $type,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
+            'transactionsData' => $transactionsData,
+        ]);
+    }
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     #[Route('/new/step1', name: 'app_transaction_new_step1', methods: ['GET', 'POST'])]
 public function step1(Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
 {
@@ -135,7 +218,11 @@ public function step2(Request $request, SessionInterface $session): Response
 }
 
 #[Route('/new/step3', name: 'app_transaction_new_step3', methods: ['GET', 'POST'])]
+<<<<<<< HEAD
 public function step3(Request $request, SessionInterface $session, EntityManagerInterface $entityManager): Response
+=======
+public function step3(Request $request, SessionInterface $session, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 {
     if (!$session->get('transaction_wallet_id') || !$session->get('transaction_type')) {
         return $this->redirectToRoute('app_transaction_new_step1');
@@ -149,6 +236,7 @@ public function step3(Request $request, SessionInterface $session, EntityManager
     $budgets = [];
     $budgetsData = [];
 
+<<<<<<< HEAD
     if ($type === 'depense') {
         $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
             ->createQueryBuilder('b')
@@ -230,6 +318,155 @@ public function step3(Request $request, SessionInterface $session, EntityManager
     return $this->redirectToRoute('app_transaction_index');
 }
 
+=======
+   if ($type === 'depense') {
+    $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
+        ->createQueryBuilder('b')
+        ->where('b.wallet = :wallet')
+        ->setParameter('wallet', $wallet)
+        ->getQuery()
+        ->getResult();
+
+    foreach ($budgets as $budget) {
+        // Check if budget is expired
+        $endDate = (clone $budget->getDateBudget())->modify('+' . $budget->getDureeBudget() . ' days');
+        if ($endDate < new \DateTime()) {
+            continue; // Skip expired budgets
+        }
+
+        $categorie = $budget->getCategorie();
+        $categories[] = $categorie;
+
+        $totalSpent = $entityManager->getRepository(Transaction::class)
+            ->createQueryBuilder('t')
+            ->select('SUM(t.montant)')
+            ->where('t.wallet = :wallet')
+            ->andWhere('t.categorie = :categorie')
+            ->andWhere('t.type = :type')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('categorie', $categorie)
+            ->setParameter('type', 'depense')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+
+        $budgetsData[$categorie->getId()] = [
+            'montantMax' => (float) $budget->getMontantMax(),
+            'totalSpent' => (float) $totalSpent,
+            'remaining' => (float) $budget->getMontantMax() - (float) $totalSpent,
+        ];
+    }
+} else {
+    $categories = $entityManager->getRepository(\App\Entity\management\Categorie::class)
+        ->findBy(['statut' => 'Active']);
+}
+
+    if ($request->isMethod('POST')) {
+        $transaction = new Transaction();
+        $transaction->setWallet($wallet);
+        $transaction->setType($type);
+        $transaction->setDevise($wallet->getDevise());
+        $transaction->setDate(new \DateTime());
+        $transaction->setDescription($request->request->get('description'));
+
+        // Safe value handling
+        $montant = $request->request->get('montant');
+        $transaction->setMontant($montant !== '' && $montant !== null ? (float)$montant : null);
+
+        $categorieId = $request->request->get('categorie_id');
+        if ($categorieId) {
+            $categorie = $entityManager->getRepository(\App\Entity\management\Categorie::class)
+                ->find($categorieId);
+            $transaction->setCategorie($categorie);
+        }
+// After setting description, before validation:
+
+$isRecurring = $request->request->get('isRecurring');
+$transaction->setIsRecurring($isRecurring ? true : false);
+
+if ($isRecurring) {
+    $transaction->setFrequency($request->request->get('frequency'));
+
+    $endDate = $request->request->get('endDate');
+    $transaction->setEndDate($endDate ? new \DateTime($endDate) : null);
+
+    // Next execution = today + frequency
+    $next = new \DateTime();
+    match ($request->request->get('frequency')) {
+        'daily' => $next->modify('+1 day'),
+        'weekly' => $next->modify('+1 week'),
+        'monthly' => $next->modify('+1 month'),
+        'yearly' => $next->modify('+1 year'),
+        default => null,
+    };
+    $transaction->setNextExecutionDate($next);
+}
+        // Validate using @Assert constraints
+        $errors = $validator->validate($transaction);
+
+        if (count($errors) > 0) {
+            return $this->render('management/transaction/step3.html.twig', [
+                'wallet' => $wallet,
+                'type' => $type,
+                'categories' => $categories,
+                'budgetsData' => $budgetsData,
+                'errors' => $errors,
+            ]);
+        }
+
+        // Balance update
+        if ($type === 'income') {
+            $wallet->setSolde($wallet->getSolde() + $transaction->getMontant());
+        } else {
+            $wallet->setSolde($wallet->getSolde() - $transaction->getMontant());
+        }
+
+        $entityManager->persist($transaction);
+        $entityManager->flush();
+
+        $session->remove('transaction_wallet_id');
+        $session->remove('transaction_type');
+// Check if any budget is exceeded after this transaction
+if ($type === 'depense' && $transaction->getCategorie()) {
+    $budgetForCategory = $entityManager->getRepository(\App\Entity\management\Budget::class)
+        ->createQueryBuilder('b')
+        ->where('b.wallet = :wallet')
+        ->andWhere('b.categorie = :categorie')
+        ->setParameter('wallet', $wallet)
+        ->setParameter('categorie', $transaction->getCategorie())
+        ->getQuery()
+        ->getOneOrNullResult();
+
+    if ($budgetForCategory) {
+        $totalSpentNow = $entityManager->getRepository(Transaction::class)
+            ->createQueryBuilder('t')
+            ->select('SUM(t.montant)')
+            ->where('t.wallet = :wallet')
+            ->andWhere('t.categorie = :categorie')
+            ->andWhere('t.type = :type')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('categorie', $transaction->getCategorie())
+            ->setParameter('type', 'depense')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+
+        // Add current transaction amount (not yet persisted)
+        $totalSpentNow += $transaction->getMontant();
+
+        if ($totalSpentNow > $budgetForCategory->getMontantMax()) {
+            $this->addFlash('budget_alert', json_encode([
+                'title' => 'Budget Exceeded!',
+                'message' => $transaction->getCategorie()->getNom() . ' budget exceeded: ' .
+                    number_format($totalSpentNow, 2) . ' / ' .
+                    number_format($budgetForCategory->getMontantMax(), 2) . ' ' . $wallet->getDevise(),
+            ]));
+        }
+    }
+}
+        $this->addFlash('success', 'Transaction added successfully!');
+        return $this->redirectToRoute('app_transaction_index');
+    }
+
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     return $this->render('management/transaction/step3.html.twig', [
         'wallet' => $wallet,
         'type' => $type,
@@ -255,4 +492,90 @@ public function step3(Request $request, SessionInterface $session, EntityManager
         }
         return $this->redirectToRoute('app_transaction_index');
     }
+<<<<<<< HEAD
+=======
+    private function executeRecurringTransactions(EntityManagerInterface $entityManager, $user): void
+{
+    $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
+        ->findBy(['utilisateur' => $user]);
+
+    if (empty($wallets)) return;
+
+    $today = new \DateTime('today');
+
+    $dueTransactions = $entityManager->getRepository(Transaction::class)
+        ->createQueryBuilder('t')
+        ->where('t.isRecurring = :recurring')
+        ->andWhere('t.nextExecutionDate <= :today')
+        ->andWhere('t.wallet IN (:wallets)')
+        ->andWhere('t.endDate IS NULL OR t.endDate >= :today')
+        ->setParameter('recurring', true)
+        ->setParameter('today', $today)
+        ->setParameter('wallets', $wallets)
+        ->getQuery()
+        ->getResult();
+
+    foreach ($dueTransactions as $recurring) {
+        $wallet = $recurring->getWallet();
+
+        // Keep creating transactions until nextExecutionDate is in the future
+        while ($recurring->getNextExecutionDate() <= $today) {
+
+            // Check end date
+            if ($recurring->getEndDate() && $recurring->getNextExecutionDate() > $recurring->getEndDate()) {
+                $recurring->setIsRecurring(false);
+                break;
+            }
+
+            // Skip if insufficient balance for expense
+            if ($recurring->getType() === 'depense' && $recurring->getMontant() > $wallet->getSolde()) {
+                break;
+            }
+
+            // Create the actual transaction
+            $transaction = new Transaction();
+            $transaction->setWallet($wallet);
+            $transaction->setCategorie($recurring->getCategorie());
+            $transaction->setType($recurring->getType());
+            $transaction->setMontant($recurring->getMontant());
+            $transaction->setDevise($wallet->getDevise());
+            $transaction->setDate(clone $recurring->getNextExecutionDate());
+            $transaction->setDescription('[Auto] ' . ($recurring->getDescription() ?? 'Recurring'));
+            $transaction->setIsRecurring(false);
+
+            // Update wallet balance
+            if ($recurring->getType() === 'income') {
+                $wallet->setSolde($wallet->getSolde() + $recurring->getMontant());
+            } else {
+                $wallet->setSolde($wallet->getSolde() - $recurring->getMontant());
+            }
+
+            $entityManager->persist($transaction);
+
+            // Calculate next execution date
+            $next = clone $recurring->getNextExecutionDate();
+            match ($recurring->getFrequency()) {
+                'daily' => $next->modify('+1 day'),
+                'weekly' => $next->modify('+1 week'),
+                'monthly' => $next->modify('+1 month'),
+                'yearly' => $next->modify('+1 year'),
+                default => null,
+            };
+            $recurring->setNextExecutionDate($next);
+        }
+    }
+
+    $entityManager->flush();
+}
+#[Route('/{id}/toggle-recurring', name: 'app_transaction_toggle_recurring', methods: ['POST'])]
+public function toggleRecurring(Transaction $transaction, EntityManagerInterface $entityManager, Request $request): Response
+{
+    if ($this->isCsrfTokenValid('toggle' . $transaction->getId(), $request->request->get('_token'))) {
+        $transaction->setIsRecurring(!$transaction->isRecurring());
+        $entityManager->flush();
+        $this->addFlash('success', $transaction->isRecurring() ? 'Recurring transaction activated!' : 'Recurring transaction stopped!');
+    }
+    return $this->redirectToRoute('app_transaction_index');
+}
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 }

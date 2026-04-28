@@ -1,5 +1,9 @@
 parameters:
     tickets_directory: '%kernel.project_dir%/public/uploads/tickets'
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     crypto_api_url: '%env(CRYPTO_API_URL)%'
     news_api_url: '%env(NEWS_API_URL)%'
     news_api_key: '%env(NEWS_API_KEY)%'
@@ -10,6 +14,11 @@ parameters:
     groq_model: '%env(GROQ_MODEL)%'
     hf_api_token: '%env(HF_API_TOKEN)%'
     hf_api_url: '%env(HF_API_URL)%'
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> dev_malek
+>>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
 services:
     _defaults:
