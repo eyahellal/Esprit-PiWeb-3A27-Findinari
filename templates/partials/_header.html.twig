@@ -445,7 +445,7 @@
 </style>
 
 <script>
-    let notificationCheckInterval = null;
+    var notificationCheckInterval = window.notificationCheckInterval || null;
     
     // Toggle notification popup
     document.getElementById('notificationBell')?.addEventListener('click', function(e) {
@@ -648,9 +648,12 @@
     }
     
     // Initial load and periodic check
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('turbo:load', function() {
+        if (window.notificationCheckInterval) {
+            clearInterval(window.notificationCheckInterval);
+        }
         checkUnreadCount();
-        notificationCheckInterval = setInterval(checkUnreadCount, 30000);
+        window.notificationCheckInterval = setInterval(checkUnreadCount, 30000);
     });
     
     window.addEventListener('beforeunload', function() {

@@ -350,61 +350,64 @@
 </div>
 
 <script>
-    function updateCharCount(textarea) {
-        document.getElementById('charCount').textContent = textarea.value.length;
-    }
-    
-    function showFileName(input) {
-        if (input.files && input.files[0]) {
-            document.getElementById('file-name-preview').textContent = 'Selected: ' + input.files[0].name;
-            document.querySelector('.file-upload-icon').innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
-        } else {
-            document.getElementById('file-name-preview').textContent = '';
-            document.querySelector('.file-upload-icon').innerHTML = '<i class="fas fa-upload" style="color: #9ca3af;"></i>';
-        }
-    }
-    
-    // Drag and drop functionality
-    const dropArea = document.querySelector('.file-upload-area');
-    const fileInput = document.getElementById('{{ form.imageUrl.vars.id }}');
-    
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
-    });
-    
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => {
-            dropArea.style.borderColor = '#22c55e';
-            dropArea.style.backgroundColor = '#f0fdf4';
-        }, false);
-    });
-    
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => {
-            dropArea.style.borderColor = '#d1d5db';
-            dropArea.style.backgroundColor = '#fdfdfd';
-        }, false);
-    });
-    
-    dropArea.addEventListener('drop', handleDrop, false);
-    
-    function handleDrop(e) {
-        let dt = e.dataTransfer;
-        let files = dt.files;
+(function() {
+    function initCreateTicket() {
+        console.log("Initializing Create Ticket features...");
         
-        fileInput.files = files;
-        showFileName(fileInput);
-    }
-    
-    // Initialize character count on load
-    document.addEventListener('DOMContentLoaded', function() {
+        window.updateCharCount = function(textarea) {
+            const countElem = document.getElementById('charCount');
+            if (countElem) countElem.textContent = textarea.value.length;
+        };
+        
+        window.showFileName = function(input) {
+            const preview = document.getElementById('file-name-preview');
+            const icon = document.querySelector('.file-upload-icon');
+            if (input.files && input.files[0]) {
+                if (preview) preview.textContent = 'Selected: ' + input.files[0].name;
+                if (icon) icon.innerHTML = '<i class="fas fa-check-circle" style="color: #22c55e;"></i>';
+            } else {
+                if (preview) preview.textContent = '';
+                if (icon) icon.innerHTML = '<i class="fas fa-upload" style="color: #9ca3af;"></i>';
+            }
+        };
+        
+        // Drag and drop functionality
+        const dropArea = document.querySelector('.file-upload-area');
+        const fileInput = document.getElementById('{{ form.imageUrl.vars.id }}');
+        
+        if (dropArea && fileInput) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.style.borderColor = '#22c55e';
+                    dropArea.style.backgroundColor = '#f0fdf4';
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.style.borderColor = '#d1d5db';
+                    dropArea.style.backgroundColor = '#fdfdfd';
+                }, false);
+            });
+            
+            dropArea.addEventListener('drop', (e) => {
+                let dt = e.dataTransfer;
+                let files = dt.files;
+                fileInput.files = files;
+                window.showFileName(fileInput);
+            }, false);
+        }
+        
         const textarea = document.querySelector('textarea.form-control');
         if(textarea) {
+            textarea.addEventListener('input', () => updateCharCount(textarea));
             updateCharCount(textarea);
         }
 
@@ -416,97 +419,91 @@
         const aiLoading = document.getElementById('ai-loading');
         const detectedExplainer = document.getElementById('detected-explainer');
         
-        let detectionTimeout;
+        if (titreInput && descInput && aiBadge) {
+            let detectionTimeout;
+            let userManuallyChanged = false;
 
-        function detectPriority() {
-            const title = titreInput.value.trim();
-            const description = descInput.value.trim();
+            const detectPriority = () => {
+                const title = titreInput.value.trim();
+                const description = descInput.value.trim();
 
-            if (title.length < 5 || description.length < 10) {
-                return;
-            }
+                if (title.length < 5 || description.length < 10) return;
 
-            // Show loading state
-            aiBadge.style.display = 'inline-flex';
-            aiLoading.style.display = 'block';
-            aiLabel.textContent = 'Analyzing...';
-            
-            fetch("{{ path('app_user_ticket_classify_priority') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({ title, description })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log("[DEBUG] AI classification result:", data);
-                aiLoading.style.display = 'none';
+                aiBadge.style.display = 'inline-flex';
+                aiBadge.style.opacity = '1';
+                aiLoading.style.display = 'block';
+                aiLabel.textContent = 'Analyzing...';
                 
-                if (data.is_error) {
-                    aiBadge.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-                    aiBadge.querySelector('i').className = 'fas fa-exclamation-triangle';
-                    aiLabel.innerHTML = `<span style="color: white">Connection Error</span>`;
-                    detectedExplainer.style.display = 'block';
-                    detectedExplainer.style.color = '#ef4444';
-                    detectedExplainer.textContent = "AI unreachable: " + data.raw;
-                    return;
-                }
-
-                detectedExplainer.style.color = '#6366f1';
-                // ... rest of the logic ...
-                let sourceLabel = data.source === 'remote_ai' ? 'Remote AI' : 'Keywords';
-                
-                // Set uniform appearance (Purple + Robot) as requested
-                aiBadge.style.background = 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)';
-                aiBadge.querySelector('i').className = 'fas fa-robot';
-                aiLabel.innerHTML = `AI Detected: ${data.priority} <span class="source-badge">${sourceLabel}</span>`;
-                
-                detectedExplainer.style.display = 'block';
-                detectedExplainer.style.color = '#6366f1';
-                detectedExplainer.textContent = data.source === 'remote_ai' 
-                    ? "Intelligence optimized: Deep analysis complete." 
-                    : "Pattern recognized: Auto-selected based on keywords.";
-
-                // Find and check the matching radio button
-                const radioButtons = document.getElementsByName('ticket[priorite]');
-                for (let rb of radioButtons) {
-                    if (rb.value === data.priority) {
-                        rb.checked = true;
-                        break;
+                fetch("{{ path('app_user_ticket_classify_priority') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ title, description })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    aiLoading.style.display = 'none';
+                    if (data.is_error) {
+                        aiBadge.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                        aiLabel.innerHTML = `<span style="color: white">AI Offline</span>`;
+                        return;
                     }
-                }
 
-                // Add a little glow effect or pulse to the selected label if needed
-                // For now, the checked state CSS handles it.
-            })
-            .catch(error => {
-                console.error('Error detecting priority:', error);
-                aiBadge.style.display = 'none';
+                    aiBadge.style.background = 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)';
+                    aiBadge.querySelector('i').className = 'fas fa-robot';
+                    let sourceLabel = data.source === 'remote_ai' ? 'Remote AI' : 'Keywords';
+                    aiLabel.innerHTML = `AI Detected: ${data.priority} <span class="source-badge">${sourceLabel}</span>`;
+                    
+                    if (detectedExplainer) {
+                        detectedExplainer.style.display = 'block';
+                        detectedExplainer.textContent = data.source === 'remote_ai' 
+                            ? "Intelligence optimized: Deep analysis complete." 
+                            : "Pattern recognized: Auto-selected based on keywords.";
+                    }
+
+                    const radioButtons = document.getElementsByName('ticket[priorite]');
+                    for (let rb of radioButtons) {
+                        if (rb.value === data.priority) {
+                            rb.checked = true;
+                            break;
+                        }
+                    }
+                })
+                .catch(err => console.error('AI error:', err));
+            };
+
+            const debouncedDetect = () => {
+                if (userManuallyChanged) return;
+                clearTimeout(detectionTimeout);
+                detectionTimeout = setTimeout(detectPriority, 1000);
+            };
+
+            titreInput.addEventListener('input', debouncedDetect);
+            descInput.addEventListener('input', debouncedDetect);
+
+            const radioButtons = document.getElementsByName('ticket[priorite]');
+            radioButtons.forEach(rb => {
+                rb.addEventListener('click', () => {
+                    userManuallyChanged = true;
+                    aiBadge.style.opacity = '0.5';
+                    aiLabel.textContent = 'AI Paused (Manual override)';
+                });
             });
         }
+    }
 
-        const debouncedDetect = () => {
-            if (userManuallyChanged) return; // Respect manual choice
-            clearTimeout(detectionTimeout);
-            detectionTimeout = setTimeout(detectPriority, 1000);
-        };
-
-        titreInput.addEventListener('input', debouncedDetect);
-        descInput.addEventListener('input', debouncedDetect);
-
-        // Track manual changes
-        const radioButtons = document.getElementsByName('ticket[priorite]');
-        let userManuallyChanged = false;
-        radioButtons.forEach(rb => {
-            rb.addEventListener('click', () => {
-                userManuallyChanged = true;
-                aiBadge.style.opacity = '0.5';
-                aiLabel.textContent = 'AI Detection paused (Manual override)';
-                detectedExplainer.textContent = 'Manual selection active. AI will no longer auto-update.';
-            });
-        });
-    });
+    // Support both Turbo and standard loads
+    document.addEventListener('turbo:load', initCreateTicket);
+    // Fallback for the very first load if turbo:load already fired or hasn't yet
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCreateTicket);
+    } else {
+        // In some cases, we might want to prevent double-init
+        // But for Turbo, it's safe to call it if it's a fresh body
+        initCreateTicket();
+    }
+})();
 </script>
 {% endblock %}
