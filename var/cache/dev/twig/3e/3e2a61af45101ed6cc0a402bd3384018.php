@@ -1711,6 +1711,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 </body>
-</html>", "admin/dashboard.html.twig", "C:\\Users\\GIGABYTE\\Downloads\\Esprit-PiWeb-3A27-Findinari-dev_ahmed\\Esprit-PiWeb-3A27-Findinari-dev_ahmed\\templates\\admin\\dashboard.html.twig");
+</html>", "admin/dashboard.html.twig", "C:\\Users\\GIGABYTE\\Downloads\\Esprit-PiWeb-3A27-Findinari-dev_ahmed - Copy\\Esprit-PiWeb-3A27-Findinari-dev_ahmed\\templates\\admin\\dashboard.html.twig");
     }
 }

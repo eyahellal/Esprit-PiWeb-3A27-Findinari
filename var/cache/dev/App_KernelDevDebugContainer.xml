@@ -436,6 +436,17 @@
       <argument type="service" id="App\Repository\WalletRepository"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
     </service>
+    <service id="App\Command\ExecuteRecurringTransactionsCommand" class="App\Command\ExecuteRecurringTransactionsCommand" autowire="true" autoconfigure="true">
+      <tag name="console.command"/>
+      <tag name="container.no_preload"/>
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
+      <call method="setName">
+        <argument>app:execute-recurring-transactions</argument>
+      </call>
+      <call method="setDescription">
+        <argument>Execute all due recurring transactions</argument>
+      </call>
+    </service>
     <service id="App\Command\GenerateEntitiesCommand" class="App\Command\GenerateEntitiesCommand" autowire="true" autoconfigure="true">
       <tag name="console.command"/>
       <tag name="container.no_preload"/>
@@ -641,6 +652,13 @@
         <argument type="service" id=".service_locator.BWRinXy.App\Controller\advancedfeature\PdfUploadController"/>
       </call>
     </service>
+    <service id="App\Controller\managment\AdminManagementController" class="App\Controller\managment\AdminManagementController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.BWRinXy.App\Controller\managment\AdminManagementController"/>
+      </call>
+    </service>
     <service id="App\Controller\managment\BudgetController" class="App\Controller\managment\BudgetController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -660,6 +678,13 @@
       <tag name="container.service_subscriber"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.BWRinXy.App\Controller\managment\DashboardController"/>
+      </call>
+    </service>
+    <service id="App\Controller\managment\StatsController" class="App\Controller\managment\StatsController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.BWRinXy.App\Controller\managment\StatsController"/>
       </call>
     </service>
     <service id="App\Controller\managment\TransactionController" class="App\Controller\managment\TransactionController" public="true" autowire="true" autoconfigure="true">
@@ -876,7 +901,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.EK__5iy"/>
+      <argument type="service" id=".service_locator.MIlJjvt"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -3954,7 +3979,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.EK__5iy"/>
+      <argument type="service" id=".service_locator.MIlJjvt"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -8131,6 +8156,8 @@
     <service id=".time.twig.extension.time" class="Knp\Bundle\TimeBundle\Twig\Extension\TimeExtension">
       <tag name="twig.extension"/>
     </service>
+    <service id=".instanceof.Symfony\Component\Console\Command\Command.0.App\Command\ExecuteRecurringTransactionsCommand" class="App\Command\ExecuteRecurringTransactionsCommand" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Command\ExecuteRecurringTransactionsCommand" class="App\Command\ExecuteRecurringTransactionsCommand" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Component\Console\Command\Command.0.App\Command\GenerateEntitiesCommand" class="App\Command\GenerateEntitiesCommand" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Command\GenerateEntitiesCommand" class="App\Command\GenerateEntitiesCommand" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\AdminController" class="App\Controller\AdminController" autowire="true" abstract="true"/>
@@ -8211,6 +8238,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\advancedfeature\PdfUploadController" class="App\Controller\advancedfeature\PdfUploadController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\advancedfeature\PdfUploadController" class="App\Controller\advancedfeature\PdfUploadController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\advancedfeature\PdfUploadController" class="App\Controller\advancedfeature\PdfUploadController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\managment\AdminManagementController" class="App\Controller\managment\AdminManagementController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\managment\AdminManagementController" class="App\Controller\managment\AdminManagementController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\managment\AdminManagementController" class="App\Controller\managment\AdminManagementController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\managment\BudgetController" class="App\Controller\managment\BudgetController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\managment\BudgetController" class="App\Controller\managment\BudgetController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\managment\BudgetController" class="App\Controller\managment\BudgetController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -8220,6 +8250,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\managment\DashboardController" class="App\Controller\managment\DashboardController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\managment\DashboardController" class="App\Controller\managment\DashboardController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\managment\DashboardController" class="App\Controller\managment\DashboardController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\managment\StatsController" class="App\Controller\managment\StatsController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\managment\StatsController" class="App\Controller\managment\StatsController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\managment\StatsController" class="App\Controller\managment\StatsController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\managment\TransactionController" class="App\Controller\managment\TransactionController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\managment\TransactionController" class="App\Controller\managment\TransactionController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\managment\TransactionController" class="App\Controller\managment\TransactionController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -9248,11 +9281,12 @@
         <argument key="categorieRepository" type="service_closure" id="App\Repository\CategorieRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.B1lfpO1" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.vuciIUI" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="categorieRepository" type="service_closure" id="App\Repository\CategorieRepository"/>
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="validator" type="service_closure" id="debug.validator"/>
         <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
       </argument>
     </service>
@@ -9270,6 +9304,16 @@
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
       </argument>
     </service>
+    <service id=".errored.VxelfdV" class="App\Controller\managment\ValidatorInterface">
+      <tag name="container.error" message="Cannot determine controller argument for &quot;App\Controller\managment\TransactionController::step3()&quot;: the $validator argument is type-hinted with the non-existent class or interface: &quot;App\Controller\managment\ValidatorInterface&quot;. Did you forget to add a use statement?"/>
+    </service>
+    <service id=".service_locator.qLcBYgy" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="validator" type="service_closure" id=".errored.VxelfdV"/>
+      </argument>
+    </service>
     <service id=".service_locator.zY4Nk7F" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9277,7 +9321,7 @@
         <argument key="transaction" type="service_closure" id=".errored..service_locator.zY4Nk7F.App\Entity\management\Transaction"/>
       </argument>
     </service>
-    <service id=".service_locator.EK__5iy" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.MIlJjvt" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\AdminController::ajaxUsers" type="service_closure" id=".service_locator.p5RWJ9h"/>
@@ -9391,20 +9435,23 @@
         <argument key="App\Controller\advancedfeature\NotificationController::markAllAsRead" type="service_closure" id=".service_locator.fWBQtha"/>
         <argument key="App\Controller\advancedfeature\NotificationController::markAsRead" type="service_closure" id=".service_locator.fWBQtha"/>
         <argument key="App\Controller\advancedfeature\PdfUploadController::uploadPdf" type="service_closure" id=".service_locator.c2nOR4F"/>
+        <argument key="App\Controller\managment\AdminManagementController::index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController::delete" type="service_closure" id=".service_locator.NgVK6bG"/>
         <argument key="App\Controller\managment\BudgetController::edit" type="service_closure" id=".service_locator.NgVK6bG"/>
         <argument key="App\Controller\managment\BudgetController::index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController::step1" type="service_closure" id=".service_locator.y7pYgon"/>
         <argument key="App\Controller\managment\BudgetController::step2" type="service_closure" id=".service_locator.DFyL8OH"/>
-        <argument key="App\Controller\managment\BudgetController::step3" type="service_closure" id=".service_locator.B1lfpO1"/>
+        <argument key="App\Controller\managment\BudgetController::step3" type="service_closure" id=".service_locator.vuciIUI"/>
         <argument key="App\Controller\managment\CategorieController::delete" type="service_closure" id=".service_locator.0V9MQQj"/>
         <argument key="App\Controller\managment\CategorieController::edit" type="service_closure" id=".service_locator.0V9MQQj"/>
         <argument key="App\Controller\managment\CategorieController::index" type="service_closure" id=".service_locator.DFyL8OH"/>
         <argument key="App\Controller\managment\CategorieController::new" type="service_closure" id=".service_locator.CsMkqUa"/>
+        <argument key="App\Controller\managment\StatsController::index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\TransactionController::delete" type="service_closure" id=".service_locator.zY4Nk7F"/>
         <argument key="App\Controller\managment\TransactionController::index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\TransactionController::step1" type="service_closure" id=".service_locator.CsMkqUa"/>
-        <argument key="App\Controller\managment\TransactionController::step3" type="service_closure" id=".service_locator.CsMkqUa"/>
+        <argument key="App\Controller\managment\TransactionController::step3" type="service_closure" id=".service_locator.qLcBYgy"/>
+        <argument key="App\Controller\managment\TransactionController::toggleRecurring" type="service_closure" id=".service_locator.zY4Nk7F"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
@@ -9520,20 +9567,23 @@
         <argument key="App\Controller\advancedfeature\NotificationController:markAllAsRead" type="service_closure" id=".service_locator.fWBQtha"/>
         <argument key="App\Controller\advancedfeature\NotificationController:markAsRead" type="service_closure" id=".service_locator.fWBQtha"/>
         <argument key="App\Controller\advancedfeature\PdfUploadController:uploadPdf" type="service_closure" id=".service_locator.c2nOR4F"/>
+        <argument key="App\Controller\managment\AdminManagementController:index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController:delete" type="service_closure" id=".service_locator.NgVK6bG"/>
         <argument key="App\Controller\managment\BudgetController:edit" type="service_closure" id=".service_locator.NgVK6bG"/>
         <argument key="App\Controller\managment\BudgetController:index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController:step1" type="service_closure" id=".service_locator.y7pYgon"/>
         <argument key="App\Controller\managment\BudgetController:step2" type="service_closure" id=".service_locator.DFyL8OH"/>
-        <argument key="App\Controller\managment\BudgetController:step3" type="service_closure" id=".service_locator.B1lfpO1"/>
+        <argument key="App\Controller\managment\BudgetController:step3" type="service_closure" id=".service_locator.vuciIUI"/>
         <argument key="App\Controller\managment\CategorieController:delete" type="service_closure" id=".service_locator.0V9MQQj"/>
         <argument key="App\Controller\managment\CategorieController:edit" type="service_closure" id=".service_locator.0V9MQQj"/>
         <argument key="App\Controller\managment\CategorieController:index" type="service_closure" id=".service_locator.DFyL8OH"/>
         <argument key="App\Controller\managment\CategorieController:new" type="service_closure" id=".service_locator.CsMkqUa"/>
+        <argument key="App\Controller\managment\StatsController:index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\TransactionController:delete" type="service_closure" id=".service_locator.zY4Nk7F"/>
         <argument key="App\Controller\managment\TransactionController:index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\TransactionController:step1" type="service_closure" id=".service_locator.CsMkqUa"/>
-        <argument key="App\Controller\managment\TransactionController:step3" type="service_closure" id=".service_locator.CsMkqUa"/>
+        <argument key="App\Controller\managment\TransactionController:step3" type="service_closure" id=".service_locator.qLcBYgy"/>
+        <argument key="App\Controller\managment\TransactionController:toggleRecurring" type="service_closure" id=".service_locator.zY4Nk7F"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
       </argument>
@@ -10370,6 +10420,12 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.BWRinXy" method="withContext"/>
     </service>
+    <service id=".service_locator.BWRinXy.App\Controller\managment\AdminManagementController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\managment\AdminManagementController"/>
+      <argument>App\Controller\managment\AdminManagementController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.BWRinXy" method="withContext"/>
+    </service>
     <service id=".service_locator.BWRinXy.App\Controller\managment\BudgetController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\managment\BudgetController"/>
       <argument>App\Controller\managment\BudgetController</argument>
@@ -10385,6 +10441,12 @@
     <service id=".service_locator.BWRinXy.App\Controller\managment\DashboardController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\managment\DashboardController"/>
       <argument>App\Controller\managment\DashboardController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.BWRinXy" method="withContext"/>
+    </service>
+    <service id=".service_locator.BWRinXy.App\Controller\managment\StatsController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\managment\StatsController"/>
+      <argument>App\Controller\managment\StatsController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.BWRinXy" method="withContext"/>
     </service>
@@ -10594,9 +10656,11 @@
           <argument>App\Controller\advancedfeature\FinancialHealthController</argument>
           <argument>App\Controller\advancedfeature\NotificationController</argument>
           <argument>App\Controller\advancedfeature\PdfUploadController</argument>
+          <argument>App\Controller\managment\AdminManagementController</argument>
           <argument>App\Controller\managment\BudgetController</argument>
           <argument>App\Controller\managment\CategorieController</argument>
           <argument>App\Controller\managment\DashboardController</argument>
+          <argument>App\Controller\managment\StatsController</argument>
           <argument>App\Controller\managment\TransactionController</argument>
           <argument>Doctrine\Bundle\DoctrineBundle\Controller\ProfilerController</argument>
         </argument>
@@ -10864,6 +10928,13 @@
     </service>
     <service id=".errored..service_locator.zY4Nk7F.App\Entity\management\Transaction" class="App\Entity\management\Transaction">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.zY4Nk7F&quot;: it needs an instance of &quot;App\Entity\management\Transaction&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    </service>
+    <service id=".App\Command\ExecuteRecurringTransactionsCommand.lazy" class="Symfony\Component\Console\Command\LazyCommand">
+      <argument>app:execute-recurring-transactions</argument>
+      <argument type="collection"/>
+      <argument>Execute all due recurring transactions</argument>
+      <argument>false</argument>
+      <argument type="service_closure" id="App\Command\ExecuteRecurringTransactionsCommand"/>
     </service>
     <service id=".App\Command\GenerateEntitiesCommand.lazy" class="Symfony\Component\Console\Command\LazyCommand">
       <argument>app:generate:entities</argument>
@@ -11565,8 +11636,9 @@
     </service>
     <service id="console.command_loader" class="Symfony\Component\Console\CommandLoader\ContainerCommandLoader" public="true">
       <tag name="container.no_preload"/>
-      <argument type="service" id=".service_locator.p_tz.pt"/>
+      <argument type="service" id=".service_locator.f34NmRg"/>
       <argument type="collection">
+        <argument key="app:execute-recurring-transactions">App\Command\ExecuteRecurringTransactionsCommand</argument>
         <argument key="app:generate:entities">App\Command\GenerateEntitiesCommand</argument>
         <argument key="about">console.command.about</argument>
         <argument key="assets:install">console.command.assets_install</argument>
@@ -11688,9 +11760,10 @@
         <argument key="make:webhook">maker.auto_command.make_webhook</argument>
       </argument>
     </service>
-    <service id=".service_locator.p_tz.pt" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.f34NmRg" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="App\Command\ExecuteRecurringTransactionsCommand" type="service_closure" id=".App\Command\ExecuteRecurringTransactionsCommand.lazy"/>
         <argument key="App\Command\GenerateEntitiesCommand" type="service_closure" id=".App\Command\GenerateEntitiesCommand.lazy"/>
         <argument key="console.command.about" type="service_closure" id=".console.command.about.lazy"/>
         <argument key="console.command.assets_install" type="service_closure" id=".console.command.assets_install.lazy"/>
@@ -12091,7 +12164,7 @@
     <service id="Knp\Bundle\TimeBundle\DateTimeFormatter" alias="time.datetime_formatter"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.EK__5iy"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.MIlJjvt"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -12173,9 +12246,9 @@
     <service id=".service_locator.tLjFHCv" alias=".service_locator.VfFEsH."/>
     <service id=".service_locator.PRauzOD" alias=".service_locator.c2nOR4F"/>
     <service id=".service_locator.bN2cdDD" alias=".service_locator.y7pYgon"/>
-    <service id=".service_locator.KJD5k5g" alias=".service_locator.B1lfpO1"/>
+    <service id=".service_locator.381yGGx" alias=".service_locator.vuciIUI"/>
     <service id=".service_locator.5XzYiGJ" alias=".service_locator.zY4Nk7F"/>
-    <service id=".service_locator.ZNVVtE_" alias=".service_locator.EK__5iy"/>
+    <service id=".service_locator.UdN3bTD" alias=".service_locator.MIlJjvt"/>
     <service id=".service_locator.sO2baFT" alias=".service_locator.UXbUH6B"/>
     <service id=".service_locator.6V5IWTW" alias=".service_locator.W1drmMD"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
@@ -12273,9 +12346,10 @@
     <service id=".service_locator.6QsO6k_" alias=".service_locator.c2nOR4F"/>
     <service id=".service_locator.0RiPozw" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.J7lSc4B" alias=".service_locator.DFyL8OH"/>
-    <service id=".service_locator.sCSSLLR" alias=".service_locator.B1lfpO1"/>
+    <service id=".service_locator.55EZ0G_" alias=".service_locator.vuciIUI"/>
     <service id=".service_locator.PU7gaNV" alias=".service_locator.NgVK6bG"/>
     <service id=".service_locator.dqRfnBZ" alias=".service_locator.0V9MQQj"/>
+    <service id=".service_locator.YdDILIP" alias=".service_locator.qLcBYgy"/>
     <service id=".service_locator..ZASw4m" alias=".service_locator.zY4Nk7F"/>
     <service id=".service_locator.j1_f1Vt" alias=".service_locator.BWRinXy"/>
     <service id=".service_locator.dGUCsbe" alias=".service_locator.oR77BOj"/>

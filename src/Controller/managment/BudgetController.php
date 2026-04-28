@@ -6,20 +6,14 @@ use App\Entity\management\Budget;
 use App\Repository\BudgetRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\WalletRepository;
-<<<<<<< HEAD
-=======
 use App\Repository\TransactionRepository;
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
-<<<<<<< HEAD
-=======
 use Symfony\Component\Validator\Validator\ValidatorInterface;
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
 #[Route('/budget')]
 class BudgetController extends AbstractController
@@ -59,14 +53,6 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
 {
     $user = $this->getUserOrCreate($entityManager);
 
-<<<<<<< HEAD
-    // First get all wallet IDs of the current user
-    $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
-        ->findBy(['utilisateur' => $user]);
-
-    // Then get all budgets that belong to those wallets
-    $budgets = [];
-=======
     $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
         ->findBy(['utilisateur' => $user]);
 
@@ -76,7 +62,6 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
     $totalBudgets = 0;
     $totalAmount = 0;
 
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     if (!empty($wallets)) {
         $budgets = $entityManager->getRepository(\App\Entity\management\Budget::class)
             ->createQueryBuilder('b')
@@ -84,12 +69,6 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
             ->setParameter('wallets', $wallets)
             ->getQuery()
             ->getResult();
-<<<<<<< HEAD
-    }
-
-    return $this->render('management/budget/index.html.twig', [
-        'budgets' => $budgets,
-=======
 
         $totalBudgets = count($budgets);
 
@@ -170,7 +149,6 @@ public function index(Request $request, EntityManagerInterface $entityManager): 
         'totalActivePages' => $totalActivePages,
         'expiredPage' => $expiredPage,
         'totalExpiredPages' => $totalExpiredPages,
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     ]);
 }
     #[Route('/new/step1', name: 'app_budget_new_step1', methods: ['GET', 'POST'])]
@@ -225,22 +203,14 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
         ]);
     }
 
-<<<<<<< HEAD
-    #[Route('/new/step3', name: 'app_budget_new_step3', methods: ['GET', 'POST'])]
-=======
   #[Route('/new/step3', name: 'app_budget_new_step3', methods: ['GET', 'POST'])]
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     public function step3(
         Request $request,
         SessionInterface $session,
         EntityManagerInterface $entityManager,
         WalletRepository $walletRepository,
-<<<<<<< HEAD
-        CategorieRepository $categorieRepository
-=======
         CategorieRepository $categorieRepository,
         ValidatorInterface $validator
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     ): Response {
         if (!$session->get('budget_wallet_id') || !$session->get('budget_categorie_id')) {
             return $this->redirectToRoute('app_budget_new_step1');
@@ -253,11 +223,6 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
             $budget = new Budget();
             $budget->setWallet($wallet);
             $budget->setCategorie($categorie);
-<<<<<<< HEAD
-            $budget->setMontantMax((float) $request->request->get('montantMax'));
-            $budget->setDureeBudget((int) $request->request->get('dureeBudget'));
-            $budget->setDateBudget(new \DateTime($request->request->get('dateBudget')));
-=======
 
             $montantMax = $request->request->get('montantMax');
             $budget->setMontantMax($montantMax !== '' && $montantMax !== null ? (float)$montantMax : null);
@@ -287,15 +252,10 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
                     'categorie' => $categorie,
                 ]);
             }
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
             $entityManager->persist($budget);
             $entityManager->flush();
 
-<<<<<<< HEAD
-            // Clear session
-=======
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
             $session->remove('budget_wallet_id');
             $session->remove('budget_categorie_id');
 
@@ -309,35 +269,12 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
         ]);
     }
 #[Route('/{id}/edit', name: 'app_budget_edit', methods: ['GET', 'POST'])]
-<<<<<<< HEAD
 public function edit(Request $request, Budget $budget, EntityManagerInterface $entityManager): Response
 {
     if ($request->isMethod('POST')) {
         $budget->setMontantMax((float) $request->request->get('montantMax'));
         $budget->setDureeBudget((int) $request->request->get('dureeBudget'));
         $budget->setDateBudget(new \DateTime($request->request->get('dateBudget')));
-=======
-public function edit(Request $request, Budget $budget, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
-{
-    if ($request->isMethod('POST')) {
-        $montantMax = $request->request->get('montantMax');
-        $budget->setMontantMax($montantMax !== '' && $montantMax !== null ? (float)$montantMax : null);
-
-        $duree = $request->request->get('dureeBudget');
-        $budget->setDureeBudget($duree !== '' && $duree !== null ? (int)$duree : null);
-
-        $date = $request->request->get('dateBudget');
-        $budget->setDateBudget($date ? new \DateTime($date) : null);
-
-        $errors = $validator->validate($budget);
-
-        if (count($errors) > 0) {
-            return $this->render('management/budget/edit.html.twig', [
-                'budget' => $budget,
-                'errors' => $errors,
-            ]);
-        }
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
         $entityManager->flush();
 

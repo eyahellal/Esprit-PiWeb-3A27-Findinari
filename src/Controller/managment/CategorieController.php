@@ -14,19 +14,12 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/categorie')]
 class CategorieController extends AbstractController
 {
-<<<<<<< HEAD
     #[Route('/', name: 'app_categorie_index', methods: ['GET'])]
-=======
-#[Route('/', name: 'app_categorie_index', methods: ['GET'])]
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 public function index(CategorieRepository $categorieRepository, Request $request): Response
 {
     $search = $request->query->get('search', '');
     $statut = $request->query->get('statut', '');
-<<<<<<< HEAD
 
-    $categories = $categorieRepository->findByFilters($search, $statut);
-=======
     $page = $request->query->getInt('page', 1);
     $limit = 6;
 
@@ -54,18 +47,14 @@ public function index(CategorieRepository $categorieRepository, Request $request
                      ->setMaxResults($limit)
                      ->getQuery()
                      ->getResult();
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
     return $this->render('management/categorie/index.html.twig', [
         'categories' => $categories,
         'search' => $search,
         'statut' => $statut,
-<<<<<<< HEAD
-=======
         'currentPage' => $page,
         'totalPages' => $totalPages,
         'total' => $total,
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
     ]);
 }
 

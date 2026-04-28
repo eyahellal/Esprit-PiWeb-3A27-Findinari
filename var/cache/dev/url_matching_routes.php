@@ -97,6 +97,7 @@ return [
         '/notifications/delete-all' => [[['_route' => 'app_notification_delete_all', '_controller' => 'App\\Controller\\advancedfeature\\NotificationController::deleteAllNotifications'], null, ['POST' => 0], null, false, false, null]],
         '/notifications/unread-count' => [[['_route' => 'app_notification_unread_count', '_controller' => 'App\\Controller\\advancedfeature\\NotificationController::getUnreadCount'], null, ['GET' => 0], null, false, false, null]],
         '/investment/pdf/upload' => [[['_route' => 'app_investment_pdf_upload', '_controller' => 'App\\Controller\\advancedfeature\\PdfUploadController::uploadPdf'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        '/admin/management' => [[['_route' => 'app_admin_management', '_controller' => 'App\\Controller\\managment\\AdminManagementController::index'], null, ['GET' => 0], null, false, false, null]],
         '/budget' => [[['_route' => 'app_budget_index', '_controller' => 'App\\Controller\\managment\\BudgetController::index'], null, ['GET' => 0], null, true, false, null]],
         '/budget/new/step1' => [[['_route' => 'app_budget_new_step1', '_controller' => 'App\\Controller\\managment\\BudgetController::step1'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/budget/new/step2' => [[['_route' => 'app_budget_new_step2', '_controller' => 'App\\Controller\\managment\\BudgetController::step2'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
@@ -104,6 +105,9 @@ return [
         '/categorie' => [[['_route' => 'app_categorie_index', '_controller' => 'App\\Controller\\managment\\CategorieController::index'], null, ['GET' => 0], null, true, false, null]],
         '/categorie/new' => [[['_route' => 'app_categorie_new', '_controller' => 'App\\Controller\\managment\\CategorieController::new'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/management' => [[['_route' => 'app_dashboard', '_controller' => 'App\\Controller\\managment\\DashboardController::index'], null, null, null, false, false, null]],
+        '/stats' => [[['_route' => 'app_stats_index', '_controller' => 'App\\Controller\\managment\\StatsController::index'], null, ['GET' => 0], null, true, false, null]],
+        '/transaction/weather' => [[['_route' => 'app_weather_index', '_controller' => 'App\\Controller\\managment\\TransactionController::weather'], null, ['GET' => 0], null, false, false, null]],
+        '/transaction/holiday' => [[['_route' => 'app_holiday_index', '_controller' => 'App\\Controller\\managment\\TransactionController::holiday'], null, ['GET' => 0], null, false, false, null]],
         '/transaction' => [[['_route' => 'app_transaction_index', '_controller' => 'App\\Controller\\managment\\TransactionController::index'], null, ['GET' => 0], null, true, false, null]],
         '/transaction/new/step1' => [[['_route' => 'app_transaction_new_step1', '_controller' => 'App\\Controller\\managment\\TransactionController::step1'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/transaction/new/step2' => [[['_route' => 'app_transaction_new_step2', '_controller' => 'App\\Controller\\managment\\TransactionController::step2'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
@@ -235,20 +239,23 @@ return [
                         .')'
                         .'|fetch\\-new/([^/]++)(*:1391)'
                     .')'
-                    .'|ransaction/([^/]++)/delete(*:1427)'
+                    .'|ransaction/([^/]++)/(?'
+                        .'|delete(*:1430)'
+                        .'|toggle\\-recurring(*:1456)'
+                    .')'
                 .')'
-                .'|/message/([^/]++)/translate(*:1464)'
+                .'|/message/([^/]++)/translate(*:1494)'
                 .'|/objectif/(?'
                     .'|([^/]++)/(?'
-                        .'|edit(*:1502)'
-                        .'|delete(*:1517)'
-                        .'|contribuer(*:1536)'
+                        .'|edit(*:1532)'
+                        .'|delete(*:1547)'
+                        .'|contribuer(*:1566)'
                     .')'
-                    .'|contrib/([^/]++)/delete(*:1569)'
+                    .'|contrib/([^/]++)/delete(*:1599)'
                 .')'
                 .'|/budget/([^/]++)/(?'
-                    .'|edit(*:1603)'
-                    .'|delete(*:1618)'
+                    .'|edit(*:1633)'
+                    .'|delete(*:1648)'
                 .')'
             .')/?$}sDu',
     ],
@@ -312,14 +319,15 @@ return [
         1348 => [[['_route' => 'app_ticket_message_suggestions', '_controller' => 'App\\Controller\\MessageController::messageSuggestions'], ['id'], ['GET' => 0], null, false, false, null]],
         1362 => [[['_route' => 'app_ticket_summary', '_controller' => 'App\\Controller\\MessageController::ticketSummary'], ['id'], ['GET' => 0], null, false, false, null]],
         1391 => [[['_route' => 'app_ticket_fetch_new_messages', '_controller' => 'App\\Controller\\MessageController::fetchNewMessages'], ['id', 'lastId'], ['GET' => 0], null, false, true, null]],
-        1427 => [[['_route' => 'app_transaction_delete', '_controller' => 'App\\Controller\\managment\\TransactionController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        1464 => [[['_route' => 'app_message_translate', '_controller' => 'App\\Controller\\MessageController::translateMessage'], ['id'], ['POST' => 0], null, false, false, null]],
-        1502 => [[['_route' => 'objectif_edit', '_controller' => 'App\\Controller\\ObjectifController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1517 => [[['_route' => 'objectif_delete', '_controller' => 'App\\Controller\\ObjectifController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        1536 => [[['_route' => 'objectif_contribuer', '_controller' => 'App\\Controller\\ObjectifController::contribuer'], ['id'], ['POST' => 0], null, false, false, null]],
-        1569 => [[['_route' => 'contribution_delete', '_controller' => 'App\\Controller\\ObjectifController::deleteContribution'], ['id'], ['POST' => 0], null, false, false, null]],
-        1603 => [[['_route' => 'app_budget_edit', '_controller' => 'App\\Controller\\managment\\BudgetController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1618 => [
+        1430 => [[['_route' => 'app_transaction_delete', '_controller' => 'App\\Controller\\managment\\TransactionController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        1456 => [[['_route' => 'app_transaction_toggle_recurring', '_controller' => 'App\\Controller\\managment\\TransactionController::toggleRecurring'], ['id'], ['POST' => 0], null, false, false, null]],
+        1494 => [[['_route' => 'app_message_translate', '_controller' => 'App\\Controller\\MessageController::translateMessage'], ['id'], ['POST' => 0], null, false, false, null]],
+        1532 => [[['_route' => 'objectif_edit', '_controller' => 'App\\Controller\\ObjectifController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1547 => [[['_route' => 'objectif_delete', '_controller' => 'App\\Controller\\ObjectifController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        1566 => [[['_route' => 'objectif_contribuer', '_controller' => 'App\\Controller\\ObjectifController::contribuer'], ['id'], ['POST' => 0], null, false, false, null]],
+        1599 => [[['_route' => 'contribution_delete', '_controller' => 'App\\Controller\\ObjectifController::deleteContribution'], ['id'], ['POST' => 0], null, false, false, null]],
+        1633 => [[['_route' => 'app_budget_edit', '_controller' => 'App\\Controller\\managment\\BudgetController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1648 => [
             [['_route' => 'app_budget_delete', '_controller' => 'App\\Controller\\managment\\BudgetController::delete'], ['id'], ['POST' => 0], null, false, false, null],
             [null, null, null, null, false, false, 0],
         ],

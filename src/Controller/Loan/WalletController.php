@@ -2,13 +2,8 @@
 
 namespace App\Controller\Loan;
 
-<<<<<<< HEAD
-use App\Entity\management\Wallet;
-use App\Form\WalletType;
-=======
 use App\Entity\Loan\Wallet;
 use App\form\WalletType;
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 use App\Entity\user\Utilisateur;
 use App\Repository\WalletRepository;
 use App\Service\SimpleNotificationService;
@@ -51,19 +46,12 @@ class WalletController extends AbstractController
         return $user;
     }
 
-<<<<<<< HEAD
-    #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
-    public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $search = $request->query->get('search');
-=======
    #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
     public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
         $page = $request->query->getInt('page', 1);
         $limit = 6;
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
         $user = $this->getUserOrCreate($entityManager);
         
         $qb = $repository->createQueryBuilder('w')
@@ -74,10 +62,6 @@ class WalletController extends AbstractController
             $qb->andWhere('w.pays LIKE :search OR w.devise LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
-<<<<<<< HEAD
-        
-        $wallets = $qb->getQuery()->getResult();
-=======
 
         // Count total results
         $total = (clone $qb)->select('COUNT(w.id)')->getQuery()->getSingleScalarResult();
@@ -91,17 +75,13 @@ class WalletController extends AbstractController
                       ->setMaxResults($limit)
                       ->getQuery()
                       ->getResult();
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
 
         return $this->render('loan/wallet/index.html.twig', [
             'wallets' => $wallets,
             'search' => $search,
-<<<<<<< HEAD
-=======
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'total' => $total,
->>>>>>> 6ee8063c53bb7a428576b4b6405d1e3ad0dd8911
         ]);
     }
 
