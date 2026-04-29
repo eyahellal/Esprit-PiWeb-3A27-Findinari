@@ -2,3 +2,5 @@
 ce7b71,127.0.0.1,GET,http://127.0.0.1:8000/notifications/unread-count,1777463790,,200,request
 cc36d6,127.0.0.1,GET,http://127.0.0.1:8000/ticket/8/fetch-new/22,1777463847,,200,request
 606794,127.0.0.1,GET,http://127.0.0.1:8000/notifications/unread-count,1777463847,,200,request
+cf5421,127.0.0.1,GET,http://127.0.0.1:8000/ticket/8/fetch-new/22,1777463907,,200,request
+642db6,127.0.0.1,GET,http://127.0.0.1:8000/notifications/unread-count,1777463907,,200,request
