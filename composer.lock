@@ -5900,18 +5900,6 @@
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
-<<<<<<< HEAD
-            "version": "v1.36.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "ad1b7b9092976d6c948b8a187cec9faaea9ec1df"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/ad1b7b9092976d6c948b8a187cec9faaea9ec1df",
-                "reference": "ad1b7b9092976d6c948b8a187cec9faaea9ec1df",
-=======
             "version": "v1.37.0",
                 "source": {
                     "type": "git",
@@ -5922,7 +5910,6 @@
                     "type": "zip",
                     "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/4864388bfbd3001ce88e234fab652acd91fdc57e",
                     "reference": "4864388bfbd3001ce88e234fab652acd91fdc57e",
->>>>>>> dev_eyahellal
                 "shasum": ""
                 },
                 "require": {
