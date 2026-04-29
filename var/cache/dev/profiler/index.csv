@@ -1,2 +1,4 @@
 5fa39a,127.0.0.1,GET,http://127.0.0.1:8000/ticket/8/fetch-new/22,1777463789,,200,request
 ce7b71,127.0.0.1,GET,http://127.0.0.1:8000/notifications/unread-count,1777463790,,200,request
+cc36d6,127.0.0.1,GET,http://127.0.0.1:8000/ticket/8/fetch-new/22,1777463847,,200,request
+606794,127.0.0.1,GET,http://127.0.0.1:8000/notifications/unread-count,1777463847,,200,request
