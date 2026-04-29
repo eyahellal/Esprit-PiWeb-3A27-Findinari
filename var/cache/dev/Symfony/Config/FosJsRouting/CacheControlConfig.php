@@ -16,7 +16,7 @@ class CacheControlConfig
     private $smaxage;
     private $vary;
     private $_usedProperties = [];
-
+    
     /**
      * @default false
      * @param ParamConfigurator|bool $value
@@ -26,10 +26,10 @@ class CacheControlConfig
     {
         $this->_usedProperties['public'] = true;
         $this->public = $value;
-
+    
         return $this;
     }
-
+    
     /**
      * @default null
      * @param ParamConfigurator|mixed $value
@@ -39,10 +39,10 @@ class CacheControlConfig
     {
         $this->_usedProperties['expires'] = true;
         $this->expires = $value;
-
+    
         return $this;
     }
-
+    
     /**
      * @default null
      * @param ParamConfigurator|mixed $value
@@ -52,10 +52,10 @@ class CacheControlConfig
     {
         $this->_usedProperties['maxage'] = true;
         $this->maxage = $value;
-
+    
         return $this;
     }
-
+    
     /**
      * @default null
      * @param ParamConfigurator|mixed $value
@@ -65,10 +65,10 @@ class CacheControlConfig
     {
         $this->_usedProperties['smaxage'] = true;
         $this->smaxage = $value;
-
+    
         return $this;
     }
-
+    
     /**
      * @param ParamConfigurator|list<ParamConfigurator|mixed>|mixed $value
      *
@@ -78,10 +78,10 @@ class CacheControlConfig
     {
         $this->_usedProperties['vary'] = true;
         $this->vary = $value;
-
+    
         return $this;
     }
-
+    
     public function __construct(array $value = [])
     {
         if (array_key_exists('public', $value)) {
@@ -89,36 +89,36 @@ class CacheControlConfig
             $this->public = $value['public'];
             unset($value['public']);
         }
-
+    
         if (array_key_exists('expires', $value)) {
             $this->_usedProperties['expires'] = true;
             $this->expires = $value['expires'];
             unset($value['expires']);
         }
-
+    
         if (array_key_exists('maxage', $value)) {
             $this->_usedProperties['maxage'] = true;
             $this->maxage = $value['maxage'];
             unset($value['maxage']);
         }
-
+    
         if (array_key_exists('smaxage', $value)) {
             $this->_usedProperties['smaxage'] = true;
             $this->smaxage = $value['smaxage'];
             unset($value['smaxage']);
         }
-
+    
         if (array_key_exists('vary', $value)) {
             $this->_usedProperties['vary'] = true;
             $this->vary = $value['vary'];
             unset($value['vary']);
         }
-
+    
         if ([] !== $value) {
             throw new InvalidConfigurationException(sprintf('The following keys are not supported by "%s": ', __CLASS__).implode(', ', array_keys($value)));
         }
     }
-
+    
     public function toArray(): array
     {
         $output = [];
@@ -137,7 +137,7 @@ class CacheControlConfig
         if (isset($this->_usedProperties['vary'])) {
             $output['vary'] = $this->vary;
         }
-
+    
         return $output;
     }
 
