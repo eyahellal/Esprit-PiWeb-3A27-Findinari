@@ -1,0 +1,612 @@
+<?php
+
+use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Extension\CoreExtension;
+use Twig\Extension\SandboxExtension;
+use Twig\Markup;
+use Twig\Sandbox\SecurityError;
+use Twig\Sandbox\SecurityNotAllowedTagError;
+use Twig\Sandbox\SecurityNotAllowedFilterError;
+use Twig\Sandbox\SecurityNotAllowedFunctionError;
+use Twig\Source;
+use Twig\Template;
+use Twig\TemplateWrapper;
+
+/* home/how-it-works.html.twig */
+class __TwigTemplate_e4eb89ebdc573bd4d5a434ed052e0ea1 extends Template
+{
+    private Source $source;
+    /**
+     * @var array<string, Template>
+     */
+    private array $macros = [];
+
+    public function __construct(Environment $env)
+    {
+        parent::__construct($env);
+
+        $this->source = $this->getSourceContext();
+
+        $this->blocks = [
+            'title' => [$this, 'block_title'],
+            'body' => [$this, 'block_body'],
+        ];
+    }
+
+    protected function doGetParent(array $context): bool|string|Template|TemplateWrapper
+    {
+        // line 1
+        return "base.html.twig";
+    }
+
+    protected function doDisplay(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "template", "home/how-it-works.html.twig"));
+
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "template", "home/how-it-works.html.twig"));
+
+        $this->parent = $this->load("base.html.twig", 1);
+        yield from $this->parent->unwrap()->yield($context, array_merge($this->blocks, $blocks));
+        
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
+
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+    }
+
+    // line 3
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_title(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "title"));
+
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "title"));
+
+        yield "How Fin-Dinari Works - Complete Personal Finance Ecosystem";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
+
+        yield from [];
+    }
+
+    // line 5
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_body(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "body"));
+
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "body"));
+
+        // line 6
+        yield "
+<section class=\"page-header bg-tertiary\">
+\t<div class=\"container\">
+\t\t<div class=\"row\">
+\t\t\t<div class=\"col-8 mx-auto text-center\">
+\t\t\t\t<h2 class=\"mb-3 text-capitalize\">How It Works</h2>
+\t\t\t\t<ul class=\"list-inline breadcrumbs text-capitalize\" style=\"font-weight:500\">
+\t\t\t\t\t<li class=\"list-inline-item\"><a href=\"";
+        // line 13
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_home");
+        yield "\">Home</a>
+\t\t\t\t\t</li>
+\t\t\t\t\t<li class=\"list-inline-item\">/ &nbsp; <a href=\"";
+        // line 15
+        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_how_it_works");
+        yield "\">How it works</a>
+\t\t\t\t\t</li>
+\t\t\t\t</ul>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+\t<div class=\"has-shapes\">
+\t\t<svg class=\"shape shape-left text-light\" viewBox=\"0 0 192 752\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">
+\t\t\t<path d=\"M-30.883 0C-41.3436 36.4248 -22.7145 75.8085 4.29154 102.398C31.2976 128.987 65.8677 146.199 97.6457 166.87C129.424 187.542 160.139 213.902 172.162 249.847C193.542 313.799 149.886 378.897 129.069 443.036C97.5623 540.079 122.109 653.229 191 728.495\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M-55.5959 7.52271C-66.0565 43.9475 -47.4274 83.3312 -20.4214 109.92C6.58466 136.51 41.1549 153.722 72.9328 174.393C104.711 195.064 135.426 221.425 147.449 257.37C168.829 321.322 125.174 386.42 104.356 450.559C72.8494 547.601 97.3965 660.752 166.287 736.018\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M-80.3302 15.0449C-90.7909 51.4697 -72.1617 90.8535 -45.1557 117.443C-18.1497 144.032 16.4205 161.244 48.1984 181.915C79.9763 202.587 110.691 228.947 122.715 264.892C144.095 328.844 100.439 393.942 79.622 458.081C48.115 555.123 72.6622 668.274 141.552 743.54\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M-105.045 22.5676C-115.506 58.9924 -96.8766 98.3762 -69.8706 124.965C-42.8646 151.555 -8.29436 168.767 23.4835 189.438C55.2615 210.109 85.9766 236.469 98.0001 272.415C119.38 336.367 75.7243 401.464 54.9072 465.604C23.4002 562.646 47.9473 675.796 116.838 751.063\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t</svg>
+\t\t<svg class=\"shape shape-right text-light\" viewBox=\"0 0 731 746\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">
+\t\t\t<path d=\"M12.1794 745.14C1.80036 707.275 -5.75764 666.015 8.73984 629.537C27.748 581.745 80.4729 554.968 131.538 548.843C182.604 542.703 234.032 552.841 285.323 556.748C336.615 560.64 391.543 557.276 433.828 527.964C492.452 487.323 511.701 408.123 564.607 360.255C608.718 320.353 675.307 307.183 731.29 327.323\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M51.0253 745.14C41.2045 709.326 34.0538 670.284 47.7668 635.783C65.7491 590.571 115.623 565.242 163.928 559.449C212.248 553.641 260.884 563.235 309.4 566.931C357.916 570.627 409.887 567.429 449.879 539.701C505.35 501.247 523.543 426.331 573.598 381.059C615.326 343.314 678.324 330.853 731.275 349.906\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M89.8715 745.14C80.6239 711.363 73.8654 674.568 86.8091 642.028C103.766 599.396 150.788 575.515 196.347 570.054C241.906 564.578 287.767 573.629 333.523 577.099C379.278 580.584 428.277 577.567 465.976 551.423C518.279 515.172 535.431 444.525 582.62 401.832C621.964 366.229 681.356 354.493 731.291 372.46\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M128.718 745.14C120.029 713.414 113.678 678.838 125.837 648.274C141.768 608.221 185.939 585.788 228.737 580.659C271.536 575.515 314.621 584.008 357.6 587.282C400.58 590.556 446.607 587.719 482.028 563.16C531.163 529.111 547.275 462.733 591.612 422.635C628.572 389.19 684.375 378.162 731.276 395.043\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M167.564 745.14C159.432 715.451 153.504 683.107 164.863 654.519C179.753 617.046 221.088 596.062 261.126 591.265C301.164 586.452 341.473 594.402 381.677 597.465C421.88 600.527 464.95 597.872 498.094 574.896C544.061 543.035 559.146 480.942 600.617 443.423C635.194 412.135 687.406 401.817 731.276 417.612\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M817.266 289.466C813.108 259.989 787.151 237.697 759.261 227.271C731.372 216.846 701.077 215.553 671.666 210.904C642.254 206.24 611.795 197.156 591.664 175.224C555.853 136.189 566.345 75.5336 560.763 22.8649C552.302 -56.8256 498.487 -130.133 425 -162.081\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M832.584 276.159C828.427 246.683 802.469 224.391 774.58 213.965C746.69 203.539 716.395 202.246 686.984 197.598C657.573 192.934 627.114 183.85 606.982 161.918C571.172 122.883 581.663 62.2275 576.082 9.55873C567.62 -70.1318 513.806 -143.439 440.318 -175.387\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M847.904 262.853C843.747 233.376 817.789 211.084 789.9 200.659C762.011 190.233 731.716 188.94 702.304 184.292C672.893 179.627 642.434 170.544 622.303 148.612C586.492 109.577 596.983 48.9211 591.402 -3.74766C582.94 -83.4382 529.126 -156.746 455.638 -188.694\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M863.24 249.547C859.083 220.07 833.125 197.778 805.236 187.353C777.347 176.927 747.051 175.634 717.64 170.986C688.229 166.321 657.77 157.237 637.639 135.306C601.828 96.2707 612.319 35.6149 606.738 -17.0538C598.276 -96.7443 544.462 -170.052 470.974 -202\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t</svg>
+\t</div>
+</section>
+
+<section class=\"section\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-between align-items-center\">
+\t\t\t<div class=\"col-lg-5\">
+\t\t\t\t<div class=\"section-title\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">How It Works</p>
+\t\t\t\t\t<h1>See How Fin-Dinari Works In One Minute.</h1>
+\t\t\t\t\t<p>
+\t\t\t\t\t\t<p>Fin-Dinari transforms your financial life in three simple steps. Track expenses, build investment portfolios, set goals, and connect with a supportive community - all in one powerful platform.</p>
+\t\t\t\t\t\t<p>Whether you want to get out of debt, start investing, or achieve financial independence, Fin-Dinari provides the tools and community support you need. Watch our quick demo to see how easy it is to take control of your financial future.</p>
+\t\t\t\t\t</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t\t<div class=\"col-lg-6 mt-5 mt-lg-0\">
+\t\t\t\t<div class=\"has-video-popup position-relative\">
+\t\t\t\t\t<img loading=\"lazy\" decoding=\"async\" src=\"";
+        // line 57
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\AssetExtension']->getAssetUrl("images/video-thumb.png"), "html", null, true);
+        yield "\" alt=\"Fin-Dinari Demo Video\" class=\"rounded-lg w-100\">
+\t\t\t\t\t<button type=\"button\" class=\"video-play-btn border-0 bg-transparent\" data-bs-toggle=\"modal\" data-src=\"https://www.youtube.com/embed/dyZcRRWiuuw\" data-bs-target=\"#videoModal\">
+\t\t\t\t\t\t<svg class=\"text-primary\" viewBox=\"0 0 90 90\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">
+\t\t\t\t\t\t\t<circle cx=\"45\" cy=\"45\" r=\"45\" fill=\"currentColor\" fill-opacity=\"0.4\" />
+\t\t\t\t\t\t\t<circle cx=\"44.9995\" cy=\"45\" r=\"37.437\" fill=\"currentColor\" />
+\t\t\t\t\t\t\t<path d=\"M58.2354 44.9999L38.3824 56.462L38.3824 33.5378L58.2354 44.9999Z\" fill=\"white\" />
+\t\t\t\t\t\t</svg>
+\t\t\t\t\t</button>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+<div class=\"modal fade rounded overflow-hidden\" id=\"videoModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">
+\t<div class=\"modal-dialog modal-lg modal-dialog-centered\" role=\"document\">
+\t\t<div class=\"modal-content border-0\">
+\t\t\t<div class=\"text-center p-3\">
+\t\t\t\t<button type=\"button\" class=\"bg-transparent border-0\" data-bs-dismiss=\"modal\" aria-label=\"Close\"><i class=\"fas fa-times\"></i>
+\t\t\t\t</button>
+\t\t\t</div>
+\t\t\t<div class=\"modal-body p-0\">
+\t\t\t\t<div class=\"ratio ratio-16x9 rounded-bottom overflow-hidden\">
+\t\t\t\t\t<iframe src=\"\" id=\"showVideo\" allowscriptaccess=\"always\" allow=\"autoplay\" allowfullscreen></iframe>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</div>
+
+<section class=\"section loan-steps bg-tertiary\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-center align-items-center\">
+\t\t\t<div class=\"col-lg-7\">
+\t\t\t\t<div class=\"section-title text-center\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">Simple Process</p>
+\t\t\t\t\t<h1>Getting Started With Fin-Dinari Is Very Easy In Just 3 Simple Steps</h1>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t\t<div class=\"row justify-content-center\">
+\t\t\t<div class=\"col-lg-10\">
+\t\t\t\t<div class=\"row justify-content-center\">
+\t\t\t\t\t<div class=\"step-item col-lg-4 col-md-6\">
+\t\t\t\t\t\t<div class=\"text-center\">
+\t\t\t\t\t\t\t<p class=\"count\">01</p>
+\t\t\t\t\t\t\t<h3 class=\"mb-3\">Create Your Account</h3>
+\t\t\t\t\t\t\t<p class=\"mb-0\">Sign up for free and set up your profile. Connect your bank accounts or start tracking expenses manually - it's completely up to you.</p>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"step-item col-lg-4 col-md-6\">
+\t\t\t\t\t\t<div class=\"text-center\">
+\t\t\t\t\t\t\t<p class=\"count\">02</p>
+\t\t\t\t\t\t\t<h3 class=\"mb-3\">Set Your Goals</h3>
+\t\t\t\t\t\t\t<p class=\"mb-0\">Define your financial goals - whether it's saving for a vacation, building an investment portfolio, or achieving financial independence.</p>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"step-item col-lg-4 col-md-6\">
+\t\t\t\t\t\t<div class=\"text-center\">
+\t\t\t\t\t\t\t<p class=\"count\">03</p>
+\t\t\t\t\t\t\t<h3 class=\"mb-3\">Grow & Connect</h3>
+\t\t\t\t\t\t\t<p class=\"mb-0\">Track your progress, join community groups, find accountability partners, and watch your wealth grow with AI-powered insights.</p>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+<section class=\"section\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-center align-items-center\">
+\t\t\t<div class=\"col-lg-6\">
+\t\t\t\t<div class=\"section-title text-center\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">Why Choose Fin-Dinari</p>
+\t\t\t\t\t<h1>What You Get With Fin-Dinari</h1>
+\t\t\t\t\t<p>Everything you need to take control of your financial future in one complete ecosystem</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t\t<div class=\"row justify-content-center\">
+\t\t\t<div class=\"icon-box-item col-lg-4 col-md-6\">
+\t\t\t\t<div class=\"block\">
+\t\t\t\t\t<div class=\"icon\"> <i class=\"fas fa-chart-line\"></i>
+\t\t\t\t\t</div>
+\t\t\t\t\t<h3 class=\"mb-3\">Smart Investment Tools</h3>
+\t\t\t\t\t<p class=\"mb-0\">Build and track multiple investment portfolios across stocks, crypto, real estate, and more. Get real-time valuations and ROI calculations.</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t\t<div class=\"icon-box-item col-lg-4 col-md-6\">
+\t\t\t\t<div class=\"block\">
+\t\t\t\t\t<div class=\"icon\"> <i class=\"fas fa-users\"></i>
+\t\t\t\t\t</div>
+\t\t\t\t\t<h3 class=\"mb-3\">Vibrant Community</h3>
+\t\t\t\t\t<p class=\"mb-0\">Connect with like-minded individuals, join interest-based groups, find mentors, and participate in challenges that keep you motivated.</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t\t<div class=\"icon-box-item col-lg-4 col-md-6\">
+\t\t\t\t<div class=\"block\">
+\t\t\t\t\t<div class=\"icon\"> <i class=\"fas fa-trophy\"></i>
+\t\t\t\t\t</div>
+\t\t\t\t\t<h3 class=\"mb-3\">Gamified Experience</h3>
+\t\t\t\t\t<p class=\"mb-0\">Earn badges, level up, and compete on leaderboards. Turn financial responsibility into an engaging and rewarding journey.</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+<section class=\"section bg-tertiary\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-center align-items-center mb-5\">
+\t\t\t<div class=\"col-lg-6\">
+\t\t\t\t<div class=\"section-title text-center\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">Frequently Asked Questions</p>
+\t\t\t\t\t<h1>Everything You Need To Know</h1>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t\t<div class=\"row justify-content-center\">
+\t\t\t<div class=\"col-lg-9\">
+\t\t\t\t<div class=\"accordion accordion-border-bottom\" id=\"additional_Info\">
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0 active\" id=\"heading-1\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-1\" aria-expanded=\"true\" aria-controls=\"collapse-1\">
+\t\t\t\t\t\t\tHow does Fin-Dinari help me track my expenses?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-1\" class=\"accordion-collapse collapse border-0 show\" aria-labelledby=\"heading-1\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Fin-Dinari uses AI-powered categorization to automatically sort your transactions. You can track income and expenses across multiple wallets (Cash, Bank, Crypto, Investments) with real-time balance updates and automatic recurring transaction scheduling.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-2\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-2\" aria-expanded=\"false\" aria-controls=\"collapse-2\">
+\t\t\t\t\t\t\tCan I really invest through Fin-Dinari?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-2\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-2\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Yes! Fin-Dinari provides full investment portfolio management. You can create multiple portfolios (Stocks, Bonds, Crypto, Real Estate, Mutual Funds), track investments across different asset classes, get real-time portfolio valuation with profit/loss calculations, and access diversification analysis and risk assessment tools.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-3\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-3\" aria-expanded=\"false\" aria-controls=\"collapse-3\">
+\t\t\t\t\t\t\tIs Fin-Dinari really free?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-3\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-3\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Fin-Dinari offers a Free Tier with basic expense tracking, 1 wallet, 3 active goals, community access (read-only), and basic investment tracking. Premium Tier (\$4.99/month or \$49.99/year) unlocks unlimited wallets and goals, full investment portfolio management, active community participation, mentorship access, advanced analytics, and more.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-4\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-4\" aria-expanded=\"false\" aria-controls=\"collapse-4\">
+\t\t\t\t\t\t\tHow does the community feature work?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-4\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-4\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Fin-Dinari's community platform includes social feeds where you can share financial wins and questions, interest-based groups (FIRE Movement, Stock Market Investors, Crypto Traders, etc.), monthly challenges and competitions, a mentorship system connecting experienced investors with beginners, and accountability partners who help you stay on track with your goals.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-5\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-5\" aria-expanded=\"false\" aria-controls=\"collapse-5\">
+\t\t\t\t\t\t\tHow do I get started with Fin-Dinari?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-5\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-5\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Getting started is easy! Simply create your free account, connect your bank accounts or start tracking expenses manually, set your financial goals, and join our community. You'll be on your way to financial freedom in minutes.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
+
+        yield from [];
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function getTemplateName(): string
+    {
+        return "home/how-it-works.html.twig";
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function isTraitable(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    public function getDebugInfo(): array
+    {
+        return array (  159 => 57,  114 => 15,  109 => 13,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+    }
+
+    public function getSourceContext(): Source
+    {
+        return new Source("{% extends 'base.html.twig' %}
+
+{% block title %}How Fin-Dinari Works - Complete Personal Finance Ecosystem{% endblock %}
+
+{% block body %}
+
+<section class=\"page-header bg-tertiary\">
+\t<div class=\"container\">
+\t\t<div class=\"row\">
+\t\t\t<div class=\"col-8 mx-auto text-center\">
+\t\t\t\t<h2 class=\"mb-3 text-capitalize\">How It Works</h2>
+\t\t\t\t<ul class=\"list-inline breadcrumbs text-capitalize\" style=\"font-weight:500\">
+\t\t\t\t\t<li class=\"list-inline-item\"><a href=\"{{ path('app_home') }}\">Home</a>
+\t\t\t\t\t</li>
+\t\t\t\t\t<li class=\"list-inline-item\">/ &nbsp; <a href=\"{{ path('app_how_it_works') }}\">How it works</a>
+\t\t\t\t\t</li>
+\t\t\t\t</ul>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+\t<div class=\"has-shapes\">
+\t\t<svg class=\"shape shape-left text-light\" viewBox=\"0 0 192 752\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">
+\t\t\t<path d=\"M-30.883 0C-41.3436 36.4248 -22.7145 75.8085 4.29154 102.398C31.2976 128.987 65.8677 146.199 97.6457 166.87C129.424 187.542 160.139 213.902 172.162 249.847C193.542 313.799 149.886 378.897 129.069 443.036C97.5623 540.079 122.109 653.229 191 728.495\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M-55.5959 7.52271C-66.0565 43.9475 -47.4274 83.3312 -20.4214 109.92C6.58466 136.51 41.1549 153.722 72.9328 174.393C104.711 195.064 135.426 221.425 147.449 257.37C168.829 321.322 125.174 386.42 104.356 450.559C72.8494 547.601 97.3965 660.752 166.287 736.018\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M-80.3302 15.0449C-90.7909 51.4697 -72.1617 90.8535 -45.1557 117.443C-18.1497 144.032 16.4205 161.244 48.1984 181.915C79.9763 202.587 110.691 228.947 122.715 264.892C144.095 328.844 100.439 393.942 79.622 458.081C48.115 555.123 72.6622 668.274 141.552 743.54\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M-105.045 22.5676C-115.506 58.9924 -96.8766 98.3762 -69.8706 124.965C-42.8646 151.555 -8.29436 168.767 23.4835 189.438C55.2615 210.109 85.9766 236.469 98.0001 272.415C119.38 336.367 75.7243 401.464 54.9072 465.604C23.4002 562.646 47.9473 675.796 116.838 751.063\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t</svg>
+\t\t<svg class=\"shape shape-right text-light\" viewBox=\"0 0 731 746\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">
+\t\t\t<path d=\"M12.1794 745.14C1.80036 707.275 -5.75764 666.015 8.73984 629.537C27.748 581.745 80.4729 554.968 131.538 548.843C182.604 542.703 234.032 552.841 285.323 556.748C336.615 560.64 391.543 557.276 433.828 527.964C492.452 487.323 511.701 408.123 564.607 360.255C608.718 320.353 675.307 307.183 731.29 327.323\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M51.0253 745.14C41.2045 709.326 34.0538 670.284 47.7668 635.783C65.7491 590.571 115.623 565.242 163.928 559.449C212.248 553.641 260.884 563.235 309.4 566.931C357.916 570.627 409.887 567.429 449.879 539.701C505.35 501.247 523.543 426.331 573.598 381.059C615.326 343.314 678.324 330.853 731.275 349.906\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M89.8715 745.14C80.6239 711.363 73.8654 674.568 86.8091 642.028C103.766 599.396 150.788 575.515 196.347 570.054C241.906 564.578 287.767 573.629 333.523 577.099C379.278 580.584 428.277 577.567 465.976 551.423C518.279 515.172 535.431 444.525 582.62 401.832C621.964 366.229 681.356 354.493 731.291 372.46\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M128.718 745.14C120.029 713.414 113.678 678.838 125.837 648.274C141.768 608.221 185.939 585.788 228.737 580.659C271.536 575.515 314.621 584.008 357.6 587.282C400.58 590.556 446.607 587.719 482.028 563.16C531.163 529.111 547.275 462.733 591.612 422.635C628.572 389.19 684.375 378.162 731.276 395.043\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M167.564 745.14C159.432 715.451 153.504 683.107 164.863 654.519C179.753 617.046 221.088 596.062 261.126 591.265C301.164 586.452 341.473 594.402 381.677 597.465C421.88 600.527 464.95 597.872 498.094 574.896C544.061 543.035 559.146 480.942 600.617 443.423C635.194 412.135 687.406 401.817 731.276 417.612\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M817.266 289.466C813.108 259.989 787.151 237.697 759.261 227.271C731.372 216.846 701.077 215.553 671.666 210.904C642.254 206.24 611.795 197.156 591.664 175.224C555.853 136.189 566.345 75.5336 560.763 22.8649C552.302 -56.8256 498.487 -130.133 425 -162.081\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M832.584 276.159C828.427 246.683 802.469 224.391 774.58 213.965C746.69 203.539 716.395 202.246 686.984 197.598C657.573 192.934 627.114 183.85 606.982 161.918C571.172 122.883 581.663 62.2275 576.082 9.55873C567.62 -70.1318 513.806 -143.439 440.318 -175.387\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M847.904 262.853C843.747 233.376 817.789 211.084 789.9 200.659C762.011 190.233 731.716 188.94 702.304 184.292C672.893 179.627 642.434 170.544 622.303 148.612C586.492 109.577 596.983 48.9211 591.402 -3.74766C582.94 -83.4382 529.126 -156.746 455.638 -188.694\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t\t<path d=\"M863.24 249.547C859.083 220.07 833.125 197.778 805.236 187.353C777.347 176.927 747.051 175.634 717.64 170.986C688.229 166.321 657.77 157.237 637.639 135.306C601.828 96.2707 612.319 35.6149 606.738 -17.0538C598.276 -96.7443 544.462 -170.052 470.974 -202\" stroke=\"currentColor\" stroke-miterlimit=\"10\" />
+\t\t</svg>
+\t</div>
+</section>
+
+<section class=\"section\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-between align-items-center\">
+\t\t\t<div class=\"col-lg-5\">
+\t\t\t\t<div class=\"section-title\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">How It Works</p>
+\t\t\t\t\t<h1>See How Fin-Dinari Works In One Minute.</h1>
+\t\t\t\t\t<p>
+\t\t\t\t\t\t<p>Fin-Dinari transforms your financial life in three simple steps. Track expenses, build investment portfolios, set goals, and connect with a supportive community - all in one powerful platform.</p>
+\t\t\t\t\t\t<p>Whether you want to get out of debt, start investing, or achieve financial independence, Fin-Dinari provides the tools and community support you need. Watch our quick demo to see how easy it is to take control of your financial future.</p>
+\t\t\t\t\t</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t\t<div class=\"col-lg-6 mt-5 mt-lg-0\">
+\t\t\t\t<div class=\"has-video-popup position-relative\">
+\t\t\t\t\t<img loading=\"lazy\" decoding=\"async\" src=\"{{ asset('images/video-thumb.png') }}\" alt=\"Fin-Dinari Demo Video\" class=\"rounded-lg w-100\">
+\t\t\t\t\t<button type=\"button\" class=\"video-play-btn border-0 bg-transparent\" data-bs-toggle=\"modal\" data-src=\"https://www.youtube.com/embed/dyZcRRWiuuw\" data-bs-target=\"#videoModal\">
+\t\t\t\t\t\t<svg class=\"text-primary\" viewBox=\"0 0 90 90\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">
+\t\t\t\t\t\t\t<circle cx=\"45\" cy=\"45\" r=\"45\" fill=\"currentColor\" fill-opacity=\"0.4\" />
+\t\t\t\t\t\t\t<circle cx=\"44.9995\" cy=\"45\" r=\"37.437\" fill=\"currentColor\" />
+\t\t\t\t\t\t\t<path d=\"M58.2354 44.9999L38.3824 56.462L38.3824 33.5378L58.2354 44.9999Z\" fill=\"white\" />
+\t\t\t\t\t\t</svg>
+\t\t\t\t\t</button>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+<div class=\"modal fade rounded overflow-hidden\" id=\"videoModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">
+\t<div class=\"modal-dialog modal-lg modal-dialog-centered\" role=\"document\">
+\t\t<div class=\"modal-content border-0\">
+\t\t\t<div class=\"text-center p-3\">
+\t\t\t\t<button type=\"button\" class=\"bg-transparent border-0\" data-bs-dismiss=\"modal\" aria-label=\"Close\"><i class=\"fas fa-times\"></i>
+\t\t\t\t</button>
+\t\t\t</div>
+\t\t\t<div class=\"modal-body p-0\">
+\t\t\t\t<div class=\"ratio ratio-16x9 rounded-bottom overflow-hidden\">
+\t\t\t\t\t<iframe src=\"\" id=\"showVideo\" allowscriptaccess=\"always\" allow=\"autoplay\" allowfullscreen></iframe>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</div>
+
+<section class=\"section loan-steps bg-tertiary\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-center align-items-center\">
+\t\t\t<div class=\"col-lg-7\">
+\t\t\t\t<div class=\"section-title text-center\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">Simple Process</p>
+\t\t\t\t\t<h1>Getting Started With Fin-Dinari Is Very Easy In Just 3 Simple Steps</h1>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t\t<div class=\"row justify-content-center\">
+\t\t\t<div class=\"col-lg-10\">
+\t\t\t\t<div class=\"row justify-content-center\">
+\t\t\t\t\t<div class=\"step-item col-lg-4 col-md-6\">
+\t\t\t\t\t\t<div class=\"text-center\">
+\t\t\t\t\t\t\t<p class=\"count\">01</p>
+\t\t\t\t\t\t\t<h3 class=\"mb-3\">Create Your Account</h3>
+\t\t\t\t\t\t\t<p class=\"mb-0\">Sign up for free and set up your profile. Connect your bank accounts or start tracking expenses manually - it's completely up to you.</p>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"step-item col-lg-4 col-md-6\">
+\t\t\t\t\t\t<div class=\"text-center\">
+\t\t\t\t\t\t\t<p class=\"count\">02</p>
+\t\t\t\t\t\t\t<h3 class=\"mb-3\">Set Your Goals</h3>
+\t\t\t\t\t\t\t<p class=\"mb-0\">Define your financial goals - whether it's saving for a vacation, building an investment portfolio, or achieving financial independence.</p>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"step-item col-lg-4 col-md-6\">
+\t\t\t\t\t\t<div class=\"text-center\">
+\t\t\t\t\t\t\t<p class=\"count\">03</p>
+\t\t\t\t\t\t\t<h3 class=\"mb-3\">Grow & Connect</h3>
+\t\t\t\t\t\t\t<p class=\"mb-0\">Track your progress, join community groups, find accountability partners, and watch your wealth grow with AI-powered insights.</p>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+<section class=\"section\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-center align-items-center\">
+\t\t\t<div class=\"col-lg-6\">
+\t\t\t\t<div class=\"section-title text-center\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">Why Choose Fin-Dinari</p>
+\t\t\t\t\t<h1>What You Get With Fin-Dinari</h1>
+\t\t\t\t\t<p>Everything you need to take control of your financial future in one complete ecosystem</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t\t<div class=\"row justify-content-center\">
+\t\t\t<div class=\"icon-box-item col-lg-4 col-md-6\">
+\t\t\t\t<div class=\"block\">
+\t\t\t\t\t<div class=\"icon\"> <i class=\"fas fa-chart-line\"></i>
+\t\t\t\t\t</div>
+\t\t\t\t\t<h3 class=\"mb-3\">Smart Investment Tools</h3>
+\t\t\t\t\t<p class=\"mb-0\">Build and track multiple investment portfolios across stocks, crypto, real estate, and more. Get real-time valuations and ROI calculations.</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t\t<div class=\"icon-box-item col-lg-4 col-md-6\">
+\t\t\t\t<div class=\"block\">
+\t\t\t\t\t<div class=\"icon\"> <i class=\"fas fa-users\"></i>
+\t\t\t\t\t</div>
+\t\t\t\t\t<h3 class=\"mb-3\">Vibrant Community</h3>
+\t\t\t\t\t<p class=\"mb-0\">Connect with like-minded individuals, join interest-based groups, find mentors, and participate in challenges that keep you motivated.</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t\t<div class=\"icon-box-item col-lg-4 col-md-6\">
+\t\t\t\t<div class=\"block\">
+\t\t\t\t\t<div class=\"icon\"> <i class=\"fas fa-trophy\"></i>
+\t\t\t\t\t</div>
+\t\t\t\t\t<h3 class=\"mb-3\">Gamified Experience</h3>
+\t\t\t\t\t<p class=\"mb-0\">Earn badges, level up, and compete on leaderboards. Turn financial responsibility into an engaging and rewarding journey.</p>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+<section class=\"section bg-tertiary\">
+\t<div class=\"container\">
+\t\t<div class=\"row justify-content-center align-items-center mb-5\">
+\t\t\t<div class=\"col-lg-6\">
+\t\t\t\t<div class=\"section-title text-center\">
+\t\t\t\t\t<p class=\"text-primary text-uppercase fw-bold mb-3\">Frequently Asked Questions</p>
+\t\t\t\t\t<h1>Everything You Need To Know</h1>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t\t<div class=\"row justify-content-center\">
+\t\t\t<div class=\"col-lg-9\">
+\t\t\t\t<div class=\"accordion accordion-border-bottom\" id=\"additional_Info\">
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0 active\" id=\"heading-1\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-1\" aria-expanded=\"true\" aria-controls=\"collapse-1\">
+\t\t\t\t\t\t\tHow does Fin-Dinari help me track my expenses?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-1\" class=\"accordion-collapse collapse border-0 show\" aria-labelledby=\"heading-1\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Fin-Dinari uses AI-powered categorization to automatically sort your transactions. You can track income and expenses across multiple wallets (Cash, Bank, Crypto, Investments) with real-time balance updates and automatic recurring transaction scheduling.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-2\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-2\" aria-expanded=\"false\" aria-controls=\"collapse-2\">
+\t\t\t\t\t\t\tCan I really invest through Fin-Dinari?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-2\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-2\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Yes! Fin-Dinari provides full investment portfolio management. You can create multiple portfolios (Stocks, Bonds, Crypto, Real Estate, Mutual Funds), track investments across different asset classes, get real-time portfolio valuation with profit/loss calculations, and access diversification analysis and risk assessment tools.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-3\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-3\" aria-expanded=\"false\" aria-controls=\"collapse-3\">
+\t\t\t\t\t\t\tIs Fin-Dinari really free?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-3\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-3\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Fin-Dinari offers a Free Tier with basic expense tracking, 1 wallet, 3 active goals, community access (read-only), and basic investment tracking. Premium Tier (\$4.99/month or \$49.99/year) unlocks unlimited wallets and goals, full investment portfolio management, active community participation, mentorship access, advanced analytics, and more.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-4\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-4\" aria-expanded=\"false\" aria-controls=\"collapse-4\">
+\t\t\t\t\t\t\tHow does the community feature work?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-4\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-4\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Fin-Dinari's community platform includes social feeds where you can share financial wins and questions, interest-based groups (FIRE Movement, Stock Market Investors, Crypto Traders, etc.), monthly challenges and competitions, a mentorship system connecting experienced investors with beginners, and accountability partners who help you stay on track with your goals.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t\t<div class=\"accordion-item bg-transparent\">
+\t\t\t\t\t\t<h2 class=\"accordion-header accordion-button h5 border-0\" id=\"heading-5\" type=\"button\" data-bs-toggle=\"collapse\" data-bs-target=\"#collapse-5\" aria-expanded=\"false\" aria-controls=\"collapse-5\">
+\t\t\t\t\t\t\tHow do I get started with Fin-Dinari?
+\t\t\t\t\t\t</h2>
+\t\t\t\t\t\t<div id=\"collapse-5\" class=\"accordion-collapse collapse border-0\" aria-labelledby=\"heading-5\" data-bs-parent=\"#additional_Info\">
+\t\t\t\t\t\t\t<div class=\"accordion-body py-0 content\">
+\t\t\t\t\t\t\t\t<p>Getting started is easy! Simply create your free account, connect your bank accounts or start tracking expenses manually, set your financial goals, and join our community. You'll be on your way to financial freedom in minutes.</p>
+\t\t\t\t\t\t\t</div>
+\t\t\t\t\t\t</div>
+\t\t\t\t\t</div>
+\t\t\t\t</div>
+\t\t\t</div>
+\t\t</div>
+\t</div>
+</section>
+
+{% endblock %}", "home/how-it-works.html.twig", "C:\\projects\\whatever\\Esprit-PiWeb-3A27-Findinari\\templates\\home\\how-it-works.html.twig");
+    }
+}
