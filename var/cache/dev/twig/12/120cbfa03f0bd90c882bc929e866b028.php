@@ -164,7 +164,7 @@ class __TwigTemplate_aeb3d811dfba597e2954c40108477173 extends Template
 
                         ";
         // line 49
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 49, $this->source); })()), 'form_start');
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 49, $this->source); })()), 'form_start', ["attr" => ["novalidate" => "novalidate"]]);
         yield "
 
                             ";
@@ -620,7 +620,7 @@ class __TwigTemplate_aeb3d811dfba597e2954c40108477173 extends Template
                     {# Card Body #}
                     <div class=\"card-body p-4\">
 
-                        {{ form_start(form) }}
+                        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
 
                             {# Name #}
                             <div class=\"mb-3\">

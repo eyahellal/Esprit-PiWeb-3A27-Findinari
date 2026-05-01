@@ -598,26 +598,40 @@
         </div>
 
         <div class="nav-section">Main</div>
-        <a class="side-link" href="{{ path('app_admin_dashboard') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            Dashboard
-        </a>
-        <a class="side-link" href="{{ path('app_admin_wallets') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-            Manage Wallets
-        </a>
-        <a class="side-link active" href="{{ path('app_admin_objectifs') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Manage Objectifs
-        </a>
-        <a class="side-link" href="{{ path('app_admin_tickets') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-            Tickets & Messages
-        </a>
-        <a class="side-link" href="{{ path('app_admin_obligations') }}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
-            Manage Obligations
-        </a>
+        <a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}" 
+   href="{{ path('app_admin_dashboard') }}">
+   <i class="fas fa-home"></i> Dashboard
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_overview_dashboard' ? 'active' : '' }}" 
+   href="{{ path('app_admin_overview_dashboard') }}">
+   <i class="fas fa-chart-bar"></i> Overview Dashboard
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_wallets' ? 'active' : '' }}" 
+   href="{{ path('app_admin_wallets') }}">
+   <i class="fas fa-wallet"></i> Manage Wallets
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_management' ? 'active' : '' }}" 
+   href="{{ path('app_admin_management') }}">
+   <i class="fas fa-exchange-alt"></i> Manage Transactions
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_objectifs' ? 'active' : '' }}" 
+   href="{{ path('app_admin_objectifs') }}">
+   <i class="fas fa-bullseye"></i> Manage Objectifs
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_tickets' ? 'active' : '' }}" 
+   href="{{ path('app_admin_tickets') }}">
+   <i class="fas fa-ticket-alt"></i> Tickets & Messages
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_obligations' ? 'active' : '' }}" 
+   href="{{ path('app_admin_obligations') }}">
+   <i class="fas fa-file-contract"></i> Manage Obligations
+</a>
 
         <div class="sidebar-footer">
             <a class="side-link" href="{{ path('app_home') }}">

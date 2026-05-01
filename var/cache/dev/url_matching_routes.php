@@ -106,7 +106,7 @@ return [
         '/categorie/new' => [[['_route' => 'app_categorie_new', '_controller' => 'App\\Controller\\managment\\CategorieController::new'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/management' => [[['_route' => 'app_dashboard', '_controller' => 'App\\Controller\\managment\\DashboardController::index'], null, null, null, false, false, null]],
         '/stats' => [[['_route' => 'app_stats_index', '_controller' => 'App\\Controller\\managment\\StatsController::index'], null, ['GET' => 0], null, true, false, null]],
-        '/transaction/weather' => [[['_route' => 'app_weather_index', '_controller' => 'App\\Controller\\managment\\TransactionController::weather'], null, ['GET' => 0], null, false, false, null]],
+        '/transaction/weather' => [[['_route' => 'app_weather_index', '_controller' => 'App\\Controller\\managment\\TransactionController::weather'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/transaction/holiday' => [[['_route' => 'app_holiday_index', '_controller' => 'App\\Controller\\managment\\TransactionController::holiday'], null, ['GET' => 0], null, false, false, null]],
         '/transaction' => [[['_route' => 'app_transaction_index', '_controller' => 'App\\Controller\\managment\\TransactionController::index'], null, ['GET' => 0], null, true, false, null]],
         '/transaction/new/step1' => [[['_route' => 'app_transaction_new_step1', '_controller' => 'App\\Controller\\managment\\TransactionController::step1'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],

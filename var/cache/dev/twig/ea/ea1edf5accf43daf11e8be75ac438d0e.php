@@ -134,7 +134,7 @@ class __TwigTemplate_a89264981782f54398db47159c285419 extends Template
                         <p class=\"mb-1 opacity-75 small fw-semibold text-uppercase\">Total Categories</p>
                         <h2 class=\"fw-bold mb-0\">";
         // line 35
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["categories"]) || array_key_exists("categories", $context) ? $context["categories"] : (function () { throw new RuntimeError('Variable "categories" does not exist.', 35, $this->source); })())), "html", null, true);
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 35, $this->source); })()), "html", null, true);
         yield "</h2>
                     </div>
                     <div class=\"rounded-circle d-flex align-items-center justify-content-center\"
@@ -418,8 +418,109 @@ class __TwigTemplate_a89264981782f54398db47159c285419 extends Template
         }
         // line 230
         yield "    </div>
+";
+        // line 232
+        if (((isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 232, $this->source); })()) > 1)) {
+            // line 233
+            yield "    <div class=\"d-flex justify-content-center mt-4\">
+        <nav>
+            <ul class=\"pagination mb-0\" style=\"gap: 4px;\">
+                <li class=\"page-item ";
+            // line 236
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 236, $this->source); })()) == 1)) ? ("disabled") : (""));
+            yield "\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"";
+            // line 238
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_categorie_index", ["page" => ((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 238, $this->source); })()) - 1), "search" => (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 238, $this->source); })()), "statut" => (isset($context["statut"]) || array_key_exists("statut", $context) ? $context["statut"] : (function () { throw new RuntimeError('Variable "statut" does not exist.', 238, $this->source); })())]), "html", null, true);
+            yield "\"
+                       style=\"color: ";
+            // line 239
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 239, $this->source); })()) == 1)) ? ("#999") : ("#26474E"));
+            yield "; background: ";
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 239, $this->source); })()) == 1)) ? ("#f5f5f5") : ("#e8f5f5"));
+            yield ";\">
+                        <i class=\"fas fa-chevron-left\"></i>
+                    </a>
+                </li>
 
-</turbo-frame>
+                ";
+            // line 244
+            $context['_parent'] = $context;
+            $context['_seq'] = CoreExtension::ensureTraversable(range(1, (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 244, $this->source); })())));
+            foreach ($context['_seq'] as $context["_key"] => $context["p"]) {
+                // line 245
+                yield "                    <li class=\"page-item\">
+                        <a class=\"page-link rounded-3 border-0 px-3\"
+                           href=\"";
+                // line 247
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_categorie_index", ["page" => $context["p"], "search" => (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 247, $this->source); })()), "statut" => (isset($context["statut"]) || array_key_exists("statut", $context) ? $context["statut"] : (function () { throw new RuntimeError('Variable "statut" does not exist.', 247, $this->source); })())]), "html", null, true);
+                yield "\"
+                           style=\"background: ";
+                // line 248
+                yield ((($context["p"] == (isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 248, $this->source); })()))) ? ("#F27438") : ("#f5f5f5"));
+                yield ";
+                                  color: ";
+                // line 249
+                yield ((($context["p"] == (isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 249, $this->source); })()))) ? ("white") : ("#26474E"));
+                yield ";
+                                  font-weight: ";
+                // line 250
+                yield ((($context["p"] == (isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 250, $this->source); })()))) ? ("bold") : ("normal"));
+                yield ";\">
+                            ";
+                // line 251
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["p"], "html", null, true);
+                yield "
+                        </a>
+                    </li>
+                ";
+            }
+            $_parent = $context['_parent'];
+            unset($context['_seq'], $context['_key'], $context['p'], $context['_parent']);
+            $context = array_intersect_key($context, $_parent) + $_parent;
+            // line 255
+            yield "
+                <li class=\"page-item ";
+            // line 256
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 256, $this->source); })()) == (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 256, $this->source); })()))) ? ("disabled") : (""));
+            yield "\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"";
+            // line 258
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_categorie_index", ["page" => ((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 258, $this->source); })()) + 1), "search" => (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 258, $this->source); })()), "statut" => (isset($context["statut"]) || array_key_exists("statut", $context) ? $context["statut"] : (function () { throw new RuntimeError('Variable "statut" does not exist.', 258, $this->source); })())]), "html", null, true);
+            yield "\"
+                       style=\"color: ";
+            // line 259
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 259, $this->source); })()) == (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 259, $this->source); })()))) ? ("#999") : ("#26474E"));
+            yield "; background: ";
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 259, $this->source); })()) == (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 259, $this->source); })()))) ? ("#f5f5f5") : ("#e8f5f5"));
+            yield ";\">
+                        <i class=\"fas fa-chevron-right\"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <p class=\"text-center text-muted small mt-2\">
+        Showing ";
+            // line 268
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 268, $this->source); })()) - 1) * 6) + 1), "html", null, true);
+            yield "-";
+            if ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 268, $this->source); })()) * 6) > (isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 268, $this->source); })()))) {
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 268, $this->source); })()), "html", null, true);
+            } else {
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 268, $this->source); })()) * 6), "html", null, true);
+            }
+            yield " of ";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 268, $this->source); })()), "html", null, true);
+            yield " categories
+    </p>
+";
+        }
+        // line 271
+        yield "</turbo-frame>
 
 <style>
     .categorie-card:hover {
@@ -473,7 +574,7 @@ select.form-select option:hover {
      */
     public function getDebugInfo(): array
     {
-        return array (  420 => 230,  417 => 229,  400 => 218,  395 => 216,  386 => 210,  383 => 209,  377 => 204,  370 => 199,  363 => 194,  361 => 193,  358 => 192,  355 => 190,  351 => 188,  345 => 186,  343 => 185,  339 => 183,  331 => 177,  324 => 173,  317 => 169,  314 => 168,  308 => 163,  303 => 162,  293 => 155,  286 => 150,  284 => 149,  281 => 148,  274 => 142,  264 => 136,  261 => 135,  254 => 129,  246 => 123,  238 => 118,  218 => 100,  211 => 95,  202 => 88,  195 => 83,  191 => 81,  176 => 68,  156 => 51,  137 => 35,  128 => 28,  118 => 20,  108 => 12,  103 => 8,  90 => 7,  67 => 3,  56 => 1,  54 => 5,  41 => 1,);
+        return array (  523 => 271,  509 => 268,  495 => 259,  491 => 258,  486 => 256,  483 => 255,  473 => 251,  469 => 250,  465 => 249,  461 => 248,  457 => 247,  453 => 245,  449 => 244,  439 => 239,  435 => 238,  430 => 236,  425 => 233,  423 => 232,  420 => 230,  417 => 229,  400 => 218,  395 => 216,  386 => 210,  383 => 209,  377 => 204,  370 => 199,  363 => 194,  361 => 193,  358 => 192,  355 => 190,  351 => 188,  345 => 186,  343 => 185,  339 => 183,  331 => 177,  324 => 173,  317 => 169,  314 => 168,  308 => 163,  303 => 162,  293 => 155,  286 => 150,  284 => 149,  281 => 148,  274 => 142,  264 => 136,  261 => 135,  254 => 129,  246 => 123,  238 => 118,  218 => 100,  211 => 95,  202 => 88,  195 => 83,  191 => 81,  176 => 68,  156 => 51,  137 => 35,  128 => 28,  118 => 20,  108 => 12,  103 => 8,  90 => 7,  67 => 3,  56 => 1,  54 => 5,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -512,7 +613,7 @@ select.form-select option:hover {
                 <div class=\"d-flex justify-content-between align-items-center\">
                     <div>
                         <p class=\"mb-1 opacity-75 small fw-semibold text-uppercase\">Total Categories</p>
-                        <h2 class=\"fw-bold mb-0\">{{ categories|length }}</h2>
+                        <h2 class=\"fw-bold mb-0\">{{ total }}</h2>
                     </div>
                     <div class=\"rounded-circle d-flex align-items-center justify-content-center\"
                          style=\"width:56px; height:56px; background: rgba(255,255,255,0.2);\">
@@ -708,7 +809,46 @@ select.form-select option:hover {
             {% endfor %}
         {% endif %}
     </div>
+{# Pagination #}
+{% if totalPages > 1 %}
+    <div class=\"d-flex justify-content-center mt-4\">
+        <nav>
+            <ul class=\"pagination mb-0\" style=\"gap: 4px;\">
+                <li class=\"page-item {{ currentPage == 1 ? 'disabled' : '' }}\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"{{ path('app_categorie_index', {page: currentPage - 1, search: search, statut: statut}) }}\"
+                       style=\"color: {{ currentPage == 1 ? '#999' : '#26474E' }}; background: {{ currentPage == 1 ? '#f5f5f5' : '#e8f5f5' }};\">
+                        <i class=\"fas fa-chevron-left\"></i>
+                    </a>
+                </li>
 
+                {% for p in 1..totalPages %}
+                    <li class=\"page-item\">
+                        <a class=\"page-link rounded-3 border-0 px-3\"
+                           href=\"{{ path('app_categorie_index', {page: p, search: search, statut: statut}) }}\"
+                           style=\"background: {{ p == currentPage ? '#F27438' : '#f5f5f5' }};
+                                  color: {{ p == currentPage ? 'white' : '#26474E' }};
+                                  font-weight: {{ p == currentPage ? 'bold' : 'normal' }};\">
+                            {{ p }}
+                        </a>
+                    </li>
+                {% endfor %}
+
+                <li class=\"page-item {{ currentPage == totalPages ? 'disabled' : '' }}\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"{{ path('app_categorie_index', {page: currentPage + 1, search: search, statut: statut}) }}\"
+                       style=\"color: {{ currentPage == totalPages ? '#999' : '#26474E' }}; background: {{ currentPage == totalPages ? '#f5f5f5' : '#e8f5f5' }};\">
+                        <i class=\"fas fa-chevron-right\"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <p class=\"text-center text-muted small mt-2\">
+        Showing {{ (currentPage - 1) * 6 + 1 }}-{% if currentPage * 6 > total %}{{ total }}{% else %}{{ currentPage * 6 }}{% endif %} of {{ total }} categories
+    </p>
+{% endif %}
 </turbo-frame>
 
 <style>

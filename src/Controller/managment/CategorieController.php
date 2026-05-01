@@ -14,12 +14,11 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/categorie')]
 class CategorieController extends AbstractController
 {
-    #[Route('/', name: 'app_categorie_index', methods: ['GET'])]
+#[Route('/', name: 'app_categorie_index', methods: ['GET'])]
 public function index(CategorieRepository $categorieRepository, Request $request): Response
 {
     $search = $request->query->get('search', '');
     $statut = $request->query->get('statut', '');
-
     $page = $request->query->getInt('page', 1);
     $limit = 6;
 

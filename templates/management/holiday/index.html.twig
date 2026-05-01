@@ -485,8 +485,12 @@ Each object must have:
     }
 }
 
-// Initialize
+
+
+// With this:
 document.addEventListener('DOMContentLoaded', loadHolidayCountries);
+document.addEventListener('turbo:load', loadHolidayCountries);
+document.addEventListener('turbo:frame-load',loadHolidayCountries);
 </script>
 
 {% endblock %}

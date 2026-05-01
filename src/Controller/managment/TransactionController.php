@@ -11,6 +11,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Service\GroqService;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Service\RecurringTransactionService;
 
 #[Route('/transaction')]
 class TransactionController extends AbstractController
@@ -44,19 +48,33 @@ class TransactionController extends AbstractController
 
         return $user;
     }
-   #[Route('/weather', name: 'app_weather_index', methods: ['GET'])]
-public function weather(): Response
+ #[Route('/weather', name: 'app_weather_index', methods: ['GET', 'POST'])]
+public function weather(Request $request, GroqService $groqService): Response
 {
-    return $this->render('management/weather/index.html.twig', [
-        'groq_api_key' => $_ENV['GROQ_API_KEY'] ?? '',
-    ]);
+    // Handle POST request for AI recommendations
+    if ($request->isMethod('POST')) {
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data) {
+            return new JsonResponse(['error' => 'Invalid data'], 400);
+        }
+
+        $recommendations = $groqService->generateRecommendations($data);
+
+        return new JsonResponse([
+            'recommendations' => json_decode($recommendations, true)
+        ]);
+    }
+
+    // Handle GET request — show the weather page
+    return $this->render('management/weather/index.html.twig');
 }
 #[Route('/holiday', name: 'app_holiday_index', methods: ['GET'])]
 public function holiday(): Response
 {
-    return $this->render('management/holiday/index.html.twig', [
-        'groq_api_key' => $_ENV['GROQ_API_KEY'] ?? '',
-    ]);
+   return $this->render('management/weather/index.html.twig', [
+            'groq_api_key' => $this->getParameter('groq_api_key'),
+        ]);
 }
 
   #[Route('/', name: 'app_transaction_index', methods: ['GET'])]

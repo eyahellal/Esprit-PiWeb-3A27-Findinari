@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Entity\community;
-
+use App\Entity\community\Post;
 use App\Repository\LikeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\user\Utilisateur;

@@ -347,10 +347,21 @@ function renderCharts() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+// Replace with this:
+function initStats() {
+    if (!document.getElementById('monthlyChart')) return;
     loadStatsCurrencies();
     renderCharts();
-});
+}
+
+document.addEventListener('DOMContentLoaded', initStats);
+document.addEventListener('turbo:load', initStats);
+document.addEventListener('turbo:frame-load', initStats);
+
+// Run immediately if already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initStats();
+}
 </script>
 
 {% endblock %}

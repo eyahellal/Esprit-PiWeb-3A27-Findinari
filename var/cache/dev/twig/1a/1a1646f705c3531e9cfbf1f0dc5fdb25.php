@@ -113,18 +113,20 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
             <p class=\"text-muted mb-0\">Manage your wallets and track your balances across different currencies</p>
         </div>
         <div class=\"col-lg-4 text-end\">
-            <a href=\"";
+           <a href=\"";
         // line 20
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_new");
-        yield "\" class=\"btn btn-lg px-4\" 
-               style=\"background: linear-gradient(135deg, #2d6a4f, #52b788); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(45,106,79,0.3);\">
-                <i class=\"fas fa-plus me-2\"></i>New Wallet
-            </a>
+        yield "\" 
+   class=\"btn btn-lg px-4\"
+   data-turbo-frame=\"_top\"
+   style=\"background: linear-gradient(135deg, #2d6a4f, #52b788); color: white; border: none; border-radius: 12px;\">
+    <i class=\"fas fa-plus me-2\"></i>New Wallet
+</a>
         </div>
     </div>
 
     ";
-        // line 28
+        // line 30
         yield "    <div class=\"row mb-4\">
         <div class=\"col-md-4 mb-3\">
             <div class=\"rounded-4 p-4 text-white h-100\"
@@ -133,8 +135,8 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                     <div>
                         <p class=\"mb-1 opacity-75 small fw-semibold text-uppercase\">Total Wallets</p>
                         <h2 class=\"fw-bold mb-0\">";
-        // line 35
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 35, $this->source); })())), "html", null, true);
+        // line 37
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 37, $this->source); })()), "html", null, true);
         yield "</h2>
                     </div>
                     <div class=\"rounded-circle d-flex align-items-center justify-content-center\"
@@ -151,8 +153,8 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                     <div>
                         <p class=\"mb-1 opacity-75 small fw-semibold text-uppercase\">Currencies</p>
                         <h2 class=\"fw-bold mb-0\">";
-        // line 50
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 50, $this->source); })())), "html", null, true);
+        // line 52
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 52, $this->source); })())), "html", null, true);
         yield "</h2>
                     </div>
                     <div class=\"rounded-circle d-flex align-items-center justify-content-center\"
@@ -169,8 +171,8 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                     <div>
                         <p class=\"mb-1 opacity-75 small fw-semibold text-uppercase\">Countries</p>
                         <h2 class=\"fw-bold mb-0\">";
-        // line 65
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 65, $this->source); })())), "html", null, true);
+        // line 67
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(Twig\Extension\CoreExtension::length($this->env->getCharset(), (isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 67, $this->source); })())), "html", null, true);
         yield "</h2>
                     </div>
                     <div class=\"rounded-circle d-flex align-items-center justify-content-center\"
@@ -183,11 +185,11 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
     </div>
 
     ";
-        // line 77
+        // line 79
         yield "    <div class=\"row mb-4\">
         <div class=\"col-lg-6\">
            <form method=\"get\" action=\"";
-        // line 79
+        // line 81
         yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_index");
         yield "\"
       data-turbo-frame=\"content-frame\"
@@ -199,8 +201,8 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                     <input type=\"text\" name=\"search\" class=\"form-control border-0 shadow-sm\"
                            placeholder=\"Search by country or currency...\"
                            value=\"";
-        // line 88
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 88, $this->source); })()), "html", null, true);
+        // line 90
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 90, $this->source); })()), "html", null, true);
         yield "\"
                            style=\"border-radius: 0 12px 12px 0;\">
                 </div>
@@ -209,34 +211,34 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                     Search
                 </button>
                 ";
-        // line 95
-        if ((($tmp = (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 95, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-            // line 96
+        // line 97
+        if ((($tmp = (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 97, $this->source); })())) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+            // line 98
             yield "                    <a href=\"";
             yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_index");
             yield "\" class=\"btn btn-outline-secondary\"
                        style=\"border-radius: 12px;\">Clear</a>
                 ";
         }
-        // line 99
+        // line 101
         yield "            </form>
         </div>
     </div>
 
     ";
-        // line 104
+        // line 106
         yield "    <div class=\"row\" id=\"walletsGrid\">
         ";
-        // line 105
-        if (Twig\Extension\CoreExtension::testEmpty((isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 105, $this->source); })()))) {
-            // line 106
+        // line 107
+        if (Twig\Extension\CoreExtension::testEmpty((isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 107, $this->source); })()))) {
+            // line 108
             yield "            <div class=\"col-12 text-center py-5\">
                 <div class=\"rounded-4 p-5\" style=\"background: #f8fffe; border: 2px dashed #52b788;\">
                     <i class=\"fas fa-wallet fa-3x mb-3\" style=\"color: #52b788;\"></i>
                     <h4 style=\"color: #2d6a4f;\">No wallets found</h4>
                     <p class=\"text-muted\">Start by creating your first wallet</p>
                     <a href=\"";
-            // line 111
+            // line 113
             yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_new");
             yield "\" class=\"btn mt-2\"
                        style=\"background: #2d6a4f; color: white; border-radius: 12px;\">
@@ -246,26 +248,26 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
             </div>
         ";
         } else {
-            // line 118
+            // line 120
             yield "            ";
             $context['_parent'] = $context;
-            $context['_seq'] = CoreExtension::ensureTraversable((isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 118, $this->source); })()));
+            $context['_seq'] = CoreExtension::ensureTraversable((isset($context["wallets"]) || array_key_exists("wallets", $context) ? $context["wallets"] : (function () { throw new RuntimeError('Variable "wallets" does not exist.', 120, $this->source); })()));
             foreach ($context['_seq'] as $context["_key"] => $context["wallet"]) {
-                // line 119
+                // line 121
                 yield "                <div class=\"col-lg-4 col-md-6 mb-4\">
                     <div class=\"card h-100 border-0 rounded-4 wallet-card\"
                          style=\"box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;\">
 
                         ";
-                // line 124
+                // line 126
                 yield "                        <div class=\"rounded-top-4 p-4 text-white\"
                              style=\"background: #F27438;\">
                             <div class=\"d-flex justify-content-between align-items-start\">
                                 <div>
                                     <p class=\"mb-1 opacity-75 small text-uppercase fw-semibold\">Wallet</p>
                                     <h4 class=\"fw-bold mb-0\">";
-                // line 129
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "pays", [], "any", false, false, false, 129), "html", null, true);
+                // line 131
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "pays", [], "any", false, false, false, 131), "html", null, true);
                 yield "</h4>
                                 </div>
                                 <div class=\"rounded-circle d-flex align-items-center justify-content-center\"
@@ -276,18 +278,18 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                         </div>
 
                         ";
-                // line 139
+                // line 141
                 yield "                        <div class=\"card-body p-4\">
                             <div class=\"mb-3\">
                                 <p class=\"text-muted small mb-1 text-uppercase fw-semibold\">Balance</p>
                                 <h3 class=\"fw-bold mb-0\" style=\"color: #2d6a4f;\">
                                     ";
-                // line 143
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatNumber(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "solde", [], "any", false, false, false, 143), 2), "html", null, true);
+                // line 145
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Twig\Extension\CoreExtension']->formatNumber(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "solde", [], "any", false, false, false, 145), 2), "html", null, true);
                 yield "
                                     <span class=\"fs-5 text-muted\">";
-                // line 144
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "devise", [], "any", false, false, false, 144), "html", null, true);
+                // line 146
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "devise", [], "any", false, false, false, 146), "html", null, true);
                 yield "</span>
                                 </h3>
                             </div>
@@ -296,15 +298,15 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                                 <span class=\"badge rounded-pill px-3 py-2\"
                                       style=\"background: #e8f5e9; color: #2d6a4f;\">
                                     <i class=\"fas fa-coins me-1\"></i>";
-                // line 151
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "devise", [], "any", false, false, false, 151), "html", null, true);
+                // line 153
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "devise", [], "any", false, false, false, 153), "html", null, true);
                 yield "
                                 </span>
                                 <span class=\"badge rounded-pill px-3 py-2\"
                                       style=\"background: #e3f2fd; color: #1e3a5f;\">
                                     <i class=\"fas fa-globe me-1\"></i>";
-                // line 155
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "pays", [], "any", false, false, false, 155), "html", null, true);
+                // line 157
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "pays", [], "any", false, false, false, 157), "html", null, true);
                 yield "
                                 </span>
                             </div>
@@ -312,39 +314,41 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                             <hr class=\"my-3\">
 
                             ";
-                // line 162
-                yield "                            <div class=\"d-flex gap-2\">
-                                <a href=\"";
-                // line 163
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_show", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 163)]), "html", null, true);
+                // line 164
+                yield "<div class=\"d-flex gap-2\">
+    <a href=\"";
+                // line 165
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_show", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 165)]), "html", null, true);
                 yield "\"
-                                   class=\"btn btn-sm flex-fill\"
-                                   style=\"background: #e8f5e9; color: #2d6a4f; border-radius: 10px;\">
-                                    <i class=\"fas fa-eye me-1\"></i>View
-                                </a>
-                                <a href=\"";
-                // line 168
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 168)]), "html", null, true);
+       class=\"btn btn-sm flex-fill\"
+       data-turbo-frame=\"_top\"
+       style=\"background: #e8f5e9; color: #2d6a4f; border-radius: 10px;\">
+        <i class=\"fas fa-eye me-1\"></i>View
+    </a>
+    <a href=\"";
+                // line 171
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 171)]), "html", null, true);
                 yield "\"
-                                   class=\"btn btn-sm flex-fill\"
-                                   style=\"background: #e3f2fd; color: #1e3a5f; border-radius: 10px;\">
-                                    <i class=\"fas fa-edit me-1\"></i>Edit
-                                </a>
-                                <form method=\"post\" action=\"";
-                // line 173
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_delete", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 173)]), "html", null, true);
+       class=\"btn btn-sm flex-fill\"
+       data-turbo-frame=\"_top\"
+       style=\"background: #e3f2fd; color: #1e3a5f; border-radius: 10px;\">
+        <i class=\"fas fa-edit me-1\"></i>Edit
+    </a>
+    <form method=\"post\" action=\"";
+                // line 177
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_delete", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 177)]), "html", null, true);
                 yield "\"
-                                      onsubmit=\"return confirm('Are you sure you want to delete this wallet?');\">
-                                    <input type=\"hidden\" name=\"_token\" value=\"";
-                // line 175
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete" . CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 175))), "html", null, true);
+          onsubmit=\"return confirm('Are you sure?');\">
+        <input type=\"hidden\" name=\"_token\" value=\"";
+                // line 179
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderCsrfToken(("delete" . CoreExtension::getAttribute($this->env, $this->source, $context["wallet"], "id", [], "any", false, false, false, 179))), "html", null, true);
                 yield "\">
-                                    <button class=\"btn btn-sm\"
-                                            style=\"background: #fde8e8; color: #c0392b; border-radius: 10px;\">
-                                        <i class=\"fas fa-trash\"></i>
-                                    </button>
-                                </form>
-                            </div>
+        <button class=\"btn btn-sm\"
+                style=\"background: #fde8e8; color: #c0392b; border-radius: 10px;\">
+            <i class=\"fas fa-trash\"></i>
+        </button>
+    </form>
+</div>
                         </div>
                     </div>
                 </div>
@@ -353,13 +357,117 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
             $_parent = $context['_parent'];
             unset($context['_seq'], $context['_key'], $context['wallet'], $context['_parent']);
             $context = array_intersect_key($context, $_parent) + $_parent;
-            // line 186
+            // line 190
             yield "        ";
         }
-        // line 187
+        // line 191
         yield "    </div>
+";
+        // line 193
+        if (((isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 193, $this->source); })()) > 1)) {
+            // line 194
+            yield "    <div class=\"d-flex justify-content-center mt-4\">
+        <nav>
+            <ul class=\"pagination mb-0\" style=\"gap: 4px;\">
+                ";
+            // line 198
+            yield "                <li class=\"page-item ";
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 198, $this->source); })()) == 1)) ? ("disabled") : (""));
+            yield "\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"";
+            // line 200
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_index", ["page" => ((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 200, $this->source); })()) - 1), "search" => (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 200, $this->source); })())]), "html", null, true);
+            yield "\"
+                       style=\"color: ";
+            // line 201
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 201, $this->source); })()) == 1)) ? ("#999") : ("#26474E"));
+            yield "; background: ";
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 201, $this->source); })()) == 1)) ? ("#f5f5f5") : ("#e8f5f5"));
+            yield ";\">
+                        <i class=\"fas fa-chevron-left\"></i>
+                    </a>
+                </li>
 
-</turbo-frame>
+                ";
+            // line 207
+            yield "                ";
+            $context['_parent'] = $context;
+            $context['_seq'] = CoreExtension::ensureTraversable(range(1, (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 207, $this->source); })())));
+            foreach ($context['_seq'] as $context["_key"] => $context["p"]) {
+                // line 208
+                yield "                    <li class=\"page-item\">
+                        <a class=\"page-link rounded-3 border-0 px-3\"
+                           href=\"";
+                // line 210
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_index", ["page" => $context["p"], "search" => (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 210, $this->source); })())]), "html", null, true);
+                yield "\"
+                           style=\"background: ";
+                // line 211
+                yield ((($context["p"] == (isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 211, $this->source); })()))) ? ("#F27438") : ("#f5f5f5"));
+                yield ";
+                                  color: ";
+                // line 212
+                yield ((($context["p"] == (isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 212, $this->source); })()))) ? ("white") : ("#26474E"));
+                yield ";
+                                  font-weight: ";
+                // line 213
+                yield ((($context["p"] == (isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 213, $this->source); })()))) ? ("bold") : ("normal"));
+                yield ";\">
+                            ";
+                // line 214
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["p"], "html", null, true);
+                yield "
+                        </a>
+                    </li>
+                ";
+            }
+            $_parent = $context['_parent'];
+            unset($context['_seq'], $context['_key'], $context['p'], $context['_parent']);
+            $context = array_intersect_key($context, $_parent) + $_parent;
+            // line 218
+            yield "
+                ";
+            // line 220
+            yield "                <li class=\"page-item ";
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 220, $this->source); })()) == (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 220, $this->source); })()))) ? ("disabled") : (""));
+            yield "\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"";
+            // line 222
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_wallet_index", ["page" => ((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 222, $this->source); })()) + 1), "search" => (isset($context["search"]) || array_key_exists("search", $context) ? $context["search"] : (function () { throw new RuntimeError('Variable "search" does not exist.', 222, $this->source); })())]), "html", null, true);
+            yield "\"
+                       style=\"color: ";
+            // line 223
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 223, $this->source); })()) == (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 223, $this->source); })()))) ? ("#999") : ("#26474E"));
+            yield "; background: ";
+            yield ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 223, $this->source); })()) == (isset($context["totalPages"]) || array_key_exists("totalPages", $context) ? $context["totalPages"] : (function () { throw new RuntimeError('Variable "totalPages" does not exist.', 223, $this->source); })()))) ? ("#f5f5f5") : ("#e8f5f5"));
+            yield ";\">
+                        <i class=\"fas fa-chevron-right\"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <p class=\"text-center text-muted small mt-2\">
+        Showing ";
+            // line 232
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 232, $this->source); })()) - 1) * 6) + 1), "html", null, true);
+            yield "-";
+            if ((((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 232, $this->source); })()) * 6) > (isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 232, $this->source); })()))) {
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 232, $this->source); })()), "html", null, true);
+            } else {
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((isset($context["currentPage"]) || array_key_exists("currentPage", $context) ? $context["currentPage"] : (function () { throw new RuntimeError('Variable "currentPage" does not exist.', 232, $this->source); })()) * 6), "html", null, true);
+            }
+            yield " of ";
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape((isset($context["total"]) || array_key_exists("total", $context) ? $context["total"] : (function () { throw new RuntimeError('Variable "total" does not exist.', 232, $this->source); })()), "html", null, true);
+            yield " wallets
+    </p>
+";
+        }
+        // line 235
+        yield "</turbo-frame>
 
 <style>
     .wallet-card:hover {
@@ -405,7 +513,7 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  360 => 187,  357 => 186,  340 => 175,  335 => 173,  327 => 168,  319 => 163,  316 => 162,  307 => 155,  300 => 151,  290 => 144,  286 => 143,  280 => 139,  268 => 129,  261 => 124,  255 => 119,  250 => 118,  240 => 111,  233 => 106,  231 => 105,  228 => 104,  222 => 99,  215 => 96,  213 => 95,  203 => 88,  191 => 79,  187 => 77,  173 => 65,  155 => 50,  137 => 35,  128 => 28,  118 => 20,  108 => 12,  103 => 8,  90 => 7,  67 => 3,  56 => 1,  54 => 5,  41 => 1,);
+        return array (  470 => 235,  456 => 232,  442 => 223,  438 => 222,  432 => 220,  429 => 218,  419 => 214,  415 => 213,  411 => 212,  407 => 211,  403 => 210,  399 => 208,  394 => 207,  384 => 201,  380 => 200,  374 => 198,  369 => 194,  367 => 193,  364 => 191,  361 => 190,  344 => 179,  339 => 177,  330 => 171,  321 => 165,  318 => 164,  309 => 157,  302 => 153,  292 => 146,  288 => 145,  282 => 141,  270 => 131,  263 => 126,  257 => 121,  252 => 120,  242 => 113,  235 => 108,  233 => 107,  230 => 106,  224 => 101,  217 => 98,  215 => 97,  205 => 90,  193 => 81,  189 => 79,  175 => 67,  157 => 52,  139 => 37,  130 => 30,  118 => 20,  108 => 12,  103 => 8,  90 => 7,  67 => 3,  56 => 1,  54 => 5,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -429,10 +537,12 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
             <p class=\"text-muted mb-0\">Manage your wallets and track your balances across different currencies</p>
         </div>
         <div class=\"col-lg-4 text-end\">
-            <a href=\"{{ path('app_wallet_new') }}\" class=\"btn btn-lg px-4\" 
-               style=\"background: linear-gradient(135deg, #2d6a4f, #52b788); color: white; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(45,106,79,0.3);\">
-                <i class=\"fas fa-plus me-2\"></i>New Wallet
-            </a>
+           <a href=\"{{ path('app_wallet_new') }}\" 
+   class=\"btn btn-lg px-4\"
+   data-turbo-frame=\"_top\"
+   style=\"background: linear-gradient(135deg, #2d6a4f, #52b788); color: white; border: none; border-radius: 12px;\">
+    <i class=\"fas fa-plus me-2\"></i>New Wallet
+</a>
         </div>
     </div>
 
@@ -444,7 +554,7 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                 <div class=\"d-flex justify-content-between align-items-center\">
                     <div>
                         <p class=\"mb-1 opacity-75 small fw-semibold text-uppercase\">Total Wallets</p>
-                        <h2 class=\"fw-bold mb-0\">{{ wallets|length }}</h2>
+                        <h2 class=\"fw-bold mb-0\">{{ total }}</h2>
                     </div>
                     <div class=\"rounded-circle d-flex align-items-center justify-content-center\"
                          style=\"width:56px; height:56px; background: rgba(255,255,255,0.2);\">
@@ -571,33 +681,77 @@ class __TwigTemplate_7c1928c6ebb56155bf309e7a7f35d932 extends Template
                             <hr class=\"my-3\">
 
                             {# Actions #}
-                            <div class=\"d-flex gap-2\">
-                                <a href=\"{{ path('app_wallet_show', {'id': wallet.id}) }}\"
-                                   class=\"btn btn-sm flex-fill\"
-                                   style=\"background: #e8f5e9; color: #2d6a4f; border-radius: 10px;\">
-                                    <i class=\"fas fa-eye me-1\"></i>View
-                                </a>
-                                <a href=\"{{ path('app_wallet_edit', {'id': wallet.id}) }}\"
-                                   class=\"btn btn-sm flex-fill\"
-                                   style=\"background: #e3f2fd; color: #1e3a5f; border-radius: 10px;\">
-                                    <i class=\"fas fa-edit me-1\"></i>Edit
-                                </a>
-                                <form method=\"post\" action=\"{{ path('app_wallet_delete', {'id': wallet.id}) }}\"
-                                      onsubmit=\"return confirm('Are you sure you want to delete this wallet?');\">
-                                    <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete' ~ wallet.id) }}\">
-                                    <button class=\"btn btn-sm\"
-                                            style=\"background: #fde8e8; color: #c0392b; border-radius: 10px;\">
-                                        <i class=\"fas fa-trash\"></i>
-                                    </button>
-                                </form>
-                            </div>
+<div class=\"d-flex gap-2\">
+    <a href=\"{{ path('app_wallet_show', {'id': wallet.id}) }}\"
+       class=\"btn btn-sm flex-fill\"
+       data-turbo-frame=\"_top\"
+       style=\"background: #e8f5e9; color: #2d6a4f; border-radius: 10px;\">
+        <i class=\"fas fa-eye me-1\"></i>View
+    </a>
+    <a href=\"{{ path('app_wallet_edit', {'id': wallet.id}) }}\"
+       class=\"btn btn-sm flex-fill\"
+       data-turbo-frame=\"_top\"
+       style=\"background: #e3f2fd; color: #1e3a5f; border-radius: 10px;\">
+        <i class=\"fas fa-edit me-1\"></i>Edit
+    </a>
+    <form method=\"post\" action=\"{{ path('app_wallet_delete', {'id': wallet.id}) }}\"
+          onsubmit=\"return confirm('Are you sure?');\">
+        <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete' ~ wallet.id) }}\">
+        <button class=\"btn btn-sm\"
+                style=\"background: #fde8e8; color: #c0392b; border-radius: 10px;\">
+            <i class=\"fas fa-trash\"></i>
+        </button>
+    </form>
+</div>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         {% endif %}
     </div>
+{# Pagination #}
+{% if totalPages > 1 %}
+    <div class=\"d-flex justify-content-center mt-4\">
+        <nav>
+            <ul class=\"pagination mb-0\" style=\"gap: 4px;\">
+                {# Previous #}
+                <li class=\"page-item {{ currentPage == 1 ? 'disabled' : '' }}\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"{{ path('app_wallet_index', {page: currentPage - 1, search: search}) }}\"
+                       style=\"color: {{ currentPage == 1 ? '#999' : '#26474E' }}; background: {{ currentPage == 1 ? '#f5f5f5' : '#e8f5f5' }};\">
+                        <i class=\"fas fa-chevron-left\"></i>
+                    </a>
+                </li>
 
+                {# Page numbers #}
+                {% for p in 1..totalPages %}
+                    <li class=\"page-item\">
+                        <a class=\"page-link rounded-3 border-0 px-3\"
+                           href=\"{{ path('app_wallet_index', {page: p, search: search}) }}\"
+                           style=\"background: {{ p == currentPage ? '#F27438' : '#f5f5f5' }};
+                                  color: {{ p == currentPage ? 'white' : '#26474E' }};
+                                  font-weight: {{ p == currentPage ? 'bold' : 'normal' }};\">
+                            {{ p }}
+                        </a>
+                    </li>
+                {% endfor %}
+
+                {# Next #}
+                <li class=\"page-item {{ currentPage == totalPages ? 'disabled' : '' }}\">
+                    <a class=\"page-link rounded-3 border-0 px-3\"
+                       href=\"{{ path('app_wallet_index', {page: currentPage + 1, search: search}) }}\"
+                       style=\"color: {{ currentPage == totalPages ? '#999' : '#26474E' }}; background: {{ currentPage == totalPages ? '#f5f5f5' : '#e8f5f5' }};\">
+                        <i class=\"fas fa-chevron-right\"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <p class=\"text-center text-muted small mt-2\">
+        Showing {{ (currentPage - 1) * 6 + 1 }}-{% if currentPage * 6 > total %}{{ total }}{% else %}{{ currentPage * 6 }}{% endif %} of {{ total }} wallets
+    </p>
+{% endif %}
 </turbo-frame>
 
 <style>

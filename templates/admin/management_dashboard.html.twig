@@ -500,7 +500,7 @@
 <body>
 <div class="layout">
 
-   <aside class="sidebar">
+  <aside class="sidebar">
     <div class="brand">
         <div class="brand-icon">
             <img src="{{ asset('images/logo.png') }}" alt="Fin-Dinari Logo">
@@ -509,16 +509,40 @@
     </div>
 
         <div class="nav-section">Main</div>
-        <a class="side-link active" href="{{ path('app_admin_dashboard') }}">Dashboard</a>
-        <a class="side-link {% if app.request.attributes.get('_route') == 'app_admin_overview_dashboard' %}active{% endif %}" 
-   href="{{ path('app_admin_overview_dashboard') }}">
-    Overview Dashboard
+        <a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}" 
+   href="{{ path('app_admin_dashboard') }}">
+   <i class="fas fa-home"></i> Dashboard
 </a>
-        <a class="side-link" href="{{ path('app_admin_wallets') }}">Manage Wallets</a>
-        <a class="side-link" href="{{  path('app_admin_management')  }}">Manage Transactions</a>
-        <a class="side-link" href="{{ path('app_admin_objectifs') }}">Manage Objectifs</a>
-        <a class="side-link" href="{{ path('app_admin_tickets') }}">Tickets & Messages</a>
-        <a class="side-link" href="{{ path('app_admin_obligations') }}">Manage Obligations</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_overview_dashboard' ? 'active' : '' }}" 
+   href="{{ path('app_admin_overview_dashboard') }}">
+   <i class="fas fa-chart-bar"></i> Overview Dashboard
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_wallets' ? 'active' : '' }}" 
+   href="{{ path('app_admin_wallets') }}">
+   <i class="fas fa-wallet"></i> Manage Wallets
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_management' ? 'active' : '' }}" 
+   href="{{ path('app_admin_management') }}">
+   <i class="fas fa-exchange-alt"></i> Manage Transactions
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_objectifs' ? 'active' : '' }}" 
+   href="{{ path('app_admin_objectifs') }}">
+   <i class="fas fa-bullseye"></i> Manage Objectifs
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_tickets' ? 'active' : '' }}" 
+   href="{{ path('app_admin_tickets') }}">
+   <i class="fas fa-ticket-alt"></i> Tickets & Messages
+</a>
+
+<a class="side-link {{ app.request.attributes.get('_route') == 'app_admin_obligations' ? 'active' : '' }}" 
+   href="{{ path('app_admin_obligations') }}">
+   <i class="fas fa-file-contract"></i> Manage Obligations
+</a>
 
         <div class="sidebar-footer">
             <a class="side-link" href="{{ path('app_home') }}">Back to site</a>

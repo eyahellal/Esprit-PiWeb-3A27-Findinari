@@ -269,12 +269,26 @@ public function step1(Request $request, WalletRepository $walletRepository, Sess
         ]);
     }
 #[Route('/{id}/edit', name: 'app_budget_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, Budget $budget, EntityManagerInterface $entityManager): Response
+public function edit(Request $request, Budget $budget, EntityManagerInterface $entityManager, ValidatorInterface $validator): Response
 {
     if ($request->isMethod('POST')) {
-        $budget->setMontantMax((float) $request->request->get('montantMax'));
-        $budget->setDureeBudget((int) $request->request->get('dureeBudget'));
-        $budget->setDateBudget(new \DateTime($request->request->get('dateBudget')));
+        $montantMax = $request->request->get('montantMax');
+        $budget->setMontantMax($montantMax !== '' && $montantMax !== null ? (float)$montantMax : null);
+
+        $duree = $request->request->get('dureeBudget');
+        $budget->setDureeBudget($duree !== '' && $duree !== null ? (int)$duree : null);
+
+        $date = $request->request->get('dateBudget');
+        $budget->setDateBudget($date ? new \DateTime($date) : null);
+
+        $errors = $validator->validate($budget);
+
+        if (count($errors) > 0) {
+            return $this->render('management/budget/edit.html.twig', [
+                'budget' => $budget,
+                'errors' => $errors,
+            ]);
+        }
 
         $entityManager->flush();
 

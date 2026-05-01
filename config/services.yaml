@@ -64,3 +64,6 @@ services:
     App\Controller\Loan\ObligationController:
         arguments:
             $ollamaApiUrl: '%ollama_api_url%'
+    App\Service\GroqService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'

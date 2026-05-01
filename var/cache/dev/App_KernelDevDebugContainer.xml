@@ -839,6 +839,10 @@
       <argument>%env(GROQ_API_KEY)%</argument>
       <argument>%env(GROQ_MODEL)%</argument>
     </service>
+    <service id="App\Service\GroqService" class="App\Service\GroqService" autowire="true" autoconfigure="true">
+      <argument type="service" id=".debug.http_client"/>
+      <argument>%env(GROQ_API_KEY)%</argument>
+    </service>
     <service id="App\Service\GroqSuggestionService" class="App\Service\GroqSuggestionService" autowire="true" autoconfigure="true">
       <argument type="service" id=".debug.http_client"/>
       <argument>%env(GROQ_API_KEY)%</argument>
@@ -855,6 +859,9 @@
     </service>
     <service id="App\Service\PdfGeneratorService" class="App\Service\PdfGeneratorService" autowire="true" autoconfigure="true">
       <argument>C:\projects\whatever\Esprit-PiWeb-3A27-Findinari</argument>
+    </service>
+    <service id="App\Service\RecurringTransactionService" class="App\Service\RecurringTransactionService" autowire="true" autoconfigure="true">
+      <argument type="service" id="doctrine.orm.default_entity_manager"/>
     </service>
     <service id="App\Service\SimpleNotificationService" class="App\Service\SimpleNotificationService" autowire="true" autoconfigure="true">
       <argument type="service" id="request_stack"/>
@@ -901,7 +908,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.MIlJjvt"/>
+      <argument type="service" id=".service_locator.J9fwLUK"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -3979,7 +3986,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.MIlJjvt"/>
+      <argument type="service" id=".service_locator.J9fwLUK"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -9290,6 +9297,14 @@
         <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.54ak1dA" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="budget" type="service_closure" id=".errored..service_locator.54ak1dA.App\Entity\management\Budget"/>
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="validator" type="service_closure" id="debug.validator"/>
+      </argument>
+    </service>
     <service id=".service_locator.NgVK6bG" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9304,14 +9319,17 @@
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
       </argument>
     </service>
-    <service id=".errored.VxelfdV" class="App\Controller\managment\ValidatorInterface">
-      <tag name="container.error" message="Cannot determine controller argument for &quot;App\Controller\managment\TransactionController::step3()&quot;: the $validator argument is type-hinted with the non-existent class or interface: &quot;App\Controller\managment\ValidatorInterface&quot;. Did you forget to add a use statement?"/>
+    <service id=".service_locator.e7.FLk5" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="groqService" type="service_closure" id="App\Service\GroqService"/>
+      </argument>
     </service>
-    <service id=".service_locator.qLcBYgy" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.gxkSA7l" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
-        <argument key="validator" type="service_closure" id=".errored.VxelfdV"/>
+        <argument key="validator" type="service_closure" id="debug.validator"/>
       </argument>
     </service>
     <service id=".service_locator.zY4Nk7F" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -9321,7 +9339,7 @@
         <argument key="transaction" type="service_closure" id=".errored..service_locator.zY4Nk7F.App\Entity\management\Transaction"/>
       </argument>
     </service>
-    <service id=".service_locator.MIlJjvt" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.J9fwLUK" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\AdminController::ajaxUsers" type="service_closure" id=".service_locator.p5RWJ9h"/>
@@ -9437,7 +9455,7 @@
         <argument key="App\Controller\advancedfeature\PdfUploadController::uploadPdf" type="service_closure" id=".service_locator.c2nOR4F"/>
         <argument key="App\Controller\managment\AdminManagementController::index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController::delete" type="service_closure" id=".service_locator.NgVK6bG"/>
-        <argument key="App\Controller\managment\BudgetController::edit" type="service_closure" id=".service_locator.NgVK6bG"/>
+        <argument key="App\Controller\managment\BudgetController::edit" type="service_closure" id=".service_locator.54ak1dA"/>
         <argument key="App\Controller\managment\BudgetController::index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController::step1" type="service_closure" id=".service_locator.y7pYgon"/>
         <argument key="App\Controller\managment\BudgetController::step2" type="service_closure" id=".service_locator.DFyL8OH"/>
@@ -9450,8 +9468,9 @@
         <argument key="App\Controller\managment\TransactionController::delete" type="service_closure" id=".service_locator.zY4Nk7F"/>
         <argument key="App\Controller\managment\TransactionController::index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\TransactionController::step1" type="service_closure" id=".service_locator.CsMkqUa"/>
-        <argument key="App\Controller\managment\TransactionController::step3" type="service_closure" id=".service_locator.qLcBYgy"/>
+        <argument key="App\Controller\managment\TransactionController::step3" type="service_closure" id=".service_locator.gxkSA7l"/>
         <argument key="App\Controller\managment\TransactionController::toggleRecurring" type="service_closure" id=".service_locator.zY4Nk7F"/>
+        <argument key="App\Controller\managment\TransactionController::weather" type="service_closure" id=".service_locator.e7.FLk5"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
@@ -9569,7 +9588,7 @@
         <argument key="App\Controller\advancedfeature\PdfUploadController:uploadPdf" type="service_closure" id=".service_locator.c2nOR4F"/>
         <argument key="App\Controller\managment\AdminManagementController:index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController:delete" type="service_closure" id=".service_locator.NgVK6bG"/>
-        <argument key="App\Controller\managment\BudgetController:edit" type="service_closure" id=".service_locator.NgVK6bG"/>
+        <argument key="App\Controller\managment\BudgetController:edit" type="service_closure" id=".service_locator.54ak1dA"/>
         <argument key="App\Controller\managment\BudgetController:index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\BudgetController:step1" type="service_closure" id=".service_locator.y7pYgon"/>
         <argument key="App\Controller\managment\BudgetController:step2" type="service_closure" id=".service_locator.DFyL8OH"/>
@@ -9582,8 +9601,9 @@
         <argument key="App\Controller\managment\TransactionController:delete" type="service_closure" id=".service_locator.zY4Nk7F"/>
         <argument key="App\Controller\managment\TransactionController:index" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\managment\TransactionController:step1" type="service_closure" id=".service_locator.CsMkqUa"/>
-        <argument key="App\Controller\managment\TransactionController:step3" type="service_closure" id=".service_locator.qLcBYgy"/>
+        <argument key="App\Controller\managment\TransactionController:step3" type="service_closure" id=".service_locator.gxkSA7l"/>
         <argument key="App\Controller\managment\TransactionController:toggleRecurring" type="service_closure" id=".service_locator.zY4Nk7F"/>
+        <argument key="App\Controller\managment\TransactionController:weather" type="service_closure" id=".service_locator.e7.FLk5"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.y4_Zrx."/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.y4_Zrx."/>
       </argument>
@@ -10920,6 +10940,9 @@
     <service id=".errored..service_locator.VfFEsH..App\Entity\objective\Contributiongoal" class="App\Entity\objective\Contributiongoal">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.VfFEsH.&quot;: it needs an instance of &quot;App\Entity\objective\Contributiongoal&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
+    <service id=".errored..service_locator.54ak1dA.App\Entity\management\Budget" class="App\Entity\management\Budget">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.54ak1dA&quot;: it needs an instance of &quot;App\Entity\management\Budget&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    </service>
     <service id=".errored..service_locator.NgVK6bG.App\Entity\management\Budget" class="App\Entity\management\Budget">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.NgVK6bG&quot;: it needs an instance of &quot;App\Entity\management\Budget&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
@@ -12164,7 +12187,7 @@
     <service id="Knp\Bundle\TimeBundle\DateTimeFormatter" alias="time.datetime_formatter"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.MIlJjvt"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.J9fwLUK"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -12248,7 +12271,7 @@
     <service id=".service_locator.bN2cdDD" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.381yGGx" alias=".service_locator.vuciIUI"/>
     <service id=".service_locator.5XzYiGJ" alias=".service_locator.zY4Nk7F"/>
-    <service id=".service_locator.UdN3bTD" alias=".service_locator.MIlJjvt"/>
+    <service id=".service_locator.Q2a3OKb" alias=".service_locator.J9fwLUK"/>
     <service id=".service_locator.sO2baFT" alias=".service_locator.UXbUH6B"/>
     <service id=".service_locator.6V5IWTW" alias=".service_locator.W1drmMD"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
@@ -12347,9 +12370,11 @@
     <service id=".service_locator.0RiPozw" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.J7lSc4B" alias=".service_locator.DFyL8OH"/>
     <service id=".service_locator.55EZ0G_" alias=".service_locator.vuciIUI"/>
+    <service id=".service_locator.J_SjPE_" alias=".service_locator.54ak1dA"/>
     <service id=".service_locator.PU7gaNV" alias=".service_locator.NgVK6bG"/>
     <service id=".service_locator.dqRfnBZ" alias=".service_locator.0V9MQQj"/>
-    <service id=".service_locator.YdDILIP" alias=".service_locator.qLcBYgy"/>
+    <service id=".service_locator._KGVYVx" alias=".service_locator.e7.FLk5"/>
+    <service id=".service_locator.hCLIJ7E" alias=".service_locator.gxkSA7l"/>
     <service id=".service_locator..ZASw4m" alias=".service_locator.zY4Nk7F"/>
     <service id=".service_locator.QiR7gZH" alias=".service_locator.99441U6"/>
     <service id=".service_locator.dGUCsbe" alias=".service_locator.oR77BOj"/>

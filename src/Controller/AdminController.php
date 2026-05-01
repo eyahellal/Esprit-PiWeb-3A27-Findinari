@@ -159,7 +159,7 @@ class AdminController extends AbstractController
 
         if ($q !== '') {
             $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
-               ->setParameter('q', '%' . $q . '%');
+               ->setParameter('q', '%'.$q.'%');
         }
 
         switch ($userSort) {

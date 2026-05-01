@@ -263,8 +263,7 @@
     
     <div class="content-grid">
         <div class="form-card">
-            {{ form_start(form, {'attr': {'id': 'ticket-form', 'novalidate': 'novalidate'}}) }}
-                
+{{ form_start(form, {'attr': {'id': 'ticket-form', 'novalidate': 'novalidate', 'data-turbo': 'false'}}) }}                
                 <div class="form-group">
                     {{ form_label(form.titre, 'Subject', {'label_attr': {'class': 'form-label'}}) }}
                     {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Brief description of your issue'}}) }}
