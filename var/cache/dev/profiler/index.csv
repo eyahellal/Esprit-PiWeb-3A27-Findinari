@@ -2868,3 +2868,5 @@ a93524,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777730838,,2
 b00cd1,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777730845,,200,request
 ccc8f3,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777730847,,200,request
 894085,127.0.0.1,GET,http://127.0.0.1:8000/notifications/unread-count,1777730870,,200,request
+5daa4f,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777730876,,200,request
+da7ed7,127.0.0.1,GET,http://127.0.0.1:8000/notifications/unread-count,1777730901,,200,request
