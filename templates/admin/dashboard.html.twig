@@ -382,6 +382,7 @@
             pointer-events: none;
             transition: opacity .2s ease;
         }
+        .action-icons a:hover, .action-icons button:hover { background: var(--brand-light); }
     </style>
 </head>
 <body>
@@ -458,6 +459,7 @@
             <div class="flash danger">{{ message }}</div>
         {% endfor %}
 
+        {# ── STAT CARDS ── #}
         <div class="cards">
             <div class="card c-purple">
                 <div class="card-body">
@@ -485,6 +487,7 @@
             </div>
         </div>
 
+        {# ── CREATE ADMIN ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">Create Admin Account</div>
@@ -518,6 +521,7 @@
 
         {% include 'admin/_users_table.html.twig' %}
 
+        {# ── FEEDBACKS ── #}
         <div class="section">
             <div class="section-header">
                 <div class="section-title">Feedbacks</div>

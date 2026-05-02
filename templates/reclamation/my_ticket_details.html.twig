@@ -927,9 +927,11 @@
             };
         }
     }
-
-    document.addEventListener('turbo:load', initTicketDetails);
-    if (document.readyState !== 'loading') initTicketDetails();
+document.addEventListener('DOMContentLoaded', initTicketDetails);
+document.addEventListener('turbo:load', initTicketDetails);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initTicketDetails();
+}
 
     document.addEventListener('click', e => {
         if (!e.target.closest('.message-actions-dropdown')) {
@@ -938,4 +940,4 @@
     });
 })();
 </script>
-{% endblock %}
+{% endblock %} 
