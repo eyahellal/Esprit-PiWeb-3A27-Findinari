@@ -190,3 +190,8 @@ d30aa8,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735257,,2
 c84b35,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735498,,200,request
 093ae9,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735557,,200,request
 35cc53,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735617,,200,request
+b6f916,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735737,,200,request
+37be08,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735797,,200,request
+e1a4b1,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735857,,200,request
+30d4a7,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735918,,200,request
+dd289b,127.0.0.1,GET,http://127.0.0.1:8000/ticket/51/fetch-new/150,1777735977,,200,request
