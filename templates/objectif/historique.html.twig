@@ -1,0 +1,860 @@
+{% extends 'base.html.twig' %}
+{% block title %}Historique & Prédictions{% endblock %}
+
+{% block body %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Syne:wght@600;700;800&display=swap');
+
+  .hist-page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 32px;
+    box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+  }
+
+  /* Navigation moderne */
+  .hist-nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid rgba(26,158,110,0.2);
+    padding-bottom: 1rem;
+  }
+  .hist-nav a {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 18px;
+    border-radius: 40px;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(4px);
+    color: #1e293b;
+    transition: all 0.25s ease;
+    border: 1px solid #e2e8f0;
+  }
+  .hist-nav a:hover {
+    background: #1a9e6e;
+    color: white;
+    border-color: #1a9e6e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(26,158,110,0.25);
+  }
+  .hist-nav a.active {
+    background: #1a9e6e;
+    color: white;
+    border-color: #1a9e6e;
+    box-shadow: 0 4px 10px rgba(26,158,110,0.3);
+  }
+
+  /* Header */
+  .hist-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #1a9e6e, #0f6e56);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 30px;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+  .hist-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #0f2b1f, #1a9e6e);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .hist-sub {
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 2rem;
+    border-left: 3px solid #1a9e6e;
+    padding-left: 1rem;
+  }
+
+  /* Summary chips */
+  .hist-summary {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .summary-chip {
+    flex: 1;
+    min-width: 130px;
+    background: white;
+    border-radius: 24px;
+    padding: 1rem 1.2rem;
+    text-align: center;
+    box-shadow: 0 8px 20px -6px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+    border: 1px solid rgba(26,158,110,0.15);
+  }
+  .summary-chip:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -10px rgba(26,158,110,0.2);
+    border-color: #1a9e6e;
+  }
+  .summary-chip-val {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1a9e6e, #0b4d3a);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  .summary-chip-lbl {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* Section labels */
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1a9e6e;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 2rem 0 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, #1a9e6e, #cbd5e1);
+    border-radius: 2px;
+  }
+
+  /* Cartes prédiction */
+  .pred-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .pred-card {
+    background: white;
+    border-radius: 28px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    box-shadow: 0 10px 25px -8px rgba(0,0,0,0.06);
+    border: 1px solid rgba(26,158,110,0.2);
+  }
+  .pred-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 36px -12px rgba(26,158,110,0.25);
+    border-color: #1a9e6e;
+  }
+  .pred-top {
+    padding: 1.2rem 1.5rem;
+    background: linear-gradient(120deg, #fef9e3, #fff6e8);
+    border-bottom: 1px solid #fdebb3;
+  }
+  .pred-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 6px;
+  }
+  .pred-pct {
+    font-size: 0.8rem;
+    color: #b45309;
+    font-weight: 500;
+  }
+  .prog-bg {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #f97316);
+    border-radius: 20px;
+    transition: width 0.4s ease;
+  }
+  .pred-body {
+    padding: 1.2rem 1.5rem;
+  }
+  .pred-date-box {
+    background: linear-gradient(145deg, #e6f7f0, #ffffff);
+    border-radius: 20px;
+    padding: 0.9rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    border: 1px solid #c8eadc;
+  }
+  .pred-date-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f6e56;
+    letter-spacing: -0.5px;
+  }
+  .pred-date-sub {
+    font-size: 0.7rem;
+    color: #2c7a5e;
+  }
+  .pred-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    padding: 6px 0;
+    border-bottom: 1px dashed #e2e8f0;
+  }
+  .pred-row span:last-child {
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .conf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 40px;
+    margin-top: 12px;
+  }
+  .conf-haute   { background: #dcfce7; color: #15803d; }
+  .conf-moyenne { background: #fef9c3; color: #a16207; }
+  .conf-faible  { background: #f1f5f9; color: #475569; }
+  .no-pred {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 20px;
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #64748b;
+  }
+
+  /* Section Conseiller IA (simplifiée) */
+  .advisor-section {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(12px);
+    border-radius: 32px;
+    border: 1px solid rgba(26,158,110,0.3);
+    box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+    margin-top: 2rem;
+    overflow: hidden;
+  }
+  .advisor-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #e0f2e9, #ccf0e1);
+    border-bottom: 1px solid #b8e0ce;
+  }
+  .advisor-icon {
+    width: 48px;
+    height: 48px;
+    background: #1a9e6e;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 8px 14px -6px rgba(26,158,110,0.4);
+  }
+  .advisor-title {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f6e56;
+  }
+  .advisor-sub {
+    font-size: 0.75rem;
+    color: #2c7a5e;
+  }
+  .advisor-body {
+    padding: 1.5rem;
+  }
+  .advisor-form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .advisor-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .advisor-field-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #1a9e6e;
+    letter-spacing: 0.5px;
+  }
+  .advisor-select, .advisor-input {
+    padding: 12px 16px;
+    border-radius: 24px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: 0.2s;
+  }
+  .advisor-select:focus, .advisor-input:focus {
+    border-color: #1a9e6e;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26,158,110,0.2);
+  }
+  .advisor-btn {
+    background: linear-gradient(105deg, #1a9e6e, #0f6e56);
+    border: none;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    margin-bottom: 2px;
+  }
+  .advisor-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -6px #1a9e6e;
+  }
+  .advisor-result {
+    background: white;
+    border-radius: 24px;
+    padding: 1.2rem;
+    margin-top: 1.5rem;
+    border: 1px solid #c8eadc;
+    display: none;
+  }
+  .advisor-result.visible {
+    display: block;
+    animation: fadeUp 0.3s;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(10px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .advisor-result-date {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f6e56;
+  }
+  .advisor-result-sub {
+    font-size: 0.75rem;
+    color: #2c7a5e;
+    margin: 4px 0 16px;
+  }
+  .advisor-result-rows {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .advisor-result-col {
+    flex: 1;
+    background: #f8fafc;
+    border-radius: 20px;
+    padding: 0.8rem;
+    text-align: center;
+  }
+  .advisor-result-val {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1a9e6e;
+  }
+  .advisor-result-lbl {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .advisor-error {
+    background: #fee2e2;
+    border-left: 4px solid #dc2626;
+    padding: 10px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: #991b1b;
+    margin-top: 12px;
+    display: none;
+  }
+  .advisor-error.visible { display: block; }
+
+  /* Timeline */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tl-item {
+    display: flex;
+    gap: 1rem;
+  }
+  .tl-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 32px;
+  }
+  .tl-dot {
+    width: 16px;
+    height: 16px;
+    background: #1a9e6e;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px #e0f2e9;
+    margin-top: 8px;
+  }
+  .tl-connector {
+    width: 2px;
+    background: linear-gradient(to bottom, #cbd5e1, #94a3b8);
+    flex: 1;
+    min-height: 40px;
+  }
+  .tl-item:last-child .tl-connector { display: none; }
+  .tl-card {
+    flex: 1;
+    background: white;
+    border-radius: 24px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px -6px rgba(0,0,0,0.05);
+  }
+  .tl-card:hover {
+    transform: translateX(4px);
+    border-color: #1a9e6e;
+    box-shadow: 0 12px 20px -12px rgba(26,158,110,0.2);
+  }
+  .tl-date {
+    font-size: 0.7rem;
+    color: #1a9e6e;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .tl-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .badge-done {
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 30px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .tl-meta {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 6px;
+  }
+  .tl-stats {
+    display: flex;
+    gap: 1.2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .tl-stat-val {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1a9e6e;
+  }
+  .tl-stat-lbl {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 2.5rem;
+    background: rgba(255,255,255,0.6);
+    border-radius: 32px;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+
+  /* Pagination */
+  .pagination-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+  }
+  .pagination {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+    padding: 0;
+  }
+  .pagination li a, .pagination li span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 40px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    background: white;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+  }
+  .pagination li.active span {
+    background: #1a9e6e;
+    border-color: #1a9e6e;
+    color: white;
+    box-shadow: 0 2px 8px rgba(26,158,110,0.3);
+  }
+  .pagination li a:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+  }
+  .pagination-info {
+    text-align: center;
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 0.8rem;
+  }
+
+  @media (max-width: 680px) {
+    .hist-page { padding: 1rem; margin: 1rem; }
+    .pred-cards { grid-template-columns: 1fr; }
+    .advisor-form-row { flex-direction: column; }
+    .advisor-select, .advisor-input, .advisor-btn { width: 100%; }
+    .tl-stats { flex-direction: column; gap: 8px; }
+  }
+</style>
+
+<div class="hist-page">
+
+  {# ── Nav ── #}
+  <div class="hist-nav">
+    <a href="{{ path('objectif_index') }}">← Mes objectifs</a>
+    <a href="{{ path('objectif_historique') }}" class="active">📈 Historique & Prédictions</a>
+    <a href="{{ path('top_contributions', {userId: app.user.id}) }}">🏆 Top contributeurs</a>
+  </div>
+
+  {# ── Header ── #}
+  <div class="hist-badge">📈 Suivi intelligent</div>
+  <h1 class="hist-title">Historique & Prédictions</h1>
+  <p class="hist-sub">Analysez vos performances et simulez vos prochains objectifs</p>
+
+  {# ── Summary chips ── #}
+  <div class="hist-summary">
+    <div class="summary-chip">
+      <div class="summary-chip-val">{{ historique.totalItemCount }}</div>
+      <div class="summary-chip-lbl">Atteints</div>
+    </div>
+    <div class="summary-chip">
+      <div class="summary-chip-val">{{ enCours.totalItemCount }}</div>
+      <div class="summary-chip-lbl">En cours</div>
+    </div>
+    <div class="summary-chip">
+      <div class="summary-chip-val">{{ historique.totalItemCount + enCours.totalItemCount }}</div>
+      <div class="summary-chip-lbl">Total objectifs</div>
+    </div>
+  </div>
+
+  {# ══════════════════════════════════════════
+     SECTION 1 : OBJECTIFS EN COURS + PRÉDICTION
+  ══════════════════════════════════════════ #}
+  <div class="section-label">🔮 Prédictions — objectifs en cours</div>
+
+  {% if enCours.totalItemCount == 0 %}
+    <div class="empty-state">Aucun objectif en cours. Créez-en un pour voir les prédictions.</div>
+  {% else %}
+    <div class="pred-cards">
+      {% for item in enCours %}
+        {% set pred = item.stats.prediction %}
+        {% set pct  = item.stats.progressPct|round %}
+        <div class="pred-card">
+          <div class="pred-top">
+            <div class="pred-title">{{ item.objectif.titre }}</div>
+            <div class="pred-pct">
+              {{ item.stats.totalCollected|number_format(0, ',', ' ') }}
+              / {{ item.stats.targetAmount|number_format(0, ',', ' ') }} — {{ pct }}%
+            </div>
+            <div class="prog-bg">
+              <div class="prog-fill" style="width: {{ pct }}%"></div>
+            </div>
+          </div>
+          <div class="pred-body">
+            {% if pred %}
+              <div class="pred-date-box">
+                <div class="pred-date-val">{{ pred.predictedDate|date('d/m/Y') }}</div>
+                <div class="pred-date-sub">Date estimée d'atteinte</div>
+              </div>
+              <div class="pred-row">
+                <span>⏳ Jours restants</span>
+                <span>{{ pred.daysNeeded }} j</span>
+              </div>
+              <div class="pred-row">
+                <span>⚡ Vélocité moyenne</span>
+                <span>{{ pred.velocityPerDay|number_format(2, ',', ' ') }} / j</span>
+              </div>
+              <div class="pred-row">
+                <span>🎯 Reste à collecter</span>
+                <span>{{ pred.remaining|number_format(0, ',', ' ') }}</span>
+              </div>
+              <span class="conf-badge conf-{{ pred.confidence }}">
+                {% if pred.confidence == 'haute' %}🟢 Haute confiance
+                {% elseif pred.confidence == 'moyenne' %}🟡 Confiance moyenne
+                {% else %}⚪ Faible confiance{% endif %}
+              </span>
+            {% else %}
+              <div class="no-pred">
+                Pas encore assez de contributions pour estimer une date.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Pagination "en cours" #}
+    {% if enCours.pageCount > 1 %}
+      <div class="pagination-wrap">
+        {{ knp_pagination_render(enCours) }}
+      </div>
+      <div class="pagination-info">
+        Page {{ enCours.currentPageNumber }} / {{ enCours.pageCount }}
+        — {{ enCours.totalItemCount }} objectif{{ enCours.totalItemCount > 1 ? 's' : '' }} en cours
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {# ══════════════════════════════════════════
+     SECTION 2 : CONSEILLER IA (avec affichage du reste)
+  ══════════════════════════════════════════ #}
+  {% if enCours.totalItemCount > 0 %}
+  <div class="advisor-section">
+    <div class="advisor-header">
+      <div class="advisor-icon">🤖</div>
+      <div>
+        <div class="advisor-title">Conseiller IA</div>
+        <div class="advisor-sub">Simulez un effort journalier et obtenez la date d’atteinte</div>
+      </div>
+    </div>
+    <div class="advisor-body">
+      <div class="advisor-form-row">
+        <div class="advisor-field" style="flex:2">
+          <span class="advisor-field-label">🎯 Objectif</span>
+          <select class="advisor-select" id="advisorObjectifSelect">
+            <option value="">— Choisir un objectif —</option>
+            {% for item in enCours %}
+              {% set restant = item.stats.targetAmount - item.stats.totalCollected %}
+              <option value="{{ item.objectif.id }}" data-restant="{{ restant }}">
+                {{ item.objectif.titre }} ({{ restant|number_format(0, ',', ' ') }} restant)
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="advisor-field">
+          <span class="advisor-field-label">💰 Montant par jour</span>
+          <input type="number" class="advisor-input" id="advisorAmount" placeholder="Ex: 40" min="0.01" step="0.01">
+        </div>
+        <button class="advisor-btn" id="advisorBtn" onclick="simulateContribution()">✨ Simuler</button>
+      </div>
+
+      {# Affichage dynamique du reste à collecter #}
+      <div style="margin-top: 0.75rem; font-size:0.8rem; background:#f1f5f9; padding:8px 16px; border-radius:20px; display:inline-block;">
+        💰 Reste à collecter : <strong id="displayRestant">—</strong>
+      </div>
+
+      <div class="advisor-error" id="advisorError"></div>
+      <div class="advisor-result" id="advisorResult">
+        <div class="advisor-result-date" id="advisorDate"></div>
+        <div class="advisor-result-sub" id="advisorDateSub"></div>
+        <div class="advisor-result-rows">
+          <div class="advisor-result-col">
+            <div class="advisor-result-val" id="advisorDays"></div>
+            <div class="advisor-result-lbl">Jours nécessaires</div>
+          </div>
+          <div class="advisor-result-col">
+            <div class="advisor-result-val" id="advisorRemaining"></div>
+            <div class="advisor-result-lbl">Reste à collecter</div>
+          </div>
+          <div class="advisor-result-col">
+            <div class="advisor-result-val" id="advisorConf"></div>
+            <div class="advisor-result-lbl">Confiance</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ══════════════════════════════════════════
+     SECTION 3 : HISTORIQUE DES OBJECTIFS ATTEINTS
+  ══════════════════════════════════════════ #}
+  <div class="section-label">✅ Objectifs réalisés</div>
+
+  {% if historique.totalItemCount == 0 %}
+    <div class="empty-state">Aucun objectif atteint pour le moment. Continuez vos efforts !</div>
+  {% else %}
+    <div class="timeline">
+      {% for item in historique %}
+        <div class="tl-item">
+          <div class="tl-line">
+            <div class="tl-dot"></div>
+            <div class="tl-connector"></div>
+          </div>
+          <div class="tl-card">
+            <div class="tl-date">
+              {% if item.dateAtteinte %}Atteint le {{ item.dateAtteinte|date('d/m/Y') }}{% else %}Date inconnue{% endif %}
+            </div>
+            <div>
+              <span class="tl-title">{{ item.objectif.titre }}</span>
+              <span class="badge-done">✓ Terminé</span>
+            </div>
+            <div class="tl-meta">
+              Démarré le {{ item.objectif.dateDebut|date('d/m/Y') }} · Durée cible : {{ item.objectif.duree }} mois
+            </div>
+            <div class="tl-stats">
+              <div>
+                <div class="tl-stat-val">{{ item.stats.totalCollected|number_format(0, ',', ' ') }}</div>
+                <div class="tl-stat-lbl">Collecté</div>
+              </div>
+              <div>
+                <div class="tl-stat-val">{{ item.stats.contributionCount }}</div>
+                <div class="tl-stat-lbl">Contributions</div>
+              </div>
+              <div>
+                <div class="tl-stat-val">{% if item.dureeReelle is defined and item.dureeReelle %}{{ item.dureeReelle }} j{% else %}—{% endif %}</div>
+                <div class="tl-stat-lbl">Durée réelle</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Pagination "historique" #}
+    {% if historique.pageCount > 1 %}
+      <div class="pagination-wrap">
+        {{ knp_pagination_render(historique) }}
+      </div>
+      <div class="pagination-info">
+        Page {{ historique.currentPageNumber }} / {{ historique.pageCount }}
+        — {{ historique.totalItemCount }} objectif{{ historique.totalItemCount > 1 ? 's' : '' }} atteint{{ historique.totalItemCount > 1 ? 's' : '' }}
+      </div>
+    {% endif %}
+  {% endif %}
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const select = document.getElementById('advisorObjectifSelect');
+  const displayRestant = document.getElementById('displayRestant');
+  if (select && displayRestant) {
+    select.addEventListener('change', function() {
+      const selectedOption = select.options[select.selectedIndex];
+      const restant = selectedOption.getAttribute('data-restant');
+      if (restant) {
+        displayRestant.textContent = Number(restant).toLocaleString('fr-FR') + ' unités';
+      } else {
+        displayRestant.textContent = '—';
+      }
+    });
+    // Déclenchement initial
+    if (select.value) {
+      const selectedOption = select.options[select.selectedIndex];
+      const restant = selectedOption.getAttribute('data-restant');
+      if (restant) displayRestant.textContent = Number(restant).toLocaleString('fr-FR') + ' unités';
+    }
+  }
+});
+
+async function simulateContribution() {
+  const selectEl = document.getElementById('advisorObjectifSelect');
+  const amountEl = document.getElementById('advisorAmount');
+  const resultEl = document.getElementById('advisorResult');
+  const errorEl  = document.getElementById('advisorError');
+  const btn      = document.getElementById('advisorBtn');
+
+  const objectifId = selectEl.value;
+  const amount     = parseFloat(amountEl.value);
+
+  resultEl.classList.remove('visible');
+  errorEl.classList.remove('visible');
+
+  if (!objectifId) {
+    errorEl.textContent = 'Veuillez sélectionner un objectif.';
+    errorEl.classList.add('visible');
+    return;
+  }
+  if (!amount || amount <= 0) {
+    errorEl.textContent = 'Veuillez saisir un montant journalier valide (ex: 40).';
+    errorEl.classList.add('visible');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Calcul...';
+
+  try {
+    const formData = new FormData();
+    formData.append('montant_quotidien', amount);
+    const resp = await fetch(`/objectif/${objectifId}/simuler`, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || data.error) {
+      errorEl.textContent = data.error || 'Erreur lors de la simulation.';
+      errorEl.classList.add('visible');
+      return;
+    }
+
+    const confLabel = { haute: '🟢 Haute', moyenne: '🟡 Moyenne', faible: '⚪ Faible' };
+
+    if (data.message) {
+      document.getElementById('advisorDate').textContent = '🎉 Objectif déjà atteint !';
+      document.getElementById('advisorDateSub').textContent = '';
+      document.getElementById('advisorDays').textContent = '—';
+      document.getElementById('advisorRemaining').textContent = '—';
+      document.getElementById('advisorConf').textContent = '—';
+    } else {
+      document.getElementById('advisorDate').textContent = data.predictedDate;
+      document.getElementById('advisorDateSub').textContent = `En contribuant ${amount.toFixed(2)} par jour`;
+      document.getElementById('advisorDays').textContent = `${data.daysNeeded} j`;
+      document.getElementById('advisorRemaining').textContent = Number(data.remaining).toLocaleString('fr-FR');
+      document.getElementById('advisorConf').textContent = confLabel[data.confidence] || data.confidence;
+    }
+    resultEl.classList.add('visible');
+  } catch (e) {
+    errorEl.textContent = 'Erreur réseau. Veuillez réessayer.';
+    errorEl.classList.add('visible');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ Simuler';
+  }
+}
+</script>
+{% endblock %}

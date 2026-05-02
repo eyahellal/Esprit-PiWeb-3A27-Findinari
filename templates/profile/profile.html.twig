@@ -66,6 +66,54 @@
             </div>
         </div>
 
+        <div style="margin-top:25px; padding:18px; background:#f8fffb; border:1px solid #d9f5e3; border-radius:14px;">
+            <h3 style="margin-top:0; color:#1f3b2d;">Face ID</h3>
+
+            <div style="margin-bottom:12px; font-size:15px; color:#355747;">
+                Status:
+                {% if userData.faceEnabled %}
+                    <strong style="color:#1c6b3d;">Enabled</strong>
+                {% else %}
+                    <strong style="color:#a12626;">Disabled</strong>
+                {% endif %}
+            </div>
+
+            {% if userData.faceEnrolledAt %}
+                <div style="margin-bottom:12px; font-size:14px; color:#5f7b6c;">
+                    Enrolled at: {{ userData.faceEnrolledAt|date('Y-m-d H:i') }}
+                </div>
+            {% endif %}
+
+            <form id="faceEnrollForm" method="post" action="{{ path('app_profile_face_enroll') }}">
+                <input type="hidden" id="face_image_data" name="face_image_data">
+
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+                    <button type="button" id="startFaceBtn" style="flex:1; min-width:220px;">
+                        {% if userData.faceEnabled %}Re-enroll Face ID{% else %}Create Face ID{% endif %}
+                    </button>
+                </div>
+
+                <div id="camera-container" style="display:none; margin-top:12px; text-align:center;">
+                    <video id="video" autoplay playsinline style="width:100%; max-width:320px; border-radius:12px; border:1px solid #ccc; background:#000;"></video>
+                    <canvas id="canvas" style="display:none;"></canvas>
+
+                    <button type="button" id="captureBtn" style="margin-top:12px;">
+                        Capture Face
+                    </button>
+
+                    <div style="margin-top:8px; font-size:13px; color:#5f7b6c;">
+                        Look straight at the camera and use only one face.
+                    </div>
+                </div>
+            </form>
+
+            {% if userData.faceEnabled %}
+                <form method="post" action="{{ path('app_profile_face_disable') }}" style="margin-top:12px;">
+                    <button type="submit" style="background:#b72c2c;">Disable Face ID</button>
+                </form>
+            {% endif %}
+        </div>
+
         <div style="display:flex; gap:15px; margin-top:25px; flex-wrap:wrap;">
             <a href="{{ path('app_profile_update') }}" style="text-decoration:none; background:#28a745; color:#fff; padding:12px 18px; border-radius:10px; font-weight:700;">Update Profile</a>
             <a href="{{ path('app_profile_password') }}" style="text-decoration:none; background:#1f8f66; color:#fff; padding:12px 18px; border-radius:10px; font-weight:700;">Update Password</a>
@@ -73,4 +121,50 @@
         </div>
     </div>
 </section>
+
+<script>
+    const startFaceBtn = document.getElementById('startFaceBtn');
+    const captureBtn = document.getElementById('captureBtn');
+    const cameraContainer = document.getElementById('camera-container');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const faceImageData = document.getElementById('face_image_data');
+    const faceEnrollForm = document.getElementById('faceEnrollForm');
+
+    let stream = null;
+
+    startFaceBtn.addEventListener('click', async function () {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user' },
+                audio: false
+            });
+
+            video.srcObject = stream;
+            cameraContainer.style.display = 'block';
+        } catch (error) {
+            alert('Unable to access camera.');
+            console.error(error);
+        }
+    });
+
+    captureBtn.addEventListener('click', function () {
+        if (!stream) {
+            alert('Camera is not started.');
+            return;
+        }
+
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+
+        const context = canvas.getContext('2d');
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        faceImageData.value = canvas.toDataURL('image/jpeg');
+
+        stream.getTracks().forEach(track => track.stop());
+
+        faceEnrollForm.submit();
+    });
+</script>
 {% endblock %}

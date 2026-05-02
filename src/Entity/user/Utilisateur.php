@@ -134,7 +134,22 @@ private ?string $mdp = null;
     {
         return $this->mdp;
     }
+   public function canCreateCommunityPost(): bool
+{
+    return in_array('ROLE_INFLUENCER', $this->getRoles(), true);
+}
 
+public function canLikeInCommunity(): bool
+{
+    return in_array('ROLE_USER', $this->getRoles(), true)
+        || in_array('ROLE_INFLUENCER', $this->getRoles(), true)
+        || in_array('ROLE_ADMIN', $this->getRoles(), true);
+}
+
+public function isCommunityAdmin(): bool
+{
+    return in_array('ROLE_ADMIN', $this->getRoles(), true);
+}
     public function setMdp(string $mdp): static
     {
         $this->mdp = $mdp;
@@ -251,4 +266,10 @@ private ?string $mdp = null;
     public function eraseCredentials(): void
     {
     }
+    public function canCommentInCommunity(): bool
+{
+    return in_array('ROLE_USER', $this->getRoles(), true)
+        || in_array('ROLE_INFLUENCER', $this->getRoles(), true)
+        || in_array('ROLE_ADMIN', $this->getRoles(), true);
+}
 }

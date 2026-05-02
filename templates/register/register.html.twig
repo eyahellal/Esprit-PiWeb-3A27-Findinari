@@ -18,30 +18,42 @@
                         <div class="alert alert-danger">{{ message }}</div>
                     {% endfor %}
 
-                    {{ form_start(registrationForm) }}
+                    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+                    {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
 
                         <div class="mb-3">
                             {{ form_label(registrationForm.nom) }}
-                            {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.nom) }}
+                            {{ form_widget(registrationForm.nom, {'attr': {'class': 'form-control', 'id': 'register_nom'}}) }}
                         </div>
 
                         <div class="mb-3">
                             {{ form_label(registrationForm.prenom) }}
-                            {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.prenom) }}
+                            {{ form_widget(registrationForm.prenom, {'attr': {'class': 'form-control', 'id': 'register_prenom'}}) }}
                         </div>
 
                         <div class="mb-3">
                             {{ form_label(registrationForm.gmail) }}
-                            {{ form_widget(registrationForm.gmail, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.gmail) }}
+                            {{ form_widget(registrationForm.gmail, {'attr': {'class': 'form-control', 'id': 'register_gmail'}}) }}
                         </div>
 
                         <div class="mb-4">
                             {{ form_label(registrationForm.plainPassword) }}
                             {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(registrationForm.plainPassword) }}
+                            <small class="text-muted">Password must be entered manually.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="button" id="voiceFillBtn" class="btn btn-secondary w-100 mb-2">
+                                🎤 Fill with Voice
+                            </button>
+
+                            <div id="voiceStatus" class="alert alert-info d-none"></div>
+                            <div id="voiceTranscript" class="small text-muted mt-2"></div>
+                        </div>
+
+                        <div class="mb-4 text-center">
+                            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">
@@ -54,4 +66,84 @@
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const voiceBtn = document.getElementById('voiceFillBtn');
+    const statusBox = document.getElementById('voiceStatus');
+    const transcriptBox = document.getElementById('voiceTranscript');
+
+    const nomInput = document.getElementById('register_nom');
+    const prenomInput = document.getElementById('register_prenom');
+    const gmailInput = document.getElementById('register_gmail');
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function showStatus(message, type = 'info') {
+        statusBox.className = 'alert alert-' + type;
+        statusBox.classList.remove('d-none');
+        statusBox.textContent = message;
+    }
+
+    function fillInputs(data) {
+        if (data.prenom) prenomInput.value = data.prenom;
+        if (data.nom) nomInput.value = data.nom;
+        if (data.gmail) gmailInput.value = data.gmail;
+    }
+
+    async function sendTranscriptToBackend(transcript) {
+        const response = await fetch('{{ path('app_register_voice_parse') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ transcript })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Unable to parse voice data.');
+        }
+
+        return result;
+    }
+
+    if (!SpeechRecognition) {
+        voiceBtn.disabled = true;
+        showStatus('Speech recognition is not supported in this browser.', 'warning');
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+
+    voiceBtn.addEventListener('click', function () {
+        transcriptBox.textContent = '';
+        showStatus('Listening... Please say your first name, surname, and email.', 'info');
+        recognition.start();
+    });
+
+    recognition.onresult = async function (event) {
+        const transcript = event.results[0][0].transcript;
+        transcriptBox.textContent = 'Heard: ' + transcript;
+        showStatus('Sending transcript to local AI...', 'info');
+
+        try {
+            const parsedData = await sendTranscriptToBackend(transcript);
+            fillInputs(parsedData);
+            showStatus('Form filled by local AI successfully.', 'success');
+        } catch (error) {
+            showStatus(error.message, 'danger');
+        }
+    };
+
+    recognition.onerror = function (event) {
+        showStatus('Voice recognition error: ' + event.error, 'danger');
+    };
+});
+</script>
 {% endblock %}

@@ -1,0 +1,111 @@
+{% if pageCount > 1 %}
+    <nav>
+        <ul class="modern-pagination">
+            {% if first is defined and current != first %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): first})) }}" class="page-link" title="First">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if previous is defined %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): previous})) }}" class="page-link" title="Previous">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for page in pagesInRange %}
+                {% if page != current %}
+                    <li class="page-item">
+                        <a href="{{ path(route, query|merge({(pageParameterName): page})) }}" class="page-link">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page }}</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if next is defined %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): next})) }}" class="page-link" title="Next">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if last is defined and current != last %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): last})) }}" class="page-link" title="Last">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+
+<style>
+    .modern-pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .modern-pagination .page-item {
+        display: flex;
+    }
+
+    .modern-pagination .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        height: 42px;
+        padding: 0 8px;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .modern-pagination .page-link:hover {
+        background: #f8fafc;
+        border-color: #16a34a;
+        color: #16a34a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
+    }
+
+    .modern-pagination .page-item.active .page-link {
+        background: #16a34a;
+        border-color: #16a34a;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+    }
+
+    .modern-pagination .page-item.active .page-link:hover {
+        transform: none;
+    }
+
+    .modern-pagination .page-link i {
+        font-size: 16px;
+    }
+
+    /* Support pour le mode sombre ou les fonds gris */
+    .pagination-container {
+        padding: 12px;
+        border-radius: 20px;
+    }
+</style>
