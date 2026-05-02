@@ -81,3 +81,7 @@ services:
     App\Service\GroqService:
         arguments:
             $groqApiKey: '%groq_api_key%'
+
+    App\Service\Loan\InvestmentValidatorService:
+        autowire: true
+        autoconfigure: true
