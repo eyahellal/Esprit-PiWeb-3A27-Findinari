@@ -1,0 +1,298 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Upload Investment PDF - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">Upload Investment PDF</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}">Services</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_investment_index') }}">My Investments</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_investment_pdf_upload') }}">Upload PDF</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="shadow rounded p-5 bg-white">
+                    
+                    {% if not confirmData %}
+                        <div class="text-center mb-4">
+                            <div class="upload-icon mb-3">
+                                <i class="fas fa-file-pdf fa-4x text-danger"></i>
+                            </div>
+                            <h3 class="text-primary">Import Investment from PDF</h3>
+                            <p class="text-secondary">Upload a PDF contract and we'll automatically fill the investment details for you!</p>
+                        </div>
+                        
+                        {% if error %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                {{ error }}
+                            </div>
+                        {% endif %}
+                        
+                        <form method="post" enctype="multipart/form-data" action="{{ path('app_investment_pdf_upload') }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('pdf_upload') }}">
+                            
+                            <div class="upload-area mb-4" id="uploadArea">
+                                <div class="text-center p-5 border-2 border-dashed rounded-4 bg-light">
+                                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                    <p class="mb-2">Drag & drop your PDF file here or click to browse</p>
+                                    <small class="text-muted">Supported format: PDF (Max 5MB)</small>
+                                    
+                                    <input type="file" id="pdfFileInput" name="pdf_file" accept="application/pdf" class="d-none">
+                                    
+                                    <button type="button" id="chooseFileBtn" class="btn btn-primary mt-3">
+                                        <i class="fas fa-folder-open me-2"></i>Choose File
+                                    </button>
+                                </div>
+                                <div id="fileName" class="text-center mt-2 text-success d-none">
+                                    <i class="fas fa-check-circle"></i> <span></span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-upload me-2"></i>Extract & Preview
+                                </button>
+                            </div>
+                        </form>
+                        
+                    {% else %}
+                        <!-- Confirmation Section -->
+                        <div class="text-center mb-4">
+                            <div class="upload-icon mb-3">
+                                <i class="fas fa-check-circle fa-4x text-success"></i>
+                            </div>
+                            <h3 class="text-primary">Data Extracted Successfully!</h3>
+                            <p class="text-secondary">Please review the extracted information below:</p>
+                        </div>
+                        
+                        <div class="card border-success mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-file-invoice me-2"></i> Extracted Investment Data
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-4 fw-bold">Amount:</div>
+                                    <div class="col-md-8">{{ confirmData.amount|default(0)|number_format(2) }} DT</div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-4 fw-bold">Obligation:</div>
+                                    <div class="col-md-8">
+                                        {{ confirmData.obligationName|default('Unknown') }}
+                                        {% if confirmData.obligation %}
+                                            <span class="badge bg-success ms-2">✓ Matched</span>
+                                        {% else %}
+                                            <span class="badge bg-warning ms-2">⚠ Not found - will create new</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if confirmData.interestRate is defined and confirmData.interestRate %}
+                                <div class="row mb-3">
+                                    <div class="col-md-4 fw-bold">Interest Rate:</div>
+                                    <div class="col-md-8">{{ confirmData.interestRate }}%</div>
+                                </div>
+                                {% endif %}
+                                <div class="row mb-3">
+                                    <div class="col-md-4 fw-bold">Purchase Date:</div>
+                                    <div class="col-md-8">{{ confirmData.dateAchat|default('Not found') }}</div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-4 fw-bold">Maturity Date:</div>
+                                    <div class="col-md-8">{{ confirmData.dateMaturite|default('Not found') }}</div>
+                                </div>
+                                {% if confirmData.duration is defined and confirmData.duration %}
+                                <div class="row mb-3">
+                                    <div class="col-md-4 fw-bold">Duration:</div>
+                                    <div class="col-md-8">{{ confirmData.duration }} months</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <form method="get" action="{{ path('app_investment_pdf_upload') }}">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Select Wallet</label>
+                                    <select name="walletId" class="form-select" required>
+                                        <option value="">-- Choose a wallet --</option>
+                                        {% for wallet in wallets %}
+                                            <option value="{{ wallet.id }}">
+                                                {{ wallet.pays }} - {{ wallet.solde|number_format(2) }} {{ wallet.devise }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Select Obligation</label>
+                                    <select name="obligationId" class="form-select" required>
+                                        <option value="">-- Choose an obligation --</option>
+                                        {% for obligation in obligations %}
+                                            <option value="{{ obligation.idObligation }}">
+                                                {{ obligation.nom }} - {{ obligation.tauxInteret }}%
+                                            </option>
+                                        {% endfor %}
+                                        <option value="new">+ Create new obligation: {{ confirmData.obligationName|default('New Obligation') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="confirm" value="yes">
+                            <div class="d-flex justify-content-between gap-3">
+                                <a href="{{ path('app_investment_pdf_upload') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check me-2"></i>Confirm & Create Investment
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .border-2 {
+        border-width: 2px !important;
+    }
+    .border-dashed {
+        border-style: dashed !important;
+    }
+    .upload-area {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .upload-area .border-dashed {
+        transition: all 0.3s ease;
+    }
+    .upload-area:hover .border-dashed {
+        border-color: #2d6a4f !important;
+        background: #e8f5e9 !important;
+    }
+    .btn-primary {
+        background-color: #2d6a4f;
+        border-color: #2d6a4f;
+    }
+    .btn-primary:hover {
+        background-color: #1b4d3b;
+        border-color: #1b4d3b;
+    }
+    .btn-outline-primary {
+        color: #2d6a4f;
+        border-color: #2d6a4f;
+    }
+    .btn-outline-primary:hover {
+        background-color: #2d6a4f;
+        border-color: #2d6a4f;
+        color: white;
+    }
+    .bg-tertiary {
+        background-color: #e8f5e9 !important;
+    }
+    .text-primary {
+        color: #2d6a4f !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chooseFileBtn = document.getElementById('chooseFileBtn');
+        const fileInput = document.getElementById('pdfFileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileNameDiv = document.getElementById('fileName');
+        const fileNameSpan = fileNameDiv?.querySelector('span');
+        
+        // Button click - open file explorer
+        if (chooseFileBtn) {
+            chooseFileBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+        }
+        
+        // Click on upload area - also open file explorer
+        if (uploadArea) {
+            uploadArea.addEventListener('click', function(e) {
+                // Don't trigger if clicking on the button itself (already handled)
+                if (e.target.id !== 'chooseFileBtn' && !e.target.closest('#chooseFileBtn')) {
+                    fileInput.click();
+                }
+            });
+        }
+        
+        // When file is selected
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file && fileNameSpan && fileNameDiv) {
+                    fileNameSpan.textContent = file.name;
+                    fileNameDiv.classList.remove('d-none');
+                }
+            });
+        }
+        
+        // Drag and drop
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                const dashedBorder = this.querySelector('.border-dashed');
+                if (dashedBorder) {
+                    dashedBorder.style.borderColor = '#2d6a4f';
+                    dashedBorder.style.background = '#e8f5e9';
+                }
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                const dashedBorder = this.querySelector('.border-dashed');
+                if (dashedBorder) {
+                    dashedBorder.style.borderColor = '';
+                    dashedBorder.style.background = '';
+                }
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const dashedBorder = this.querySelector('.border-dashed');
+                if (dashedBorder) {
+                    dashedBorder.style.borderColor = '';
+                    dashedBorder.style.background = '';
+                }
+                
+                const file = e.dataTransfer.files[0];
+                if (file && file.type === 'application/pdf') {
+                    // Set the file to the input
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    
+                    // Show file name
+                    if (fileNameSpan && fileNameDiv) {
+                        fileNameSpan.textContent = file.name;
+                        fileNameDiv.classList.remove('d-none');
+                    }
+                } else if (file) {
+                    alert('Please upload a PDF file');
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

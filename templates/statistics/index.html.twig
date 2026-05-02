@@ -1,0 +1,302 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistics Dashboard - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">Statistics Dashboard</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_statistics') }}">Statistics</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                        <h3 class="mb-0 text-primary">{{ investmentStats.totalInvested|number_format(2) }} DT</h3>
+                        <p class="text-muted mb-0">Total Invested</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-wallet fa-2x text-primary mb-2"></i>
+                        <h3 class="mb-0 text-primary">{{ walletStats.totalWallets }}</h3>
+                        <p class="text-muted mb-0">Total Wallets</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-play-circle fa-2x text-success mb-2"></i>
+                        <h3 class="mb-0 text-success">{{ investmentStats.activeInvestments }}</h3>
+                        <p class="text-muted mb-0">Active Investments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-check-circle fa-2x text-warning mb-2"></i>
+                        <h3 class="mb-0 text-warning">{{ investmentStats.maturedInvestments }}</h3>
+                        <p class="text-muted mb-0">Matured Investments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row - Medium Size -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h5 class="mb-0 fw-bold text-primary">📊 Investment Distribution by Obligation</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="obligationPieChart" height="280" style="max-height: 280px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h5 class="mb-0 fw-bold text-primary">💰 Wallet Balance by Currency</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="walletDonutChart" height="280" style="max-height: 280px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Obligation Ranking - Visible Table -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h5 class="mb-0 fw-bold text-primary">🏆 Top Performing Obligations</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead style="background-color: #2d6a4f;">
+                                    <tr>
+                                        <th style="color: white;">Rank</th>
+                                        <th style="color: white;">Obligation Name</th>
+                                        <th style="color: white;">Interest Rate</th>
+                                        <th style="color: white;">Duration</th>
+                                        <th style="color: white;">Total Invested</th>
+                                        <th style="color: white;">Investors</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for obligation in obligationRanking %}
+                                    <tr style="color: #1a2e1a; background-color: white;">
+                                        <td>
+                                            {% if loop.index == 1 %}🥇
+                                            {% elseif loop.index == 2 %}🥈
+                                            {% elseif loop.index == 3 %}🥉
+                                            {% else %}<span style="color: #4b6b4b; font-weight: 500;">{{ loop.index }}</span>{% endif %}
+                                        </td>
+                                        <td style="color: #2d6a4f; font-weight: 600;">{{ obligation.name }}</td>
+                                        <td><span class="badge bg-success">{{ obligation.rate }}%</span></td>
+                                        <td style="color: #4b6b4b;">{{ obligation.duration }} months</td>
+                                        <td style="color: #28a745; font-weight: 600;">{{ obligation.totalInvested|number_format(2) }} DT</td>
+                                        <td style="color: #4b6b4b;">{{ obligation.investorsCount }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Maturity Forecast - Medium Chart -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pt-4">
+                        <h5 class="mb-0 fw-bold text-primary">📅 Maturity Forecast (Next 6 Months)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="maturityBarChart" height="250" style="max-height: 250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+<style>
+    .text-primary { color: #2d6a4f !important; }
+    .text-success { color: #28a745 !important; }
+    .text-warning { color: #ffc107 !important; }
+    .badge.bg-success { background-color: #28a745 !important; }
+    .table th, .table td { vertical-align: middle; }
+    .table-hover tbody tr:hover { background-color: #e8f5e9; }
+    .card-header { background-color: white !important; }
+</style>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Obligation Pie Chart
+        const obligationData = {{ investmentStats.byObligation|json_encode|raw }};
+        const obligationLabels = Object.keys(obligationData);
+        const obligationValues = Object.values(obligationData);
+        
+        const pieCtx = document.getElementById('obligationPieChart');
+        if (pieCtx && obligationLabels.length > 0) {
+            new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: obligationLabels,
+                    datasets: [{
+                        data: obligationValues,
+                        backgroundColor: ['#2d6a4f', '#28a745', '#20c997', '#17a2b8', '#fd7e14', '#dc3545', '#ffc107', '#6c757d', '#0dcaf0', '#d63384'],
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: '#1a2e1a', font: { size: 11, boxWidth: 14 } }
+                        },
+                        tooltip: { 
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value.toLocaleString()} DT (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Wallet Donut Chart
+        const walletData = {{ walletStats.byCurrency|json_encode|raw }};
+        const walletLabels = Object.keys(walletData);
+        const walletValues = Object.values(walletData);
+        
+        const donutCtx = document.getElementById('walletDonutChart');
+        if (donutCtx && walletLabels.length > 0) {
+            new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: walletLabels,
+                    datasets: [{
+                        data: walletValues,
+                        backgroundColor: ['#2d6a4f', '#28a745', '#20c997', '#17a2b8', '#fd7e14', '#dc3545'],
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: '#1a2e1a', font: { size: 11, boxWidth: 14 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value.toLocaleString()} DT`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Maturity Bar Chart
+        const maturityData = {{ maturityForecast|json_encode|raw }};
+        const maturityLabels = Object.keys(maturityData);
+        const maturityValues = Object.values(maturityData);
+        
+        const barCtx = document.getElementById('maturityBarChart');
+        if (barCtx && maturityLabels.length > 0) {
+            new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: maturityLabels,
+                    datasets: [{
+                        label: 'Amount Maturing (DT)',
+                        data: maturityValues,
+                        backgroundColor: '#2d6a4f',
+                        borderRadius: 8,
+                        barPercentage: 0.65
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { 
+                            position: 'top',
+                            labels: { color: '#1a2e1a', font: { size: 11 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toLocaleString()} DT`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: 'Amount (DT)', color: '#1a2e1a', font: { size: 11 } },
+                            ticks: { color: '#1a2e1a', font: { size: 11 } },
+                            grid: { color: '#e0e8e0' }
+                        },
+                        x: { 
+                            title: { display: true, text: 'Month', color: '#1a2e1a', font: { size: 11 } },
+                            ticks: { color: '#1a2e1a', font: { size: 11 }, rotation: 0 },
+                            grid: { color: '#e0e8e0' }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

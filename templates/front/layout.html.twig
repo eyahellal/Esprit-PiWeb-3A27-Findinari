@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}FinDinari{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+
+    <link rel="stylesheet" href="{{ asset('css/bootstrap/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/slick/slick.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/font-awesome/fontawesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/font-awesome/brands.css') }}">
+    <link rel="stylesheet" href="{{ asset('plugins/font-awesome/solid.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+    {% include 'partials/_header.html.twig' %}
+
+    {% block body %}{% endblock %}
+
+    <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('plugins/bootstrap/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('plugins/slick/slick.min.js') }}"></script>
+    <script src="{{ asset('plugins/scrollmenu/scrollmenu.min.js') }}"></script>
+    <script src="{{ asset('js/script.js') }}"></script>
+
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

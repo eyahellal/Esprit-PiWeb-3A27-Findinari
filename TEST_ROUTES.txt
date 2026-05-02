@@ -1,0 +1,24 @@
+Routes à tester
+
+1) Accueil
+/
+
+2) Service Community principal
+/service/4
+
+3) Test rapide routing community
+/community/test
+
+4) Détail d'un post
+/community/post/1
+
+5) Modifier un post
+/community/post/1/edit
+
+6) Modifier un commentaire
+/community/comment/1/edit
+
+Notes:
+- La navigation principale n'affiche plus le lien Community en haut.
+- Le feed Community est intégré sous le contenu existant de la page /service/4.
+- /community redirige vers /service/4.

@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ obligation.nom }} - Fin-Dinari{% endblock %}
+
+{% block body %}
+
+<section class="page-header bg-tertiary">
+    <div class="container">
+        <div class="row">
+            <div class="col-8 mx-auto text-center">
+                <h2 class="mb-3 text-capitalize">{{ obligation.nom }}</h2>
+                <ul class="list-inline breadcrumbs text-capitalize" style="font-weight:500">
+                    <li class="list-inline-item"><a href="{{ path('app_home') }}">Home</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_services') }}">Services</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_obligation_index') }}">Loan Investment</a></li>
+                    <li class="list-inline-item">/ &nbsp; <a href="{{ path('app_obligation_show', {'idObligation': obligation.idObligation}) }}">{{ obligation.nom }}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="shadow rounded p-5 bg-white">
+                    <div class="text-center mb-4">
+                        <div class="icon-box mb-3">
+                            <div class="icon icon-lg bg-primary-light rounded-circle mx-auto">
+                                <i class="fas fa-hand-holding-usd fa-3x text-primary"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-primary">{{ obligation.nom }}</h2>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 text-center">
+                                <p class="text-muted mb-1">Interest Rate</p>
+                                <h3 class="text-success mb-0">{{ obligation.tauxInteret }}%</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 text-center">
+                                <p class="text-muted mb-1">Duration</p>
+                                <h3 class="text-success mb-0">{{ obligation.duree }} months</h3>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>How it works:</strong> Invest in this obligation and earn {{ obligation.tauxInteret }}% interest over {{ obligation.duree }} months.
+                        Your investment will mature after the duration period, and you'll receive your principal plus interest.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('app_obligation_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to List
+                        </a>
+                        <div>
+                            <a href="{{ path('app_obligation_edit', {'idObligation': obligation.idObligation}) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                            <a href="{{ path('app_investment_new', {'idObligation': obligation.idObligation}) }}" class="btn btn-success">
+                                <i class="fas fa-chart-line me-1"></i>Invest Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
