@@ -1,6 +1,6 @@
 <?php
 
-namespace App\form;
+namespace App\Form;
 
 use App\Entity\community\Post;
 use Symfony\Component\Form\AbstractType;
@@ -15,6 +15,7 @@ class PostType extends AbstractType
         $builder
             ->add('contenu', TextareaType::class, [
                 'label' => false,
+                'required' => false,
                 'attr' => [
                     'rows' => 5,
                     'class' => 'community-editor',

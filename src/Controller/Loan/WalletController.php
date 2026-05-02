@@ -2,10 +2,11 @@
 
 namespace App\Controller\Loan;
 
-use App\Entity\management\Wallet;
-use App\form\WalletType;
+use App\Entity\Loan\Wallet;
+use App\Form\WalletType;
 use App\Entity\user\Utilisateur;
 use App\Repository\WalletRepository;
+use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,10 +46,12 @@ class WalletController extends AbstractController
         return $user;
     }
 
-    #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
+   #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
     public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
         $user = $this->getUserOrCreate($entityManager);
         
         $qb = $repository->createQueryBuilder('w')
@@ -59,17 +62,31 @@ class WalletController extends AbstractController
             $qb->andWhere('w.pays LIKE :search OR w.devise LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
-        
-        $wallets = $qb->getQuery()->getResult();
+
+        // Count total results
+        $total = (clone $qb)->select('COUNT(w.id)')->getQuery()->getSingleScalarResult();
+        $totalPages = max(1, ceil($total / $limit));
+
+        if ($page < 1) $page = 1;
+        if ($page > $totalPages) $page = $totalPages;
+
+        // Get paginated results
+        $wallets = $qb->setFirstResult(($page - 1) * $limit)
+                      ->setMaxResults($limit)
+                      ->getQuery()
+                      ->getResult();
 
         return $this->render('loan/wallet/index.html.twig', [
             'wallets' => $wallets,
             'search' => $search,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
         ]);
     }
 
     #[Route('/new', name: 'app_wallet_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
     {
         $wallet = new Wallet();
         $user = $this->getUserOrCreate($entityManager);
@@ -81,6 +98,13 @@ class WalletController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($wallet);
             $entityManager->flush();
+
+            // Add notification
+            $notificationService->addNotification(
+                '💳 New Wallet Created',
+                sprintf('New wallet in %s with balance %.2f %s', $wallet->getPays(), $wallet->getSolde(), $wallet->getDevise()),
+                'success'
+            );
 
             $this->addFlash('success', 'Wallet created successfully!');
             return $this->redirectToRoute('app_wallet_index');

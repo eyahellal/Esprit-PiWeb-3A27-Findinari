@@ -6,6 +6,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use App\Repository\CategorieRepository;
 
@@ -30,6 +31,17 @@ class Categorie
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Category name is required')]
+    #[Assert\Length(
+        min: 2,
+        max: 50,
+        minMessage: 'Name must be at least {{ limit }} characters',
+        maxMessage: 'Name cannot exceed {{ limit }} characters'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ0-9\s\-]+$/',
+        message: 'Name must contain only letters, numbers, and spaces'
+    )]
     private ?string $nom = null;
 
     public function getNom(): ?string
@@ -37,13 +49,18 @@ class Categorie
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
-    {
-        $this->nom = $nom;
-        return $this;
-    }
+   public function setNom(?string $nom): self
+{
+    $this->nom = $nom;
+    return $this;
+}
 
-    #[ORM\Column(type: 'text', nullable: true)]
+
+   #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Description cannot exceed {{ limit }} characters'
+    )]
     private ?string $description = null;
 
     public function getDescription(): ?string
@@ -58,6 +75,11 @@ class Categorie
     }
 
     #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Status is required')]
+    #[Assert\Choice(
+        choices: ['Active', 'Inactive'],
+        message: 'Status must be either active or inactive'
+    )]
     private ?string $statut = null;
 
     public function getStatut(): ?string
@@ -70,8 +92,14 @@ class Categorie
         $this->statut = $statut;
         return $this;
     }
+    
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: 'Color is required')]
+    #[Assert\Regex(
+        pattern: '/^#[0-9A-Fa-f]{6}$/',
+        message: 'Color must be a valid hex code (e.g. #FF5733)'
+    )]
     private ?string $color = null;
 
     public function getColor(): ?string
@@ -86,6 +114,7 @@ class Categorie
     }
 
     #[ORM\Column(type: 'string', nullable: true)]
+    #[Assert\NotBlank(message: 'Icon is required')]
     private ?string $icon = null;
 
     public function getIcon(): ?string

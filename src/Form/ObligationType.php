@@ -1,6 +1,6 @@
 <?php
 
-namespace App\form;
+namespace App\Form;
 
 use App\Entity\Loan\Obligation;  // ← This must match your entity location
 use Symfony\Component\Form\AbstractType;

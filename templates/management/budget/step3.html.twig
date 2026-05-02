@@ -105,8 +105,17 @@
                                 </p>
                             </div>
                         </div>
-
-                        <form method="post" action="{{ path('app_budget_new_step3') }}">
+{% for message in app.flashes('error') %}
+    <div class="rounded-4 p-3 mb-4 d-flex align-items-start gap-3"
+         style="background: #fde8e8; border-left: 4px solid #c0392b;">
+        <i class="fas fa-times-circle fa-lg" style="color: #c0392b; margin-top: 2px;"></i>
+        <div>
+            <h6 class="fw-bold mb-1" style="color: #c0392b;">Budget Blocked!</h6>
+            <p class="mb-0 small" style="color: #c0392b;">{{ message }}</p>
+        </div>
+    </div>
+{% endfor %}
+                        <form method="post" action="{{ path('app_budget_new_step3') }}" novalidate>
 
                             {# Max Amount #}
                             <div class="mb-3">
@@ -121,8 +130,14 @@
                                     <input type="number" name="montantMax"
                                            class="form-control"
                                            placeholder="Enter maximum budget amount"
-                                           step="0.01" min="0.01" required
                                            style="border-color: #76CDCD;">
+                                           {% if errors is defined %}
+                                            {% for error in errors %}
+                                                {% if error.propertyPath == 'montantMax' %}
+                                                    <div class="text-danger small mt-1">{{ error.message }}</div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
                                 </div>
                                 <small class="text-muted">The maximum amount you want to spend in this category</small>
                             </div>
@@ -140,8 +155,14 @@
                                     <input type="number" name="dureeBudget"
                                            class="form-control"
                                            placeholder="e.g. 30 for monthly budget"
-                                           min="1" required
                                            style="border-color: #76CDCD;">
+                                           {% if errors is defined %}
+    {% for error in errors %}
+        {% if error.propertyPath == 'dureeBudget' %}
+            <div class="text-danger small mt-1">{{ error.message }}</div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
                                 </div>
                                 <small class="text-muted">How many days this budget should last</small>
                             </div>
@@ -159,6 +180,13 @@
                                            value="{{ "now"|date("Y-m-d") }}"
                                            required
                                            style="border-color: #76CDCD;">
+                                            {% if errors is defined %}
+    {% for error in errors %}
+        {% if error.propertyPath == 'dateBudget' %}
+            <div class="text-danger small mt-1">{{ error.message }}</div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
                                 </div>
                             </div>
 

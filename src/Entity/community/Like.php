@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Entity\community;
-
+use App\Entity\community\Post;
 use App\Repository\LikeRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\user\Utilisateur;
@@ -17,11 +17,11 @@ class Like
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'likes')]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Utilisateur $utilisateur = null;
 
-    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'likes')]
+    #[ORM\ManyToOne(targetEntity: Post::class)]
     #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'idPost', nullable: false, onDelete: 'CASCADE')]
     private ?Post $post = null;
 
