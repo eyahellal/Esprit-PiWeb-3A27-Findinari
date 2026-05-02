@@ -1,6 +1,6 @@
 <?php
 
-namespace App\form;
+namespace App\Form;
 
 use App\Entity\objective\Contributiongoal;
 use App\Entity\objective\Objectif;
