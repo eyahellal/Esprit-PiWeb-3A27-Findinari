@@ -9,8 +9,8 @@
     <parameter key="kernel.runtime_mode.cli">%env(not:default:kernel.runtime_mode.web:)%</parameter>
     <parameter key="kernel.runtime_mode.worker">%env(bool:default::key:worker:default:kernel.runtime_mode:)%</parameter>
     <parameter key="kernel.debug">true</parameter>
-    <parameter key="kernel.build_dir">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev</parameter>
-    <parameter key="kernel.cache_dir">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev</parameter>
+    <parameter key="kernel.build_dir">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev</parameter>
+    <parameter key="kernel.cache_dir">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev</parameter>
     <parameter key="kernel.logs_dir">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\log</parameter>
     <parameter key="kernel.bundles" type="collection">
       <parameter key="FrameworkBundle">Symfony\Bundle\FrameworkBundle\FrameworkBundle</parameter>
@@ -25,12 +25,12 @@
       <parameter key="SecurityBundle">Symfony\Bundle\SecurityBundle\SecurityBundle</parameter>
       <parameter key="MonologBundle">Symfony\Bundle\MonologBundle\MonologBundle</parameter>
       <parameter key="MakerBundle">Symfony\Bundle\MakerBundle\MakerBundle</parameter>
+      <parameter key="KnpPaginatorBundle">Knp\Bundle\PaginatorBundle\KnpPaginatorBundle</parameter>
       <parameter key="FOSJsRoutingBundle">FOS\JsRoutingBundle\FOSJsRoutingBundle</parameter>
       <parameter key="StatisticBundle">App\Bundle\Statistic\StatisticBundle</parameter>
       <parameter key="KarserRecaptcha3Bundle">Karser\Recaptcha3Bundle\KarserRecaptcha3Bundle</parameter>
       <parameter key="ChartjsBundle">Symfony\UX\Chartjs\ChartjsBundle</parameter>
       <parameter key="DropzoneBundle">Symfony\UX\Dropzone\DropzoneBundle</parameter>
-      <parameter key="KnpPaginatorBundle">Knp\Bundle\PaginatorBundle\KnpPaginatorBundle</parameter>
       <parameter key="KnpTimeBundle">Knp\Bundle\TimeBundle\KnpTimeBundle</parameter>
       <parameter key="CommunityRatingBundle">App\community\RatingBundle\CommunityRatingBundle</parameter>
     </parameter>
@@ -83,6 +83,10 @@
         <parameter key="path">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\symfony\maker-bundle</parameter>
         <parameter key="namespace">Symfony\Bundle\MakerBundle</parameter>
       </parameter>
+      <parameter key="KnpPaginatorBundle" type="collection">
+        <parameter key="path">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\knplabs\knp-paginator-bundle</parameter>
+        <parameter key="namespace">Knp\Bundle\PaginatorBundle</parameter>
+      </parameter>
       <parameter key="FOSJsRoutingBundle" type="collection">
         <parameter key="path">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\friendsofsymfony\jsrouting-bundle</parameter>
         <parameter key="namespace">FOS\JsRoutingBundle</parameter>
@@ -102,10 +106,6 @@
       <parameter key="DropzoneBundle" type="collection">
         <parameter key="path">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\symfony\ux-dropzone</parameter>
         <parameter key="namespace">Symfony\UX\Dropzone</parameter>
-      </parameter>
-      <parameter key="KnpPaginatorBundle" type="collection">
-        <parameter key="path">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\knplabs\knp-paginator-bundle</parameter>
-        <parameter key="namespace">Knp\Bundle\PaginatorBundle</parameter>
       </parameter>
       <parameter key="KnpTimeBundle" type="collection">
         <parameter key="path">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\knplabs\knp-time-bundle</parameter>
@@ -166,15 +166,15 @@
     <parameter key="translator.logging">false</parameter>
     <parameter key="translator.default_path">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v/translations</parameter>
     <parameter key="debug.error_handler.throw_at">-1</parameter>
-    <parameter key="debug.container.dump">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/App_KernelDevDebugContainer.xml</parameter>
+    <parameter key="debug.container.dump">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/App_KernelDevDebugContainer.xml</parameter>
     <parameter key="router.request_context.host">localhost</parameter>
     <parameter key="router.request_context.scheme">http</parameter>
     <parameter key="router.request_context.base_url"></parameter>
     <parameter key="router.resource">kernel::loadRoutes</parameter>
-    <parameter key="router.cache_dir">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev</parameter>
+    <parameter key="router.cache_dir">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev</parameter>
     <parameter key="request_listener.http_port">80</parameter>
     <parameter key="request_listener.https_port">443</parameter>
-    <parameter key="serializer.mapping.cache.file">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/serialization.php</parameter>
+    <parameter key="serializer.mapping.cache.file">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/serialization.php</parameter>
     <parameter key="cache.prefix.seed">_C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v.App_KernelDevDebugContainer</parameter>
     <parameter key="session.metadata.storage_key">_sf2_meta</parameter>
     <parameter key="session.storage.options" type="collection">
@@ -189,11 +189,11 @@
     <parameter key="session.metadata.update_threshold">0</parameter>
     <parameter key="form.type_extension.csrf.enabled">true</parameter>
     <parameter key="form.type_extension.csrf.field_name">_token</parameter>
-    <parameter key="validator.mapping.cache.file">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/validation.php</parameter>
+    <parameter key="validator.mapping.cache.file">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/validation.php</parameter>
     <parameter key="validator.translation_domain">validators</parameter>
     <parameter key="profiler_listener.only_exceptions">false</parameter>
     <parameter key="profiler_listener.only_main_requests">false</parameter>
-    <parameter key="profiler.storage.dsn">file:C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/profiler</parameter>
+    <parameter key="profiler.storage.dsn">file:C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/profiler</parameter>
     <parameter key="doctrine.dbal.configuration.class">Doctrine\DBAL\Configuration</parameter>
     <parameter key="doctrine.data_collector.class">Doctrine\Bundle\DoctrineBundle\DataCollector\DoctrineDataCollector</parameter>
     <parameter key="doctrine.dbal.connection.event_manager.class">Symfony\Bridge\Doctrine\ContainerAwareEventManager</parameter>
@@ -260,7 +260,7 @@
     <parameter key="doctrine.orm.auto_generate_proxy_classes">true</parameter>
     <parameter key="doctrine.orm.enable_lazy_ghost_objects">true</parameter>
     <parameter key="doctrine.orm.enable_native_lazy_objects">false</parameter>
-    <parameter key="doctrine.orm.proxy_dir">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/doctrine/orm/Proxies</parameter>
+    <parameter key="doctrine.orm.proxy_dir">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/doctrine/orm/Proxies</parameter>
     <parameter key="doctrine.orm.proxy_namespace">Proxies</parameter>
     <parameter key="doctrine.migrations.preferred_em">null</parameter>
     <parameter key="doctrine.migrations.preferred_connection">null</parameter>
@@ -301,6 +301,14 @@
         </parameter>
       </parameter>
     </parameter>
+    <parameter key="knp_paginator.template.pagination">pagination/bootstrap_5_custom.html.twig</parameter>
+    <parameter key="knp_paginator.template.rel_links">@KnpPaginator/Pagination/rel_links.html.twig</parameter>
+    <parameter key="knp_paginator.template.filtration">@KnpPaginator/Pagination/filtration.html.twig</parameter>
+    <parameter key="knp_paginator.template.sortable">@KnpPaginator/Pagination/sortable_link.html.twig</parameter>
+    <parameter key="knp_paginator.page_range">5</parameter>
+    <parameter key="knp_paginator.page_limit">null</parameter>
+    <parameter key="knp_paginator.page_name">page</parameter>
+    <parameter key="knp_paginator.remove_first_page_param">false</parameter>
     <parameter key="fos_js_routing.extractor.class">FOS\JsRoutingBundle\Extractor\ExposedRoutesExtractor</parameter>
     <parameter key="fos_js_routing.routes_response.class">FOS\JsRoutingBundle\Response\RoutesResponse</parameter>
     <parameter key="fos_js_routing.controller.class">FOS\JsRoutingBundle\Controller\Controller</parameter>
@@ -316,14 +324,6 @@
     <parameter key="karser_recaptcha3.score_threshold">0.5</parameter>
     <parameter key="karser_recaptcha3.enabled">true</parameter>
     <parameter key="karser_recaptcha3.host">www.google.com</parameter>
-    <parameter key="knp_paginator.template.pagination">pagination/bootstrap_5_custom.html.twig</parameter>
-    <parameter key="knp_paginator.template.rel_links">@KnpPaginator/Pagination/rel_links.html.twig</parameter>
-    <parameter key="knp_paginator.template.filtration">@KnpPaginator/Pagination/filtration.html.twig</parameter>
-    <parameter key="knp_paginator.template.sortable">@KnpPaginator/Pagination/sortable_link.html.twig</parameter>
-    <parameter key="knp_paginator.page_range">5</parameter>
-    <parameter key="knp_paginator.page_limit">null</parameter>
-    <parameter key="knp_paginator.page_name">page</parameter>
-    <parameter key="knp_paginator.remove_first_page_param">false</parameter>
     <parameter key="data_collector.templates" type="collection">
       <parameter key="data_collector.request" type="collection">
         <parameter>request</parameter>
@@ -555,6 +555,14 @@
         <argument type="service" id=".service_locator.vffydTw.App\Controller\HomeController"/>
       </call>
     </service>
+    <service id="App\Controller\InflationController" class="App\Controller\InflationController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <argument type="service" id=".debug.http_client"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.vffydTw.App\Controller\InflationController"/>
+      </call>
+    </service>
     <service id="App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -577,6 +585,13 @@
       <tag name="container.service_subscriber"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.vffydTw.App\Controller\Loan\WalletController"/>
+      </call>
+    </service>
+    <service id="App\Controller\MarketTrendsController" class="App\Controller\MarketTrendsController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.vffydTw.App\Controller\MarketTrendsController"/>
       </call>
     </service>
     <service id="App\Controller\MessageController" class="App\Controller\MessageController" public="true" autowire="true" autoconfigure="true">
@@ -605,6 +620,13 @@
       <tag name="container.service_subscriber"/>
       <call method="setContainer">
         <argument type="service" id=".service_locator.vffydTw.App\Controller\SecurityRedirectController"/>
+      </call>
+    </service>
+    <service id="App\Controller\StockTrendsController" class="App\Controller\StockTrendsController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.vffydTw.App\Controller\StockTrendsController"/>
       </call>
     </service>
     <service id="App\Controller\TicketUserController" class="App\Controller\TicketUserController" public="true" autowire="true" autoconfigure="true">
@@ -813,6 +835,7 @@
       <argument type="service" id="doctrine"/>
     </service>
     <service id="App\Security\UserChecker" class="App\Security\UserChecker" autowire="true" autoconfigure="true"/>
+    <service id="App\Service\AnomalyDetectorService" class="App\Service\AnomalyDetectorService" autowire="true" autoconfigure="true"/>
     <service id="App\Service\CloudinaryUploader" class="App\Service\CloudinaryUploader" autowire="true" autoconfigure="true">
       <argument>%env(CLOUDINARY_URL)%</argument>
     </service>
@@ -825,6 +848,7 @@
       <argument type="service" id="App\Repository\ObligationRepository"/>
       <argument type="service" id="doctrine.orm.default_entity_manager"/>
     </service>
+    <service id="App\Service\GoalStatisticsService" class="App\Service\GoalStatisticsService" autowire="true" autoconfigure="true"/>
     <service id="App\Service\GroqReformulationService" class="App\Service\GroqReformulationService" autowire="true" autoconfigure="true">
       <argument type="service" id=".debug.http_client"/>
       <argument>%env(GROQ_API_KEY)%</argument>
@@ -844,9 +868,13 @@
       <argument>%env(GROQ_API_KEY)%</argument>
       <argument>%env(GROQ_MODEL)%</argument>
     </service>
+    <service id="App\Service\IsolationForest" class="App\Service\IsolationForest" autowire="true" autoconfigure="true"/>
     <service id="App\Service\MaturityAlertService" class="App\Service\MaturityAlertService" autowire="true" autoconfigure="true">
       <argument type="service" id="App\Repository\InvestissementobligationRepository"/>
       <argument type="service" id="App\Repository\WalletRepository"/>
+    </service>
+    <service id="App\Service\NotificationService" class="App\Service\NotificationService" autowire="true" autoconfigure="true">
+      <argument type="service" id="request_stack"/>
     </service>
     <service id="App\Service\PdfGeneratorService" class="App\Service\PdfGeneratorService" autowire="true" autoconfigure="true">
       <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v</argument>
@@ -863,6 +891,10 @@
       <argument>%env(GROQ_MODEL)%</argument>
     </service>
     <service id="App\Service\TicketSlaCalculator" class="App\Service\TicketSlaCalculator" autowire="true" autoconfigure="true"/>
+    <service id="App\Service\TwelveDataService" class="App\Service\TwelveDataService" autowire="true" autoconfigure="true">
+      <argument type="service" id=".debug.http_client"/>
+      <argument>%env(TWELVE_DATA_API_KEY)%</argument>
+    </service>
     <service id="App\community\RatingBundle\CommunityRatingBundle" class="App\community\RatingBundle\CommunityRatingBundle" autowire="true" autoconfigure="true"/>
     <service id="App\community\RatingBundle\Service\RatingStorage" class="App\community\RatingBundle\Service\RatingStorage" autowire="true" autoconfigure="true">
       <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v</argument>
@@ -899,7 +931,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.J9fwLUK"/>
+      <argument type="service" id=".service_locator.VGt93hp"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -982,7 +1014,7 @@
       </argument>
     </service>
     <service id="http_cache.store" class="Symfony\Component\HttpKernel\HttpCache\Store">
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/http_cache</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/http_cache</argument>
     </service>
     <service id="url_helper" class="Symfony\Component\HttpFoundation\UrlHelper">
       <argument type="service" id="request_stack"/>
@@ -992,7 +1024,7 @@
       <tag name="container.no_preload"/>
       <argument type="tagged_iterator" tag="kernel.cache_warmer"/>
       <argument>true</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/App_KernelDevDebugContainerDeprecations.log</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/App_KernelDevDebugContainerDeprecations.log</argument>
     </service>
     <service id="cache_clearer" class="Symfony\Component\HttpKernel\CacheClearer\ChainCacheClearer">
       <argument type="tagged_iterator" tag="kernel.cache_clearer"/>
@@ -2006,7 +2038,7 @@
       <argument></argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -2025,7 +2057,7 @@
       <tag name="monolog.logger" channel="cache"/>
       <argument></argument>
       <argument>0</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/app</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/app</argument>
       <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
       <call method="setLogger">
         <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
@@ -2194,7 +2226,7 @@
     <service id="asset_mapper.cached_mapped_asset_factory" class="Symfony\Component\AssetMapper\Factory\CachedMappedAssetFactory">
       <tag name="container.decorator" id="asset_mapper.mapped_asset_factory" inner="asset_mapper.cached_mapped_asset_factory.inner"/>
       <argument type="service" id="asset_mapper.cached_mapped_asset_factory.inner"/>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/asset_mapper</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/asset_mapper</argument>
       <argument>true</argument>
     </service>
     <service id="asset_mapper.repository" class="Symfony\Component\AssetMapper\AssetMapperRepository">
@@ -2566,7 +2598,7 @@
         </argument>
       </argument>
       <argument type="collection">
-        <argument key="cache_dir">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/translations</argument>
+        <argument key="cache_dir">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/translations</argument>
         <argument key="debug">true</argument>
         <argument key="resource_files" type="collection">
           <argument key="af" type="collection">
@@ -3974,7 +4006,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.J9fwLUK"/>
+      <argument type="service" id=".service_locator.VGt93hp"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -4077,7 +4109,7 @@
       <argument type="service" id=".service_locator.DjrhxxF.router.default"/>
       <argument>kernel::loadRoutes</argument>
       <argument type="collection">
-        <argument key="cache_dir">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev</argument>
+        <argument key="cache_dir">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev</argument>
         <argument key="debug">true</argument>
         <argument key="generator_class">Symfony\Component\Routing\Generator\CompiledUrlGenerator</argument>
         <argument key="generator_dumper_class">Symfony\Component\Routing\Generator\Dumper\CompiledUrlGeneratorDumper</argument>
@@ -4256,10 +4288,10 @@
           </service>
         </argument>
       </argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/serialization.php</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/serialization.php</argument>
     </service>
     <service id="serializer.mapping.cache.symfony" class="Psr\Cache\CacheItemPoolInterface">
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/serialization.php</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/serialization.php</argument>
       <argument type="service" id="cache.serializer"/>
       <factory class="Symfony\Component\Cache\Adapter\PhpArrayAdapter" method="create"/>
     </service>
@@ -4397,7 +4429,7 @@
       <argument>true</argument>
     </service>
     <service id="session.storage.factory.mock_file" class="Symfony\Component\HttpFoundation\Session\Storage\MockFileSessionStorageFactory">
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/sessions</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/sessions</argument>
       <argument>MOCKSESSID</argument>
       <argument type="service">
         <service class="Symfony\Component\HttpFoundation\Session\Storage\MetadataBag">
@@ -4603,10 +4635,10 @@
     <service id="validator.mapping.cache_warmer" class="Symfony\Bundle\FrameworkBundle\CacheWarmer\ValidatorCacheWarmer">
       <tag name="kernel.cache_warmer"/>
       <argument type="service" id="validator.builder"/>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/validation.php</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/validation.php</argument>
     </service>
     <service id="validator.mapping.cache.adapter" class="Symfony\Component\Cache\Adapter\PhpArrayAdapter" constructor="create">
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/validation.php</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/validation.php</argument>
       <argument type="service" id="cache.validator"/>
     </service>
     <service id="validator.validator_factory" class="Symfony\Component\Validator\ContainerConstraintValidatorFactory">
@@ -5287,7 +5319,7 @@
       </call>
     </service>
     <service id="profiler.storage" class="Symfony\Component\HttpKernel\Profiler\FileProfilerStorage">
-      <argument>file:C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/profiler</argument>
+      <argument>file:C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/profiler</argument>
     </service>
     <service id="profiler_listener" class="Symfony\Component\HttpKernel\EventListener\ProfilerListener">
       <tag name="kernel.event_subscriber"/>
@@ -5352,7 +5384,7 @@
       <tag name="monolog.logger" channel="profiler"/>
       <tag name="data_collector" template="@WebProfiler/Collector/logger.html.twig" id="logger" priority="300"/>
       <argument type="service" id="monolog.logger.profiler" on-invalid="ignore"/>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/App_KernelDevDebugContainer</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/App_KernelDevDebugContainer</argument>
       <argument type="service" id=".virtual_request_stack" on-invalid="ignore"/>
     </service>
     <service id="data_collector.time" class="Symfony\Component\HttpKernel\DataCollector\TimeDataCollector">
@@ -5939,7 +5971,7 @@
         <argument type="service" id=".doctrine.orm.default_metadata_driver"/>
       </call>
       <call method="setProxyDir">
-        <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/doctrine/orm/Proxies</argument>
+        <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/doctrine/orm/Proxies</argument>
       </call>
       <call method="setProxyNamespace">
         <argument>Proxies</argument>
@@ -6359,7 +6391,7 @@
       <argument type="service" id="twig.loader.native_filesystem"/>
       <argument type="collection">
         <argument key="autoescape">name</argument>
-        <argument key="cache">C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/twig</argument>
+        <argument key="cache">C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/twig</argument>
         <argument key="charset">UTF-8</argument>
         <argument key="debug">true</argument>
         <argument key="strict_variables">true</argument>
@@ -6434,10 +6466,10 @@
         <argument type="service" id="turbo.twig.extension"/>
       </call>
       <call method="addExtension">
-        <argument type="service" id="chartjs.twig_extension"/>
+        <argument type="service" id="knp_paginator.twig.extension.pagination"/>
       </call>
       <call method="addExtension">
-        <argument type="service" id="knp_paginator.twig.extension.pagination"/>
+        <argument type="service" id="chartjs.twig_extension"/>
       </call>
       <call method="addExtension">
         <argument type="service" id=".time.twig.extension.time"/>
@@ -6570,6 +6602,14 @@
         <argument>!Maker</argument>
       </call>
       <call method="addPath">
+        <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\knplabs\knp-paginator-bundle/templates</argument>
+        <argument>KnpPaginator</argument>
+      </call>
+      <call method="addPath">
+        <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\knplabs\knp-paginator-bundle/templates</argument>
+        <argument>!KnpPaginator</argument>
+      </call>
+      <call method="addPath">
         <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\karser\karser-recaptcha3-bundle/Resources/views</argument>
         <argument>KarserRecaptcha3</argument>
       </call>
@@ -6584,14 +6624,6 @@
       <call method="addPath">
         <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\symfony\ux-dropzone/templates</argument>
         <argument>!Dropzone</argument>
-      </call>
-      <call method="addPath">
-        <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\knplabs\knp-paginator-bundle/templates</argument>
-        <argument>KnpPaginator</argument>
-      </call>
-      <call method="addPath">
-        <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\vendor\knplabs\knp-paginator-bundle/templates</argument>
-        <argument>!KnpPaginator</argument>
       </call>
       <call method="addPath">
         <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v/templates</argument>
@@ -7144,9 +7176,23 @@
         <argument>null</argument>
       </call>
       <call method="add">
+        <argument type="service" id=".security.request_matcher.KxBOjRK"/>
+        <argument type="collection">
+          <argument>ROLE_USER</argument>
+        </argument>
+        <argument>null</argument>
+      </call>
+      <call method="add">
         <argument type="service" id=".security.request_matcher.28NqKnb"/>
         <argument type="collection">
           <argument>ROLE_ADMIN</argument>
+        </argument>
+        <argument>null</argument>
+      </call>
+      <call method="add">
+        <argument type="service" id=".security.request_matcher.c2mOWA7"/>
+        <argument type="collection">
+          <argument>ROLE_USER</argument>
         </argument>
         <argument>null</argument>
       </call>
@@ -7703,12 +7749,28 @@
         <argument type="service" id=".security.request_matcher.1f3H6o2"/>
       </argument>
     </service>
+    <service id=".security.request_matcher.JXeqBZZ" class="Symfony\Component\HttpFoundation\RequestMatcher\PathRequestMatcher">
+      <argument>^/objectif/inflation</argument>
+    </service>
+    <service id=".security.request_matcher.KxBOjRK" class="Symfony\Component\HttpFoundation\ChainRequestMatcher">
+      <argument type="collection">
+        <argument type="service" id=".security.request_matcher.JXeqBZZ"/>
+      </argument>
+    </service>
     <service id=".security.request_matcher.obhk0jm" class="Symfony\Component\HttpFoundation\RequestMatcher\PathRequestMatcher">
       <argument>^/admin</argument>
     </service>
     <service id=".security.request_matcher.28NqKnb" class="Symfony\Component\HttpFoundation\ChainRequestMatcher">
       <argument type="collection">
         <argument type="service" id=".security.request_matcher.obhk0jm"/>
+      </argument>
+    </service>
+    <service id=".security.request_matcher.p7NIlkD" class="Symfony\Component\HttpFoundation\RequestMatcher\PathRequestMatcher">
+      <argument>^/objectif</argument>
+    </service>
+    <service id=".security.request_matcher.c2mOWA7" class="Symfony\Component\HttpFoundation\ChainRequestMatcher">
+      <argument type="collection">
+        <argument type="service" id=".security.request_matcher.p7NIlkD"/>
       </argument>
     </service>
     <service id="security.command.user_password_hash" class="Symfony\Component\PasswordHasher\Command\UserPasswordHashCommand">
@@ -7991,10 +8053,66 @@
       <argument type="service" id="maker.file_manager"/>
       <argument type="service" id="maker.generator"/>
     </service>
+    <service id="knp_paginator" class="Knp\Component\Pager\Paginator" public="true" lazy="true">
+      <tag name="proxy" interface="Knp\Component\Pager\PaginatorInterface"/>
+      <argument type="service" id="debug.event_dispatcher"/>
+      <argument type="service" id="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess"/>
+      <argument type="service" id="doctrine.dbal.default_connection" on-invalid="null"/>
+      <call method="setDefaultPaginatorOptions">
+        <argument type="collection">
+          <argument key="pageParameterName">page</argument>
+          <argument key="sortFieldParameterName">sort</argument>
+          <argument key="sortDirectionParameterName">direction</argument>
+          <argument key="filterFieldParameterName">filterField</argument>
+          <argument key="filterValueParameterName">filterValue</argument>
+          <argument key="distinct">true</argument>
+          <argument key="pageOutOfRange">ignore</argument>
+          <argument key="defaultLimit">10</argument>
+        </argument>
+      </call>
+    </service>
+    <service id="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess" class="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess">
+      <argument type="service" id="request_stack"/>
+    </service>
+    <service id="knp_paginator.subscriber.paginate" class="Knp\Component\Pager\Event\Subscriber\Paginate\PaginationSubscriber">
+      <tag name="kernel.event_subscriber"/>
+    </service>
+    <service id="knp_paginator.subscriber.sortable" class="Knp\Component\Pager\Event\Subscriber\Sortable\SortableSubscriber">
+      <tag name="kernel.event_subscriber"/>
+    </service>
+    <service id="knp_paginator.subscriber.filtration" class="Knp\Component\Pager\Event\Subscriber\Filtration\FiltrationSubscriber">
+      <tag name="kernel.event_subscriber"/>
+    </service>
+    <service id="knp_paginator.subscriber.sliding_pagination" class="Knp\Bundle\PaginatorBundle\Subscriber\SlidingPaginationSubscriber">
+      <tag name="kernel.event_subscriber"/>
+      <tag name="kernel.event_listener" event="kernel.request" method="onKernelRequest"/>
+      <tag name="container.hot_path"/>
+      <argument type="collection">
+        <argument key="defaultPaginationTemplate">pagination/bootstrap_5_custom.html.twig</argument>
+        <argument key="defaultRelLinksTemplate">@KnpPaginator/Pagination/rel_links.html.twig</argument>
+        <argument key="defaultSortableTemplate">@KnpPaginator/Pagination/sortable_link.html.twig</argument>
+        <argument key="defaultFiltrationTemplate">@KnpPaginator/Pagination/filtration.html.twig</argument>
+        <argument key="defaultPageRange">5</argument>
+        <argument key="defaultPageLimit">null</argument>
+      </argument>
+    </service>
+    <service id="knp_paginator.helper.processor" class="Knp\Bundle\PaginatorBundle\Helper\Processor">
+      <argument type="service" id="router.default"/>
+      <argument type="service" id="translator.data_collector" on-invalid="null"/>
+    </service>
+    <service id="knp_paginator.twig.extension.pagination" class="Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationExtension">
+      <tag name="twig.extension"/>
+    </service>
+    <service id="Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationRuntime" class="Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationRuntime">
+      <tag name="twig.runtime"/>
+      <argument type="service" id="knp_paginator.helper.processor"/>
+      <argument>page</argument>
+      <argument>false</argument>
+    </service>
     <service id="fos_js_routing.extractor" class="FOS\JsRoutingBundle\Extractor\ExposedRoutesExtractor" public="true">
       <argument type="service" id="router.default"/>
       <argument type="collection"/>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev</argument>
       <argument>%kernel.bundles%</argument>
     </service>
     <service id="fos_js_routing.routes_response" class="FOS\JsRoutingBundle\Response\RoutesResponse" public="true"/>
@@ -8088,62 +8206,6 @@
     <service id="form.dropzone" class="Symfony\UX\Dropzone\Form\DropzoneType">
       <tag name="form.type"/>
     </service>
-    <service id="knp_paginator" class="Knp\Component\Pager\Paginator" public="true" lazy="true">
-      <tag name="proxy" interface="Knp\Component\Pager\PaginatorInterface"/>
-      <argument type="service" id="debug.event_dispatcher"/>
-      <argument type="service" id="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess"/>
-      <argument type="service" id="doctrine.dbal.default_connection" on-invalid="null"/>
-      <call method="setDefaultPaginatorOptions">
-        <argument type="collection">
-          <argument key="pageParameterName">page</argument>
-          <argument key="sortFieldParameterName">sort</argument>
-          <argument key="sortDirectionParameterName">direction</argument>
-          <argument key="filterFieldParameterName">filterField</argument>
-          <argument key="filterValueParameterName">filterValue</argument>
-          <argument key="distinct">true</argument>
-          <argument key="pageOutOfRange">ignore</argument>
-          <argument key="defaultLimit">10</argument>
-        </argument>
-      </call>
-    </service>
-    <service id="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess" class="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess">
-      <argument type="service" id="request_stack"/>
-    </service>
-    <service id="knp_paginator.subscriber.paginate" class="Knp\Component\Pager\Event\Subscriber\Paginate\PaginationSubscriber">
-      <tag name="kernel.event_subscriber"/>
-    </service>
-    <service id="knp_paginator.subscriber.sortable" class="Knp\Component\Pager\Event\Subscriber\Sortable\SortableSubscriber">
-      <tag name="kernel.event_subscriber"/>
-    </service>
-    <service id="knp_paginator.subscriber.filtration" class="Knp\Component\Pager\Event\Subscriber\Filtration\FiltrationSubscriber">
-      <tag name="kernel.event_subscriber"/>
-    </service>
-    <service id="knp_paginator.subscriber.sliding_pagination" class="Knp\Bundle\PaginatorBundle\Subscriber\SlidingPaginationSubscriber">
-      <tag name="kernel.event_subscriber"/>
-      <tag name="kernel.event_listener" event="kernel.request" method="onKernelRequest"/>
-      <tag name="container.hot_path"/>
-      <argument type="collection">
-        <argument key="defaultPaginationTemplate">pagination/bootstrap_5_custom.html.twig</argument>
-        <argument key="defaultRelLinksTemplate">@KnpPaginator/Pagination/rel_links.html.twig</argument>
-        <argument key="defaultSortableTemplate">@KnpPaginator/Pagination/sortable_link.html.twig</argument>
-        <argument key="defaultFiltrationTemplate">@KnpPaginator/Pagination/filtration.html.twig</argument>
-        <argument key="defaultPageRange">5</argument>
-        <argument key="defaultPageLimit">null</argument>
-      </argument>
-    </service>
-    <service id="knp_paginator.helper.processor" class="Knp\Bundle\PaginatorBundle\Helper\Processor">
-      <argument type="service" id="router.default"/>
-      <argument type="service" id="translator.data_collector" on-invalid="null"/>
-    </service>
-    <service id="knp_paginator.twig.extension.pagination" class="Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationExtension">
-      <tag name="twig.extension"/>
-    </service>
-    <service id="Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationRuntime" class="Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationRuntime">
-      <tag name="twig.runtime"/>
-      <argument type="service" id="knp_paginator.helper.processor"/>
-      <argument>page</argument>
-      <argument>false</argument>
-    </service>
     <service id="time.datetime_formatter" class="Knp\Bundle\TimeBundle\DateTimeFormatter">
       <tag name="twig.runtime"/>
       <argument type="service" id="translator.data_collector"/>
@@ -8194,6 +8256,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\HomeController" class="App\Controller\HomeController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\HomeController" class="App\Controller\HomeController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\HomeController" class="App\Controller\HomeController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\InflationController" class="App\Controller\InflationController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\InflationController" class="App\Controller\InflationController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\InflationController" class="App\Controller\InflationController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -8203,6 +8268,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Loan\WalletController" class="App\Controller\Loan\WalletController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Loan\WalletController" class="App\Controller\Loan\WalletController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Loan\WalletController" class="App\Controller\Loan\WalletController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\MarketTrendsController" class="App\Controller\MarketTrendsController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\MarketTrendsController" class="App\Controller\MarketTrendsController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\MarketTrendsController" class="App\Controller\MarketTrendsController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\MessageController" class="App\Controller\MessageController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\MessageController" class="App\Controller\MessageController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\MessageController" class="App\Controller\MessageController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -8215,6 +8283,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\SecurityRedirectController" class="App\Controller\SecurityRedirectController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\SecurityRedirectController" class="App\Controller\SecurityRedirectController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\SecurityRedirectController" class="App\Controller\SecurityRedirectController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\StockTrendsController" class="App\Controller\StockTrendsController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\StockTrendsController" class="App\Controller\StockTrendsController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\StockTrendsController" class="App\Controller\StockTrendsController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\TicketUserController" class="App\Controller\TicketUserController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\TicketUserController" class="App\Controller\TicketUserController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\TicketUserController" class="App\Controller\TicketUserController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -8763,6 +8834,12 @@
         <argument key="utilisateur" type="service_closure" id=".errored..service_locator.HHItWJg.App\Entity\user\Utilisateur"/>
       </argument>
     </service>
+    <service id=".service_locator.827PZ8g" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="utilisateur" type="service_closure" id=".errored..service_locator.827PZ8g.App\Entity\user\Utilisateur"/>
+      </argument>
+    </service>
     <service id=".service_locator.qrNhk2c" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -8789,6 +8866,21 @@
       <argument type="collection">
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
         <argument key="wallet" type="service_closure" id=".errored..service_locator.sVCjKIy.App\Entity\Loan\Wallet"/>
+      </argument>
+    </service>
+    <service id=".service_locator.OEGPPAy" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="anomalyDetector" type="service_closure" id="App\Service\AnomalyDetectorService"/>
+        <argument key="objectifRepository" type="service_closure" id="App\Repository\ObjectifRepository"/>
+        <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.460DpFa" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="objectifRepository" type="service_closure" id="App\Repository\ObjectifRepository"/>
       </argument>
     </service>
     <service id=".service_locator.CeiULVv" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -8840,19 +8932,6 @@
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
         <argument key="investmentRepository" type="service_closure" id="App\Repository\InvestissementobligationRepository"/>
         <argument key="obligation" type="service_closure" id=".errored..service_locator.7dk4zOh.App\Entity\Loan\Obligation"/>
-      </argument>
-    </service>
-    <service id=".service_locator.PoFkF4f" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="objectifRepository" type="service_closure" id="App\Repository\ObjectifRepository"/>
-        <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
-      </argument>
-    </service>
-    <service id=".service_locator.827PZ8g" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="utilisateur" type="service_closure" id=".errored..service_locator.827PZ8g.App\Entity\user\Utilisateur"/>
       </argument>
     </service>
     <service id=".service_locator.hUbu2Ln" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -9124,6 +9203,12 @@
         <argument key="repository" type="service_closure" id="App\Repository\WalletRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.APK0H6M" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="twelveData" type="service_closure" id="App\Service\TwelveDataService"/>
+      </argument>
+    </service>
     <service id=".service_locator.QHoYmUl" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9180,17 +9265,59 @@
         <argument key="message" type="service_closure" id=".errored..service_locator.Rtx7YPB.App\Entity\reclamation\Message"/>
       </argument>
     </service>
-    <service id=".service_locator.fZ6QIuY" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.ApMMveO" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="connection" type="service_closure" id="doctrine.dbal.default_connection"/>
+        <argument key="goalStats" type="service_closure" id="App\Service\GoalStatisticsService"/>
+        <argument key="notifService" type="service_closure" id="App\Service\NotificationService"/>
+        <argument key="paginator" type="service_closure" id="knp_paginator"/>
         <argument key="repo" type="service_closure" id="App\Repository\ObjectifRepository"/>
+        <argument key="utilisateurRepository" type="service_closure" id="App\Repository\UtilisateurRepository"/>
       </argument>
     </service>
     <service id=".service_locator.9kKwU2t" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+      </argument>
+    </service>
+    <service id=".service_locator.9Jm4FaJ" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="notifService" type="service_closure" id="App\Service\NotificationService"/>
+      </argument>
+    </service>
+    <service id=".service_locator.V1lxS6D" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="connection" type="service_closure" id="doctrine.dbal.default_connection"/>
+        <argument key="goalStats" type="service_closure" id="App\Service\GoalStatisticsService"/>
+        <argument key="objectifRepo" type="service_closure" id="App\Repository\ObjectifRepository"/>
+        <argument key="utilisateurRepository" type="service_closure" id="App\Repository\UtilisateurRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.oQIeYyq" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="connection" type="service_closure" id="doctrine.dbal.default_connection"/>
+        <argument key="goalStats" type="service_closure" id="App\Service\GoalStatisticsService"/>
+        <argument key="notifService" type="service_closure" id="App\Service\NotificationService"/>
+        <argument key="paginator" type="service_closure" id="knp_paginator"/>
+        <argument key="repo" type="service_closure" id="App\Repository\ObjectifRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.aYuv4.X" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="goalStats" type="service_closure" id="App\Service\GoalStatisticsService"/>
+        <argument key="objectif" type="service_closure" id=".errored..service_locator.aYuv4.X.App\Entity\objective\Objectif"/>
+      </argument>
+    </service>
+    <service id=".service_locator.g8NNtsP" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="objectif" type="service_closure" id=".errored..service_locator.g8NNtsP.App\Entity\objective\Objectif"/>
       </argument>
     </service>
     <service id=".service_locator.BRGx3JN" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -9208,12 +9335,22 @@
         <argument key="objectif" type="service_closure" id=".errored..service_locator.9D4NjX7.App\Entity\objective\Objectif"/>
       </argument>
     </service>
-    <service id=".service_locator.VfFEsH." class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.q25UpD3" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="connection" type="service_closure" id="doctrine.dbal.default_connection"/>
-        <argument key="contribution" type="service_closure" id=".errored..service_locator.VfFEsH..App\Entity\objective\Contributiongoal"/>
         <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="notifService" type="service_closure" id="App\Service\NotificationService"/>
+        <argument key="objectif" type="service_closure" id=".errored..service_locator.q25UpD3.App\Entity\objective\Objectif"/>
+      </argument>
+    </service>
+    <service id=".service_locator.ABg2U4L" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="connection" type="service_closure" id="doctrine.dbal.default_connection"/>
+        <argument key="contribution" type="service_closure" id=".errored..service_locator.ABg2U4L.App\Entity\objective\Contributiongoal"/>
+        <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="notifService" type="service_closure" id="App\Service\NotificationService"/>
       </argument>
     </service>
     <service id=".service_locator.sw43tdh" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -9321,7 +9458,7 @@
         <argument key="transaction" type="service_closure" id=".errored..service_locator.zY4Nk7F.App\Entity\management\Transaction"/>
       </argument>
     </service>
-    <service id=".service_locator.J9fwLUK" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.VGt93hp" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\AdminController::ajaxUsers" type="service_closure" id=".service_locator.p5RWJ9h"/>
@@ -9330,11 +9467,12 @@
         <argument key="App\Controller\AdminController::createAdmin" type="service_closure" id=".service_locator.qrNhk2c"/>
         <argument key="App\Controller\AdminController::dashboard" type="service_closure" id=".service_locator.zHC.XQs"/>
         <argument key="App\Controller\AdminController::deleteFeedback" type="service_closure" id=".service_locator.9sX7xqa"/>
+        <argument key="App\Controller\AdminController::deleteObjectif" type="service_closure" id=".service_locator.460DpFa"/>
         <argument key="App\Controller\AdminController::deleteObligationAdmin" type="service_closure" id=".service_locator.7dk4zOh"/>
         <argument key="App\Controller\AdminController::deleteTicketAdmin" type="service_closure" id=".service_locator.T0Zvgmx"/>
         <argument key="App\Controller\AdminController::deleteUser" type="service_closure" id=".service_locator.HHItWJg"/>
         <argument key="App\Controller\AdminController::deleteWalletAdmin" type="service_closure" id=".service_locator.sVCjKIy"/>
-        <argument key="App\Controller\AdminController::objectifs" type="service_closure" id=".service_locator.PoFkF4f"/>
+        <argument key="App\Controller\AdminController::objectifs" type="service_closure" id=".service_locator.OEGPPAy"/>
         <argument key="App\Controller\AdminController::obligations" type="service_closure" id=".service_locator.8aJOF9N"/>
         <argument key="App\Controller\AdminController::showUser" type="service_closure" id=".service_locator.827PZ8g"/>
         <argument key="App\Controller\AdminController::ticketCalendar" type="service_closure" id=".service_locator.2JKuakw"/>
@@ -9397,6 +9535,7 @@
         <argument key="App\Controller\Loan\WalletController::index" type="service_closure" id=".service_locator.9nAU4Cb"/>
         <argument key="App\Controller\Loan\WalletController::new" type="service_closure" id=".service_locator.4L5dmlm"/>
         <argument key="App\Controller\Loan\WalletController::show" type="service_closure" id=".service_locator.9nAU4Cb"/>
+        <argument key="App\Controller\MarketTrendsController::index" type="service_closure" id=".service_locator.APK0H6M"/>
         <argument key="App\Controller\MessageController::adminDeleteMessage" type="service_closure" id=".service_locator.GylZskz"/>
         <argument key="App\Controller\MessageController::adminEditMessage" type="service_closure" id=".service_locator.GylZskz"/>
         <argument key="App\Controller\MessageController::adminVoiceMessage" type="service_closure" id=".service_locator.Djp3WWr"/>
@@ -9410,16 +9549,26 @@
         <argument key="App\Controller\MessageController::userEditMessage" type="service_closure" id=".service_locator.GylZskz"/>
         <argument key="App\Controller\MessageController::userNewMessage" type="service_closure" id=".service_locator.QHoYmUl"/>
         <argument key="App\Controller\MessageController::userVoiceMessage" type="service_closure" id=".service_locator.Djp3WWr"/>
-        <argument key="App\Controller\ObjectifController::contribuer" type="service_closure" id=".service_locator.9D4NjX7"/>
+        <argument key="App\Controller\ObjectifController::contribuer" type="service_closure" id=".service_locator.q25UpD3"/>
         <argument key="App\Controller\ObjectifController::delete" type="service_closure" id=".service_locator.9D4NjX7"/>
-        <argument key="App\Controller\ObjectifController::deleteContribution" type="service_closure" id=".service_locator.VfFEsH."/>
+        <argument key="App\Controller\ObjectifController::deleteContribution" type="service_closure" id=".service_locator.ABg2U4L"/>
         <argument key="App\Controller\ObjectifController::edit" type="service_closure" id=".service_locator.BRGx3JN"/>
-        <argument key="App\Controller\ObjectifController::index" type="service_closure" id=".service_locator.fZ6QIuY"/>
+        <argument key="App\Controller\ObjectifController::events" type="service_closure" id=".service_locator.g8NNtsP"/>
+        <argument key="App\Controller\ObjectifController::historique" type="service_closure" id=".service_locator.oQIeYyq"/>
+        <argument key="App\Controller\ObjectifController::index" type="service_closure" id=".service_locator.ApMMveO"/>
         <argument key="App\Controller\ObjectifController::new" type="service_closure" id=".service_locator.9kKwU2t"/>
+        <argument key="App\Controller\ObjectifController::notificationMarkRead" type="service_closure" id=".service_locator.9Jm4FaJ"/>
+        <argument key="App\Controller\ObjectifController::notificationsList" type="service_closure" id=".service_locator.9Jm4FaJ"/>
+        <argument key="App\Controller\ObjectifController::notificationsReadAll" type="service_closure" id=".service_locator.9Jm4FaJ"/>
+        <argument key="App\Controller\ObjectifController::show" type="service_closure" id=".service_locator.aYuv4.X"/>
+        <argument key="App\Controller\ObjectifController::simuler" type="service_closure" id=".service_locator.aYuv4.X"/>
+        <argument key="App\Controller\ObjectifController::topContributionsDetail" type="service_closure" id=".service_locator.V1lxS6D"/>
         <argument key="App\Controller\ProfileController::disableFace" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\ProfileController::enrollFace" type="service_closure" id=".service_locator.FP3iNOx"/>
         <argument key="App\Controller\ProfileController::updatePassword" type="service_closure" id=".service_locator.qrNhk2c"/>
         <argument key="App\Controller\ProfileController::updateProfile" type="service_closure" id=".service_locator.CsMkqUa"/>
+        <argument key="App\Controller\StockTrendsController::index" type="service_closure" id=".service_locator.APK0H6M"/>
+        <argument key="App\Controller\StockTrendsController::trend" type="service_closure" id=".service_locator.APK0H6M"/>
         <argument key="App\Controller\TicketUserController::classifyPriorityAction" type="service_closure" id=".service_locator.sw43tdh"/>
         <argument key="App\Controller\TicketUserController::createTicket" type="service_closure" id=".service_locator.CLTJIit"/>
         <argument key="App\Controller\TicketUserController::deleteTicket" type="service_closure" id=".service_locator.T0Zvgmx"/>
@@ -9463,11 +9612,12 @@
         <argument key="App\Controller\AdminController:createAdmin" type="service_closure" id=".service_locator.qrNhk2c"/>
         <argument key="App\Controller\AdminController:dashboard" type="service_closure" id=".service_locator.zHC.XQs"/>
         <argument key="App\Controller\AdminController:deleteFeedback" type="service_closure" id=".service_locator.9sX7xqa"/>
+        <argument key="App\Controller\AdminController:deleteObjectif" type="service_closure" id=".service_locator.460DpFa"/>
         <argument key="App\Controller\AdminController:deleteObligationAdmin" type="service_closure" id=".service_locator.7dk4zOh"/>
         <argument key="App\Controller\AdminController:deleteTicketAdmin" type="service_closure" id=".service_locator.T0Zvgmx"/>
         <argument key="App\Controller\AdminController:deleteUser" type="service_closure" id=".service_locator.HHItWJg"/>
         <argument key="App\Controller\AdminController:deleteWalletAdmin" type="service_closure" id=".service_locator.sVCjKIy"/>
-        <argument key="App\Controller\AdminController:objectifs" type="service_closure" id=".service_locator.PoFkF4f"/>
+        <argument key="App\Controller\AdminController:objectifs" type="service_closure" id=".service_locator.OEGPPAy"/>
         <argument key="App\Controller\AdminController:obligations" type="service_closure" id=".service_locator.8aJOF9N"/>
         <argument key="App\Controller\AdminController:showUser" type="service_closure" id=".service_locator.827PZ8g"/>
         <argument key="App\Controller\AdminController:ticketCalendar" type="service_closure" id=".service_locator.2JKuakw"/>
@@ -9530,6 +9680,7 @@
         <argument key="App\Controller\Loan\WalletController:index" type="service_closure" id=".service_locator.9nAU4Cb"/>
         <argument key="App\Controller\Loan\WalletController:new" type="service_closure" id=".service_locator.4L5dmlm"/>
         <argument key="App\Controller\Loan\WalletController:show" type="service_closure" id=".service_locator.9nAU4Cb"/>
+        <argument key="App\Controller\MarketTrendsController:index" type="service_closure" id=".service_locator.APK0H6M"/>
         <argument key="App\Controller\MessageController:adminDeleteMessage" type="service_closure" id=".service_locator.GylZskz"/>
         <argument key="App\Controller\MessageController:adminEditMessage" type="service_closure" id=".service_locator.GylZskz"/>
         <argument key="App\Controller\MessageController:adminVoiceMessage" type="service_closure" id=".service_locator.Djp3WWr"/>
@@ -9543,16 +9694,26 @@
         <argument key="App\Controller\MessageController:userEditMessage" type="service_closure" id=".service_locator.GylZskz"/>
         <argument key="App\Controller\MessageController:userNewMessage" type="service_closure" id=".service_locator.QHoYmUl"/>
         <argument key="App\Controller\MessageController:userVoiceMessage" type="service_closure" id=".service_locator.Djp3WWr"/>
-        <argument key="App\Controller\ObjectifController:contribuer" type="service_closure" id=".service_locator.9D4NjX7"/>
+        <argument key="App\Controller\ObjectifController:contribuer" type="service_closure" id=".service_locator.q25UpD3"/>
         <argument key="App\Controller\ObjectifController:delete" type="service_closure" id=".service_locator.9D4NjX7"/>
-        <argument key="App\Controller\ObjectifController:deleteContribution" type="service_closure" id=".service_locator.VfFEsH."/>
+        <argument key="App\Controller\ObjectifController:deleteContribution" type="service_closure" id=".service_locator.ABg2U4L"/>
         <argument key="App\Controller\ObjectifController:edit" type="service_closure" id=".service_locator.BRGx3JN"/>
-        <argument key="App\Controller\ObjectifController:index" type="service_closure" id=".service_locator.fZ6QIuY"/>
+        <argument key="App\Controller\ObjectifController:events" type="service_closure" id=".service_locator.g8NNtsP"/>
+        <argument key="App\Controller\ObjectifController:historique" type="service_closure" id=".service_locator.oQIeYyq"/>
+        <argument key="App\Controller\ObjectifController:index" type="service_closure" id=".service_locator.ApMMveO"/>
         <argument key="App\Controller\ObjectifController:new" type="service_closure" id=".service_locator.9kKwU2t"/>
+        <argument key="App\Controller\ObjectifController:notificationMarkRead" type="service_closure" id=".service_locator.9Jm4FaJ"/>
+        <argument key="App\Controller\ObjectifController:notificationsList" type="service_closure" id=".service_locator.9Jm4FaJ"/>
+        <argument key="App\Controller\ObjectifController:notificationsReadAll" type="service_closure" id=".service_locator.9Jm4FaJ"/>
+        <argument key="App\Controller\ObjectifController:show" type="service_closure" id=".service_locator.aYuv4.X"/>
+        <argument key="App\Controller\ObjectifController:simuler" type="service_closure" id=".service_locator.aYuv4.X"/>
+        <argument key="App\Controller\ObjectifController:topContributionsDetail" type="service_closure" id=".service_locator.V1lxS6D"/>
         <argument key="App\Controller\ProfileController:disableFace" type="service_closure" id=".service_locator.CsMkqUa"/>
         <argument key="App\Controller\ProfileController:enrollFace" type="service_closure" id=".service_locator.FP3iNOx"/>
         <argument key="App\Controller\ProfileController:updatePassword" type="service_closure" id=".service_locator.qrNhk2c"/>
         <argument key="App\Controller\ProfileController:updateProfile" type="service_closure" id=".service_locator.CsMkqUa"/>
+        <argument key="App\Controller\StockTrendsController:index" type="service_closure" id=".service_locator.APK0H6M"/>
+        <argument key="App\Controller\StockTrendsController:trend" type="service_closure" id=".service_locator.APK0H6M"/>
         <argument key="App\Controller\TicketUserController:classifyPriorityAction" type="service_closure" id=".service_locator.sw43tdh"/>
         <argument key="App\Controller\TicketUserController:createTicket" type="service_closure" id=".service_locator.CLTJIit"/>
         <argument key="App\Controller\TicketUserController:deleteTicket" type="service_closure" id=".service_locator.T0Zvgmx"/>
@@ -10341,6 +10502,12 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.vffydTw" method="withContext"/>
     </service>
+    <service id=".service_locator.vffydTw.App\Controller\InflationController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\InflationController"/>
+      <argument>App\Controller\InflationController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.vffydTw" method="withContext"/>
+    </service>
     <service id=".service_locator.vffydTw.App\Controller\Loan\InvestissementobligationController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\Loan\InvestissementobligationController"/>
       <argument>App\Controller\Loan\InvestissementobligationController</argument>
@@ -10356,6 +10523,12 @@
     <service id=".service_locator.vffydTw.App\Controller\Loan\WalletController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\Loan\WalletController"/>
       <argument>App\Controller\Loan\WalletController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.vffydTw" method="withContext"/>
+    </service>
+    <service id=".service_locator.vffydTw.App\Controller\MarketTrendsController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\MarketTrendsController"/>
+      <argument>App\Controller\MarketTrendsController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.vffydTw" method="withContext"/>
     </service>
@@ -10380,6 +10553,12 @@
     <service id=".service_locator.vffydTw.App\Controller\SecurityRedirectController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\SecurityRedirectController"/>
       <argument>App\Controller\SecurityRedirectController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.vffydTw" method="withContext"/>
+    </service>
+    <service id=".service_locator.vffydTw.App\Controller\StockTrendsController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\StockTrendsController"/>
+      <argument>App\Controller\StockTrendsController</argument>
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.vffydTw" method="withContext"/>
     </service>
@@ -10642,13 +10821,16 @@
           <argument>App\Controller\FeedbackController</argument>
           <argument>App\Controller\GoogleAuthController</argument>
           <argument>App\Controller\HomeController</argument>
+          <argument>App\Controller\InflationController</argument>
           <argument>App\Controller\Loan\InvestissementobligationController</argument>
           <argument>App\Controller\Loan\ObligationController</argument>
           <argument>App\Controller\Loan\WalletController</argument>
+          <argument>App\Controller\MarketTrendsController</argument>
           <argument>App\Controller\MessageController</argument>
           <argument>App\Controller\ObjectifController</argument>
           <argument>App\Controller\ProfileController</argument>
           <argument>App\Controller\SecurityRedirectController</argument>
+          <argument>App\Controller\StockTrendsController</argument>
           <argument>App\Controller\TicketUserController</argument>
           <argument>App\Controller\advancedfeature\AlertController</argument>
           <argument>App\Controller\advancedfeature\ChatbotController</argument>
@@ -10865,6 +11047,9 @@
     <service id=".errored..service_locator.HHItWJg.App\Entity\user\Utilisateur" class="App\Entity\user\Utilisateur">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.HHItWJg&quot;: it needs an instance of &quot;App\Entity\user\Utilisateur&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
+    <service id=".errored..service_locator.827PZ8g.App\Entity\user\Utilisateur" class="App\Entity\user\Utilisateur">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.827PZ8g&quot;: it needs an instance of &quot;App\Entity\user\Utilisateur&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    </service>
     <service id=".errored..service_locator.9sX7xqa.App\Entity\user\Feedback" class="App\Entity\user\Feedback">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.9sX7xqa&quot;: it needs an instance of &quot;App\Entity\user\Feedback&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
@@ -10879,9 +11064,6 @@
     </service>
     <service id=".errored..service_locator.7dk4zOh.App\Entity\Loan\Obligation" class="App\Entity\Loan\Obligation">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.7dk4zOh&quot;: it needs an instance of &quot;App\Entity\Loan\Obligation&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
-    </service>
-    <service id=".errored..service_locator.827PZ8g.App\Entity\user\Utilisateur" class="App\Entity\user\Utilisateur">
-      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.827PZ8g&quot;: it needs an instance of &quot;App\Entity\user\Utilisateur&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
     <service id=".errored..service_locator.fLfX8ft.App\Entity\objective\Contributiongoal" class="App\Entity\objective\Contributiongoal">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.fLfX8ft&quot;: it needs an instance of &quot;App\Entity\objective\Contributiongoal&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
@@ -10910,14 +11092,23 @@
     <service id=".errored..service_locator.Rtx7YPB.App\Entity\reclamation\Message" class="App\Entity\reclamation\Message">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.Rtx7YPB&quot;: it needs an instance of &quot;App\Entity\reclamation\Message&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
+    <service id=".errored..service_locator.aYuv4.X.App\Entity\objective\Objectif" class="App\Entity\objective\Objectif">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.aYuv4.X&quot;: it needs an instance of &quot;App\Entity\objective\Objectif&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    </service>
+    <service id=".errored..service_locator.g8NNtsP.App\Entity\objective\Objectif" class="App\Entity\objective\Objectif">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.g8NNtsP&quot;: it needs an instance of &quot;App\Entity\objective\Objectif&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    </service>
     <service id=".errored..service_locator.BRGx3JN.App\Entity\objective\Objectif" class="App\Entity\objective\Objectif">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.BRGx3JN&quot;: it needs an instance of &quot;App\Entity\objective\Objectif&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
     <service id=".errored..service_locator.9D4NjX7.App\Entity\objective\Objectif" class="App\Entity\objective\Objectif">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.9D4NjX7&quot;: it needs an instance of &quot;App\Entity\objective\Objectif&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
-    <service id=".errored..service_locator.VfFEsH..App\Entity\objective\Contributiongoal" class="App\Entity\objective\Contributiongoal">
-      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.VfFEsH.&quot;: it needs an instance of &quot;App\Entity\objective\Contributiongoal&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    <service id=".errored..service_locator.q25UpD3.App\Entity\objective\Objectif" class="App\Entity\objective\Objectif">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.q25UpD3&quot;: it needs an instance of &quot;App\Entity\objective\Objectif&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
+    </service>
+    <service id=".errored..service_locator.ABg2U4L.App\Entity\objective\Contributiongoal" class="App\Entity\objective\Contributiongoal">
+      <tag name="container.error" message="Cannot autowire service &quot;.service_locator.ABg2U4L&quot;: it needs an instance of &quot;App\Entity\objective\Contributiongoal&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
     </service>
     <service id=".errored..service_locator.54ak1dA.App\Entity\management\Budget" class="App\Entity\management\Budget">
       <tag name="container.error" message="Cannot autowire service &quot;.service_locator.54ak1dA&quot;: it needs an instance of &quot;App\Entity\management\Budget&quot; but this type has been excluded in &quot;config/services.yaml&quot;."/>
@@ -11887,7 +12078,7 @@
     <service id="cache.app.recorder_inner" class="Symfony\Component\Cache\Adapter\FilesystemAdapter">
       <argument>lSJ+iaCozX</argument>
       <argument>0</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/app</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/app</argument>
       <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
       <call method="setLogger">
         <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
@@ -11897,7 +12088,7 @@
       <argument>OaQ-EbslzM</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -11905,7 +12096,7 @@
       <argument>HXiK3ZkFx8</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -11913,7 +12104,7 @@
       <argument>6OSEa1qxax</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -11921,7 +12112,7 @@
       <argument>OQWfr2gGbf</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -11929,7 +12120,7 @@
       <argument>FQ+1QcVUBT</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -11937,14 +12128,14 @@
       <argument>XdGRWB0a+1</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
     <service id="cache.messenger.restart_workers_signal.recorder_inner" class="Symfony\Component\Cache\Adapter\FilesystemAdapter">
       <argument>AMnWlLyiMS</argument>
       <argument>0</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/app</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/app</argument>
       <argument type="service" id="cache.default_marshaller" on-invalid="ignore"/>
       <call method="setLogger">
         <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
@@ -11954,7 +12145,7 @@
       <argument>gtYibCtmf4</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -11964,7 +12155,7 @@
       <argument>oUGijUMgIW</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -11972,7 +12163,7 @@
       <argument>l865dW79vL</argument>
       <argument>0</argument>
       <argument>%container.build_id%</argument>
-      <argument>C:\Users\lenovo\OneDrive\Bureau\Esprit\Projet pi new\this is before the merge v\var\cache\dev/pools/system</argument>
+      <argument>C:/Users/lenovo/OneDrive/Bureau/Esprit/Projet pi new/this is before the merge v/var/cache/dev/pools/system</argument>
       <argument type="service" id="monolog.logger.cache" on-invalid="ignore"/>
       <factory class="Symfony\Component\Cache\Adapter\AbstractAdapter" method="createSystemCache"/>
     </service>
@@ -12157,16 +12348,16 @@
     <service id="security.firewall.context_locator" alias=".service_locator.zJyh7qS"/>
     <service id="logger" alias="monolog.logger"/>
     <service id="Psr\Log\LoggerInterface" alias="monolog.logger"/>
+    <service id="Knp\Component\Pager\PaginatorInterface" alias="knp_paginator"/>
+    <service id="Knp\Component\Pager\ArgumentAccess\ArgumentAccessInterface" alias="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess"/>
     <service id="fos_js_routing.router" alias="router.default"/>
     <service id="Karser\Recaptcha3Bundle\Validator\Constraints\Recaptcha3Validator" alias="karser_recaptcha3.validator"/>
     <service id="karser_recaptcha3.google.request_method" alias="karser_recaptcha3.request_method.symfony_http_client"/>
     <service id="Symfony\UX\Chartjs\Builder\ChartBuilderInterface" alias="chartjs.builder"/>
-    <service id="Knp\Component\Pager\PaginatorInterface" alias="knp_paginator"/>
-    <service id="Knp\Component\Pager\ArgumentAccess\ArgumentAccessInterface" alias="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess"/>
     <service id="Knp\Bundle\TimeBundle\DateTimeFormatter" alias="time.datetime_formatter"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.J9fwLUK"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.VGt93hp"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -12211,6 +12402,8 @@
     <service id=".service_locator.BKhTz.2" alias=".service_locator.9sX7xqa"/>
     <service id=".service_locator.zO_60K." alias=".service_locator.5yTbH1I"/>
     <service id=".service_locator.Zu8Wj69" alias=".service_locator.sVCjKIy"/>
+    <service id=".service_locator.xygQN4r" alias=".service_locator.OEGPPAy"/>
+    <service id=".service_locator.dlz9IIc" alias=".service_locator.460DpFa"/>
     <service id=".service_locator.gkIdAPF" alias=".service_locator.CeiULVv"/>
     <service id=".service_locator.PoT2MDS" alias=".service_locator.T7leNQ8"/>
     <service id=".service_locator.tBXhwoB" alias=".service_locator.T0Zvgmx"/>
@@ -12242,20 +12435,24 @@
     <service id=".service_locator.0TlhvKY" alias=".service_locator.lN5YPz."/>
     <service id=".service_locator.Rfi4Szu" alias=".service_locator.UlapVpG"/>
     <service id=".service_locator.hYthK9r" alias=".service_locator.EzKe0vE"/>
-    <service id=".service_locator.cwcdlds" alias=".service_locator.fZ6QIuY"/>
+    <service id=".service_locator.jP84MQB" alias=".service_locator.ApMMveO"/>
+    <service id=".service_locator.verQFix" alias=".service_locator.V1lxS6D"/>
+    <service id=".service_locator.42uU3Gz" alias=".service_locator.oQIeYyq"/>
+    <service id=".service_locator.eG1j7Pv" alias=".service_locator.aYuv4.X"/>
     <service id=".service_locator.rOWCw7c" alias=".service_locator.BRGx3JN"/>
     <service id=".service_locator.ixuizf0" alias=".service_locator.9D4NjX7"/>
-    <service id=".service_locator.tLjFHCv" alias=".service_locator.VfFEsH."/>
+    <service id=".service_locator.CpnqR8J" alias=".service_locator.q25UpD3"/>
+    <service id=".service_locator.8MLg3Sj" alias=".service_locator.ABg2U4L"/>
     <service id=".service_locator.PRauzOD" alias=".service_locator.c2nOR4F"/>
     <service id=".service_locator.bN2cdDD" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.381yGGx" alias=".service_locator.vuciIUI"/>
     <service id=".service_locator.5XzYiGJ" alias=".service_locator.zY4Nk7F"/>
-    <service id=".service_locator.Q2a3OKb" alias=".service_locator.J9fwLUK"/>
+    <service id=".service_locator.LGPu.jM" alias=".service_locator.VGt93hp"/>
     <service id=".service_locator.sO2baFT" alias=".service_locator.UXbUH6B"/>
     <service id=".service_locator.JTTZygM" alias=".service_locator..yIq.Yh"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
     <service id=".service_locator.O24_MAy" alias=".service_locator.yY.p4P7"/>
-    <service id=".service_locator.DhU6Pve" alias=".service_locator.vffydTw"/>
+    <service id=".service_locator.xmKNkGk" alias=".service_locator.vffydTw"/>
     <service id="validator" alias="debug.validator"/>
     <service id="http_client" alias=".debug.http_client"/>
     <service id=".debug.http_client.inner" alias="http_client.uri_template"/>
@@ -12279,10 +12476,13 @@
     <service id=".service_locator.sZs5uSJ" alias=".service_locator.zHC.XQs"/>
     <service id=".service_locator.8JCw.Zk" alias=".service_locator.p5RWJ9h"/>
     <service id=".service_locator.lmQViVG" alias=".service_locator.HHItWJg"/>
+    <service id=".service_locator.a0H0u0H" alias=".service_locator.827PZ8g"/>
     <service id=".service_locator.GEFQPA3" alias=".service_locator.qrNhk2c"/>
     <service id=".service_locator.5zJFp3R" alias=".service_locator.9sX7xqa"/>
     <service id=".service_locator.xj53q3a" alias=".service_locator.5yTbH1I"/>
     <service id=".service_locator.0Ejfe1U" alias=".service_locator.sVCjKIy"/>
+    <service id=".service_locator.gl8Go38" alias=".service_locator.OEGPPAy"/>
+    <service id=".service_locator.mbkPX_S" alias=".service_locator.460DpFa"/>
     <service id=".service_locator.KHk.kkD" alias=".service_locator.CeiULVv"/>
     <service id=".service_locator.Kkcazw1" alias=".service_locator.2JKuakw"/>
     <service id=".service_locator.UXZXgE9" alias=".service_locator.T7leNQ8"/>
@@ -12290,8 +12490,6 @@
     <service id=".service_locator.wY0OaXv" alias=".service_locator.P4WyGTK"/>
     <service id=".service_locator.xn3xI2L" alias=".service_locator.8aJOF9N"/>
     <service id=".service_locator.mgB2P3T" alias=".service_locator.7dk4zOh"/>
-    <service id=".service_locator.gkpwXLG" alias=".service_locator.PoFkF4f"/>
-    <service id=".service_locator.a0H0u0H" alias=".service_locator.827PZ8g"/>
     <service id=".service_locator.iA6Vtf4" alias=".service_locator.hUbu2Ln"/>
     <service id=".service_locator.2fxwEo3" alias=".service_locator.JckUD5_"/>
     <service id=".service_locator.7NIAq8D" alias=".service_locator.rSTd.nA"/>
@@ -12327,6 +12525,7 @@
     <service id=".service_locator.3dtw3GO" alias=".service_locator.IAetlCQ"/>
     <service id=".service_locator.Mq9jGKn" alias=".service_locator.VCQAwXj"/>
     <service id=".service_locator.Fr4VXg8" alias=".service_locator.9nAU4Cb"/>
+    <service id=".service_locator.1JbM7yY" alias=".service_locator.APK0H6M"/>
     <service id=".service_locator.L2wqtHc" alias=".service_locator.QHoYmUl"/>
     <service id=".service_locator.OVucJOY" alias=".service_locator.GylZskz"/>
     <service id=".service_locator.iYU43ig" alias=".service_locator.Djp3WWr"/>
@@ -12335,11 +12534,17 @@
     <service id=".service_locator.MQxM.Dr" alias=".service_locator.UlapVpG"/>
     <service id=".service_locator.hQ_coDC" alias=".service_locator.EzKe0vE"/>
     <service id=".service_locator.IklJebE" alias=".service_locator.Rtx7YPB"/>
-    <service id=".service_locator.n931vHo" alias=".service_locator.fZ6QIuY"/>
+    <service id=".service_locator.SYp89dK" alias=".service_locator.ApMMveO"/>
     <service id=".service_locator.gaTSUXr" alias=".service_locator.9kKwU2t"/>
+    <service id=".service_locator.QO.59Ka" alias=".service_locator.9Jm4FaJ"/>
+    <service id=".service_locator.R_jMFIM" alias=".service_locator.V1lxS6D"/>
+    <service id=".service_locator.vTaK3sk" alias=".service_locator.oQIeYyq"/>
+    <service id=".service_locator.4Vh7eLa" alias=".service_locator.aYuv4.X"/>
+    <service id=".service_locator.kEv1Nnd" alias=".service_locator.g8NNtsP"/>
     <service id=".service_locator.9CihK7d" alias=".service_locator.BRGx3JN"/>
     <service id=".service_locator.3AEDBlN" alias=".service_locator.9D4NjX7"/>
-    <service id=".service_locator.Mp.ZSZA" alias=".service_locator.VfFEsH."/>
+    <service id=".service_locator.h0kV4Kr" alias=".service_locator.q25UpD3"/>
+    <service id=".service_locator.UWBfion" alias=".service_locator.ABg2U4L"/>
     <service id=".service_locator.yXIyHdO" alias=".service_locator.sw43tdh"/>
     <service id=".service_locator.uzaoO6Y" alias=".service_locator.CLTJIit"/>
     <service id=".service_locator.JWdMMjS" alias=".service_locator.EHAod2s"/>
@@ -12355,7 +12560,7 @@
     <service id=".service_locator._KGVYVx" alias=".service_locator.e7.FLk5"/>
     <service id=".service_locator.hCLIJ7E" alias=".service_locator.gxkSA7l"/>
     <service id=".service_locator..ZASw4m" alias=".service_locator.zY4Nk7F"/>
-    <service id=".service_locator.rdaPY7x" alias=".service_locator.vffydTw"/>
+    <service id=".service_locator.LxnF3D4" alias=".service_locator.vffydTw"/>
     <service id=".service_locator.dGUCsbe" alias=".service_locator.oR77BOj"/>
     <service id=".service_locator._kIAbz1" alias=".service_locator.TpoC7U9"/>
     <service id=".service_locator.hnz5ZNh" alias=".service_locator.0TACwl3"/>

@@ -18,11 +18,11 @@ return [
         '/admin/ajax/users' => [[['_route' => 'app_admin_ajax_users', '_controller' => 'App\\Controller\\AdminController::ajaxUsers'], null, ['GET' => 0], null, false, false, null]],
         '/admin/create-admin' => [[['_route' => 'app_admin_create_admin', '_controller' => 'App\\Controller\\AdminController::createAdmin'], null, ['POST' => 0], null, false, false, null]],
         '/admin/wallets' => [[['_route' => 'app_admin_wallets', '_controller' => 'App\\Controller\\AdminController::wallets'], null, null, null, false, false, null]],
-        '/admin/ticket' => [[['_route' => 'app_admin_tickets', '_controller' => 'App\\Controller\\AdminController::tickets'], null, null, null, false, false, null]],
+        '/admin/objectifs' => [[['_route' => 'app_admin_objectifs', '_controller' => 'App\\Controller\\AdminController::objectifs'], null, null, null, false, false, null]],
+        '/admin/tickets' => [[['_route' => 'app_admin_tickets', '_controller' => 'App\\Controller\\AdminController::tickets'], null, null, null, false, false, null]],
         '/admin/ticket-calendar' => [[['_route' => 'app_admin_ticket_calendar', '_controller' => 'App\\Controller\\AdminController::ticketCalendar'], null, null, null, false, false, null]],
         '/admin/ticket-stats' => [[['_route' => 'app_admin_ticket_stats', '_controller' => 'App\\Controller\\AdminController::ticketStats'], null, null, null, false, false, null]],
         '/admin/obligations' => [[['_route' => 'app_admin_obligations', '_controller' => 'App\\Controller\\AdminController::obligations'], null, null, null, false, false, null]],
-        '/admin/objectifs' => [[['_route' => 'app_admin_objectifs', '_controller' => 'App\\Controller\\AdminController::objectifs'], null, null, null, false, false, null]],
         '/admin/overview' => [[['_route' => 'app_admin_overview', '_controller' => 'App\\Controller\\AdminController::overviewDashboard'], null, null, null, false, false, null]],
         '/admin/overview-dashboard' => [[['_route' => 'app_admin_overview_dashboard', '_controller' => 'App\\Controller\\AdminOverviewController::index'], null, null, null, false, false, null]],
         '/api/crypto/prices' => [[['_route' => 'api_crypto_prices', '_controller' => 'App\\Controller\\Api\\CryptoApiController::getCryptoPrices'], null, ['GET' => 0], null, false, false, null]],
@@ -67,6 +67,7 @@ return [
         '/support' => [[['_route' => 'support_center', '_controller' => 'App\\Controller\\HomeController::support'], null, null, null, false, false, null]],
         '/financial-news' => [[['_route' => 'app_financial_news', '_controller' => 'App\\Controller\\HomeController::financialNews'], null, null, null, false, false, null]],
         '/crypto-prices' => [[['_route' => 'app_crypto_prices', '_controller' => 'App\\Controller\\HomeController::cryptoPrices'], null, null, null, false, false, null]],
+        '/objectif/inflation' => [[['_route' => 'objectif_inflation', '_controller' => 'App\\Controller\\InflationController::index'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
         '/loan/investment' => [[['_route' => 'app_investment_index', '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::index'], null, ['GET' => 0], null, true, false, null]],
         '/loan/obligation' => [[['_route' => 'app_obligation_index', '_controller' => 'App\\Controller\\Loan\\ObligationController::index'], null, ['GET' => 0], null, true, false, null]],
         '/loan/obligation/new' => [[['_route' => 'app_obligation_new', '_controller' => 'App\\Controller\\Loan\\ObligationController::new'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
@@ -77,12 +78,16 @@ return [
         '/message/reformulate' => [[['_route' => 'app_message_reformulate', '_controller' => 'App\\Controller\\MessageController::messageReformulate'], null, ['POST' => 0], null, false, false, null]],
         '/objectif' => [[['_route' => 'objectif_index', '_controller' => 'App\\Controller\\ObjectifController::index'], null, ['GET' => 0], null, false, false, null]],
         '/objectif/new' => [[['_route' => 'objectif_new', '_controller' => 'App\\Controller\\ObjectifController::new'], null, ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        '/objectif/notifications' => [[['_route' => 'notifications_list', '_controller' => 'App\\Controller\\ObjectifController::notificationsList'], null, ['GET' => 0], null, false, false, null]],
+        '/objectif/notifications/read-all' => [[['_route' => 'notifications_read_all', '_controller' => 'App\\Controller\\ObjectifController::notificationsReadAll'], null, ['POST' => 0], null, false, false, null]],
+        '/objectif/historique' => [[['_route' => 'objectif_historique', '_controller' => 'App\\Controller\\ObjectifController::historique'], null, ['GET' => 0], null, false, false, null]],
         '/profile' => [[['_route' => 'app_profile', '_controller' => 'App\\Controller\\ProfileController::profile'], null, null, null, false, false, null]],
         '/profile/update' => [[['_route' => 'app_profile_update', '_controller' => 'App\\Controller\\ProfileController::updateProfile'], null, null, null, false, false, null]],
         '/profile/password' => [[['_route' => 'app_profile_password', '_controller' => 'App\\Controller\\ProfileController::updatePassword'], null, null, null, false, false, null]],
         '/profile/face/enroll' => [[['_route' => 'app_profile_face_enroll', '_controller' => 'App\\Controller\\ProfileController::enrollFace'], null, ['POST' => 0], null, false, false, null]],
         '/profile/face/disable' => [[['_route' => 'app_profile_face_disable', '_controller' => 'App\\Controller\\ProfileController::disableFace'], null, ['POST' => 0], null, false, false, null]],
         '/login-redirect' => [[['_route' => 'app_login_redirect', '_controller' => 'App\\Controller\\SecurityRedirectController::index'], null, null, null, false, false, null]],
+        '/trends' => [[['_route' => 'market_trends', '_controller' => 'App\\Controller\\StockTrendsController::index'], null, null, null, false, false, null]],
         '/user/ticket/classify-priority' => [[['_route' => 'app_user_ticket_classify_priority', '_controller' => 'App\\Controller\\TicketUserController::classifyPriorityAction'], null, ['POST' => 0], null, false, false, null]],
         '/user/tickets' => [[['_route' => 'app_user_tickets', '_controller' => 'App\\Controller\\TicketUserController::myTickets'], null, null, null, false, false, null]],
         '/user/createticket' => [[['_route' => 'app_user_createticket', '_controller' => 'App\\Controller\\TicketUserController::createTicket'], null, null, null, false, false, null]],
@@ -193,69 +198,81 @@ return [
                     .'|edit(*:898)'
                     .'|delete(*:912)'
                 .')'
-                .'|/service(?:/([^/]++))?(*:943)'
+                .'|/s(?'
+                    .'|ervice(?:/([^/]++))?(*:946)'
+                    .'|tock/trend/(.+)(*:969)'
+                .')'
                 .'|/loan/(?'
                     .'|investment/(?'
-                        .'|new(?:/([^/]++))?(*:991)'
+                        .'|new(?:/([^/]++))?(*:1018)'
                         .'|([^/]++)(?'
-                            .'|(*:1010)'
-                            .'|/edit(*:1024)'
-                            .'|(*:1033)'
+                            .'|(*:1038)'
+                            .'|/edit(*:1052)'
+                            .'|(*:1061)'
                         .')'
                     .')'
                     .'|obligation/([^/]++)(?'
-                        .'|(*:1066)'
-                        .'|/edit(*:1080)'
-                        .'|(*:1089)'
+                        .'|(*:1094)'
+                        .'|/edit(*:1108)'
+                        .'|(*:1117)'
                     .')'
                 .')'
                 .'|/wallet/([^/]++)(?'
-                    .'|(*:1119)'
-                    .'|/edit(*:1133)'
-                    .'|(*:1142)'
+                    .'|(*:1147)'
+                    .'|/edit(*:1161)'
+                    .'|(*:1170)'
                 .')'
                 .'|/user/(?'
                     .'|message/(?'
-                        .'|new/([^/]++)(*:1184)'
+                        .'|new/([^/]++)(*:1212)'
                         .'|([^/]++)/(?'
-                            .'|delete(*:1211)'
-                            .'|edit(*:1224)'
+                            .'|delete(*:1239)'
+                            .'|edit(*:1252)'
                         .')'
                     .')'
                     .'|ticket/([^/]++)(?'
                         .'|/(?'
-                            .'|voice(*:1262)'
-                            .'|delete(*:1277)'
-                            .'|edit(*:1290)'
+                            .'|voice(*:1290)'
+                            .'|delete(*:1305)'
+                            .'|edit(*:1318)'
                         .')'
-                        .'|(*:1300)'
+                        .'|(*:1328)'
                     .')'
                 .')'
                 .'|/t(?'
                     .'|icket/([^/]++)/(?'
                         .'|su(?'
-                            .'|ggestions(*:1348)'
-                            .'|mmary(*:1362)'
+                            .'|ggestions(*:1376)'
+                            .'|mmary(*:1390)'
                         .')'
-                        .'|fetch\\-new/([^/]++)(*:1391)'
+                        .'|fetch\\-new/([^/]++)(*:1419)'
                     .')'
                     .'|ransaction/([^/]++)/(?'
-                        .'|delete(*:1430)'
-                        .'|toggle\\-recurring(*:1456)'
+                        .'|delete(*:1458)'
+                        .'|toggle\\-recurring(*:1484)'
                     .')'
                 .')'
-                .'|/message/([^/]++)/translate(*:1494)'
+                .'|/message/([^/]++)/translate(*:1522)'
                 .'|/objectif/(?'
-                    .'|([^/]++)/(?'
-                        .'|edit(*:1532)'
-                        .'|delete(*:1547)'
-                        .'|contribuer(*:1566)'
+                    .'|notifications/([^/]++)/read(*:1571)'
+                    .'|top\\-contributions/detail/([^/]++)(*:1614)'
+                    .'|([^/]++)(?'
+                        .'|/(?'
+                            .'|simuler(*:1645)'
+                            .'|e(?'
+                                .'|vents(*:1663)'
+                                .'|dit(*:1675)'
+                            .')'
+                            .'|delete(*:1691)'
+                            .'|contribuer(*:1710)'
+                        .')'
+                        .'|(*:1720)'
                     .')'
-                    .'|contrib/([^/]++)/delete(*:1599)'
+                    .'|contrib/([^/]++)/delete(*:1753)'
                 .')'
                 .'|/budget/([^/]++)/(?'
-                    .'|edit(*:1633)'
-                    .'|delete(*:1648)'
+                    .'|edit(*:1787)'
+                    .'|delete(*:1802)'
                 .')'
             .')/?$}sDu',
     ],
@@ -298,36 +315,42 @@ return [
         862 => [[['_route' => 'app_categorie_delete', '_controller' => 'App\\Controller\\managment\\CategorieController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
         898 => [[['_route' => 'app_feedback_edit', '_controller' => 'App\\Controller\\FeedbackController::edit'], ['id'], null, null, false, false, null]],
         912 => [[['_route' => 'app_feedback_delete', '_controller' => 'App\\Controller\\FeedbackController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        943 => [[['_route' => 'app_service_details', 'id' => 1, '_controller' => 'App\\Controller\\HomeController::serviceDetails'], ['id'], null, null, false, true, null]],
-        991 => [[['_route' => 'app_investment_new', 'idObligation' => null, '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::new'], ['idObligation'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        1010 => [[['_route' => 'app_investment_show', '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::show'], ['idInvestissement'], ['GET' => 0], null, false, true, null]],
-        1024 => [[['_route' => 'app_investment_edit', '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::edit'], ['idInvestissement'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1033 => [[['_route' => 'app_investment_delete', '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::delete'], ['idInvestissement'], ['POST' => 0], null, false, true, null]],
-        1066 => [[['_route' => 'app_obligation_show', '_controller' => 'App\\Controller\\Loan\\ObligationController::show'], ['idObligation'], ['GET' => 0], null, false, true, null]],
-        1080 => [[['_route' => 'app_obligation_edit', '_controller' => 'App\\Controller\\Loan\\ObligationController::edit'], ['idObligation'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1089 => [[['_route' => 'app_obligation_delete', '_controller' => 'App\\Controller\\Loan\\ObligationController::delete'], ['idObligation'], ['POST' => 0], null, false, true, null]],
-        1119 => [[['_route' => 'app_wallet_show', '_controller' => 'App\\Controller\\Loan\\WalletController::show'], ['id'], ['GET' => 0], null, false, true, null]],
-        1133 => [[['_route' => 'app_wallet_edit', '_controller' => 'App\\Controller\\Loan\\WalletController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1142 => [[['_route' => 'app_wallet_delete', '_controller' => 'App\\Controller\\Loan\\WalletController::delete'], ['id'], ['POST' => 0], null, false, true, null]],
-        1184 => [[['_route' => 'app_user_message_new', '_controller' => 'App\\Controller\\MessageController::userNewMessage'], ['id'], ['POST' => 0], null, false, true, null]],
-        1211 => [[['_route' => 'app_user_message_delete', '_controller' => 'App\\Controller\\MessageController::userDeleteMessage'], ['id'], ['POST' => 0], null, false, false, null]],
-        1224 => [[['_route' => 'app_user_message_edit', '_controller' => 'App\\Controller\\MessageController::userEditMessage'], ['id'], ['POST' => 0], null, false, false, null]],
-        1262 => [[['_route' => 'app_user_message_voice', '_controller' => 'App\\Controller\\MessageController::userVoiceMessage'], ['id'], ['POST' => 0], null, false, false, null]],
-        1277 => [[['_route' => 'app_user_ticket_delete', '_controller' => 'App\\Controller\\TicketUserController::deleteTicket'], ['id'], ['POST' => 0], null, false, false, null]],
-        1290 => [[['_route' => 'app_user_ticket_edit', '_controller' => 'App\\Controller\\TicketUserController::editTicket'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1300 => [[['_route' => 'app_user_ticket_details', '_controller' => 'App\\Controller\\TicketUserController::ticketDetails'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
-        1348 => [[['_route' => 'app_ticket_message_suggestions', '_controller' => 'App\\Controller\\MessageController::messageSuggestions'], ['id'], ['GET' => 0], null, false, false, null]],
-        1362 => [[['_route' => 'app_ticket_summary', '_controller' => 'App\\Controller\\MessageController::ticketSummary'], ['id'], ['GET' => 0], null, false, false, null]],
-        1391 => [[['_route' => 'app_ticket_fetch_new_messages', '_controller' => 'App\\Controller\\MessageController::fetchNewMessages'], ['id', 'lastId'], ['GET' => 0], null, false, true, null]],
-        1430 => [[['_route' => 'app_transaction_delete', '_controller' => 'App\\Controller\\managment\\TransactionController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        1456 => [[['_route' => 'app_transaction_toggle_recurring', '_controller' => 'App\\Controller\\managment\\TransactionController::toggleRecurring'], ['id'], ['POST' => 0], null, false, false, null]],
-        1494 => [[['_route' => 'app_message_translate', '_controller' => 'App\\Controller\\MessageController::translateMessage'], ['id'], ['POST' => 0], null, false, false, null]],
-        1532 => [[['_route' => 'objectif_edit', '_controller' => 'App\\Controller\\ObjectifController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1547 => [[['_route' => 'objectif_delete', '_controller' => 'App\\Controller\\ObjectifController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
-        1566 => [[['_route' => 'objectif_contribuer', '_controller' => 'App\\Controller\\ObjectifController::contribuer'], ['id'], ['POST' => 0], null, false, false, null]],
-        1599 => [[['_route' => 'contribution_delete', '_controller' => 'App\\Controller\\ObjectifController::deleteContribution'], ['id'], ['POST' => 0], null, false, false, null]],
-        1633 => [[['_route' => 'app_budget_edit', '_controller' => 'App\\Controller\\managment\\BudgetController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        1648 => [
+        946 => [[['_route' => 'app_service_details', 'id' => 1, '_controller' => 'App\\Controller\\HomeController::serviceDetails'], ['id'], null, null, false, true, null]],
+        969 => [[['_route' => 'stock_trend', '_controller' => 'App\\Controller\\StockTrendsController::trend'], ['symbol'], null, null, false, true, null]],
+        1018 => [[['_route' => 'app_investment_new', 'idObligation' => null, '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::new'], ['idObligation'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        1038 => [[['_route' => 'app_investment_show', '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::show'], ['idInvestissement'], ['GET' => 0], null, false, true, null]],
+        1052 => [[['_route' => 'app_investment_edit', '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::edit'], ['idInvestissement'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1061 => [[['_route' => 'app_investment_delete', '_controller' => 'App\\Controller\\Loan\\InvestissementobligationController::delete'], ['idInvestissement'], ['POST' => 0], null, false, true, null]],
+        1094 => [[['_route' => 'app_obligation_show', '_controller' => 'App\\Controller\\Loan\\ObligationController::show'], ['idObligation'], ['GET' => 0], null, false, true, null]],
+        1108 => [[['_route' => 'app_obligation_edit', '_controller' => 'App\\Controller\\Loan\\ObligationController::edit'], ['idObligation'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1117 => [[['_route' => 'app_obligation_delete', '_controller' => 'App\\Controller\\Loan\\ObligationController::delete'], ['idObligation'], ['POST' => 0], null, false, true, null]],
+        1147 => [[['_route' => 'app_wallet_show', '_controller' => 'App\\Controller\\Loan\\WalletController::show'], ['id'], ['GET' => 0], null, false, true, null]],
+        1161 => [[['_route' => 'app_wallet_edit', '_controller' => 'App\\Controller\\Loan\\WalletController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1170 => [[['_route' => 'app_wallet_delete', '_controller' => 'App\\Controller\\Loan\\WalletController::delete'], ['id'], ['POST' => 0], null, false, true, null]],
+        1212 => [[['_route' => 'app_user_message_new', '_controller' => 'App\\Controller\\MessageController::userNewMessage'], ['id'], ['POST' => 0], null, false, true, null]],
+        1239 => [[['_route' => 'app_user_message_delete', '_controller' => 'App\\Controller\\MessageController::userDeleteMessage'], ['id'], ['POST' => 0], null, false, false, null]],
+        1252 => [[['_route' => 'app_user_message_edit', '_controller' => 'App\\Controller\\MessageController::userEditMessage'], ['id'], ['POST' => 0], null, false, false, null]],
+        1290 => [[['_route' => 'app_user_message_voice', '_controller' => 'App\\Controller\\MessageController::userVoiceMessage'], ['id'], ['POST' => 0], null, false, false, null]],
+        1305 => [[['_route' => 'app_user_ticket_delete', '_controller' => 'App\\Controller\\TicketUserController::deleteTicket'], ['id'], ['POST' => 0], null, false, false, null]],
+        1318 => [[['_route' => 'app_user_ticket_edit', '_controller' => 'App\\Controller\\TicketUserController::editTicket'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1328 => [[['_route' => 'app_user_ticket_details', '_controller' => 'App\\Controller\\TicketUserController::ticketDetails'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null]],
+        1376 => [[['_route' => 'app_ticket_message_suggestions', '_controller' => 'App\\Controller\\MessageController::messageSuggestions'], ['id'], ['GET' => 0], null, false, false, null]],
+        1390 => [[['_route' => 'app_ticket_summary', '_controller' => 'App\\Controller\\MessageController::ticketSummary'], ['id'], ['GET' => 0], null, false, false, null]],
+        1419 => [[['_route' => 'app_ticket_fetch_new_messages', '_controller' => 'App\\Controller\\MessageController::fetchNewMessages'], ['id', 'lastId'], ['GET' => 0], null, false, true, null]],
+        1458 => [[['_route' => 'app_transaction_delete', '_controller' => 'App\\Controller\\managment\\TransactionController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        1484 => [[['_route' => 'app_transaction_toggle_recurring', '_controller' => 'App\\Controller\\managment\\TransactionController::toggleRecurring'], ['id'], ['POST' => 0], null, false, false, null]],
+        1522 => [[['_route' => 'app_message_translate', '_controller' => 'App\\Controller\\MessageController::translateMessage'], ['id'], ['POST' => 0], null, false, false, null]],
+        1571 => [[['_route' => 'notification_mark_read', '_controller' => 'App\\Controller\\ObjectifController::notificationMarkRead'], ['key'], ['POST' => 0], null, false, false, null]],
+        1614 => [[['_route' => 'top_contributions', '_controller' => 'App\\Controller\\ObjectifController::topContributionsDetail'], ['userId'], ['GET' => 0], null, false, true, null]],
+        1645 => [[['_route' => 'objectif_simuler', '_controller' => 'App\\Controller\\ObjectifController::simuler'], ['id'], ['POST' => 0], null, false, false, null]],
+        1663 => [[['_route' => 'objectif_events', '_controller' => 'App\\Controller\\ObjectifController::events'], ['id'], ['GET' => 0], null, false, false, null]],
+        1675 => [[['_route' => 'objectif_edit', '_controller' => 'App\\Controller\\ObjectifController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1691 => [[['_route' => 'objectif_delete', '_controller' => 'App\\Controller\\ObjectifController::delete'], ['id'], ['POST' => 0], null, false, false, null]],
+        1710 => [[['_route' => 'objectif_contribuer', '_controller' => 'App\\Controller\\ObjectifController::contribuer'], ['id'], ['POST' => 0], null, false, false, null]],
+        1720 => [[['_route' => 'objectif_show', '_controller' => 'App\\Controller\\ObjectifController::show'], ['id'], ['GET' => 0], null, false, true, null]],
+        1753 => [[['_route' => 'contribution_delete', '_controller' => 'App\\Controller\\ObjectifController::deleteContribution'], ['id'], ['POST' => 0], null, false, false, null]],
+        1787 => [[['_route' => 'app_budget_edit', '_controller' => 'App\\Controller\\managment\\BudgetController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        1802 => [
             [['_route' => 'app_budget_delete', '_controller' => 'App\\Controller\\managment\\BudgetController::delete'], ['id'], ['POST' => 0], null, false, false, null],
             [null, null, null, null, false, false, 0],
         ],

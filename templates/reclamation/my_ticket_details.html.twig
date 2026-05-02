@@ -10,7 +10,7 @@
         padding: 20px;
         padding-top: 100px;
     }
-    
+   
     .breadcrumb {
         font-size: 0.9rem;
         color: #6b7280;
@@ -23,7 +23,7 @@
     .breadcrumb a:hover {
         color: #22c55e;
     }
-    
+   
     .main-grid {
         display: grid;
         grid-template-columns: 1fr 2fr;
@@ -81,15 +81,15 @@
     .msg-wrapper.admin { align-items: flex-start; }
 
     .msg-meta { font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 4px; padding: 0 4px; }
-    .msg-bubble { 
-        padding: 14px 20px; 
-        border-radius: 16px; 
-        max-width: 85%; 
+    .msg-bubble {
+        padding: 14px 20px;
+        border-radius: 16px;
+        max-width: 85%;
         min-width: 80px;
         width: fit-content;
-        font-size: 15px; 
-        line-height: 1.6; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+        font-size: 15px;
+        line-height: 1.6;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .msg-wrapper.user .msg-bubble { background: #22c55e; color: white; border-bottom-right-radius: 0; }
@@ -319,12 +319,12 @@
     }
     .summary-text h5 { margin: 0 0 4px 0; font-size: 13px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
     .summary-text p { margin: 0; font-size: 15px; color: #1e293b; line-height: 1.6; font-weight: 500; }
-    
+   
     .sla-timer { font-size: 1.2rem; font-weight: 800; color: #22c55e; }
 
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
+   
     .animate-in {
         animation: fadeIn 0.4s ease-out, slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -334,9 +334,9 @@
 
 <div class="details-container">
     <div class="breadcrumb">
-        <a href="{{ path('app_home') }}">Home</a> &gt; 
-        <a href="{{ path('support_center') }}">Support</a> &gt; 
-        <a href="{{ path('app_user_tickets') }}">My Tickets</a> &gt; 
+        <a href="{{ path('app_home') }}">Home</a> &gt;
+        <a href="{{ path('support_center') }}">Support</a> &gt;
+        <a href="{{ path('app_user_tickets') }}">My Tickets</a> &gt;
         Details
     </div>
 
@@ -348,7 +348,7 @@
     {% endfor %}
 
     <div class="main-grid">
-        
+       
         <!-- LEFT: TICKET INFO -->
         <div class="card-panel">
             <div class="card-header">
@@ -360,7 +360,7 @@
                     <span class="info-label">Title</span>
                     <div class="info-value" style="font-size: 18px;">{{ ticket.titre }}</div>
                 </div>
-                
+               
                 <div class="info-group">
                     <span class="info-label">Status</span>
                     <div class="status-badge {% if ticket.statut|lower == 'open' %}status-open{% elseif ticket.statut|lower == 'closed' %}status-closed{% else %}status-in-progress{% endif %}">
@@ -381,7 +381,7 @@
                         {{ ticket.priorite }}
                     </div>
                 </div>
-                
+               
                 <div class="info-group">
                     <span class="info-label">Category</span>
                     <div class="info-value">{{ ticket.type }}</div>
@@ -468,7 +468,7 @@
                 <i class="far fa-comments" style="color: var(--primary-green);"></i>
                 Discussion
             </div>
-            
+           
             <div id="chatContainer" class="chat-messages">
                 {% for message in messages %}
                     {% include 'reclamation/_message_item_user.html.twig' with {'message': message, 'ticket': ticket} %}
@@ -484,7 +484,7 @@
 
             <div class="reply-card">
                 <div class="reply-title">Add a reply</div>
-                
+               
                 {{ form_start(form, {
                     'action': path('app_user_message_new', {id: ticket.id}),
                     'attr': {
@@ -523,7 +523,7 @@
                             <button type="button" id="cancelRecord" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; font-size:13px;">Cancel</button>
                             <button type="button" id="stopRecord" style="background:#22c55e; border:none; color:white; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;">Send Voice</button>
                         </div>
-                        
+                       
                         <div style="display:none !important;">
                             {{ form_widget(form.attachment) }}
                         </div>
@@ -545,7 +545,7 @@
                             </button>
                         </div>
                     </div>
-                    
+                   
                     <div id="fileNameDisplay" class="file-preview"></div>
                     <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.attachment) }}</div>
                 {{ form_end(form) }}
@@ -643,7 +643,7 @@
         const textarea = document.getElementById('{{ form.contenu.vars.id }}');
         const fileInput = document.getElementById('{{ form.attachment.vars.id }}');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
-        
+       
         if (fileInput && fileNameDisplay) {
             fileInput.onchange = () => {
                 if (fileInput.files && fileInput.files[0]) {
@@ -664,11 +664,11 @@
         // Load Suggestions once
         async function loadSuggestions() {
             if (!suggestionsBox) return;
-            
+           
             // Keep old suggestions but dim them to show we are loading
             const oldSuggestions = suggestionsBox.innerHTML;
             const loadingHtml = '<span style="font-size:12px;color:#64748b;margin-left:5px;"><i class="fas fa-spinner fa-spin"></i> Refreshing AI ideas...</span>';
-            
+           
             if (!oldSuggestions.trim()) {
                 suggestionsBox.innerHTML = loadingHtml;
             }
@@ -677,7 +677,7 @@
                 const response = await fetch('{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}');
                 if (!response.ok) throw new Error('API Error');
                 const data = await response.json();
-                
+               
                 if (data.suggestions && data.suggestions.length > 0) {
                     suggestionsBox.innerHTML = '';
                     data.suggestions.forEach(suggestion => {
@@ -696,7 +696,7 @@
                 } else {
                     // If no new suggestions found, just keep the old ones or show a retry
                 }
-            } catch (e) { 
+            } catch (e) {
                 console.error('Suggestion Error:', e);
                 if (!oldSuggestions.trim()) {
                     suggestionsBox.innerHTML = '<button onclick="loadSuggestions()" style="background:none; border:none; color:#16a34a; font-size:12px; cursor:pointer; font-weight:700;"><i class="fas fa-redo"></i> Retry suggestions</button>';
@@ -747,7 +747,7 @@
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(data.html, 'text/html');
                     const newMessages = doc.querySelectorAll('[id^="msg-wrapper-"]');
-                    
+                   
                     let appended = false;
                     newMessages.forEach(msg => {
                         if (!document.getElementById(msg.id)) {
@@ -814,7 +814,7 @@
         // AI Summary logic
         const summarizeBtn = document.getElementById('summarizeBtn');
         const summaryModal = document.getElementById('summaryModalOverlay');
-        
+       
         window.closeSummaryModal = function() {
             if (summaryModal) summaryModal.style.display = 'none';
         };
@@ -927,9 +927,11 @@
             };
         }
     }
-
-    document.addEventListener('turbo:load', initTicketDetails);
-    if (document.readyState !== 'loading') initTicketDetails();
+document.addEventListener('DOMContentLoaded', initTicketDetails);
+document.addEventListener('turbo:load', initTicketDetails);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initTicketDetails();
+}
 
     document.addEventListener('click', e => {
         if (!e.target.closest('.message-actions-dropdown')) {
@@ -938,4 +940,4 @@
     });
 })();
 </script>
-{% endblock %}
+{% endblock %} 
