@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-{% block title %}Historique & Prédictions{% endblock %}
+{% block title %}History & Predictions{% endblock %}
 
 {% block body %}
 <style>
@@ -15,7 +15,7 @@
     box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
   }
 
-  /* Navigation moderne */
+  /* Modern navigation */
   .hist-nav {
     display: flex;
     gap: 12px;
@@ -141,7 +141,7 @@
     border-radius: 2px;
   }
 
-  /* Cartes prédiction */
+  /* Prediction cards */
   .pred-cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -244,7 +244,7 @@
     color: #64748b;
   }
 
-  /* Section Conseiller IA (simplifiée) */
+  /* AI Advisor section */
   .advisor-section {
     background: rgba(255,255,255,0.75);
     backdrop-filter: blur(12px);
@@ -553,39 +553,39 @@
 
   {# ── Nav ── #}
   <div class="hist-nav">
-    <a href="{{ path('objectif_index') }}">← Mes objectifs</a>
-    <a href="{{ path('objectif_historique') }}" class="active">📈 Historique & Prédictions</a>
-    <a href="{{ path('top_contributions', {userId: app.user.id}) }}">🏆 Top contributeurs</a>
+    <a href="{{ path('objectif_index') }}">← My goals</a>
+    <a href="{{ path('objectif_historique') }}" class="active">📈 History & Predictions</a>
+    <a href="{{ path('top_contributions', {userId: app.user.id}) }}">🏆 Top contributors</a>
   </div>
 
   {# ── Header ── #}
-  <div class="hist-badge">📈 Suivi intelligent</div>
-  <h1 class="hist-title">Historique & Prédictions</h1>
-  <p class="hist-sub">Analysez vos performances et simulez vos prochains objectifs</p>
+  <div class="hist-badge">📈 Smart tracking</div>
+  <h1 class="hist-title">History & Predictions</h1>
+  <p class="hist-sub">Analyse your performance and simulate your upcoming goals</p>
 
   {# ── Summary chips ── #}
   <div class="hist-summary">
     <div class="summary-chip">
       <div class="summary-chip-val">{{ historique.totalItemCount }}</div>
-      <div class="summary-chip-lbl">Atteints</div>
+      <div class="summary-chip-lbl">Achieved</div>
     </div>
     <div class="summary-chip">
       <div class="summary-chip-val">{{ enCours.totalItemCount }}</div>
-      <div class="summary-chip-lbl">En cours</div>
+      <div class="summary-chip-lbl">In progress</div>
     </div>
     <div class="summary-chip">
       <div class="summary-chip-val">{{ historique.totalItemCount + enCours.totalItemCount }}</div>
-      <div class="summary-chip-lbl">Total objectifs</div>
+      <div class="summary-chip-lbl">Total goals</div>
     </div>
   </div>
 
   {# ══════════════════════════════════════════
-     SECTION 1 : OBJECTIFS EN COURS + PRÉDICTION
+     SECTION 1 : ONGOING GOALS + PREDICTIONS
   ══════════════════════════════════════════ #}
-  <div class="section-label">🔮 Prédictions — objectifs en cours</div>
+  <div class="section-label">🔮 Predictions — ongoing goals</div>
 
   {% if enCours.totalItemCount == 0 %}
-    <div class="empty-state">Aucun objectif en cours. Créez-en un pour voir les prédictions.</div>
+    <div class="empty-state">No ongoing goals. Create one to see predictions.</div>
   {% else %}
     <div class="pred-cards">
       {% for item in enCours %}
@@ -606,28 +606,28 @@
             {% if pred %}
               <div class="pred-date-box">
                 <div class="pred-date-val">{{ pred.predictedDate|date('d/m/Y') }}</div>
-                <div class="pred-date-sub">Date estimée d'atteinte</div>
+                <div class="pred-date-sub">Estimated completion date</div>
               </div>
               <div class="pred-row">
-                <span>⏳ Jours restants</span>
-                <span>{{ pred.daysNeeded }} j</span>
+                <span>⏳ Days left</span>
+                <span>{{ pred.daysNeeded }} d</span>
               </div>
               <div class="pred-row">
-                <span>⚡ Vélocité moyenne</span>
-                <span>{{ pred.velocityPerDay|number_format(2, ',', ' ') }} / j</span>
+                <span>⚡ Average velocity</span>
+                <span>{{ pred.velocityPerDay|number_format(2, ',', ' ') }} / day</span>
               </div>
               <div class="pred-row">
-                <span>🎯 Reste à collecter</span>
+                <span>🎯 Remaining to collect</span>
                 <span>{{ pred.remaining|number_format(0, ',', ' ') }}</span>
               </div>
               <span class="conf-badge conf-{{ pred.confidence }}">
-                {% if pred.confidence == 'haute' %}🟢 Haute confiance
-                {% elseif pred.confidence == 'moyenne' %}🟡 Confiance moyenne
-                {% else %}⚪ Faible confiance{% endif %}
+                {% if pred.confidence == 'haute' %}🟢 High confidence
+                {% elseif pred.confidence == 'moyenne' %}🟡 Medium confidence
+                {% else %}⚪ Low confidence{% endif %}
               </span>
             {% else %}
               <div class="no-pred">
-                Pas encore assez de contributions pour estimer une date.
+                Not enough contributions yet to estimate a date.
               </div>
             {% endif %}
           </div>
@@ -642,47 +642,47 @@
       </div>
       <div class="pagination-info">
         Page {{ enCours.currentPageNumber }} / {{ enCours.pageCount }}
-        — {{ enCours.totalItemCount }} objectif{{ enCours.totalItemCount > 1 ? 's' : '' }} en cours
+        — {{ enCours.totalItemCount }} ongoing goal{{ enCours.totalItemCount > 1 ? 's' : '' }}
       </div>
     {% endif %}
   {% endif %}
 
   {# ══════════════════════════════════════════
-     SECTION 2 : CONSEILLER IA (avec affichage du reste)
+     SECTION 2 : AI ADVISOR (with remaining amount display)
   ══════════════════════════════════════════ #}
   {% if enCours.totalItemCount > 0 %}
   <div class="advisor-section">
     <div class="advisor-header">
       <div class="advisor-icon">🤖</div>
       <div>
-        <div class="advisor-title">Conseiller IA</div>
-        <div class="advisor-sub">Simulez un effort journalier et obtenez la date d’atteinte</div>
+        <div class="advisor-title">AI Advisor</div>
+        <div class="advisor-sub">Simulate a daily contribution and get the completion date</div>
       </div>
     </div>
     <div class="advisor-body">
       <div class="advisor-form-row">
         <div class="advisor-field" style="flex:2">
-          <span class="advisor-field-label">🎯 Objectif</span>
+          <span class="advisor-field-label">🎯 Goal</span>
           <select class="advisor-select" id="advisorObjectifSelect">
-            <option value="">— Choisir un objectif —</option>
+            <option value="">— Select a goal —</option>
             {% for item in enCours %}
               {% set restant = item.stats.targetAmount - item.stats.totalCollected %}
               <option value="{{ item.objectif.id }}" data-restant="{{ restant }}">
-                {{ item.objectif.titre }} ({{ restant|number_format(0, ',', ' ') }} restant)
+                {{ item.objectif.titre }} ({{ restant|number_format(0, ',', ' ') }} remaining)
               </option>
             {% endfor %}
           </select>
         </div>
         <div class="advisor-field">
-          <span class="advisor-field-label">💰 Montant par jour</span>
-          <input type="number" class="advisor-input" id="advisorAmount" placeholder="Ex: 40" min="0.01" step="0.01">
+          <span class="advisor-field-label">💰 Amount per day</span>
+          <input type="number" class="advisor-input" id="advisorAmount" placeholder="e.g. 40" min="0.01" step="0.01">
         </div>
-        <button class="advisor-btn" id="advisorBtn" onclick="simulateContribution()">✨ Simuler</button>
+        <button class="advisor-btn" id="advisorBtn" onclick="simulateContribution()">✨ Simulate</button>
       </div>
 
-      {# Affichage dynamique du reste à collecter #}
+      {# Dynamic remaining display #}
       <div style="margin-top: 0.75rem; font-size:0.8rem; background:#f1f5f9; padding:8px 16px; border-radius:20px; display:inline-block;">
-        💰 Reste à collecter : <strong id="displayRestant">—</strong>
+        💰 Remaining to collect: <strong id="displayRestant">—</strong>
       </div>
 
       <div class="advisor-error" id="advisorError"></div>
@@ -692,15 +692,15 @@
         <div class="advisor-result-rows">
           <div class="advisor-result-col">
             <div class="advisor-result-val" id="advisorDays"></div>
-            <div class="advisor-result-lbl">Jours nécessaires</div>
+            <div class="advisor-result-lbl">Days needed</div>
           </div>
           <div class="advisor-result-col">
             <div class="advisor-result-val" id="advisorRemaining"></div>
-            <div class="advisor-result-lbl">Reste à collecter</div>
+            <div class="advisor-result-lbl">Remaining to collect</div>
           </div>
           <div class="advisor-result-col">
             <div class="advisor-result-val" id="advisorConf"></div>
-            <div class="advisor-result-lbl">Confiance</div>
+            <div class="advisor-result-lbl">Confidence</div>
           </div>
         </div>
       </div>
@@ -709,12 +709,12 @@
   {% endif %}
 
   {# ══════════════════════════════════════════
-     SECTION 3 : HISTORIQUE DES OBJECTIFS ATTEINTS
+     SECTION 3 : HISTORY OF ACHIEVED GOALS
   ══════════════════════════════════════════ #}
-  <div class="section-label">✅ Objectifs réalisés</div>
+  <div class="section-label">✅ Achieved goals</div>
 
   {% if historique.totalItemCount == 0 %}
-    <div class="empty-state">Aucun objectif atteint pour le moment. Continuez vos efforts !</div>
+    <div class="empty-state">No achieved goals yet. Keep going!</div>
   {% else %}
     <div class="timeline">
       {% for item in historique %}
@@ -725,27 +725,27 @@
           </div>
           <div class="tl-card">
             <div class="tl-date">
-              {% if item.dateAtteinte %}Atteint le {{ item.dateAtteinte|date('d/m/Y') }}{% else %}Date inconnue{% endif %}
+              {% if item.dateAtteinte %}Achieved on {{ item.dateAtteinte|date('d/m/Y') }}{% else %}Unknown date{% endif %}
             </div>
             <div>
               <span class="tl-title">{{ item.objectif.titre }}</span>
-              <span class="badge-done">✓ Terminé</span>
+              <span class="badge-done">✓ Completed</span>
             </div>
             <div class="tl-meta">
-              Démarré le {{ item.objectif.dateDebut|date('d/m/Y') }} · Durée cible : {{ item.objectif.duree }} mois
+              Started on {{ item.objectif.dateDebut|date('d/m/Y') }} · Target duration: {{ item.objectif.duree }} months
             </div>
             <div class="tl-stats">
               <div>
                 <div class="tl-stat-val">{{ item.stats.totalCollected|number_format(0, ',', ' ') }}</div>
-                <div class="tl-stat-lbl">Collecté</div>
+                <div class="tl-stat-lbl">Collected</div>
               </div>
               <div>
                 <div class="tl-stat-val">{{ item.stats.contributionCount }}</div>
                 <div class="tl-stat-lbl">Contributions</div>
               </div>
               <div>
-                <div class="tl-stat-val">{% if item.dureeReelle is defined and item.dureeReelle %}{{ item.dureeReelle }} j{% else %}—{% endif %}</div>
-                <div class="tl-stat-lbl">Durée réelle</div>
+                <div class="tl-stat-val">{% if item.dureeReelle is defined and item.dureeReelle %}{{ item.dureeReelle }} d{% else %}—{% endif %}</div>
+                <div class="tl-stat-lbl">Actual duration</div>
               </div>
             </div>
           </div>
@@ -760,7 +760,7 @@
       </div>
       <div class="pagination-info">
         Page {{ historique.currentPageNumber }} / {{ historique.pageCount }}
-        — {{ historique.totalItemCount }} objectif{{ historique.totalItemCount > 1 ? 's' : '' }} atteint{{ historique.totalItemCount > 1 ? 's' : '' }}
+        — {{ historique.totalItemCount }} achieved goal{{ historique.totalItemCount > 1 ? 's' : '' }}
       </div>
     {% endif %}
   {% endif %}
@@ -776,16 +776,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const selectedOption = select.options[select.selectedIndex];
       const restant = selectedOption.getAttribute('data-restant');
       if (restant) {
-        displayRestant.textContent = Number(restant).toLocaleString('fr-FR') + ' unités';
+        displayRestant.textContent = Number(restant).toLocaleString('en-US') + ' units';
       } else {
         displayRestant.textContent = '—';
       }
     });
-    // Déclenchement initial
+    // Trigger initial display
     if (select.value) {
       const selectedOption = select.options[select.selectedIndex];
       const restant = selectedOption.getAttribute('data-restant');
-      if (restant) displayRestant.textContent = Number(restant).toLocaleString('fr-FR') + ' unités';
+      if (restant) displayRestant.textContent = Number(restant).toLocaleString('en-US') + ' units';
     }
   }
 });
@@ -804,18 +804,18 @@ async function simulateContribution() {
   errorEl.classList.remove('visible');
 
   if (!objectifId) {
-    errorEl.textContent = 'Veuillez sélectionner un objectif.';
+    errorEl.textContent = 'Please select a goal.';
     errorEl.classList.add('visible');
     return;
   }
   if (!amount || amount <= 0) {
-    errorEl.textContent = 'Veuillez saisir un montant journalier valide (ex: 40).';
+    errorEl.textContent = 'Please enter a valid daily amount (e.g., 40).';
     errorEl.classList.add('visible');
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = 'Calcul...';
+  btn.textContent = 'Calculating...';
 
   try {
     const formData = new FormData();
@@ -827,33 +827,33 @@ async function simulateContribution() {
     const data = await resp.json();
 
     if (!resp.ok || data.error) {
-      errorEl.textContent = data.error || 'Erreur lors de la simulation.';
+      errorEl.textContent = data.error || 'Simulation error.';
       errorEl.classList.add('visible');
       return;
     }
 
-    const confLabel = { haute: '🟢 Haute', moyenne: '🟡 Moyenne', faible: '⚪ Faible' };
+    const confLabel = { haute: '🟢 High', moyenne: '🟡 Medium', faible: '⚪ Low' };
 
     if (data.message) {
-      document.getElementById('advisorDate').textContent = '🎉 Objectif déjà atteint !';
+      document.getElementById('advisorDate').textContent = '🎉 Goal already achieved!';
       document.getElementById('advisorDateSub').textContent = '';
       document.getElementById('advisorDays').textContent = '—';
       document.getElementById('advisorRemaining').textContent = '—';
       document.getElementById('advisorConf').textContent = '—';
     } else {
       document.getElementById('advisorDate').textContent = data.predictedDate;
-      document.getElementById('advisorDateSub').textContent = `En contribuant ${amount.toFixed(2)} par jour`;
-      document.getElementById('advisorDays').textContent = `${data.daysNeeded} j`;
-      document.getElementById('advisorRemaining').textContent = Number(data.remaining).toLocaleString('fr-FR');
+      document.getElementById('advisorDateSub').textContent = `Contributing ${amount.toFixed(2)} per day`;
+      document.getElementById('advisorDays').textContent = `${data.daysNeeded} d`;
+      document.getElementById('advisorRemaining').textContent = Number(data.remaining).toLocaleString('en-US');
       document.getElementById('advisorConf').textContent = confLabel[data.confidence] || data.confidence;
     }
     resultEl.classList.add('visible');
   } catch (e) {
-    errorEl.textContent = 'Erreur réseau. Veuillez réessayer.';
+    errorEl.textContent = 'Network error. Please try again.';
     errorEl.classList.add('visible');
   } finally {
     btn.disabled = false;
-    btn.textContent = '✨ Simuler';
+    btn.textContent = '✨ Simulate';
   }
 }
 </script>

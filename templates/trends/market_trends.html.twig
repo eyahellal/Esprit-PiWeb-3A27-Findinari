@@ -1,339 +1,432 @@
 {% extends 'base.html.twig' %}
 
 {% block navbar %}{% endblock %}
-{% block title %}Tendances du Marché{% endblock %}
+{% block title %}Market Trends{% endblock %}
 
 {% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+   nav.navbar { display: none !important; }
+:root {
+    --g1: #00C896;
+    --g2: #00A3FF;
+    --g3: #7B61FF;
+    --emerald: #00C896;
+    --emerald-dim: rgba(0,200,150,.12);
+    --emerald-glow: rgba(0,200,150,.35);
+    --red: #FF4D6A;
+    --red-dim: rgba(255,77,106,.1);
+    --surface: #0D0F14;
+    --surface-2: #13161E;
+    --surface-3: #1A1E28;
+    --surface-4: #1F2433;
+    --border: rgba(255,255,255,.06);
+    --border-bright: rgba(255,255,255,.12);
+    --text: #F0F2F7;
+    --text-2: #A8B0C4;
+    --text-3: #5C6478;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+}
 
-    :root {
-        --brand:        #16a34a;
-        --brand-light:  #dcfce7;
-        --brand-dark:   #15803d;
-        --info:         #0ea5e9;
-        --info-light:   #e6f6ff;
-        --bg:           #f4f7f4;
-        --surface:      #ffffff;
-        --border:       #e4ebe4;
-        --text-primary: #1a2e1a;
-        --text-muted:   #8faa8f;
-        --green:        #16a34a;
-        --red:          #ef4444;
-        --radius-sm:    8px;
-        --radius-md:    14px;
-        --radius-lg:    20px;
-        --shadow-card:  0 2px 16px rgba(22,163,74,.07);
-        --shadow-hover: 0 8px 28px rgba(22,163,74,.20);
-        --transition:   .22s cubic-bezier(.4,0,.2,1);
-    }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
-    body {
-        background: var(--bg);
-        color: var(--text-primary);
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 14.5px;
-        line-height: 1.6;
-    }
+body {
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-    /* ── HEADER ── */
-    .market-header {
-        background: var(--surface);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow-card);
-        padding: 32px 36px;
-        margin-bottom: 26px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        flex-wrap: wrap;
-        position: relative;
-        overflow: hidden;
-    }
+/* ── NOISE TEXTURE OVERLAY ── */
+body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: .4;
+}
 
-    .market-header::after {
-        content: '';
-        position: absolute;
-        top: 0; right: 0;
-        width: 200px; height: 200px;
-        border-radius: 50%;
-        background: var(--brand-light);
-        transform: translate(60px,-60px);
-        opacity: .5;
-    }
+/* ── AMBIENT GLOW ── */
+.ambient {
+    position: fixed; pointer-events: none; z-index: 0;
+    border-radius: 50%; filter: blur(120px); opacity: .18;
+}
+.ambient-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, var(--emerald), transparent 70%);
+    top: -200px; right: -100px;
+}
+.ambient-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, #7B61FF, transparent 70%);
+    bottom: -150px; left: -100px;
+}
 
-    .market-header-text { position: relative; z-index: 1; }
+/* ── TOPBAR ── */
+.topbar {
+    position: sticky; top: 0; z-index: 200;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(13,15,20,.85);
+    border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+    max-width: 1300px; margin: 0 auto;
+    padding: 0 28px; height: 58px;
+    display: flex; align-items: center; gap: 14px;
+}
+.topbar-brand {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 800;
+    color: var(--text); letter-spacing: -.04em;
+    text-decoration: none; white-space: nowrap;
+}
+.topbar-brand em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--g1), var(--g2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.topbar-sep { width: 1px; height: 18px; background: var(--border-bright); flex-shrink: 0; }
+.topbar-crumb {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; color: var(--text-3);
+}
+.topbar-crumb a { color: var(--text-3); text-decoration: none; transition: color .15s; }
+.topbar-crumb a:hover { color: var(--text-2); }
+.topbar-crumb-cur { color: var(--text-2); font-weight: 500; }
+.topbar-crumb-arrow { color: var(--text-3); font-size: 11px; }
+.topbar-right { margin-left: auto; }
+.tb-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 14px;
+    font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    background: var(--surface-3); border: 1px solid var(--border-bright);
+    color: var(--text-2); border-radius: var(--radius-sm);
+    text-decoration: none; cursor: pointer;
+    transition: all .2s;
+}
+.tb-btn:hover {
+    background: var(--surface-4);
+    border-color: rgba(255,255,255,.2);
+    color: var(--text);
+}
+.tb-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-    .market-header h1 {
-        font-size: 26px;
-        font-weight: 800;
-        letter-spacing: -.5px;
-        color: var(--text-primary);
-        margin-bottom: 6px;
-    }
+/* ── PAGE WRAP ── */
+.page-wrap {
+    max-width: 1300px; margin: 0 auto;
+    padding: 36px 28px 80px;
+    position: relative; z-index: 1;
+}
 
-    .market-header h1 span { color: var(--brand); }
+/* ── HERO HEADER ── */
+.hero {
+    margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px; align-items: center;
+}
+.hero-left {}
+.hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--emerald);
+    background: var(--emerald-dim); border: 1px solid rgba(0,200,150,.2);
+    padding: 4px 12px; border-radius: 99px;
+    margin-bottom: 14px;
+}
+.live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--emerald);
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 0 0 var(--emerald-glow); }
+    50% { opacity: .7; box-shadow: 0 0 0 5px transparent; }
+}
+.hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 4vw, 42px); font-weight: 800;
+    letter-spacing: -.04em; line-height: 1.05;
+    color: var(--text); margin-bottom: 10px;
+}
+.hero-title span {
+    background: linear-gradient(135deg, var(--g1) 0%, var(--g2) 50%, var(--g3) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-sub { font-size: 13.5px; color: var(--text-3); font-weight: 400; }
 
-    .market-header p {
-        color: var(--text-muted);
-        font-weight: 600;
-        font-size: 13.5px;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-    }
+/* STAT PILLS */
+.hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat-pill {
+    background: var(--surface-2);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius);
+    padding: 16px 24px; text-align: center;
+    min-width: 110px; position: relative; overflow: hidden;
+}
+.stat-pill::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--emerald), transparent);
+    opacity: .5;
+}
+.stat-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 26px; font-weight: 500;
+    color: var(--text); line-height: 1;
+    letter-spacing: -.04em;
+}
+.stat-lbl {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-3); margin-top: 4px;
+}
 
-    .market-header p::before {
-        content: '';
-        display: inline-block;
-        width: 8px; height: 8px;
-        border-radius: 50%;
-        background: var(--green);
-        animation: pulse 1.5s infinite;
-    }
+/* ── CATEGORY SECTION ── */
+.category-section { margin-bottom: 40px; }
+.category-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+}
+.cat-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: var(--text-2);
+}
+.cat-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border-bright), transparent);
+}
+.cat-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--text-3);
+    background: var(--surface-3); border: 1px solid var(--border);
+    padding: 2px 10px; border-radius: 99px;
+}
 
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.3; } }
+/* ── CARDS GRID ── */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
 
-    .market-header-badge {
-        position: relative; z-index: 1;
-        background: var(--brand-light);
-        border: 1px solid #bbf7d0;
-        border-radius: var(--radius-md);
-        padding: 14px 22px;
-        text-align: center;
-    }
+/* ── QUOTE CARD ── */
+.quote-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px 18px;
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+    transition: border-color .25s, transform .25s, box-shadow .25s;
+    cursor: default;
+    animation: cardIn .4s ease backwards;
+}
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.quote-card::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: var(--radius);
+    background: linear-gradient(135deg, rgba(255,255,255,.025) 0%, transparent 60%);
+    pointer-events: none;
+}
+.quote-card:hover {
+    border-color: rgba(0,200,150,.25);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 50px rgba(0,0,0,.35), 0 0 0 1px rgba(0,200,150,.08);
+}
 
-    .market-header-badge .badge-val {
-        font-size: 28px;
-        font-weight: 800;
-        color: var(--brand-dark);
-        letter-spacing: -1px;
-        font-family: 'Space Mono', monospace;
-    }
+/* Glow line on top */
+.card-glow {
+    position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--emerald), transparent);
+    opacity: 0; transition: opacity .3s;
+}
+.quote-card:hover .card-glow { opacity: 1; }
 
-    .market-header-badge .badge-lbl {
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .6px;
-        color: var(--text-muted);
-        margin-top: 2px;
-    }
+.card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+}
+.card-symbol {
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px; font-weight: 500;
+    color: var(--text-3);
+    background: var(--surface-3); border: 1px solid var(--border-bright);
+    padding: 3px 9px; border-radius: var(--radius-xs);
+    letter-spacing: .05em;
+}
+.card-currency {
+    font-size: 9.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em;
+    color: #00A3FF; background: rgba(0,163,255,.1);
+    border: 1px solid rgba(0,163,255,.2);
+    padding: 2px 8px; border-radius: var(--radius-xs);
+}
+.card-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--text); margin-bottom: 12px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    letter-spacing: -.02em;
+}
+.card-price {
+    font-family: 'DM Mono', monospace;
+    font-size: 26px; font-weight: 500;
+    color: var(--text); letter-spacing: -.05em;
+    line-height: 1; margin-bottom: 10px;
+}
+.card-change {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: 99px;
+    width: fit-content; letter-spacing: -.01em;
+}
+.card-change.up {
+    color: var(--emerald);
+    background: var(--emerald-dim);
+    border: 1px solid rgba(0,200,150,.2);
+}
+.card-change.down {
+    color: var(--red);
+    background: var(--red-dim);
+    border: 1px solid rgba(255,77,106,.2);
+}
+.card-change svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
 
-    /* ── CATEGORY ── */
-    .category-section { margin-bottom: 30px; }
+/* SPARKLINE AREA */
+.card-spark {
+    height: 36px; margin: 12px -4px 14px;
+    position: relative; overflow: hidden;
+    opacity: .6;
+}
+.card-spark svg { width: 100%; height: 100%; }
 
-    .category-title {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        color: var(--brand-dark);
-        margin-bottom: 14px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid var(--border);
-    }
+.btn-trend {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: auto;
+    font-size: 11.5px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    color: var(--emerald);
+    background: var(--emerald-dim);
+    border: 1px solid rgba(0,200,150,.2);
+    padding: 7px 14px; border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all .2s;
+    width: 100%; justify-content: center;
+}
+.btn-trend:hover {
+    background: var(--emerald);
+    border-color: var(--emerald);
+    color: #0D0F14;
+    box-shadow: 0 4px 20px var(--emerald-glow);
+}
+.btn-trend svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-    .category-title::before {
-        content: '';
-        display: inline-block;
-        width: 14px; height: 14px;
-        border-radius: 4px;
-        background: var(--brand);
-        flex-shrink: 0;
-    }
+/* CARD ERROR */
+.card-error {
+    color: var(--text-3); font-size: 12px;
+    font-style: italic; margin-top: 8px;
+}
 
-    /* ── GRID ── */
-    .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
-        gap: 16px;
-    }
+/* ── EMPTY STATE ── */
+.empty-state {
+    background: var(--surface-2); border: 1px dashed var(--border-bright);
+    border-radius: var(--radius); padding: 3rem 2rem;
+    text-align: center; grid-column: 1/-1;
+}
+.empty-state-icon { font-size: 32px; margin-bottom: 1rem; display: block; }
+.empty-state-text { font-size: 13px; color: var(--text-3); }
 
-    /* ── CARD ── */
-    .quote-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        padding: 20px 22px;
-        color: var(--text-primary);
-        display: block;
-        transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-        position: relative;
-        overflow: hidden;
-        box-shadow: var(--shadow-card);
-    }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
-    .quote-card:hover {
-        border-color: var(--brand);
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-hover);
-    }
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    .page-wrap { padding: 20px 16px 60px; }
+    .hero { grid-template-columns: 1fr; gap: 20px; }
+    .hero-stats { flex-direction: row; }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+@media (max-width: 480px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .hero-title { font-size: 26px; }
+}
 
-    .quote-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--brand), #4ade80);
-        opacity: 0;
-        transition: opacity var(--transition);
-    }
-
-    .quote-card:hover::before { opacity: 1; }
-
-    .quote-card::after {
-        content: '';
-        position: absolute;
-        top: 0; right: 0;
-        width: 70px; height: 70px;
-        border-radius: 50%;
-        background: var(--brand-light);
-        transform: translate(22px,-22px);
-        opacity: .6;
-    }
-
-    .card-top {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 12px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .card-symbol {
-        font-family: 'Space Mono', monospace;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--text-muted);
-        background: #f4faf6;
-        border: 1px solid var(--border);
-        padding: 3px 8px;
-        border-radius: 6px;
-        letter-spacing: .5px;
-    }
-
-    .card-currency {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--info);
-        background: var(--info-light);
-        border: 1px solid #bae6fd;
-        padding: 3px 8px;
-        border-radius: 6px;
-    }
-
-    .card-name {
-        font-weight: 700;
-        font-size: 14px;
-        margin-bottom: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: var(--text-primary);
-        position: relative;
-        z-index: 1;
-    }
-
-    .card-price {
-        font-size: 26px;
-        font-weight: 800;
-        font-family: 'Space Mono', monospace;
-        color: var(--text-primary);
-        letter-spacing: -1px;
-        line-height: 1;
-        margin-bottom: 6px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .card-change {
-        font-family: 'Space Mono', monospace;
-        font-size: 12px;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        border-radius: 999px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .up   { color: #166534; background: var(--brand-light); }
-    .down { color: #9b1c1c; background: #fef2f2; }
-
-    .card-error {
-        color: var(--text-muted);
-        font-size: 13px;
-        margin-top: 8px;
-        font-weight: 600;
-        font-style: italic;
-    }
-
-    .btn-trend {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        margin-top: 14px;
-        font-size: 12px;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-weight: 700;
-        background: var(--brand-light);
-        border: 1px solid #bbf7d0;
-        color: var(--brand-dark);
-        padding: 7px 14px;
-        border-radius: var(--radius-sm);
-        text-decoration: none;
-        transition: background var(--transition), border-color var(--transition), color var(--transition), transform var(--transition);
-        position: relative;
-        z-index: 1;
-    }
-
-    .btn-trend:hover {
-        background: var(--brand);
-        border-color: var(--brand);
-        color: #fff;
-        text-decoration: none;
-        transform: translateY(-1px);
-    }
-
-    ::-webkit-scrollbar { width:6px; height:6px; }
-    ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:99px; }
-    ::-webkit-scrollbar-thumb:hover { background:var(--text-muted); }
+/* ── STAGGER ANIMATION DELAYS ── */
+{% for i in 0..20 %}
+.cards-grid .quote-card:nth-child({{ i+1 }}) { animation-delay: {{ i * 0.05 }}s; }
+{% endfor %}
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="container" style="padding:28px 20px;">
 
-    {# ── HEADER ── #}
-    <div class="market-header">
-        <div class="market-header-text">
-            <h1>Tendances du <span>Marché</span></h1>
-            <p>Données en temps réel — mis à jour toutes les 5 minutes</p>
+<div class="ambient ambient-1"></div>
+<div class="ambient ambient-2"></div>
+
+{# ── TOPBAR ── #}
+<nav class="topbar">
+    <div class="topbar-inner">
+        <a href="{{ path('objectif_index') }}" class="topbar-brand">Findi<em>nari</em></a>
+        <div class="topbar-sep"></div>
+        <div class="topbar-crumb">
+            <a href="{{ path('objectif_index') }}">Dashboard</a>
+            <span class="topbar-crumb-arrow">›</span>
+            <span class="topbar-crumb-cur">Market Trends</span>
         </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;position:relative;z-index:1;">
+        <div class="topbar-right">
+            <a href="{{ path('objectif_index') }}" class="tb-btn">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to goals
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="page-wrap">
+
+    {# ── HERO ── #}
+    <div class="hero">
+        <div class="hero-left">
+            <div class="hero-eyebrow">
+                <span class="live-dot"></span>
+                Live market data
+            </div>
+            <div class="hero-title">
+                Real-time<br><span>Market Trends</span>
+            </div>
+            <div class="hero-sub">Refreshed every 5 minutes · All major asset classes</div>
+        </div>
+        <div class="hero-stats">
             {% set totalSymbols = 0 %}
             {% for cat, symbols in categories %}
                 {% set totalSymbols = totalSymbols + symbols|length %}
             {% endfor %}
-            <div class="market-header-badge">
-                <div class="badge-val">{{ totalSymbols }}</div>
-                <div class="badge-lbl">Actifs suivis</div>
+            <div class="stat-pill">
+                <div class="stat-val">{{ totalSymbols }}</div>
+                <div class="stat-lbl">Assets</div>
             </div>
-            <div class="market-header-badge">
-                <div class="badge-val">{{ categories|length }}</div>
-                <div class="badge-lbl">Catégories</div>
+            <div class="stat-pill">
+                <div class="stat-val">{{ categories|length }}</div>
+                <div class="stat-lbl">Sectors</div>
             </div>
         </div>
     </div>
@@ -341,54 +434,103 @@
     {# ── CATEGORIES ── #}
     {% for categoryName, symbols in categories %}
         <div class="category-section">
-            <div class="category-title">{{ categoryName }}</div>
+            <div class="category-header">
+                <span class="cat-label">{{ categoryName }}</span>
+                <div class="cat-line"></div>
+                <span class="cat-count">{{ symbols|length }} asset{{ symbols|length != 1 ? 's' : '' }}</span>
+            </div>
+
             <div class="cards-grid">
                 {% for symbol in symbols %}
                     {% set q = quotes[symbol] ?? null %}
+
                     <div class="quote-card">
+                        <div class="card-glow"></div>
 
                         {% if q is not null and q['name'] is defined %}
 
-                            <div class="card-top">
+                            <div class="card-head">
                                 <span class="card-symbol">{{ symbol }}</span>
                                 <span class="card-currency">{{ q['currency'] ?? 'USD' }}</span>
                             </div>
 
-                            <div class="card-name">{{ q['name'] }}</div>
+                            <div class="card-name" title="{{ q['name'] }}">{{ q['name'] }}</div>
 
                             <div class="card-price">
                                 {{ q['close']|number_format(2, '.', ' ') }}
                             </div>
 
+                            {# Decorative mini-sparkline (purely visual) #}
                             {% set change = q['percent_change'] ?? 0 %}
-                            <div class="card-change {{ change >= 0 ? 'up' : 'down' }}">
-                                {{ change >= 0 ? '▲' : '▼' }}
-                                {{ change|number_format(2, '.', '') }}% aujourd'hui
+                            <div class="card-spark">
+                                {% if change >= 0 %}
+                                <svg viewBox="0 0 200 40" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="sg-{{ symbol }}" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#00C896" stop-opacity=".3"/>
+                                            <stop offset="100%" stop-color="#00C896" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M0 32 C20 28,40 24,60 20 S100 10,130 14 S170 8,200 4 L200 40 L0 40 Z" fill="url(#sg-{{ symbol }})"/>
+                                    <path d="M0 32 C20 28,40 24,60 20 S100 10,130 14 S170 8,200 4" fill="none" stroke="#00C896" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                {% else %}
+                                <svg viewBox="0 0 200 40" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="sg-{{ symbol }}" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#FF4D6A" stop-opacity=".3"/>
+                                            <stop offset="100%" stop-color="#FF4D6A" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M0 8 C20 12,40 18,60 22 S100 30,130 26 S170 34,200 36 L200 40 L0 40 Z" fill="url(#sg-{{ symbol }})"/>
+                                    <path d="M0 8 C20 12,40 18,60 22 S100 30,130 26 S170 34,200 36" fill="none" stroke="#FF4D6A" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                {% endif %}
                             </div>
 
-                            <a href="{{ path('stock_trend', {symbol: symbol}) }}" class="btn-trend">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
-                                     style="width:13px;height:13px;flex-shrink:0;">
-                                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                                    <polyline points="16 7 22 7 22 13"/>
-                                </svg>
-                                Voir tendance
+                            <div class="card-change {{ change >= 0 ? 'up' : 'down' }}">
+                                {% if change >= 0 %}
+                                    <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                                {% endif %}
+                                {{ change >= 0 ? '+' : '' }}{{ change|number_format(2, '.', '') }}% today
+                            </div>
+
+                            <a href="{{ path('stock_trend', {symbol: symbol}) }}" class="btn-trend" style="margin-top:14px">
+                                <svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                                View trend
                             </a>
 
                         {% else %}
 
-                            <div class="card-top">
+                            <div class="card-head">
                                 <span class="card-symbol">{{ symbol }}</span>
                             </div>
                             <div class="card-name">{{ symbol }}</div>
-                            <div class="card-error">Données indisponibles</div>
+                            <div class="card-error">Data unavailable</div>
 
                         {% endif %}
                     </div>
+
+                {% else %}
+
+                    <div class="empty-state">
+                        <span class="empty-state-icon">📭</span>
+                        <div class="empty-state-text">No assets in this category.</div>
+                    </div>
+
                 {% endfor %}
             </div>
         </div>
+
+    {% else %}
+
+        <div class="empty-state" style="margin-top:2rem">
+            <span class="empty-state-icon">📡</span>
+            <div class="empty-state-text">No market data available at the moment. Please try again shortly.</div>
+        </div>
+
     {% endfor %}
 
 </div>

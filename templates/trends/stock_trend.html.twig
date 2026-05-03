@@ -1,90 +1,435 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tendance - {{ symbol }}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block title %}Trend — {{ symbol }}{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+ nav.navbar { display: none !important; }
+:root {
+    --g1: #00C896;
+    --g2: #00A3FF;
+    --g3: #7B61FF;
+    --emerald: #00C896;
+    --emerald-dim: rgba(0,200,150,.12);
+    --emerald-glow: rgba(0,200,150,.3);
+    --red: #FF4D6A;
+    --red-dim: rgba(255,77,106,.1);
+    --surface: #0D0F14;
+    --surface-2: #13161E;
+    --surface-3: #1A1E28;
+    --surface-4: #1F2433;
+    --border: rgba(255,255,255,.06);
+    --border-bright: rgba(255,255,255,.12);
+    --text: #F0F2F7;
+    --text-2: #A8B0C4;
+    --text-3: #5C6478;
+    --radius: 16px;
+    --radius-sm: 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ── NOISE ── */
+body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: .4;
+}
+
+/* ── AMBIENT ── */
+.ambient { position: fixed; pointer-events: none; z-index: 0; border-radius: 50%; filter: blur(120px); opacity: .15; }
+.ambient-1 { width: 600px; height: 600px; background: radial-gradient(circle, var(--emerald), transparent 70%); top: -200px; right: -100px; }
+.ambient-2 { width: 500px; height: 500px; background: radial-gradient(circle, #7B61FF, transparent 70%); bottom: -150px; left: -100px; }
+
+/* ── TOPBAR ── */
+.topbar {
+    position: sticky; top: 0; z-index: 200;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(13,15,20,.85);
+    border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 0 28px; height: 58px;
+    display: flex; align-items: center; gap: 14px;
+}
+.topbar-brand {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 800;
+    color: var(--text); letter-spacing: -.04em;
+    text-decoration: none;
+}
+.topbar-brand em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--g1), var(--g2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.topbar-sep { width: 1px; height: 18px; background: var(--border-bright); flex-shrink: 0; }
+.topbar-crumb { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-3); }
+.topbar-crumb a { color: var(--text-3); text-decoration: none; transition: color .15s; }
+.topbar-crumb a:hover { color: var(--text-2); }
+.topbar-crumb-cur { color: var(--text-2); font-weight: 500; }
+.topbar-right { margin-left: auto; }
+.tb-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 14px;
+    font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    background: var(--surface-3); border: 1px solid var(--border-bright);
+    color: var(--text-2); border-radius: var(--radius-sm);
+    text-decoration: none; transition: all .2s;
+}
+.tb-btn:hover { background: var(--surface-4); border-color: rgba(255,255,255,.2); color: var(--text); }
+.tb-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ── PAGE WRAP ── */
+.page-wrap {
+    max-width: 1200px; margin: 0 auto;
+    padding: 40px 28px 80px;
+    position: relative; z-index: 1;
+}
+
+/* ── HERO ── */
+.hero { margin-bottom: 32px; }
+.hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--emerald);
+    background: var(--emerald-dim); border: 1px solid rgba(0,200,150,.2);
+    padding: 4px 12px; border-radius: 99px; margin-bottom: 14px;
+}
+.hero-symbol {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--text-3);
+    background: var(--surface-3); border: 1px solid var(--border-bright);
+    padding: 3px 10px; border-radius: 6px; letter-spacing: .05em;
+}
+.hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 4vw, 38px); font-weight: 800;
+    letter-spacing: -.04em; line-height: 1.05;
+    color: var(--text); margin-bottom: 6px;
+}
+.hero-title span {
+    background: linear-gradient(135deg, var(--g1) 0%, var(--g2) 60%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero-sub { font-size: 13px; color: var(--text-3); }
+
+/* ── STAT ROW ── */
+.stat-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+.stat-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 22px; min-width: 130px;
+    position: relative; overflow: hidden;
+}
+.stat-card::after {
+    content: '';
+    position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--emerald), transparent);
+    opacity: .4;
+}
+.stat-card-lbl {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-3); margin-bottom: 5px;
+}
+.stat-card-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px; font-weight: 500;
+    color: var(--text); letter-spacing: -.03em; line-height: 1;
+}
+.stat-card-val.up   { color: var(--emerald); }
+.stat-card-val.down { color: var(--red); }
+
+/* ── ALERT (erreur) — discrète ── */
+.alert-box {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: rgba(255,77,106,.08);
+    border: 1px solid rgba(255,77,106,.2);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px; margin-bottom: 24px;
+    font-size: 13px; color: #FF8FA0;
+}
+.alert-box svg { width: 16px; height: 16px; stroke: var(--red); fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 1px; }
+
+/* ── EMPTY STATE ── */
+.empty-box {
+    background: var(--surface-2); border: 1px dashed var(--border-bright);
+    border-radius: var(--radius); padding: 3rem 2rem;
+    text-align: center;
+}
+.empty-box-icon { font-size: 32px; margin-bottom: 1rem; display: block; }
+.empty-box-text { font-size: 13px; color: var(--text-3); }
+
+/* ── CHART CARD ── */
+.chart-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0,0,0,.2);
+}
+.chart-card::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: var(--radius);
+    background: linear-gradient(135deg, rgba(255,255,255,.02) 0%, transparent 60%);
+    pointer-events: none;
+}
+.chart-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
+}
+.chart-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--text-2);
+    letter-spacing: -.01em;
+}
+.chart-period {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--text-3);
+    background: var(--surface-3); border: 1px solid var(--border-bright);
+    padding: 3px 10px; border-radius: 99px;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 99px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+    .page-wrap { padding: 20px 16px 60px; }
+    .topbar-inner { padding: 0 16px; }
+    .stat-row { gap: 8px; }
+    .stat-card { min-width: 100px; padding: 12px 16px; }
+    .chart-card { padding: 18px 14px; }
+}
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="container mt-4" style="max-width:1000px; margin:0 auto; padding:2rem;">
+<div class="ambient ambient-1"></div>
+<div class="ambient ambient-2"></div>
 
-    <a href="{{ path('market_trends') }}" style="
-        display:inline-flex; align-items:center; gap:6px;
-        font-size:13px; color:#1a9e6e; text-decoration:none;
-        margin-bottom:1.5rem; font-weight:600;
-    ">← Retour aux tendances</a>
+{# ── TOPBAR ── #}
+<nav class="topbar">
+    <div class="topbar-inner">
+        <a href="{{ path('objectif_index') }}" class="topbar-brand">Findi<em>nari</em></a>
+        <div class="topbar-sep"></div>
+        <div class="topbar-crumb">
+            <a href="{{ path('objectif_index') }}">Dashboard</a>
+            <span>›</span>
+            <a href="{{ path('market_trends') }}">Market Trends</a>
+            <span>›</span>
+            <span class="topbar-crumb-cur">{{ symbol }}</span>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('market_trends') }}" class="tb-btn">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to trends
+            </a>
+        </div>
+    </div>
+</nav>
 
-    <h1 style="font-size:2rem; font-weight:900; margin-bottom:0.25rem;">
-        {{ name ?? symbol }}
-    </h1>
-    <p style="color:#888; font-size:13px; margin-bottom:2rem;">
-        {{ symbol }} · Clôtures des 30 derniers jours
-    </p>
+<div class="page-wrap">
 
-    {% if error is defined %}
-        <div style="background:#fce8e8; color:#a32d2d; padding:1rem; border-radius:10px; margin-bottom:1rem;">
-            ⚠️ {{ error }}
+    {# ── HERO ── #}
+    <div class="hero">
+        <div class="hero-eyebrow">
+            <span class="hero-symbol">{{ symbol }}</span>
+            30-day price trend
+        </div>
+        <div class="hero-title">
+            <span>{{ name ?? symbol }}</span>
+        </div>
+        <div class="hero-sub">Closing prices · Last 30 trading days</div>
+    </div>
+
+    {# ── STATS (si données dispo) ── #}
+    {% if dates != '[]' and values != '[]' %}
+    <div class="stat-row" id="statRow">
+        {# Rempli par JS après parsing #}
+    </div>
+    {% endif %}
+
+    {# ── ALERTE ERREUR (discrète, sans fond rouge) ── #}
+    {% if error is defined and error is not empty %}
+        <div class="alert-box">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ error }}
         </div>
     {% endif %}
 
+    {# ── CONTENU ── #}
     {% if dates == '[]' or values == '[]' %}
-        <div style="background:#faeeda; color:#854f0b; padding:1rem; border-radius:10px;">
-            ⚠️ Aucune donnée disponible pour <strong>{{ symbol }}</strong>.
-            Vérifiez que le symbole est valide et que votre clé API est active.
+        <div class="empty-box">
+            <span class="empty-box-icon">📡</span>
+            <div class="empty-box-text">
+                No data available for <strong style="color:var(--text-2)">{{ symbol }}</strong>.<br>
+                Check that the symbol is valid and your API key is active.
+            </div>
         </div>
     {% else %}
-        <div style="background:#fff; border:1px solid #e6e6e2; border-radius:16px; padding:1.5rem; box-shadow:0 2px 12px rgba(0,0,0,.06);">
-            <canvas id="priceChart" height="120"></canvas>
+        <div class="chart-card">
+            <div class="chart-header">
+                <span class="chart-title">Closing price (USD)</span>
+                <span class="chart-period">30 days</span>
+            </div>
+            <canvas id="priceChart" height="100"></canvas>
         </div>
     {% endif %}
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+(function () {
     const rawDates  = {{ dates|raw }};
     const rawValues = {{ values|raw }};
 
-    console.log('Dates:', rawDates);
-    console.log('Valeurs:', rawValues);
+    if (!rawDates.length || !rawValues.length) return;
 
-    if (rawDates.length > 0 && rawValues.length > 0) {
-        const ctx = document.getElementById('priceChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: rawDates,
-                datasets: [{
-                    label: 'Prix de clôture (USD)',
-                    data: rawValues,
-                    borderColor: '#1a9e6e',
-                    backgroundColor: 'rgba(26,158,110,0.08)',
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#1a9e6e',
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => '$' + ctx.parsed.y.toFixed(2)
-                        }
+    /* ── Stats dynamiques ── */
+    const first   = rawValues[0];
+    const last    = rawValues[rawValues.length - 1];
+    const high    = Math.max(...rawValues);
+    const low     = Math.min(...rawValues);
+    const change  = ((last - first) / first * 100).toFixed(2);
+    const isUp    = parseFloat(change) >= 0;
+
+    const statRow = document.getElementById('statRow');
+    if (statRow) {
+        statRow.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-card-lbl">Last close</div>
+                <div class="stat-card-val">$${last.toFixed(2)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-lbl">30-day change</div>
+                <div class="stat-card-val ${isUp ? 'up' : 'down'}">${isUp ? '+' : ''}${change}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-lbl">30-day high</div>
+                <div class="stat-card-val">$${high.toFixed(2)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-lbl">30-day low</div>
+                <div class="stat-card-val">$${low.toFixed(2)}</div>
+            </div>
+        `;
+    }
+
+    /* ── Couleurs ── */
+    const COLOR     = isUp ? '#00C896' : '#FF4D6A';
+    const COLOR_DIM = isUp ? 'rgba(0,200,150,' : 'rgba(255,77,106,';
+
+    /* ── Chart ── */
+    const ctx = document.getElementById('priceChart').getContext('2d');
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.clientHeight || 300);
+    gradient.addColorStop(0,   COLOR_DIM + '.18)');
+    gradient.addColorStop(1,   COLOR_DIM + '0)');
+
+    Chart.defaults.color = '#5C6478';
+    Chart.defaults.font.family = "'DM Mono', monospace";
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: rawDates,
+            datasets: [{
+                label: 'Closing price (USD)',
+                data: rawValues,
+                borderColor: COLOR,
+                backgroundColor: gradient,
+                tension: 0.35,
+                fill: true,
+                pointRadius: 3,
+                pointBackgroundColor: COLOR,
+                pointBorderColor: '#0D0F14',
+                pointBorderWidth: 2,
+                pointHoverRadius: 7,
+                pointHoverBackgroundColor: COLOR,
+                pointHoverBorderColor: '#0D0F14',
+                pointHoverBorderWidth: 2,
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#A8B0C4',
+                        font: { family: "'DM Sans', sans-serif", size: 12, weight: '500' },
+                        boxWidth: 14, boxHeight: 3, borderRadius: 2,
+                        usePointStyle: false,
                     }
                 },
-                scales: {
-                    y: {
-                        ticks: {
-                            callback: val => '$' + val.toFixed(2)
-                        },
-                        grid: { color: 'rgba(0,0,0,.04)' }
-                    },
-                    x: {
-                        grid: { display: false }
+                tooltip: {
+                    backgroundColor: '#1A1E28',
+                    borderColor: 'rgba(255,255,255,.1)',
+                    borderWidth: 1,
+                    titleColor: '#A8B0C4',
+                    bodyColor: '#F0F2F7',
+                    padding: 12,
+                    cornerRadius: 10,
+                    callbacks: {
+                        label: ctx => '  $' + ctx.parsed.y.toFixed(2)
                     }
                 }
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: val => '$' + val.toFixed(2),
+                        color: '#5C6478',
+                        font: { size: 11 },
+                        maxTicksLimit: 7,
+                    },
+                    grid: { color: 'rgba(255,255,255,.04)', drawBorder: false },
+                    border: { display: false },
+                },
+                x: {
+                    ticks: {
+                        color: '#5C6478',
+                        font: { size: 10 },
+                        maxRotation: 45,
+                        maxTicksLimit: 10,
+                    },
+                    grid: { display: false },
+                    border: { display: false },
+                }
             }
-        });
-    }
+        }
+    });
+})();
 </script>
 {% endblock %}

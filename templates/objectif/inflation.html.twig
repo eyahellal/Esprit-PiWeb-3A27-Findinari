@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 {% block navbar %}{% endblock %}
-{% block title %}Simulateur d'Inflation{% endblock %}
+{% block title %}Inflation Simulator{% endblock %}
 
 {% block stylesheets %}
 {{ parent() }}
@@ -195,12 +195,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <a href="{{ path('objectif_index') }}" class="topbar-brand">Findi<em>nari</em></a>
         <div class="topbar-sep"></div>
         <div class="topbar-crumb">
-            <a href="{{ path('objectif_index') }}">Mes objectifs</a>
+            <a href="{{ path('objectif_index') }}">My goals</a>
             <span>›</span>
-            <span>Simulateur d'inflation</span>
+            <span>Inflation Simulator</span>
         </div>
         <div class="topbar-right">
-            <a href="{{ path('objectif_index') }}" class="tb-btn-back">← Retour</a>
+            <a href="{{ path('objectif_index') }}" class="tb-btn-back">← Back</a>
         </div>
     </div>
 </nav>
@@ -208,30 +208,29 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <div class="infl-page">
 
     <div class="infl-header">
-        <div class="infl-eyebrow">Outil financier</div>
-        <h1 class="infl-title">Simulateur d'<em>Inflation</em></h1>
-        <p class="infl-sub">Découvrez combien vaudra votre argent dans le futur selon le taux d'inflation réel de chaque pays.</p>
+        <div class="infl-eyebrow">Financial Tool</div>
+        <h1 class="infl-title">Inflation <em>Simulator</em></h1>
+        <p class="infl-sub">Discover how much your money will be worth in the future based on each country's real inflation rate.</p>
     </div>
 
     <div class="infl-grid">
 
         <div class="infl-card">
-            <div class="infl-card-title"><span>🌍</span> Paramètres de simulation</div>
+            <div class="infl-card-title"><span>🌍</span> Simulation parameters</div>
 
             {% if error %}
                 <div class="infl-error">⚠️ {{ error }}</div>
             {% endif %}
 
-            {# ✅ FIX TURBO : data-turbo="false" + type="submit" #}
             <form method="POST"
                   action="{{ path('objectif_inflation') }}"
                   id="inflationForm"
                   data-turbo="false">
 
                 <div class="field">
-                    <label>Montant actuel</label>
+                    <label>Current amount</label>
                     <input type="number" name="montant"
-                           placeholder="Ex: 10 000"
+                           placeholder="e.g. 10,000"
                            min="1" step="0.01"
                            value="{{ result ? result.montant_initial : '' }}"
                            required>
@@ -239,15 +238,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 
                 <div class="field-row">
                     <div class="field">
-                        <label>Durée (années)</label>
+                        <label>Time (years)</label>
                         <input type="number" name="annees"
-                               placeholder="Ex: 5"
+                               placeholder="e.g. 5"
                                min="1" max="50"
                                value="{{ result ? result.annees : '' }}"
                                required>
                     </div>
                     <div class="field">
-                        <label>Pays</label>
+                        <label>Country</label>
                         <select name="country">
                             {% for code, name in countries %}
                                 <option value="{{ code }}" {{ result and result.country == code ? 'selected' : '' }}>
@@ -258,9 +257,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                     </div>
                 </div>
 
-                {# ✅ type="submit" normal #}
                 <button type="submit" class="btn-simulate">
-                    📊 Calculer l'impact de l'inflation
+                    📊 Calculate inflation impact
                 </button>
 
             </form>
@@ -269,39 +267,39 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         {% if result %}
         <div>
             <div class="infl-source">
-                📡 Source : {{ result.source }} — Données {{ result.annee_donnee }} pour {{ result.country_name }}
+                📡 Source: {{ result.source }} — Data from {{ result.annee_donnee }} for {{ result.country_name }}
             </div>
 
             <div class="result-summary">
                 <div class="res-card res-card--green">
-                    <div class="res-lbl">Taux d'inflation</div>
+                    <div class="res-lbl">Inflation rate</div>
                     <div class="res-val res-val--green">{{ result.taux }}%</div>
-                    <div class="res-sub">par an</div>
+                    <div class="res-sub">per year</div>
                 </div>
                 <div class="res-card res-card--red">
-                    <div class="res-lbl">Valeur future</div>
+                    <div class="res-lbl">Future value</div>
                     <div class="res-val res-val--red">{{ result.valeur_future|number_format(0, ',', ' ') }}</div>
-                    <div class="res-sub">dans {{ result.annees }} an{{ result.annees > 1 ? 's' : '' }}</div>
+                    <div class="res-sub">in {{ result.annees }} year{{ result.annees > 1 ? 's' : '' }}</div>
                 </div>
                 <div class="res-card res-card--gold">
-                    <div class="res-lbl">Besoin suppl.</div>
+                    <div class="res-lbl">Additional needed</div>
                     <div class="res-val res-val--gold">+{{ result.difference|number_format(0, ',', ' ') }}</div>
-                    <div class="res-sub">pour maintenir le pouvoir d'achat</div>
+                    <div class="res-sub">to maintain purchasing power</div>
                 </div>
             </div>
 
             <div class="infl-card" style="margin-bottom: 1.25rem;">
                 <div class="res-card res-card--blue" style="margin-bottom:0">
-                    <div class="res-lbl">💡 Contribution mensuelle recommandée</div>
+                    <div class="res-lbl">💡 Recommended monthly contribution</div>
                     <div class="res-val res-val--blue">
                         {{ result.contribution_mensuelle|number_format(2, ',', ' ') }}
                     </div>
-                    <div class="res-sub">à épargner chaque mois pour compenser l'inflation</div>
+                    <div class="res-sub">to save each month to offset inflation</div>
                 </div>
             </div>
 
             <div class="infl-card">
-                <div class="timeline-title">📅 Évolution année par année</div>
+                <div class="timeline-title">📅 Year‑by‑year evolution</div>
                 {% set maxVal = result.history|last %}
                 <div class="timeline">
                     {% for item in result.history %}
@@ -317,13 +315,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
                 </div>
 
                 <div class="conseil-box">
-                    <div class="conseil-title">💡 Conseil pour votre objectif</div>
+                    <div class="conseil-title">💡 Advice for your goal</div>
                     <div class="conseil-text">
-                        Avec un taux d'inflation de <strong>{{ result.taux }}%</strong> en {{ result.country_name }},
-                        un objectif de <strong>{{ result.montant_initial|number_format(0, ',', ' ') }}</strong> aujourd'hui
-                        nécessitera <strong>{{ result.valeur_future|number_format(0, ',', ' ') }}</strong>
-                        dans {{ result.annees }} an{{ result.annees > 1 ? 's' : '' }}.
-                        Pensez à augmenter votre objectif d'épargne en conséquence !
+                        With an inflation rate of <strong>{{ result.taux }}%</strong> in {{ result.country_name }},
+                        a goal of <strong>{{ result.montant_initial|number_format(0, ',', ' ') }}</strong> today
+                        will require <strong>{{ result.valeur_future|number_format(0, ',', ' ') }}</strong>
+                        in {{ result.annees }} year{{ result.annees > 1 ? 's' : '' }}.
+                        Consider increasing your savings target accordingly!
                     </div>
                 </div>
             </div>
@@ -332,9 +330,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         {% else %}
         <div class="infl-card" style="display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:1rem;text-align:center;">
             <div style="font-size:56px;">📉</div>
-            <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Remplissez le formulaire</div>
+            <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Fill out the form</div>
             <div style="color:var(--muted);font-size:13px;max-width:280px;line-height:1.6;">
-                Entrez un montant, une durée et choisissez un pays pour voir l'impact de l'inflation.
+                Enter an amount, a time period and choose a country to see the impact of inflation.
             </div>
         </div>
         {% endif %}
@@ -347,7 +345,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 {% block javascripts %}
 {{ parent() }}
 <script>
-// ✅ Désactive Turbo sur ce formulaire au cas où
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('inflationForm');
     if (form) {
