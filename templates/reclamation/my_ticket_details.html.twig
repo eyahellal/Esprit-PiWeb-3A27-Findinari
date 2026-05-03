@@ -81,22 +81,263 @@
     .msg-wrapper.admin { align-items: flex-start; }
 
     .msg-meta { font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 4px; padding: 0 4px; }
-    .msg-bubble { padding: 12px 16px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.5; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .msg-bubble {
+        padding: 14px 20px;
+        border-radius: 16px;
+        max-width: 85%;
+        min-width: 80px;
+        width: fit-content;
+        font-size: 15px;
+        line-height: 1.6;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
 
     .msg-wrapper.user .msg-bubble { background: #22c55e; color: white; border-bottom-right-radius: 0; }
     .msg-wrapper.admin .msg-bubble { background: #ffffff; color: #1f2937; border: 1px solid #e5e7eb; border-bottom-left-radius: 0; }
 
     .chat-form button:hover { background-color: #16a34a; }
+
+    /* Redesigned Reply Form */
+    .reply-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 24px;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .reply-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 20px;
+    }
+
+    .modern-textarea-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .modern-textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 16px 20px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 16px;
+        font-family: inherit;
+        font-size: 14.5px;
+        outline: none;
+        transition: all 0.2s;
+        background: #ffffff;
+        resize: vertical;
+    }
+
+    .modern-textarea:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.08);
+    }
+
+    .reply-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .attach-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: none;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .attach-btn:hover {
+        color: #22c55e;
+        background: #f0fdf4;
+    }
+
+    .attach-btn i {
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .send-reply-btn {
+        background: #22c55e;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 14px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 15px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Voice Recorder Styles */
+    .recorder-controls {
+        display: none;
+        align-items: center;
+        gap: 15px;
+        background: #f0fdf4;
+        padding: 8px 16px;
+        border-radius: 12px;
+        border: 1px solid #bbf7d0;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .recording-dot {
+        width: 10px;
+        height: 10px;
+        background: #ef4444;
+        border-radius: 50%;
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+
+    .mic-btn {
+        color: #64748b;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mic-btn:hover {
+        color: #ef4444;
+        background: #fee2e2;
+    }
+
+    /* Audio Player Styles */
+    .voice-message-player {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0,0,0,0.03);
+        padding: 10px 16px;
+        border-radius: 12px;
+        width: 100%;
+        min-width: 240px;
+        margin-top: 8px;
+        box-sizing: border-box;
+    }
+
+    .user .voice-message-player {
+        background: rgba(255,255,255,0.15);
+        color: white;
+    }
+
+    .play-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        transition: transform 0.1s;
+    }
+
+    .waveform-mock {
+        flex: 1;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .wave-bar {
+        width: 3px;
+        height: 60%;
+        background: currentColor;
+        opacity: 0.4;
+        border-radius: 2px;
+    }
+
+    .send-reply-btn:hover {
+        background: #16a34a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+    }
+
+    .file-preview {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #22c55e;
+        font-weight: 700;
+        display: none;
+    }
+
+    /* Summary Modal Styles */
+    .summary-modal-overlay {
+        position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px); display: none; align-items: center;
+        justify-content: center; z-index: 9999; padding: 20px;
+        animation: fadeIn 0.3s ease;
+    }
+    .summary-modal {
+        background: white; width: 100%; max-width: 600px;
+        border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        overflow: hidden; animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .summary-modal-header {
+        padding: 24px 32px; background: #f8fafc; border-bottom: 1px solid #e5e7eb;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .summary-modal-content { padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+    .summary-item { display: flex; gap: 16px; }
+    .summary-icon {
+        width: 40px; height: 40px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .summary-text h5 { margin: 0 0 4px 0; font-size: 13px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+    .summary-text p { margin: 0; font-size: 15px; color: #1e293b; line-height: 1.6; font-weight: 500; }
+   
+    .sla-timer { font-size: 1.2rem; font-weight: 800; color: #22c55e; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+   
+    .animate-in {
+        animation: fadeIn 0.4s ease-out, slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 </style>
 
 {# Custom Support Header removed to show default navbar #}
 
 <div class="details-container">
     <div class="breadcrumb">
-        <a href="{{ path('app_home') }}">Home</a> &gt; 
-        <a href="{{ path('support_center') }}">Support</a> &gt; 
-        <a href="{{ path('app_user_tickets') }}">My Tickets</a> &gt; 
-        Ticket #{{ ticket.id }}
+        <a href="{{ path('app_home') }}">Home</a> &gt;
+        <a href="{{ path('support_center') }}">Support</a> &gt;
+        <a href="{{ path('app_user_tickets') }}">My Tickets</a> &gt;
+        Details
     </div>
 
     <!-- FLASH MESSAGES -->
@@ -240,15 +481,75 @@
                 {% endfor %}
             </div>
 
-            {{ form_start(form, {'action': path('app_user_message_new', {id: ticket.id}), 'attr': {'class': 'chat-form', 'novalidate': 'novalidate'}}) }}
-                <div style="flex: 1; display: flex; flex-direction: column;">
-                    {{ form_widget(form.contenu) }}
-                    <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
-                </div>
-                <button type="submit">
-                    <i class="fas fa-paper-plane"></i> Send
-                </button>
-            {{ form_end(form) }}
+
+            <div class="reply-card">
+                <div class="reply-title">Add a reply</div>
+               
+                {{ form_start(form, {
+                    'action': path('app_user_message_new', {id: ticket.id}),
+                    'attr': {
+                        'novalidate': 'novalidate',
+                        'id': 'replyForm'
+                    },
+                    'multipart': true
+                }) }}
+                    <div id="suggestionsBox" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; min-height:36px; align-items:center;"></div>
+                    <div class="modern-textarea-wrapper">
+                        {{ form_widget(form.contenu, {
+                            'attr': {
+                                'class': 'modern-textarea',
+                                'placeholder': 'Type your message here...'
+                            }
+                        }) }}
+                        <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.contenu) }}</div>
+                    </div>
+
+                    <div class="reply-actions">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label class="attach-btn" for="{{ form.attachment.vars.id }}" title="Attach a file">
+                                <i class="fas fa-paperclip"></i>
+                                <span>Attach file</span>
+                            </label>
+
+                            <div class="mic-btn" id="micBtn" title="Record voice message">
+                                <i class="fas fa-microphone" style="font-size: 20px;"></i>
+                            </div>
+                        </div>
+
+                        <div id="recorderPanel" class="recorder-controls">
+                            <div class="recording-dot"></div>
+                            <div class="timer" id="recordTimer" style="font-family: monospace; font-weight: 700; color: #166534; font-size: 14px;">00:00</div>
+                            <div style="flex:1;"></div>
+                            <button type="button" id="cancelRecord" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; font-size:13px;">Cancel</button>
+                            <button type="button" id="stopRecord" style="background:#22c55e; border:none; color:white; padding:6px 12px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;">Send Voice</button>
+                        </div>
+                       
+                        <div style="display:none !important;">
+                            {{ form_widget(form.attachment) }}
+                        </div>
+
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button type="button" class="btn transform-btn" data-mode="formalize" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Formalize & Professionalize">
+                                <i class="fas fa-magic"></i>
+                                Formalize
+                            </button>
+
+                            <button type="button" class="btn transform-btn" data-mode="correct" style="background:#fffcf0; color:#854d0e; border:1px solid #fef08a; font-weight:700; border-radius:14px; padding:12px 20px; font-size:14px; cursor:pointer;" title="Correct Vocabulary & Grammar">
+                                <i class="fas fa-spell-check"></i>
+                                Correct
+                            </button>
+
+                            <button type="submit" class="send-reply-btn" id="standardSendBtn">
+                                <i class="fas fa-paper-plane"></i>
+                                Send Reply
+                            </button>
+                        </div>
+                    </div>
+                   
+                    <div id="fileNameDisplay" class="file-preview"></div>
+                    <div style="color: #ef4444; font-size: 12px; margin-top: 4px;">{{ form_errors(form.attachment) }}</div>
+                {{ form_end(form) }}
+            </div>
         </div>
 
     </div>
@@ -276,6 +577,367 @@
     window.cancelEdit = function(id) {
         document.getElementById('msg-content-' + id).style.visibility = 'visible';
         document.getElementById('edit-form-' + id).style.display = 'none';
+    };
+
+    window.translateMsgToFR = async function(messageId, btn) {
+        if (btn.dataset.translated === '1') {
+            document.getElementById('msg-text-' + messageId).innerHTML = btn.dataset.original;
+            btn.innerHTML = btn.dataset.btnOriginal;
+            btn.dataset.translated = '0';
+            btn.style.color = '';
+            return;
+        }
+
+        const originalHtml = btn.innerHTML;
+        btn.dataset.btnOriginal = originalHtml;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating…';
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/message/${messageId}/translate`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (data.translated) {
+                const msgEl = document.getElementById('msg-text-' + messageId);
+                btn.dataset.original = msgEl.innerHTML;
+                msgEl.innerHTML = data.translated.replace(/\n/g, '<br>');
+                btn.innerHTML = '↩ Show original';
+                btn.style.color = '#22c55e';
+                btn.dataset.translated = '1';
+            } else {
+                alert('Translation failed: ' + (data.error || 'Unknown error'));
+                btn.innerHTML = originalHtml;
+            }
+        } catch(e) {
+            btn.innerHTML = originalHtml;
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    window.toggleAudio = function(btn, url) {
+        if (window.currentAudio && window.currentAudio.src === url) {
+            if (window.currentAudio.paused) {
+                window.currentAudio.play();
+                btn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                window.currentAudio.pause();
+                btn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        } else {
+            if (window.currentAudio) window.currentAudio.pause();
+            window.currentAudio = new Audio(url);
+            window.currentAudio.play();
+            btn.innerHTML = '<i class="fas fa-pause"></i>';
+            window.currentAudio.onended = () => { btn.innerHTML = '<i class="fas fa-play"></i>'; };
+        }
+    };
+
+    function initTicketDetails() {
+        console.log("Initializing Ticket Details (Admin-aligned)...");
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        const suggestionsBox = document.getElementById('suggestionsBox');
+        const textarea = document.getElementById('{{ form.contenu.vars.id }}');
+        const fileInput = document.getElementById('{{ form.attachment.vars.id }}');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+       
+        if (fileInput && fileNameDisplay) {
+            fileInput.onchange = () => {
+                if (fileInput.files && fileInput.files[0]) {
+                    const name = fileInput.files[0].name;
+                    fileNameDisplay.style.display = 'flex';
+                    fileNameDisplay.innerHTML = `<i class="fas fa-file-alt" style="margin-right:8px;"></i> Attached: <strong style="margin-left:4px;">${name}</strong> <i class="fas fa-times" style="margin-left:auto; cursor:pointer; color:#ef4444;" onclick="window.clearAttachment()"></i>`;
+                } else {
+                    fileNameDisplay.style.display = 'none';
+                }
+            };
+        }
+
+        window.clearAttachment = function() {
+            if (fileInput) fileInput.value = '';
+            if (fileNameDisplay) fileNameDisplay.style.display = 'none';
+        };
+
+        // Load Suggestions once
+        async function loadSuggestions() {
+            if (!suggestionsBox) return;
+           
+            // Keep old suggestions but dim them to show we are loading
+            const oldSuggestions = suggestionsBox.innerHTML;
+            const loadingHtml = '<span style="font-size:12px;color:#64748b;margin-left:5px;"><i class="fas fa-spinner fa-spin"></i> Refreshing AI ideas...</span>';
+           
+            if (!oldSuggestions.trim()) {
+                suggestionsBox.innerHTML = loadingHtml;
+            }
+
+            try {
+                const response = await fetch('{{ path('app_ticket_message_suggestions', {id: ticket.id}) }}');
+                if (!response.ok) throw new Error('API Error');
+                const data = await response.json();
+               
+                if (data.suggestions && data.suggestions.length > 0) {
+                    suggestionsBox.innerHTML = '';
+                    data.suggestions.forEach(suggestion => {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'suggestion-chip';
+                        chip.textContent = suggestion;
+                        chip.style.cssText = 'background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; padding:6px 14px; border-radius:10px; font-size:12.5px; font-weight:700; cursor:pointer; margin-right:8px; transition:all 0.2s; border-bottom: 2px solid #22c55e33;';
+                        chip.onmouseover = () => { chip.style.background = '#dcfce7'; chip.style.transform = 'translateY(-1px)'; };
+                        chip.onmouseout = () => { chip.style.background = '#f0fdf4'; chip.style.transform = 'none'; };
+                        chip.onclick = () => { textarea.value = suggestion; textarea.focus(); };
+                        suggestionsBox.appendChild(chip);
+                    });
+                } else if (!oldSuggestions.trim()) {
+                    suggestionsBox.innerHTML = '<span style="font-size:11px;color:#94a3b8;font-style:italic;">No suggestions right now. Try typing something first!</span>';
+                } else {
+                    // If no new suggestions found, just keep the old ones or show a retry
+                }
+            } catch (e) {
+                console.error('Suggestion Error:', e);
+                if (!oldSuggestions.trim()) {
+                    suggestionsBox.innerHTML = '<button onclick="loadSuggestions()" style="background:none; border:none; color:#16a34a; font-size:12px; cursor:pointer; font-weight:700;"><i class="fas fa-redo"></i> Retry suggestions</button>';
+                }
+            }
+        }
+
+        if (textarea) loadSuggestions();
+
+        // AI Transformations
+        document.querySelectorAll('.transform-btn').forEach(btn => {
+            btn.onclick = async () => {
+                if (!textarea) return;
+                const currentText = textarea.value.trim();
+                if (!currentText) return;
+
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                try {
+                    const response = await fetch('{{ path('app_message_reformulate') }}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: currentText, mode: btn.dataset.mode })
+                    });
+                    const data = await response.json();
+                    if (data.transformed) textarea.value = data.transformed;
+                } catch (e) {
+                    console.error('AI Transform Error:', e);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            };
+        });
+
+        // Polling
+        var lastMessageId = {{ messages|length > 0 ? messages|last.id : 0 }};
+        function pollMessages() {
+            const url = "{{ path('app_ticket_fetch_new_messages', {id: ticket.id, lastId: '999999'}) }}".replace('999999', lastMessageId);
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.json())
+            .then(data => {
+                if (data.count > 0) {
+                    const chatContainer = document.getElementById('chatContainer');
+                    const placeholder = document.getElementById('noMessagesPlaceholder');
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.html, 'text/html');
+                    const newMessages = doc.querySelectorAll('[id^="msg-wrapper-"]');
+                   
+                    let appended = false;
+                    newMessages.forEach(msg => {
+                        if (!document.getElementById(msg.id)) {
+                            if (placeholder) placeholder.remove();
+                            chatContainer.appendChild(msg);
+                            appended = true;
+                        }
+                    });
+
+                    if (appended) {
+                        lastMessageId = data.lastId;
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    } else if (data.lastId > lastMessageId) {
+                        lastMessageId = data.lastId;
+                    }
+                }
+            }).catch(e => {});
+        }
+
+        if (window.chatPollingInterval) clearInterval(window.chatPollingInterval);
+        window.chatPollingInterval = setInterval(pollMessages, 3000);
+
+        // --- SLA Timer Logic ---
+        const timers = document.querySelectorAll('.sla-timer');
+        const serverTimeStr = '{{ "now"|date("c") }}';
+        const serverNow = new Date(serverTimeStr);
+        const clientNow = new Date();
+        const timeOffset = serverNow.getTime() - clientNow.getTime();
+
+        function formatDuration(totalSeconds) {
+            const isNegative = totalSeconds < 0;
+            const absSeconds = Math.abs(totalSeconds);
+            const days = Math.floor(absSeconds / 86400);
+            const hours = Math.floor((absSeconds % 86400) / 3600);
+            const minutes = Math.floor((absSeconds % 3600) / 60);
+            const seconds = absSeconds % 60;
+            let text = isNegative ? '- ' : '';
+            if (days > 0) text += days + 'd ';
+            text += String(hours).padStart(2, '0') + 'h ' + String(minutes).padStart(2, '0') + 'm ' + String(seconds).padStart(2, '0') + 's';
+            return text;
+        }
+
+        function updateTimer(element) {
+            const deadline = new Date(element.dataset.deadline);
+            const now = new Date(Date.now() + timeOffset);
+            const diff = deadline.getTime() - now.getTime();
+            const totalSeconds = Math.floor(diff / 1000);
+            element.textContent = formatDuration(totalSeconds);
+            if (totalSeconds <= 0) {
+                element.style.color = '#ef4444';
+                element.textContent = "BREACHED";
+            } else if (totalSeconds <= 3600) element.style.color = '#ef4444';
+            else if (totalSeconds <= 24 * 3600) element.style.color = '#f59e0b';
+            else element.style.color = '#22c55e';
+        }
+
+        if (timers.length > 0) {
+            timers.forEach(t => {
+                updateTimer(t);
+                setInterval(() => updateTimer(t), 1000);
+            });
+        }
+
+        // AI Summary logic
+        const summarizeBtn = document.getElementById('summarizeBtn');
+        const summaryModal = document.getElementById('summaryModalOverlay');
+       
+        window.closeSummaryModal = function() {
+            if (summaryModal) summaryModal.style.display = 'none';
+        };
+
+        if (summarizeBtn) {
+            summarizeBtn.addEventListener('click', async () => {
+                const originalContent = summarizeBtn.innerHTML;
+                summarizeBtn.disabled = true;
+                summarizeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+
+                try {
+                    const response = await fetch('{{ path('app_ticket_summary', {id: ticket.id}) }}');
+                    const data = await response.json();
+                    if (data.problem) {
+                        document.getElementById('summaryProblem').textContent = data.problem;
+                        document.getElementById('summaryProcess').textContent = data.process;
+                        document.getElementById('summarySolution').textContent = data.solution;
+                        const noteWrapper = document.getElementById('summaryNoteWrapper');
+                        if (data.adaptive_note) {
+                            document.getElementById('summaryNote').textContent = data.adaptive_note;
+                            noteWrapper.style.display = 'block';
+                        } else noteWrapper.style.display = 'none';
+                        if (summaryModal) summaryModal.style.display = 'flex';
+                    }
+                } catch (e) {
+                    alert('Connection error while fetching summary.');
+                } finally {
+                    summarizeBtn.disabled = false;
+                    summarizeBtn.innerHTML = originalContent;
+                }
+            });
+        }
+
+        if (summaryModal) {
+            summaryModal.addEventListener('click', (e) => {
+                if (e.target === summaryModal) closeSummaryModal();
+            });
+        }
+
+        // Form Submit
+        const replyForm = document.getElementById('replyForm');
+        if (replyForm) {
+            replyForm.onsubmit = () => {
+                clearInterval(window.chatPollingInterval);
+            };
+        }
+
+        // Voice
+        let mediaRecorder;
+        let audioChunks = [];
+        let startTime;
+        let timerInterval;
+        const micBtn = document.getElementById('micBtn');
+        const recorderPanel = document.getElementById('recorderPanel');
+        const standardSendBtn = document.getElementById('standardSendBtn');
+        const stopRecordBtn = document.getElementById('stopRecord');
+        const cancelRecordBtn = document.getElementById('cancelRecord');
+        const timerDisplay = document.getElementById('recordTimer');
+
+        if (micBtn) {
+            micBtn.onclick = async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob, 'voice.webm');
+                        try {
+                            const res = await fetch("{{ path('app_user_message_voice', {id: ticket.id}) }}", {
+                                method: 'POST',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                                body: formData
+                            });
+                            const result = await res.json();
+                            if (result.success) window.location.reload();
+                            else alert('Failed: ' + result.error);
+                        } catch (err) { alert('Upload error'); }
+                    };
+                    mediaRecorder.start();
+                    micBtn.style.display = 'none';
+                    standardSendBtn.style.display = 'none';
+                    recorderPanel.style.display = 'flex';
+                    startTime = Date.now();
+                    timerInterval = setInterval(() => {
+                        const sec = Math.floor((Date.now() - startTime) / 1000);
+                        timerDisplay.textContent = `${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`;
+                    }, 1000);
+                } catch (e) { alert('Mic denied'); }
+            };
+            stopRecordBtn.onclick = () => {
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                }
+                clearInterval(timerInterval);
+            };
+            cancelRecordBtn.onclick = () => {
+                if (mediaRecorder) {
+                    mediaRecorder.onstop = null;
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+                }
+                clearInterval(timerInterval);
+                recorderPanel.style.display = 'none';
+                micBtn.style.display = 'flex';
+                standardSendBtn.style.display = 'flex';
+            };
+        }
     }
+document.addEventListener('DOMContentLoaded', initTicketDetails);
+document.addEventListener('turbo:load', initTicketDetails);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initTicketDetails();
+}
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.message-actions-dropdown')) {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.style.display = 'none');
+        }
+    });
+})();
 </script>
 {% endblock %} 
