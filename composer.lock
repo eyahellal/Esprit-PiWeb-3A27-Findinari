@@ -9405,6 +9405,7 @@
             "time": "2022-02-21T01:04:05+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "phpstan/phpstan",
             "version": "2.1.54",
             "dist": {
@@ -9458,6 +9459,8 @@
             "time": "2026-04-29T13:31:09+00:00"
         },
         {
+=======
+>>>>>>> 36504089418a6b42cccc6a838fc1a622b624758c
             "name": "phpunit/php-code-coverage",
             "version": "11.0.12",
             "source": {
@@ -11489,5 +11492,10 @@
         "ext-iconv": "*"
     },
     "platform-dev": {},
+<<<<<<< HEAD
     "plugin-api-version": "2.9.0"
 }
+=======
+    "plugin-api-version": "2.6.0"
+}
+>>>>>>> 36504089418a6b42cccc6a838fc1a622b624758c
