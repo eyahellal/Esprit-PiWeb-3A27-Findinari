@@ -14,14 +14,37 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/stats')]
 class StatsController extends AbstractController
 {
-    private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            $user = $entityManager->getRepository(Utilisateur::class)->find(1);
-        }
-        return $user;
+   private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
+{
+    $user = $this->getUser();
+
+    if (!$user) {
+        $user = $entityManager->getRepository(Utilisateur::class)->find(1);
     }
+
+    if (!$user) {
+        $user = $entityManager->getRepository(Utilisateur::class)
+            ->findOneBy(['gmail' => 'admin@findinari.com']);
+    }
+
+    // Create admin user if none exists
+    if (!$user) {
+        $user = new Utilisateur();
+        $user->setNom('Admin');
+        $user->setPrenom('User');
+        $user->setGmail('admin@findinari.com');
+        $user->setMdp('password');
+        $user->setRole('ADMIN');
+        $user->setStatut('ACTIF');
+        $user->setDateCreation(new \DateTime());
+        $user->setDateModification(new \DateTime());
+        $user->setFaceEnabled(false);
+        $entityManager->persist($user);
+        $entityManager->flush();
+    }
+
+    return $user;
+}
 
     #[Route('/', name: 'app_stats_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
