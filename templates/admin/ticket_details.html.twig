@@ -634,6 +634,19 @@
                         {% endif %}
                     </div>
 
+                    <span class="info-label">Customer Sentiment</span>
+                    <div style="margin-bottom:20px;">
+                        {% if sentiment is defined and sentiment.messages_count > 0 %}
+                            {% set color = sentiment.label == 'satisfied' ? '#16a34a' : (sentiment.label == 'unsatisfied' ? '#dc2626' : '#64748b') %}
+                            <div style="display: flex; align-items: center; gap: 8px; color: {{ color }}; font-weight: 800; font-size: 16px;">
+                                <span>{{ sentiment.label|capitalize }}</span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Analyzed from last {{ sentiment.messages_count }} user messages</div>
+                        {% else %}
+                            <span style="color: var(--text-muted); font-style: italic; font-size: 13px;">No user messages to analyze</span>
+                        {% endif %}
+                    </div>
+
                     <button type="button" id="summarizeBtn" class="btn" style="width:100%; margin-bottom:20px; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
                         <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v19M5 8h14M5 16h14"/></svg>
                         Get Smart Summary
