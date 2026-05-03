@@ -36,10 +36,14 @@ final class Dotenv
     private string $data;
     private int $end;
     private array $values = [];
+    private array $overriddenValues = [];
+    private array $loadedRawVars = [];
     private string $envKey;
     private string $debugKey;
     private array $prodEnvs = ['prod'];
     private bool $usePutenv = false;
+    private bool $deferPutenv = false;
+    private array $pendingPutenv = [];
 
     public function __construct(string $envKey = 'APP_ENV', string $debugKey = 'APP_DEBUG')
     {
@@ -81,8 +85,13 @@ final class Dotenv
      */
     public function load(string $path, string ...$extraPaths): void
     {
-        $this->doLoad(false, \func_get_args());
-        $this->resolveLoadedVars();
+        $this->deferPutenv = true;
+        try {
+            $this->doLoad(false, \func_get_args());
+            $this->resolveLoadedVars();
+        } finally {
+            $this->deferPutenv = false;
+        }
     }
 
     /**
@@ -102,6 +111,7 @@ final class Dotenv
      */
     public function loadEnv(string $path, ?string $envKey = null, string $defaultEnv = 'dev', array $testEnvs = ['test'], bool $overrideExistingVars = false): void
     {
+        $this->deferPutenv = true;
         try {
             $k = $envKey ?? $this->envKey;
 
@@ -137,7 +147,11 @@ final class Dotenv
                 $this->doLoad($overrideExistingVars, [$p]);
             }
         } finally {
-            $this->resolveLoadedVars();
+            try {
+                $this->resolveLoadedVars();
+            } finally {
+                $this->deferPutenv = false;
+            }
         }
     }
 
@@ -178,8 +192,13 @@ final class Dotenv
      */
     public function overload(string $path, string ...$extraPaths): void
     {
-        $this->doLoad(true, \func_get_args());
-        $this->resolveLoadedVars();
+        $this->deferPutenv = true;
+        try {
+            $this->doLoad(true, \func_get_args());
+            $this->resolveLoadedVars();
+        } finally {
+            $this->deferPutenv = false;
+        }
     }
 
     /**
@@ -205,7 +224,11 @@ final class Dotenv
             }
 
             if ($this->usePutenv) {
-                putenv("$name=$value");
+                if ($this->deferPutenv) {
+                    $this->pendingPutenv[$name] = true;
+                } else {
+                    putenv("$name=$value");
+                }
             }
 
             $_ENV[$name] = $value;
@@ -644,7 +667,21 @@ final class Dotenv
                 throw new FormatException('Loading files containing NUL bytes is not supported.', new FormatExceptionContext($data, $path, 1, 0));
             }
 
-            $this->populate($this->parseRaw($data, $path), $overrideExistingVars);
+            $values = $this->parseRaw($data, $path);
+
+            $loadedVars = array_flip(explode(',', $_SERVER['SYMFONY_DOTENV_VARS'] ?? $_ENV['SYMFONY_DOTENV_VARS'] ?? ''));
+            unset($loadedVars['']);
+
+            foreach ($values as $name => $_) {
+                if (!isset($this->overriddenValues[$name]) && isset($_ENV[$name])) {
+                    $this->overriddenValues[$name] = $_ENV[$name];
+                }
+                if (isset($loadedVars[$name]) || $overrideExistingVars || !isset($_ENV[$name])) {
+                    $this->loadedRawVars[$name] = true;
+                }
+            }
+
+            $this->populate($values, $overrideExistingVars);
         }
     }
 
@@ -697,6 +734,10 @@ final class Dotenv
         $loadedVars = array_flip(explode(',', $_SERVER['SYMFONY_DOTENV_VARS'] ?? $_ENV['SYMFONY_DOTENV_VARS'] ?? ''));
         unset($loadedVars['']);
 
+        $rawVars = $this->loadedRawVars;
+        $this->loadedRawVars = [];
+        unset($rawVars['SYMFONY_DOTENV_VARS']);
+
         $this->values = [];
         $this->path = '';
         $this->data = '';
@@ -708,10 +749,7 @@ final class Dotenv
         // (e.g. MY_VAR="${MY_VAR:-default}") so their own raw value is hidden
         // during resolution, allowing the default to trigger correctly.
         $selfReferencingVars = [];
-        foreach ($loadedVars as $name => $_) {
-            if ('SYMFONY_DOTENV_VARS' === $name) {
-                continue;
-            }
+        foreach ($rawVars as $name => $_) {
             $value = $_ENV[$name] ?? '';
             if (str_contains($value, '$') && preg_match('/\$\{?'.preg_quote($name, '/').'(?![A-Za-z0-9_])/', $value)) {
                 $selfReferencingVars[$name] = true;
@@ -720,10 +758,7 @@ final class Dotenv
 
         for ($pass = 0; $pass < 5; ++$pass) {
             $resolved = [];
-            foreach ($loadedVars as $name => $_) {
-                if ('SYMFONY_DOTENV_VARS' === $name) {
-                    continue;
-                }
+            foreach ($rawVars as $name => $_) {
                 if (!str_contains($value = $_ENV[$name] ?? '', '$')) {
                     continue;
                 }
@@ -731,10 +766,19 @@ final class Dotenv
                 if (isset($selfReferencingVars[$name])) {
                     $envBackup = $_ENV[$name] ?? null;
                     $serverBackup = $_SERVER[$name] ?? null;
-                    unset($_ENV[$name], $_SERVER[$name]);
+                    if (isset($this->overriddenValues[$name])) {
+                        $_ENV[$name] = $this->overriddenValues[$name];
+                        $_SERVER[$name] = $this->overriddenValues[$name];
+                    } else {
+                        unset($_ENV[$name], $_SERVER[$name]);
+                    }
                     if ($this->usePutenv) {
-                        $getenvBackup = $this->usePutenv ? (string) getenv($name) : null;
-                        putenv($name);
+                        $getenvBackup = (string) getenv($name);
+                        if (isset($this->overriddenValues[$name])) {
+                            putenv("$name={$this->overriddenValues[$name]}");
+                        } else {
+                            putenv($name);
+                        }
                     }
                 }
 
@@ -768,10 +812,7 @@ final class Dotenv
 
         // Restore literal $ signs and unescape backslashes
         $restored = [];
-        foreach ($loadedVars as $name => $_) {
-            if ('SYMFONY_DOTENV_VARS' === $name) {
-                continue;
-            }
+        foreach ($rawVars as $name => $_) {
             $value = $_ENV[$name] ?? '';
             if ($value !== $newValue = str_replace(["\x00", '\\\\'], ['$', '\\'], $value)) {
                 $restored[$name] = $newValue;
@@ -781,7 +822,15 @@ final class Dotenv
             $this->populate($restored, true);
         }
 
+        if ($this->usePutenv && $this->pendingPutenv) {
+            foreach ($this->pendingPutenv as $name => $_) {
+                putenv($name.'='.($_ENV[$name] ?? ''));
+            }
+            $this->pendingPutenv = [];
+        }
+
         $this->values = [];
+        $this->overriddenValues = [];
         unset($this->path, $this->data, $this->lineno, $this->cursor, $this->end);
     }
 }
