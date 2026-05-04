@@ -1,5 +1,5 @@
 {% extends 'base.html.twig' %}
-{% block title %}Profil — {{ userData.userName }}{% endblock %}
+{% block title %}Profile — {{ userData.userName }}{% endblock %}
 
 {% block body %}
 
@@ -215,7 +215,7 @@
   }
   .section-label::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
 
-  /* ── OBJECTIF CARDS ── */
+  /* ── GOAL CARDS ── */
   .obj-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -324,8 +324,8 @@
 
   {# ── NAV ── #}
   <div class="det-nav">
-    <a href="{{ path('top_contributions', {userId: userData.userId}) }}">← Top contributeurs</a>
-    <a href="{{ path('objectif_index') }}">🎯 Mes objectifs</a>
+    <a href="{{ path('top_contributions', {userId: userData.userId}) }}">← Top contributors</a>
+    <a href="{{ path('objectif_index') }}">🎯 My goals</a>
   </div>
 
   {# ══ HERO MAGAZINE ══ #}
@@ -348,7 +348,7 @@
         <div class="profile-sub">
           <span>📍 {{ userData.pays }}</span>
           <span class="profile-sub-sep">·</span>
-          <span>Rang #{{ userData.rank }}</span>
+          <span>Rank #{{ userData.rank }}</span>
         </div>
 
         {% set totalCollected = 0 %}{% set totalContribs = 0 %}
@@ -360,7 +360,7 @@
         <div class="profile-kpis">
           <div class="profile-kpi">
             <div class="profile-kpi-val">{{ userData.objectifsAtteints|length }}</div>
-            <div class="profile-kpi-lbl">Objectifs atteints</div>
+            <div class="profile-kpi-lbl">Goals achieved</div>
           </div>
           <div class="profile-kpi">
             <div class="profile-kpi-val">{{ totalContribs }}</div>
@@ -368,7 +368,7 @@
           </div>
           <div class="profile-kpi">
             <div class="profile-kpi-val">{{ totalCollected|number_format(0, ',', ' ') }}</div>
-            <div class="profile-kpi-lbl">Total collecté</div>
+            <div class="profile-kpi-lbl">Total collected</div>
           </div>
         </div>
       </div>
@@ -382,21 +382,21 @@
     </div>
     <div class="medal-text">
       <div class="medal-title">
-        {% if userData.rank == 1 %}Médaille d'or — Champion absolu
-        {% elseif userData.rank == 2 %}Médaille d'argent — Vice-champion
-        {% elseif userData.rank == 3 %}Médaille de bronze — 3ème au classement
-        {% else %}Contributeur actif — Rang #{{ userData.rank }}
+        {% if userData.rank == 1 %}Gold medal — Absolute champion
+        {% elseif userData.rank == 2 %}Silver medal — Vice‑champion
+        {% elseif userData.rank == 3 %}Bronze medal — 3rd in ranking
+        {% else %}Active contributor — Rank #{{ userData.rank }}
         {% endif %}
       </div>
       <div class="medal-desc">
-        {% if userData.rank == 1 %}{{ userData.userName }} est le meilleur contributeur de la plateforme avec {{ userData.objectifsAtteints|length }} objectifs atteints et {{ totalCollected|number_format(0,',',' ') }} collectés au total.
-        {% else %}{{ userData.userName }} fait partie des meilleurs contributeurs de la plateforme avec {{ userData.objectifsAtteints|length }} objectif{{ userData.objectifsAtteints|length > 1 ? 's' : '' }} atteint{{ userData.objectifsAtteints|length > 1 ? 's' : '' }}.
+        {% if userData.rank == 1 %}{{ userData.userName }} is the best contributor on the platform with {{ userData.objectifsAtteints|length }} achieved goals and {{ totalCollected|number_format(0,',',' ') }} total collected.
+        {% else %}{{ userData.userName }} is among the top contributors on the platform with {{ userData.objectifsAtteints|length }} achieved goal{{ userData.objectifsAtteints|length > 1 ? 's' : '' }}.
         {% endif %}
       </div>
     </div>
     <div class="medal-rank-pill">
       {% if userData.rank == 1 %}🥇{% elseif userData.rank == 2 %}🥈{% elseif userData.rank == 3 %}🥉{% else %}🎖{% endif %}
-      Rang #{{ userData.rank }}
+      Rank #{{ userData.rank }}
     </div>
   </div>
 
@@ -405,7 +405,7 @@
     <div class="stat-card">
       <div class="stat-card-icon">🎯</div>
       <div class="stat-card-val">{{ userData.objectifsAtteints|length }}</div>
-      <div class="stat-card-lbl">Objectifs atteints</div>
+      <div class="stat-card-lbl">Goals achieved</div>
     </div>
     <div class="stat-card">
       <div class="stat-card-icon">📦</div>
@@ -415,26 +415,26 @@
     <div class="stat-card">
       <div class="stat-card-icon">💰</div>
       <div class="stat-card-val">{{ totalCollected|number_format(0,',',' ') }}</div>
-      <div class="stat-card-lbl">Total collecté</div>
+      <div class="stat-card-lbl">Total collected</div>
     </div>
   </div>
 
-  {# ── OBJECTIFS DÉTAIL ── #}
-  <div class="section-label">🏆 Objectifs réalisés</div>
+  {# ── DETAILED GOALS ── #}
+  <div class="section-label">🏆 Achieved goals</div>
 
   {% if userData.objectifsAtteints|length == 0 %}
     <div style="text-align:center;padding:3rem;color:var(--muted);background:var(--surface);border-radius:16px;border:0.5px dashed #ddd;">
-      Aucun objectif atteint pour le moment.
+      No goals achieved yet.
     </div>
   {% else %}
     <div class="obj-grid">
       {% for item in userData.objectifsAtteints %}
         {% set icon = '🏆' %}
-        {% if 'voyage' in item.objectif.titre|lower or 'vacances' in item.objectif.titre|lower %}{% set icon = '✈️' %}
-        {% elseif 'voiture' in item.objectif.titre|lower or 'auto' in item.objectif.titre|lower %}{% set icon = '🚗' %}
-        {% elseif 'maison' in item.objectif.titre|lower or 'appart' in item.objectif.titre|lower %}{% set icon = '🏠' %}
-        {% elseif 'etude' in item.objectif.titre|lower or 'école' in item.objectif.titre|lower %}{% set icon = '📚' %}
-        {% elseif 'retraite' in item.objectif.titre|lower %}{% set icon = '🌿' %}
+        {% if 'voyage' in item.objectif.titre|lower or 'vacances' in item.objectif.titre|lower or 'trip' in item.objectif.titre|lower or 'travel' in item.objectif.titre|lower %}{% set icon = '✈️' %}
+        {% elseif 'voiture' in item.objectif.titre|lower or 'auto' in item.objectif.titre|lower or 'car' in item.objectif.titre|lower %}{% set icon = '🚗' %}
+        {% elseif 'maison' in item.objectif.titre|lower or 'appart' in item.objectif.titre|lower or 'house' in item.objectif.titre|lower or 'home' in item.objectif.titre|lower %}{% set icon = '🏠' %}
+        {% elseif 'etude' in item.objectif.titre|lower or 'école' in item.objectif.titre|lower or 'study' in item.objectif.titre|lower or 'school' in item.objectif.titre|lower %}{% set icon = '📚' %}
+        {% elseif 'retraite' in item.objectif.titre|lower or 'retirement' in item.objectif.titre|lower %}{% set icon = '🌿' %}
         {% elseif 'invest' in item.objectif.titre|lower %}{% set icon = '📈' %}
         {% endif %}
 
@@ -442,13 +442,13 @@
           <div class="obj-card-top">
             <div class="obj-card-top-accent"></div>
             <div class="obj-card-top-icon">{{ icon }}</div>
-            <div class="obj-card-top-badge">✔ Atteint</div>
+            <div class="obj-card-top-badge">✔ Achieved</div>
           </div>
           <div class="obj-card-body">
             <div class="obj-card-title">{{ item.objectif.titre }}</div>
             <div class="obj-card-meta">
               <span>📅 {{ item.objectif.dateDebut|date('d/m/Y') }}</span>
-              <span>⏱ {{ item.objectif.duree }} mois</span>
+              <span>⏱ {{ item.objectif.duree }} months</span>
             </div>
             <div class="obj-amounts">
               <span class="obj-amt-collected">{{ item.stats.totalCollected|number_format(0,',', ' ') }}</span>
@@ -456,7 +456,7 @@
               <span class="obj-amt-target">{{ item.stats.targetAmount|number_format(0,',',' ') }}</span>
             </div>
             <div class="obj-prog-bar"><div class="obj-prog-fill"></div></div>
-            <div class="obj-prog-info"><span>Progression</span><span style="color:var(--green);font-weight:600;">100% ✓</span></div>
+            <div class="obj-prog-info"><span>Progress</span><span style="color:var(--green);font-weight:600;">100% ✓</span></div>
 
             {% if item.contributions is defined and item.contributions|length > 0 %}
               <div class="obj-contribs">
@@ -469,17 +469,17 @@
                   </span>
                 {% endfor %}
                 {% if item.contributions|length > 4 %}
-                  <span class="contrib-chip" style="color:var(--muted);">+{{ item.contributions|length - 4 }} autres</span>
+                  <span class="contrib-chip" style="color:var(--muted);">+{{ item.contributions|length - 4 }} more</span>
                 {% endif %}
               </div>
             {% else %}
               <div class="obj-contribs">
                 <div class="obj-contribs-title">{{ item.stats.contributionCount }} contribution{{ item.stats.contributionCount > 1 ? 's' : '' }}</div>
-                <span style="font-size:11px;color:var(--muted);">Total : {{ item.stats.totalCollected|number_format(2,',',' ') }}</span>
+                <span style="font-size:11px;color:var(--muted);">Total: {{ item.stats.totalCollected|number_format(2,',',' ') }}</span>
               </div>
             {% endif %}
 
-            <div class="obj-success-banner">🏆 Objectif atteint avec succès !</div>
+            <div class="obj-success-banner">🏆 Goal successfully achieved!</div>
           </div>
         </div>
       {% endfor %}
@@ -488,14 +488,14 @@
 
   {# ── TIMELINE ── #}
   {% if userData.objectifsAtteints|length > 0 %}
-    <div class="section-label">📅 Historique chronologique</div>
+    <div class="section-label">📅 Chronological history</div>
     <div class="timeline">
       {% for item in userData.objectifsAtteints|sort((a,b) => b.objectif.dateDebut <=> a.objectif.dateDebut) %}
         <div class="timeline-item">
           <div class="timeline-dot"></div>
           <div class="timeline-content">
             <div class="timeline-title">🏆 {{ item.objectif.titre }}</div>
-            <div class="timeline-meta">Démarré le {{ item.objectif.dateDebut|date('d/m/Y') }} · {{ item.stats.totalCollected|number_format(0,',',' ') }} collectés · {{ item.stats.contributionCount }} contribution{{ item.stats.contributionCount > 1 ? 's' : '' }}</div>
+            <div class="timeline-meta">Started on {{ item.objectif.dateDebut|date('d/m/Y') }} · {{ item.stats.totalCollected|number_format(0,',',' ') }} collected · {{ item.stats.contributionCount }} contribution{{ item.stats.contributionCount > 1 ? 's' : '' }}</div>
           </div>
         </div>
       {% endfor %}
