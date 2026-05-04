@@ -747,6 +747,13 @@
                     </svg>
                     Trends
                 </a>
+                <a href="{{ path('ml_dashboard') }}" class="tb-btn" title="ML Predictions" style="gap:0;padding:0 10px;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+</a>
                 {% if selectedWalletId %}
                     <a href="{{ path('objectif_new') }}" class="tb-btn tb-btn--primary">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -895,10 +902,10 @@
                     <div class="ac-title-main">Alerts</div>
                     <div class="ac-sub">Notifications &amp; reminders</div>
                 </div>
-                <span class="ac-badge" id="acBadge">0</span>
-                <span class="ac-arrow">›</span>
+                
             </div>
         </div>
+        
 
         {# ── MAIN LAYOUT ── #}
         <div class="main-layout">
@@ -941,6 +948,7 @@
                     </div>
                 </div>
             </div>
+            
 
             {# ── CAROUSEL ZONE ── #}
             <div class="carousel-zone">

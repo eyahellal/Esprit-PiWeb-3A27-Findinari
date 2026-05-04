@@ -33,7 +33,6 @@ class MLService:
         print("[MLService] Modèles chargés avec succès.")
 
     def _build_input(self, data: dict) -> np.ndarray:
-        """Construit le vecteur de features depuis les données brutes d'un objectif."""
         montant      = float(data.get("montant_cible",       0))
         total_c      = float(data.get("total_contributions", 0))
         nb_c         = int(data.get("nb_contributions",      0))
@@ -66,7 +65,15 @@ class MLService:
         proba        = float(self.clf.predict_proba(X)[0][1])
         va_atteindre = bool(self.clf.predict(X)[0])
         pct_prevu    = float(self.reg.predict(X)[0].clip(0, 100))
-        jours_rest   = int(self.days.predict(X)[0].clip(0, 730))
+        pct_actuel = round((float(objectif_data.get("total_contributions", 0)) 
+             / float(objectif_data.get("montant_cible", 1))) * 100, 2)
+        pct_prevu  = max(pct_prevu, pct_actuel) 
+
+        # ✅ CALCUL RÉEL des jours restants (pas le modèle ML)
+        duree_mois   = int(objectif_data.get("duree_mois", 12))
+        jours_depuis = int(objectif_data.get("jours_depuis_debut", 0))
+        duree_jours  = duree_mois * 30
+        jours_rest   = max(0, duree_jours - jours_depuis)
 
         from datetime import datetime, timedelta
         date_fin = (datetime.now() + timedelta(days=jours_rest)).strftime("%Y-%m-%d")
@@ -120,7 +127,6 @@ if __name__ == "__main__":
     svc = MLService()
 
     if len(sys.argv) > 1 and sys.argv[1] == "server":
-        # ── Mode Flask API ─────────────────────────────────────────
         try:
             from flask import Flask, request, jsonify
             app = Flask(__name__)
@@ -149,21 +155,17 @@ if __name__ == "__main__":
             print("Flask non installé. pip install flask")
 
     elif len(sys.argv) > 2 and sys.argv[1] == "predict":
-        # ── Mode CLI argument direct ───────────────────────────────
         data   = json.loads(sys.argv[2])
         result = svc.predict(data)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif len(sys.argv) > 2 and sys.argv[1] == "predict-file":
-        # ⭐ Mode fichier temporaire — utilisé par Symfony/PHP sur Windows
-        # Évite tous les problèmes d'échappement de guillemets
-        with open(sys.argv[2], 'r', encoding='utf-8') as f:
+        with open(sys.argv[2], 'r', encoding='utf-8-sig') as f:
             data = json.load(f)
         result = svc.predict(data)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     else:
-        # ── Démonstration ──────────────────────────────────────────
         print("\n" + "="*55)
         print("DÉMONSTRATION — 3 profils d'objectifs")
         print("="*55)
