@@ -1,0 +1,31 @@
+{
+  "features": [
+    "montant_cible",
+    "duree_mois",
+    "wallet_solde",
+    "total_contributions",
+    "nb_contributions",
+    "pct_progres",
+    "avg_contrib",
+    "freq_contrib_mois",
+    "jours_depuis_debut",
+    "jours_sans_contrib",
+    "reste_a_atteindre",
+    "ratio_solde_cible"
+  ],
+  "models": {
+    "classifier": "objectif_classifier.pkl",
+    "regressor": "objectif_regressor.pkl",
+    "days": "objectif_days_predictor.pkl"
+  },
+  "metrics": {
+    "accuracy": 0.9688,
+    "cv_mean": 0.9525,
+    "reg_mae": 24.64,
+    "reg_r2": -0.1874,
+    "days_mae": 203.4,
+    "days_r2": -0.0353
+  },
+  "n_samples": 800,
+  "trained_at": "2026-05-04T00:19:19.801684"
+}

@@ -1,0 +1,416 @@
+{% extends 'base.html.twig' %}
+{% block title %}ML Predictions Dashboard{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+    --green:       #1D9E75;
+    --green-dark:  #0F6E56;
+    --green-deep:  #085041;
+    --green-light: #E1F5EE;
+    --green-mid:   #9FE1CB;
+    --amber:       #BA7517;
+    --amber-light: #FAEEDA;
+    --amber-mid:   #FAC775;
+    --red:         #E24B4A;
+    --red-dark:    #A32D2D;
+    --red-light:   #FCEBEB;
+    --red-mid:     #F7C1C1;
+    --blue:        #378ADD;
+    --blue-dark:   #185FA5;
+    --blue-light:  #E6F1FB;
+    --bg:          #F0EDE8;
+    --surface:     #FFFFFF;
+    --surface-2:   #F8F7F5;
+    --text:        #111208;
+    --text-2:      #3D3C35;
+    --muted:       #7A7870;
+    --border:      rgba(0,0,0,.09);
+    --radius:      14px;
+    --radius-sm:   9px;
+    --shadow-sm:   0 1px 3px rgba(0,0,0,.05);
+    --shadow-md:   0 4px 14px rgba(0,0,0,.08);
+    --shadow-lg:   0 10px 30px rgba(0,0,0,.11);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+/* ── TOPBAR ── */
+.topbar {
+    position: sticky; top: 0; z-index: 200;
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    backdrop-filter: blur(12px);
+}
+.topbar-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 0 2rem; height: 56px;
+    display: flex; align-items: center; gap: 1.25rem;
+}
+.topbar-brand { font-family: 'DM Serif Display', serif; font-size: 19px; color: var(--text); text-decoration: none; }
+.topbar-brand em { color: var(--green); font-style: italic; }
+.topbar-sep { width: 1px; height: 18px; background: var(--border); }
+.topbar-crumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.topbar-crumb a { color: var(--muted); text-decoration: none; }
+.topbar-crumb a:hover { color: var(--text); }
+.topbar-crumb-cur { color: var(--text); font-weight: 500; }
+.topbar-right { margin-left: auto; }
+.tb-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 32px; padding: 0 13px; font-size: 12px; font-weight: 500;
+    border-radius: var(--radius-sm); cursor: pointer; text-decoration: none;
+    border: 0.5px solid var(--border); background: transparent; color: var(--text-2);
+    transition: all .15s;
+}
+.tb-btn:hover { background: var(--surface-2); color: var(--text); }
+.tb-btn svg { width: 13px; height: 13px; }
+
+/* ── PAGE ── */
+.ml-page { max-width: 1200px; margin: 0 auto; padding: 0 2rem 5rem; }
+
+/* ── HERO HEADER ── */
+.ml-hero {
+    padding: 2.5rem 0 2rem;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 2rem;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+}
+.ml-hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--green);
+    background: var(--green-light); border: 0.5px solid var(--green-mid);
+    padding: 4px 10px; border-radius: 20px; margin-bottom: 10px;
+}
+.ml-hero-eyebrow svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.ml-hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 3vw, 34px);
+    color: var(--text); letter-spacing: -.02em; line-height: 1.1; margin-bottom: 8px;
+}
+.ml-hero-title em { color: var(--green); font-style: italic; }
+.ml-hero-sub { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 460px; }
+.ml-hero-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: .875rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+.ml-hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.3)} }
+.ml-hero-badge-text { font-size: 12px; font-weight: 500; color: var(--text-2); }
+.ml-hero-badge-text span { color: var(--green-dark); font-weight: 700; }
+
+/* ── SUMMARY CARDS ── */
+.summary-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 2rem; }
+.summary-card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: var(--shadow-sm);
+    animation: card-in .4s ease both;
+}
+.summary-card:nth-child(1){animation-delay:.05s}
+.summary-card:nth-child(2){animation-delay:.1s}
+.summary-card:nth-child(3){animation-delay:.15s}
+@keyframes card-in { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+.summary-icon {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.summary-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.75; }
+.summary-icon--green { background: var(--green-light); color: var(--green-dark); }
+.summary-icon--amber { background: var(--amber-light); color: var(--amber); }
+.summary-icon--red   { background: var(--red-light);   color: var(--red); }
+.summary-num { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; font-family: 'DM Serif Display', serif; }
+.summary-lbl { font-size: 10px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: .07em; font-weight: 500; }
+
+/* ── PREDICTION GRID ── */
+.pred-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px,1fr)); gap: 14px; }
+
+/* ── PREDICTION CARD ── */
+.pred-card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: flex; flex-direction: column;
+    transition: box-shadow .25s, transform .25s;
+    animation: card-in .4s ease both;
+}
+.pred-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.pred-card-accent { height: 3px; }
+
+.pred-card-header { padding: 1.1rem 1.25rem .875rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.pred-card-cat { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 3px; font-weight: 500; }
+.pred-card-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.risk-badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: .04em; white-space: nowrap; flex-shrink: 0; }
+
+/* ── PROBABILITY RING ── */
+.prob-section { padding: 0 1.25rem .875rem; display: flex; align-items: center; gap: 1rem; }
+.prob-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+.prob-ring-wrap svg { display: block; }
+.prob-ring-label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -.02em;
+}
+.prob-info { flex: 1; }
+.prob-verdict {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 700; padding: 3px 9px;
+    border-radius: 20px; margin-bottom: 6px;
+}
+.prob-verdict svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.prob-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* ── STATS GRID ── */
+.pred-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 1.25rem .875rem; }
+.pred-stat { background: var(--surface-2); border-radius: var(--radius-sm); padding: 8px 10px; }
+.pred-stat-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; font-weight: 500; }
+.pred-stat-val { font-size: 13px; font-weight: 600; color: var(--text-2); }
+
+/* ── RECOMMENDATION ── */
+.pred-reco { margin: 0 1.25rem .875rem; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 11px; line-height: 1.55; display: flex; gap: 7px; align-items: flex-start; }
+.pred-reco svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 1px; }
+
+/* ── CARD FOOTER ── */
+.pred-footer {
+    margin-top: auto;
+    padding: .75rem 1.25rem;
+    background: var(--surface-2); border-top: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--muted);
+}
+.pred-footer-target { display: flex; align-items: center; gap: 5px; }
+.pred-footer-target svg { width: 11px; height: 11px; stroke: var(--muted); fill: none; stroke-width: 2; }
+.pred-json-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; color: var(--green-dark);
+    text-decoration: none; padding: 4px 10px;
+    background: var(--green-light); border: 0.5px solid var(--green-mid);
+    border-radius: 20px; transition: background .15s;
+}
+.pred-json-link:hover { background: #c7f0df; }
+.pred-json-link svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+/* ── EMPTY ── */
+.ml-empty {
+    background: var(--surface); border: 0.5px dashed var(--border);
+    border-radius: var(--radius); padding: 4rem 2rem; text-align: center;
+}
+.ml-empty-icon { width: 52px; height: 52px; background: var(--green-light); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+.ml-empty-icon svg { width: 24px; height: 24px; stroke: var(--green-dark); fill: none; stroke-width: 1.75; }
+.ml-empty-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+.ml-empty-sub { font-size: 12px; color: var(--muted); }
+
+@media(max-width:768px){ .summary-grid{grid-template-columns:1fr 1fr} .ml-hero{flex-direction:column;align-items:flex-start} }
+@media(max-width:500px){ .summary-grid{grid-template-columns:1fr} }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{# ── TOPBAR ── #}
+<nav class="topbar">
+    <div class="topbar-inner">
+        <a href="{{ path('objectif_index') }}" class="topbar-brand">Findi<em>nari</em></a>
+        <div class="topbar-sep"></div>
+        <div class="topbar-crumb">
+            <a href="{{ path('objectif_index') }}">My Goals</a>
+            <span style="color:var(--border)">›</span>
+            <span class="topbar-crumb-cur">ML Predictions</span>
+        </div>
+        <div class="topbar-right">
+            <a href="{{ path('objectif_index') }}" class="tb-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to goals
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="ml-page">
+
+    {# ── HERO ── #}
+    <div class="ml-hero">
+        <div>
+            <div class="ml-hero-eyebrow">
+                <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Artificial Intelligence
+            </div>
+            <h1 class="ml-hero-title">ML <em>Predictions</em></h1>
+            <p class="ml-hero-sub">Real-time analysis of your savings goals using 3 trained machine learning models — classifier, regressor &amp; timeline predictor.</p>
+        </div>
+        {% if predictions is not empty %}
+        <div class="ml-hero-badge">
+            <div class="ml-hero-badge-dot"></div>
+            <div class="ml-hero-badge-text">
+                <span>{{ predictions|length }}</span> goal{{ predictions|length > 1 ? 's' : '' }} analyzed
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if predictions is empty %}
+        <div class="ml-empty">
+            <div class="ml-empty-icon">
+                <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div class="ml-empty-title">No active goals to analyze</div>
+            <div class="ml-empty-sub">Create a savings goal to get AI-powered predictions.</div>
+        </div>
+
+    {% else %}
+
+        {# ── SUMMARY ── #}
+        {% set nb_ok    = predictions|filter(p => p.prediction.va_atteindre)|length %}
+        {% set nb_risk  = predictions|filter(p => p.prediction.niveau_risque == 'ÉLEVÉ')|length %}
+        {% set nb_moyen = predictions|filter(p => p.prediction.niveau_risque == 'MOYEN')|length %}
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-icon summary-icon--green">
+                    <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div>
+                    <div class="summary-num">{{ nb_ok }}</div>
+                    <div class="summary-lbl">Will succeed</div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon summary-icon--amber">
+                    <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div>
+                    <div class="summary-num">{{ nb_moyen }}</div>
+                    <div class="summary-lbl">Medium risk</div>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon summary-icon--red">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div>
+                    <div class="summary-num">{{ nb_risk }}</div>
+                    <div class="summary-lbl">High risk</div>
+                </div>
+            </div>
+        </div>
+
+        {# ── PREDICTION CARDS ── #}
+        <div class="pred-grid">
+        {% for item in predictions %}
+            {% set p   = item.prediction %}
+            {% set obj = item.objectif %}
+            {% set w   = item.wallet %}
+            {% set pct = (p.probabilite_succes * 100)|round(1) %}
+
+            {% if p.niveau_risque == 'ÉLEVÉ' %}
+                {% set accent = '#E24B4A' %}{% set bg = '#FCEBEB' %}{% set border = '#F7C1C1' %}
+                {% set risk_label = 'High risk' %}
+            {% elseif p.niveau_risque == 'MOYEN' %}
+                {% set accent = '#BA7517' %}{% set bg = '#FAEEDA' %}{% set border = '#FAC775' %}
+                {% set risk_label = 'Medium risk' %}
+            {% else %}
+                {% set accent = '#1D9E75' %}{% set bg = '#E1F5EE' %}{% set border = '#9FE1CB' %}
+                {% set risk_label = 'Low risk' %}
+            {% endif %}
+
+            {# Ring calc #}
+            {% set r = 32 %}
+            {% set circ = 201.06 %}
+            {% set offset = circ - (pct / 100 * circ) %}
+
+            <div class="pred-card" style="animation-delay:{{ loop.index * 0.06 }}s">
+                <div class="pred-card-accent" style="background:{{ accent }}"></div>
+
+                {# Header #}
+                <div class="pred-card-header">
+                    <div>
+                        <div class="pred-card-cat">{{ w ? w.devise ~ ' · ' ~ w.pays : 'Wallet' }}</div>
+                        <div class="pred-card-title">{{ obj.titre }}</div>
+                    </div>
+                    <span class="risk-badge" style="background:{{ bg }};color:{{ accent }};border:0.5px solid {{ border }}">
+                        {{ risk_label }}
+                    </span>
+                </div>
+
+                {# Probability ring + verdict #}
+                <div class="prob-section">
+                    <div class="prob-ring-wrap">
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="{{ r }}" fill="none" stroke="#ece9e3" stroke-width="7"/>
+                            <circle cx="40" cy="40" r="{{ r }}" fill="none"
+                                    stroke="{{ accent }}" stroke-width="7"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="{{ circ }}"
+                                    stroke-dashoffset="{{ offset }}"
+                                    transform="rotate(-90 40 40)"/>
+                        </svg>
+                        <div class="prob-ring-label" style="color:{{ accent }}">{{ pct }}%</div>
+                    </div>
+                    <div class="prob-info">
+                        {% if p.va_atteindre %}
+                            <div class="prob-verdict" style="background:{{ bg }};color:{{ accent }};border:0.5px solid {{ border }}">
+                                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                Will reach goal
+                            </div>
+                        {% else %}
+                            <div class="prob-verdict" style="background:#FCEBEB;color:#E24B4A;border:0.5px solid #F7C1C1">
+                                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                At risk
+                            </div>
+                        {% endif %}
+                        <div class="prob-desc">Success probability based on contributions, pace &amp; wallet balance.</div>
+                    </div>
+                </div>
+
+                {# Stats #}
+                <div class="pred-stats">
+                    <div class="pred-stat">
+                        <div class="pred-stat-lbl">Predicted %</div>
+                        <div class="pred-stat-val" style="color:{{ accent }}">{{ p.pct_prevu }}%</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="pred-stat-lbl">Est. end date</div>
+                        <div class="pred-stat-val">{{ p.date_fin_estimee }}</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="pred-stat-lbl">Days remaining</div>
+                        <div class="pred-stat-val">{{ p.jours_restants }}d</div>
+                    </div>
+                    <div class="pred-stat">
+                        <div class="pred-stat-lbl">Outcome</div>
+                        <div class="pred-stat-val" style="color:{{ p.va_atteindre ? '#1D9E75' : '#E24B4A' }};font-weight:700">
+                            {{ p.va_atteindre ? '✓ Yes' : '✗ No' }}
+                        </div>
+                    </div>
+                </div>
+
+                {# Recommendation #}
+                <div class="pred-reco" style="background:{{ bg }};border:0.5px solid {{ border }};color:{{ accent }}">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {{ p.recommandation }}
+                </div>
+
+                {# Footer #}
+                <div class="pred-footer">
+                    <div class="pred-footer-target">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        Target: <strong style="color:var(--text-2);margin-left:3px">{{ obj.montant|number_format(0,',',' ') }} {{ w ? w.devise : '' }}</strong>
+                    </div>
+                    <a href="{{ path('objectif_ml_predict', {id: obj.id}) }}" class="pred-json-link">
+                        JSON
+                        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+
+    {% endif %}
+</div>
+{% endblock %}
