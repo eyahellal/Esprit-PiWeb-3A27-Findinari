@@ -563,6 +563,13 @@
         <argument type="service" id=".service_locator.dRu9.bh.App\Controller\InflationController"/>
       </call>
     </service>
+    <service id="App\Controller\Loan\FriendLoanController" class="App\Controller\Loan\FriendLoanController" public="true" autowire="true" autoconfigure="true">
+      <tag name="controller.service_arguments"/>
+      <tag name="container.service_subscriber"/>
+      <call method="setContainer">
+        <argument type="service" id=".service_locator.dRu9.bh.App\Controller\Loan\FriendLoanController"/>
+      </call>
+    </service>
     <service id="App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" public="true" autowire="true" autoconfigure="true">
       <tag name="controller.service_arguments"/>
       <tag name="container.service_subscriber"/>
@@ -792,6 +799,10 @@
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
     </service>
+    <service id="App\Repository\FriendLoanRequestRepository" class="App\Repository\FriendLoanRequestRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+    </service>
     <service id="App\Repository\HashtagRepository" class="App\Repository\HashtagRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
@@ -943,7 +954,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.VGt93hp"/>
+      <argument type="service" id=".service_locator.Q4.kk3d"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -4021,7 +4032,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.VGt93hp"/>
+      <argument type="service" id=".service_locator.Q4.kk3d"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -5788,7 +5799,7 @@
     <service id="doctrine.orm.configuration" class="Doctrine\ORM\Configuration" abstract="true"/>
     <service id="doctrine.orm.entity_manager.abstract" class="Doctrine\ORM\EntityManager" lazy="true" abstract="true"/>
     <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory">
-      <argument type="service" id=".service_locator.f0gCZyv"/>
+      <argument type="service" id=".service_locator.3_QFnCW"/>
     </service>
     <service id="doctrine.orm.manager_configurator.abstract" class="Doctrine\Bundle\DoctrineBundle\ManagerConfigurator" abstract="true">
       <argument type="collection"/>
@@ -8274,6 +8285,9 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\InflationController" class="App\Controller\InflationController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\InflationController" class="App\Controller\InflationController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\InflationController" class="App\Controller\InflationController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Loan\FriendLoanController" class="App\Controller\Loan\FriendLoanController" autowire="true" abstract="true"/>
+    <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Loan\FriendLoanController" class="App\Controller\Loan\FriendLoanController" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Controller\Loan\FriendLoanController" class="App\Controller\Loan\FriendLoanController" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\Loan\InvestissementobligationController" class="App\Controller\Loan\InvestissementobligationController" autowire="true" autoconfigure="true" abstract="true"/>
@@ -8381,6 +8395,8 @@
     <service id=".abstract.instanceof.App\Repository\ContributiongoalRepository" class="App\Repository\ContributiongoalRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\FeedbackRepository" class="App\Repository\FeedbackRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\FeedbackRepository" class="App\Repository\FeedbackRepository" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\FriendLoanRequestRepository" class="App\Repository\FriendLoanRequestRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\FriendLoanRequestRepository" class="App\Repository\FriendLoanRequestRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\HashtagRepository" class="App\Repository\HashtagRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\HashtagRepository" class="App\Repository\HashtagRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\InvestissementobligationRepository" class="App\Repository\InvestissementobligationRepository" autowire="true" abstract="true"/>
@@ -9145,6 +9161,40 @@
         <argument key="security" type="service_closure" id="security.helper"/>
       </argument>
     </service>
+    <service id=".service_locator.997cvdA" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="userRepository" type="service_closure" id="App\Repository\UtilisateurRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.BcHxb3J" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="obligationRepository" type="service_closure" id="App\Repository\ObligationRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.4Lra9Dd" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="notificationService" type="service_closure" id="App\Service\SimpleNotificationService"/>
+        <argument key="obligationRepository" type="service_closure" id="App\Repository\ObligationRepository"/>
+        <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
+      </argument>
+    </service>
+    <service id=".service_locator.9kKwU2t" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+      </argument>
+    </service>
+    <service id=".service_locator.GbKkswT" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="notificationService" type="service_closure" id="App\Service\SimpleNotificationService"/>
+      </argument>
+    </service>
     <service id=".service_locator.PBXD1MW" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9224,6 +9274,13 @@
         <argument key="repository" type="service_closure" id="App\Repository\WalletRepository"/>
       </argument>
     </service>
+    <service id=".service_locator.y7pYgon" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator"/>
+      <argument type="collection">
+        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
+        <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
+      </argument>
+    </service>
     <service id=".service_locator.APK0H6M" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9295,12 +9352,6 @@
         <argument key="paginator" type="service_closure" id="knp_paginator"/>
         <argument key="repo" type="service_closure" id="App\Repository\ObjectifRepository"/>
         <argument key="utilisateurRepository" type="service_closure" id="App\Repository\UtilisateurRepository"/>
-      </argument>
-    </service>
-    <service id=".service_locator.9kKwU2t" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="em" type="service_closure" id="doctrine.orm.default_entity_manager"/>
       </argument>
     </service>
     <service id=".service_locator.9Jm4FaJ" class="Symfony\Component\DependencyInjection\ServiceLocator">
@@ -9415,13 +9466,6 @@
         <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
       </argument>
     </service>
-    <service id=".service_locator.y7pYgon" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
-        <argument key="walletRepository" type="service_closure" id="App\Repository\WalletRepository"/>
-      </argument>
-    </service>
     <service id=".service_locator.DFyL8OH" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9479,7 +9523,7 @@
         <argument key="transaction" type="service_closure" id=".errored..service_locator.zY4Nk7F.App\Entity\management\Transaction"/>
       </argument>
     </service>
-    <service id=".service_locator.VGt93hp" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.Q4.kk3d" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Controller\AdminController::ajaxUsers" type="service_closure" id=".service_locator.p5RWJ9h"/>
@@ -9540,6 +9584,12 @@
         <argument key="App\Controller\FeedbackController::edit" type="service_closure" id=".service_locator.9sX7xqa"/>
         <argument key="App\Controller\FeedbackController::index" type="service_closure" id=".service_locator.l5oe0UE"/>
         <argument key="App\Controller\GoogleAuthController::check" type="service_closure" id=".service_locator.JMXDEiN"/>
+        <argument key="App\Controller\Loan\FriendLoanController::acceptWithWallet" type="service_closure" id=".service_locator.4Lra9Dd"/>
+        <argument key="App\Controller\Loan\FriendLoanController::getObligationsList" type="service_closure" id=".service_locator.BcHxb3J"/>
+        <argument key="App\Controller\Loan\FriendLoanController::myRequests" type="service_closure" id=".service_locator.9kKwU2t"/>
+        <argument key="App\Controller\Loan\FriendLoanController::respond" type="service_closure" id=".service_locator.GbKkswT"/>
+        <argument key="App\Controller\Loan\FriendLoanController::searchUsers" type="service_closure" id=".service_locator.997cvdA"/>
+        <argument key="App\Controller\Loan\FriendLoanController::sendRequest" type="service_closure" id=".service_locator.4Lra9Dd"/>
         <argument key="App\Controller\Loan\InvestissementobligationController::delete" type="service_closure" id=".service_locator.yfbCngZ"/>
         <argument key="App\Controller\Loan\InvestissementobligationController::edit" type="service_closure" id=".service_locator.yfbCngZ"/>
         <argument key="App\Controller\Loan\InvestissementobligationController::index" type="service_closure" id=".service_locator.PBXD1MW"/>
@@ -9553,6 +9603,7 @@
         <argument key="App\Controller\Loan\ObligationController::show" type="service_closure" id=".service_locator.ZrebgoU"/>
         <argument key="App\Controller\Loan\WalletController::delete" type="service_closure" id=".service_locator.9nAU4Cb"/>
         <argument key="App\Controller\Loan\WalletController::edit" type="service_closure" id=".service_locator.9nAU4Cb"/>
+        <argument key="App\Controller\Loan\WalletController::getWalletsList" type="service_closure" id=".service_locator.y7pYgon"/>
         <argument key="App\Controller\Loan\WalletController::index" type="service_closure" id=".service_locator.9nAU4Cb"/>
         <argument key="App\Controller\Loan\WalletController::new" type="service_closure" id=".service_locator.4L5dmlm"/>
         <argument key="App\Controller\Loan\WalletController::show" type="service_closure" id=".service_locator.9nAU4Cb"/>
@@ -9685,6 +9736,12 @@
         <argument key="App\Controller\FeedbackController:edit" type="service_closure" id=".service_locator.9sX7xqa"/>
         <argument key="App\Controller\FeedbackController:index" type="service_closure" id=".service_locator.l5oe0UE"/>
         <argument key="App\Controller\GoogleAuthController:check" type="service_closure" id=".service_locator.JMXDEiN"/>
+        <argument key="App\Controller\Loan\FriendLoanController:acceptWithWallet" type="service_closure" id=".service_locator.4Lra9Dd"/>
+        <argument key="App\Controller\Loan\FriendLoanController:getObligationsList" type="service_closure" id=".service_locator.BcHxb3J"/>
+        <argument key="App\Controller\Loan\FriendLoanController:myRequests" type="service_closure" id=".service_locator.9kKwU2t"/>
+        <argument key="App\Controller\Loan\FriendLoanController:respond" type="service_closure" id=".service_locator.GbKkswT"/>
+        <argument key="App\Controller\Loan\FriendLoanController:searchUsers" type="service_closure" id=".service_locator.997cvdA"/>
+        <argument key="App\Controller\Loan\FriendLoanController:sendRequest" type="service_closure" id=".service_locator.4Lra9Dd"/>
         <argument key="App\Controller\Loan\InvestissementobligationController:delete" type="service_closure" id=".service_locator.yfbCngZ"/>
         <argument key="App\Controller\Loan\InvestissementobligationController:edit" type="service_closure" id=".service_locator.yfbCngZ"/>
         <argument key="App\Controller\Loan\InvestissementobligationController:index" type="service_closure" id=".service_locator.PBXD1MW"/>
@@ -9698,6 +9755,7 @@
         <argument key="App\Controller\Loan\ObligationController:show" type="service_closure" id=".service_locator.ZrebgoU"/>
         <argument key="App\Controller\Loan\WalletController:delete" type="service_closure" id=".service_locator.9nAU4Cb"/>
         <argument key="App\Controller\Loan\WalletController:edit" type="service_closure" id=".service_locator.9nAU4Cb"/>
+        <argument key="App\Controller\Loan\WalletController:getWalletsList" type="service_closure" id=".service_locator.y7pYgon"/>
         <argument key="App\Controller\Loan\WalletController:index" type="service_closure" id=".service_locator.9nAU4Cb"/>
         <argument key="App\Controller\Loan\WalletController:new" type="service_closure" id=".service_locator.4L5dmlm"/>
         <argument key="App\Controller\Loan\WalletController:show" type="service_closure" id=".service_locator.9nAU4Cb"/>
@@ -10077,7 +10135,7 @@
         <argument key="turbo.doctrine.event_listener" type="service_closure" id="turbo.doctrine.event_listener"/>
       </argument>
     </service>
-    <service id=".service_locator.f0gCZyv" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.3_QFnCW" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="App\Repository\ActionRepository" type="service_closure" id="App\Repository\ActionRepository"/>
@@ -10086,6 +10144,7 @@
         <argument key="App\Repository\CommentaireRepository" type="service_closure" id="App\Repository\CommentaireRepository"/>
         <argument key="App\Repository\ContributiongoalRepository" type="service_closure" id="App\Repository\ContributiongoalRepository"/>
         <argument key="App\Repository\FeedbackRepository" type="service_closure" id="App\Repository\FeedbackRepository"/>
+        <argument key="App\Repository\FriendLoanRequestRepository" type="service_closure" id="App\Repository\FriendLoanRequestRepository"/>
         <argument key="App\Repository\HashtagRepository" type="service_closure" id="App\Repository\HashtagRepository"/>
         <argument key="App\Repository\InvestissementobligationRepository" type="service_closure" id="App\Repository\InvestissementobligationRepository"/>
         <argument key="App\Repository\LikeRepository" type="service_closure" id="App\Repository\LikeRepository"/>
@@ -10532,6 +10591,12 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.dRu9.bh" method="withContext"/>
     </service>
+    <service id=".service_locator.dRu9.bh.App\Controller\Loan\FriendLoanController" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\Loan\FriendLoanController"/>
+      <argument>App\Controller\Loan\FriendLoanController</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.dRu9.bh" method="withContext"/>
+    </service>
     <service id=".service_locator.dRu9.bh.App\Controller\Loan\InvestissementobligationController" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\Loan\InvestissementobligationController"/>
       <argument>App\Controller\Loan\InvestissementobligationController</argument>
@@ -10846,6 +10911,7 @@
           <argument>App\Controller\GoogleAuthController</argument>
           <argument>App\Controller\HomeController</argument>
           <argument>App\Controller\InflationController</argument>
+          <argument>App\Controller\Loan\FriendLoanController</argument>
           <argument>App\Controller\Loan\InvestissementobligationController</argument>
           <argument>App\Controller\Loan\ObligationController</argument>
           <argument>App\Controller\Loan\WalletController</argument>
@@ -12381,7 +12447,7 @@
     <service id="Knp\Bundle\TimeBundle\DateTimeFormatter" alias="time.datetime_formatter"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.w7.f4fT" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.VGt93hp"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.Q4.kk3d"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.KLVvNIq"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id=".Psr\Log\LoggerInterface $request.logger" alias="monolog.logger.request"/>
@@ -12447,12 +12513,14 @@
     <service id=".service_locator.4HgxjjC" alias=".service_locator.FP3iNOx"/>
     <service id=".service_locator.uf8MZC6" alias=".service_locator.l5oe0UE"/>
     <service id=".service_locator.OKZ2f74" alias=".service_locator.JMXDEiN"/>
+    <service id=".service_locator.PVlUHAj" alias=".service_locator.4Lra9Dd"/>
     <service id=".service_locator.rqjVhWI" alias=".service_locator.PBXD1MW"/>
     <service id=".service_locator.yPyFDXb" alias=".service_locator.6gLRMBp"/>
     <service id=".service_locator.XiwrdsX" alias=".service_locator.yfbCngZ"/>
     <service id=".service_locator.HhwKLTc" alias=".service_locator.IAetlCQ"/>
     <service id=".service_locator.Ww6_EvS" alias=".service_locator.VCQAwXj"/>
     <service id=".service_locator.2o6x9ts" alias=".service_locator.9nAU4Cb"/>
+    <service id=".service_locator.bN2cdDD" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.x2Vk3Vz" alias=".service_locator.QHoYmUl"/>
     <service id=".service_locator.f7_vX0s" alias=".service_locator.GylZskz"/>
     <service id=".service_locator.MkEGrdu" alias=".service_locator.Djp3WWr"/>
@@ -12468,10 +12536,9 @@
     <service id=".service_locator.CpnqR8J" alias=".service_locator.q25UpD3"/>
     <service id=".service_locator.8MLg3Sj" alias=".service_locator.ABg2U4L"/>
     <service id=".service_locator.PRauzOD" alias=".service_locator.c2nOR4F"/>
-    <service id=".service_locator.bN2cdDD" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.381yGGx" alias=".service_locator.vuciIUI"/>
     <service id=".service_locator.5XzYiGJ" alias=".service_locator.zY4Nk7F"/>
-    <service id=".service_locator.LGPu.jM" alias=".service_locator.VGt93hp"/>
+    <service id=".service_locator.eSxw88D" alias=".service_locator.Q4.kk3d"/>
     <service id=".service_locator.sO2baFT" alias=".service_locator.UXbUH6B"/>
     <service id=".service_locator.6V5IWTW" alias=".service_locator.W1drmMD"/>
     <service id=".service_locator.XtmiKbi" alias=".service_locator.MfxSDRP"/>
@@ -12539,6 +12606,11 @@
     <service id=".service_locator.IoGK5Em" alias=".service_locator.FP3iNOx"/>
     <service id=".service_locator.kkD8118" alias=".service_locator.l5oe0UE"/>
     <service id=".service_locator.XuEOriZ" alias=".service_locator.JMXDEiN"/>
+    <service id=".service_locator.GcqMDgw" alias=".service_locator.997cvdA"/>
+    <service id=".service_locator.5HNgDTi" alias=".service_locator.BcHxb3J"/>
+    <service id=".service_locator.0Cj2KKO" alias=".service_locator.4Lra9Dd"/>
+    <service id=".service_locator.gaTSUXr" alias=".service_locator.9kKwU2t"/>
+    <service id=".service_locator.DOMEfKf" alias=".service_locator.GbKkswT"/>
     <service id=".service_locator.D2Tl1ro" alias=".service_locator.PBXD1MW"/>
     <service id=".service_locator.p1sZluL" alias=".service_locator.S.TAFBL"/>
     <service id=".service_locator.WwQzaDR" alias=".service_locator.6gLRMBp"/>
@@ -12549,6 +12621,7 @@
     <service id=".service_locator.3dtw3GO" alias=".service_locator.IAetlCQ"/>
     <service id=".service_locator.Mq9jGKn" alias=".service_locator.VCQAwXj"/>
     <service id=".service_locator.Fr4VXg8" alias=".service_locator.9nAU4Cb"/>
+    <service id=".service_locator.0RiPozw" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.1JbM7yY" alias=".service_locator.APK0H6M"/>
     <service id=".service_locator.L2wqtHc" alias=".service_locator.QHoYmUl"/>
     <service id=".service_locator.OVucJOY" alias=".service_locator.GylZskz"/>
@@ -12559,7 +12632,6 @@
     <service id=".service_locator.hQ_coDC" alias=".service_locator.EzKe0vE"/>
     <service id=".service_locator.IklJebE" alias=".service_locator.Rtx7YPB"/>
     <service id=".service_locator.SYp89dK" alias=".service_locator.ApMMveO"/>
-    <service id=".service_locator.gaTSUXr" alias=".service_locator.9kKwU2t"/>
     <service id=".service_locator.QO.59Ka" alias=".service_locator.9Jm4FaJ"/>
     <service id=".service_locator.R_jMFIM" alias=".service_locator.V1lxS6D"/>
     <service id=".service_locator.vTaK3sk" alias=".service_locator.oQIeYyq"/>
@@ -12575,7 +12647,6 @@
     <service id=".service_locator.fgzeZUc" alias=".service_locator.aUYx3LH"/>
     <service id=".service_locator.aYgfKs3" alias=".service_locator.fWBQtha"/>
     <service id=".service_locator.6QsO6k_" alias=".service_locator.c2nOR4F"/>
-    <service id=".service_locator.0RiPozw" alias=".service_locator.y7pYgon"/>
     <service id=".service_locator.J7lSc4B" alias=".service_locator.DFyL8OH"/>
     <service id=".service_locator.55EZ0G_" alias=".service_locator.vuciIUI"/>
     <service id=".service_locator.J_SjPE_" alias=".service_locator.54ak1dA"/>

@@ -9,6 +9,7 @@ use App\Repository\WalletRepository;
 use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -46,7 +47,7 @@ class WalletController extends AbstractController
         return $user;
     }
 
-   #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
+    #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
     public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
@@ -173,5 +174,28 @@ class WalletController extends AbstractController
         }
 
         return $this->redirectToRoute('app_wallet_index');
+    }
+
+    // ==============================================
+    // API ROUTE FOR FRIEND LOAN (MODIFIÉE AVEC FLOAT)
+    // ==============================================
+    
+    #[Route('/api/list', name: 'app_wallet_api_list', methods: ['GET'])]
+    public function getWalletsList(WalletRepository $walletRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUserOrCreate($entityManager);
+        $wallets = $walletRepository->findBy(['utilisateur' => $user]);
+        
+        $results = [];
+        foreach ($wallets as $wallet) {
+            $results[] = [
+                'id' => $wallet->getId(),
+                'country' => $wallet->getPays(),
+                'balance' => (float)$wallet->getSolde(), // Convertir en float explicitement
+                'currency' => $wallet->getDevise()
+            ];
+        }
+        
+        return $this->json(['wallets' => $results]);
     }
 }

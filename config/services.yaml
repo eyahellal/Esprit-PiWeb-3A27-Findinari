@@ -85,3 +85,6 @@ services:
     App\Service\Loan\InvestmentValidatorService:
         autowire: true
         autoconfigure: true
+
+    App\Repository\FriendLoanRequestRepository:
+        tags: ['doctrine.repository_service']

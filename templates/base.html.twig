@@ -18,6 +18,71 @@
         {{ importmap('app') }}
         {% include 'partials/_javascripts.html.twig' %}
     {% endblock %}
+    
+    <style>
+        /* Notification Styles for Loan Messages */
+        .notification-message .btn-sm {
+            font-size: 11px;
+            padding: 5px 12px;
+            margin-top: 8px;
+            margin-right: 8px;
+            display: inline-block;
+            text-decoration: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .notification-message .btn-success {
+            background: #28a745;
+            color: white;
+            border: none;
+        }
+        
+        .notification-message .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+        }
+        
+        .notification-message .btn-sm:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .loan-notification {
+            font-size: 12px;
+        }
+        
+        .loan-notification strong {
+            color: #2d6a4f;
+        }
+        
+        .loan-notification .btn-sm {
+            margin-right: 6px;
+        }
+        
+        .notification-dropdown {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        
+        .notification-item {
+            transition: background 0.2s ease;
+        }
+        
+        .notification-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .notification-item.unread {
+            background: #f0fdf4;
+        }
+        
+        .notification-item.unread:hover {
+            background: #dcfce7;
+        }
+    </style>
 </head>
 <body>
 
@@ -60,6 +125,107 @@
     <!-- Extra scripts block for page-specific JS -->
     {% block extra_javascripts %}{% endblock %}
     
+    <!-- ========================================== -->
+    <!-- BOUTON FLOTTANT PRÊT ENTRE AMIS (STYLE VERT CHATBOT) -->
+    <!-- ========================================== -->
+    
+    {% if app.user %}
+    <div class="friend-loan-float" id="friendLoanFloat">
+        <div class="friend-loan-button" onclick="openFriendLoanModal()">
+            <i class="fas fa-hand-holding-usd"></i>
+            <span class="friend-loan-tooltip">Loan to a friend</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ========================================== -->
+    <!-- MODAL PRÊT ENTRE AMIS (STYLE CHATBOT VERT) -->
+    <!-- ========================================== -->
+    
+    <div class="friend-loan-window" id="friendLoanWindow">
+        <div class="friend-loan-header">
+            <div>
+                <i class="fas fa-handshake"></i>
+                <strong>Loan to a Friend</strong>
+            </div>
+            <button class="friend-loan-close" onclick="closeFriendLoanModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="friend-loan-body">
+            <div id="friendStep1">
+                <label class="friend-label">👤 Find a friend</label>
+                <input type="text" id="friendSearchUser" class="friend-input" placeholder="Name, first name or email...">
+                <div id="friendSearchResults" class="friend-search-results"></div>
+            </div>
+
+            <div id="friendStep2" style="display: none;">
+                <div class="friend-selected-card">
+                    <i class="fas fa-user-check"></i>
+                    <span>Loan to: <strong id="selectedUserName"></strong></span>
+                    <input type="hidden" id="selectedUserId">
+                </div>
+
+                <div class="friend-loan-form">
+                    <div class="friend-form-group">
+                        <label><i class="fas fa-chart-line"></i> Choose Obligation</label>
+                        <select id="obligationId" class="friend-select" required>
+                            <option value="">-- Select an obligation --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="friend-form-group">
+                        <label><i class="fas fa-wallet"></i> Your Wallet</label>
+                        <select id="senderWalletId" class="friend-select" required>
+                            <option value="">-- Select your wallet --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="friend-form-group">
+                        <label><i class="fas fa-money-bill-wave"></i> Amount (DT)</label>
+                        <input type="number" id="loanAmount" class="friend-input" min="10" value="500" step="10">
+                        <small class="text-muted" id="walletWarning"></small>
+                    </div>
+                </div>
+
+                <!-- Récapitulatif -->
+                <div class="friend-summary">
+                    <div class="friend-summary-row">
+                        <span>Obligation:</span>
+                        <span id="selectedObligationName">-</span>
+                    </div>
+                    <div class="friend-summary-row">
+                        <span>Interest Rate:</span>
+                        <span id="selectedRate">0</span>%
+                    </div>
+                    <div class="friend-summary-row">
+                        <span>Duration:</span>
+                        <span id="selectedDuration">0</span> months
+                    </div>
+                    <div class="friend-summary-row">
+                        <span>Amount loaned:</span>
+                        <span id="summaryAmount">0</span> DT
+                    </div>
+                    <div class="friend-summary-row friend-total">
+                        <span>Total to receive at maturity:</span>
+                        <span id="summaryTotal">0</span> DT
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="friend-loan-footer">
+            <button class="friend-btn-secondary" onclick="closeFriendLoanModal()">Cancel</button>
+            <button id="friendSendRequest" class="friend-btn-primary" style="display: none;">
+                <i class="fas fa-paper-plane"></i> Send Request
+            </button>
+            <button id="friendBackToSearch" class="friend-btn-secondary" style="display: none;">
+                ← Back
+            </button>
+        </div>
+    </div>
+
     <!-- Floating Chatbot Button -->
     <div class="chatbot-float" id="chatbotFloat">
         <div class="chatbot-button" onclick="toggleChatbot()">
@@ -98,6 +264,7 @@
         </div>
     </div>
 
+    <!-- Styles intégrés -->
     <style>
         /* Alert Popup Styles */
         .alert-overlay {
@@ -397,7 +564,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Custom scrollbar */
         .alert-popup-content::-webkit-scrollbar {
             width: 4px;
         }
@@ -612,18 +778,313 @@
             0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
             30% { transform: translateY(-4px); opacity: 1; }
         }
+
+        /* Friend Loan Styles */
+        .friend-loan-float {
+            position: fixed;
+            bottom: 30px;
+            right: 110px;
+            z-index: 1000;
+        }
+        
+        .friend-loan-button {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4d3b 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(45,106,79,0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .friend-loan-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(45,106,79,0.4);
+        }
+        
+        .friend-loan-button i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .friend-loan-tooltip {
+            position: absolute;
+            right: 70px;
+            background: #1f2937;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .friend-loan-button:hover .friend-loan-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .friend-loan-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 380px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1001;
+            animation: slideUp 0.3s ease;
+        }
+        
+        .friend-loan-window.open {
+            display: flex;
+        }
+        
+        .friend-loan-header {
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4d3b 100%);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .friend-loan-header i {
+            margin-right: 8px;
+        }
+        
+        .friend-loan-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .friend-loan-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .friend-loan-body {
+            padding: 16px;
+            max-height: 450px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .friend-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a2e1a;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .friend-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e8e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+        
+        .friend-input:focus {
+            outline: none;
+            border-color: #2d6a4f;
+            box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+        }
+        
+        .friend-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e8e0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .friend-search-results {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 8px;
+        }
+        
+        .friend-search-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .friend-search-item:hover {
+            background: #f0fdf4;
+            transform: translateX(5px);
+            border-color: #2d6a4f;
+        }
+        
+        .friend-search-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4d3b 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+        }
+        
+        .friend-search-info {
+            flex: 1;
+        }
+        
+        .friend-search-name {
+            font-weight: 600;
+            color: #1a2e1a;
+        }
+        
+        .friend-search-email {
+            font-size: 11px;
+            color: #8faa8f;
+        }
+        
+        .friend-selected-card {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2d6a4f;
+        }
+        
+        .friend-loan-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .friend-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .friend-form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1a2e1a;
+        }
+        
+        .friend-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .friend-summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+        
+        .friend-interest {
+            color: #059669;
+            font-weight: 500;
+        }
+        
+        .friend-total {
+            border-top: 1px solid #e5e7eb;
+            margin-top: 6px;
+            padding-top: 10px;
+            font-weight: 700;
+            color: #2d6a4f;
+        }
+        
+        .friend-loan-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: white;
+        }
+        
+        .friend-btn-primary {
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4d3b 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .friend-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45,106,79,0.3);
+        }
+        
+        .friend-btn-secondary {
+            background: #f0f0f0;
+            color: #4b6b4b;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .friend-btn-secondary:hover {
+            background: #e8e8e8;
+        }
         
         @media (max-width: 768px) {
-            .chatbot-window {
-                width: 300px;
-                right: -10px;
+            .friend-loan-float {
+                bottom: 30px;
+                right: 100px;
             }
-            .chatbot-button {
+            .friend-loan-button {
                 width: 50px;
                 height: 50px;
             }
-            .chatbot-button i {
+            .friend-loan-button i {
                 font-size: 20px;
+            }
+            .friend-loan-window {
+                width: 320px;
+                right: 10px;
             }
         }
     </style>
@@ -699,8 +1160,6 @@
             }
             
             overlay.style.display = 'flex';
-            
-            // Play sound (optional)
             playNotificationSound();
         }
         
@@ -725,6 +1184,182 @@
             return div.innerHTML;
         }
         
+        // ==========================================
+        // FRIEND LOAN FUNCTIONS (MODIFIED)
+        // ==========================================
+        
+        // Variables globales
+        let obligationsList = [];
+        let userWallets = [];
+        
+        function openFriendLoanModal() {
+            const window = document.getElementById('friendLoanWindow');
+            window.classList.add('open');
+            resetFriendModal();
+        }
+        
+        function closeFriendLoanModal() {
+            const window = document.getElementById('friendLoanWindow');
+            window.classList.remove('open');
+        }
+        
+        // Charger les obligations et wallets
+        function loadObligationsAndWallets() {
+    // Charger les obligations
+    fetch('/friend-loan/obligations-list')
+        .then(response => response.json())
+        .then(data => {
+            obligationsList = data.obligations;
+            const select = document.getElementById('obligationId');
+            if (select) {
+                select.innerHTML = '<option value="">-- Select an obligation --</option>';
+                obligationsList.forEach(obl => {
+                    const option = document.createElement('option');
+                    option.value = obl.id;
+                    option.dataset.rate = obl.rate;
+                    option.dataset.duration = obl.duration;
+                    option.textContent = `${obl.name} - ${obl.rate}% - ${obl.duration} months`;
+                    select.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error('Error loading obligations:', error));
+    
+    // Charger les wallets de l'utilisateur (CORRIGÉ)
+    fetch('/wallet/api/list')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Wallets data:', data);
+            userWallets = data.wallets;
+            const select = document.getElementById('senderWalletId');
+            if (select) {
+                if (userWallets && userWallets.length > 0) {
+                    select.innerHTML = '<option value="">-- Select your wallet --</option>';
+                    userWallets.forEach(wallet => {
+                        const option = document.createElement('option');
+                        option.value = wallet.id;
+                        // Convertir le balance en nombre si c'est une chaîne
+                        const balanceNumber = parseFloat(wallet.balance) || 0;
+                        option.dataset.balance = balanceNumber;
+                        option.textContent = `${wallet.country} - ${balanceNumber.toFixed(2)} ${wallet.currency}`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    select.innerHTML = '<option value="">-- No wallets found, please create one --</option>';
+                }
+            }
+        })
+        .catch(error => console.error('Error loading wallets:', error));
+}
+        
+        // Mettre à jour le résumé
+function updateLoanSummary() {
+    const obligationSelect = document.getElementById('obligationId');
+    const selectedOption = obligationSelect.options[obligationSelect.selectedIndex];
+    const rate = parseFloat(selectedOption?.dataset?.rate) || 0;
+    const duration = parseInt(selectedOption?.dataset?.duration) || 0;
+    const amount = parseFloat(document.getElementById('loanAmount').value) || 0;
+    const walletSelect = document.getElementById('senderWalletId');
+    const selectedWallet = walletSelect.options[walletSelect.selectedIndex];
+    const balance = parseFloat(selectedWallet?.dataset?.balance) || 0;
+    
+    const interest = amount * (rate / 100) * (duration / 12);
+    const total = amount + interest;
+    
+    document.getElementById('selectedObligationName').textContent = selectedOption?.text?.split(' - ')[0] || '-';
+    document.getElementById('selectedRate').textContent = rate;
+    document.getElementById('selectedDuration').textContent = duration;
+    document.getElementById('summaryAmount').textContent = amount.toFixed(2);
+    document.getElementById('summaryTotal').textContent = total.toFixed(2);
+    
+    const warningSpan = document.getElementById('walletWarning');
+    const sendBtn = document.getElementById('friendSendRequest');
+    
+    if (amount > balance && balance > 0) {
+        if (warningSpan) warningSpan.innerHTML = '<span class="text-danger">⚠️ Amount exceeds your wallet balance!</span>';
+        if (sendBtn) sendBtn.disabled = true;
+    } else {
+        if (warningSpan) warningSpan.innerHTML = '';
+        if (sendBtn) sendBtn.disabled = false;
+    }
+}
+        
+        function resetFriendModal() {
+            document.getElementById('friendStep1').style.display = 'block';
+            document.getElementById('friendStep2').style.display = 'none';
+            document.getElementById('friendBackToSearch').style.display = 'none';
+            document.getElementById('friendSendRequest').style.display = 'none';
+            document.getElementById('friendSearchUser').value = '';
+            document.getElementById('friendSearchResults').innerHTML = '';
+            document.getElementById('selectedUserId').value = '';
+            document.getElementById('selectedUserName').innerHTML = '';
+            document.getElementById('loanAmount').value = '500';
+            document.getElementById('obligationId').value = '';
+            document.getElementById('senderWalletId').value = '';
+            document.getElementById('selectedObligationName').textContent = '-';
+            document.getElementById('selectedRate').textContent = '0';
+            document.getElementById('selectedDuration').textContent = '0';
+            document.getElementById('summaryAmount').textContent = '0.00';
+            document.getElementById('summaryTotal').textContent = '0.00';
+        }
+        
+        // Envoyer la demande de prêt (modifiée)
+        function sendFriendLoanRequest() {
+            const data = {
+                receiverId: document.getElementById('selectedUserId').value,
+                obligationId: document.getElementById('obligationId').value,
+                senderWalletId: document.getElementById('senderWalletId').value,
+                amount: parseFloat(document.getElementById('loanAmount').value)
+            };
+            
+            if (!data.receiverId) {
+                alert('Please select a friend');
+                return;
+            }
+            
+            if (!data.obligationId) {
+                alert('Please select an obligation');
+                return;
+            }
+            
+            if (!data.senderWalletId) {
+                alert('Please select your wallet');
+                return;
+            }
+            
+            if (data.amount < 10) {
+                alert('Minimum amount is 10 DT');
+                return;
+            }
+            
+            const btn = document.getElementById('friendSendRequest');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            fetch('/friend-loan/send-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    closeFriendLoanModal();
+                    resetFriendModal();
+                } else {
+                    alert('❌ ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('❌ Error: ' + error.message);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Request';
+            });
+        }
+        
         // Chatbot functions
         var isChatbotOpen = false;
         
@@ -744,11 +1379,8 @@
             
             if (!message) return;
             
-            // Add user message
             addChatbotMessage(message, 'user');
             input.value = '';
-            
-            // Show typing indicator
             showChatbotTyping();
             
             try {
@@ -759,10 +1391,8 @@
                 });
                 
                 const data = await response.json();
-                
                 hideChatbotTyping();
                 addChatbotMessage(data.response, 'bot');
-                
             } catch (error) {
                 hideChatbotTyping();
                 addChatbotMessage('Sorry, an error occurred. Please try again.', 'bot');
@@ -775,14 +1405,11 @@
             const container = document.getElementById('chatbotMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `chatbot-message ${sender}`;
-            
             const bubble = document.createElement('div');
             bubble.className = 'chatbot-bubble';
             bubble.innerHTML = text.replace(/\n/g, '<br>');
-            
             messageDiv.appendChild(bubble);
             container.appendChild(messageDiv);
-            
             scrollChatbotToBottom();
         }
         
@@ -808,11 +1435,149 @@
             }
         }
         
-        // Check for alerts when page loads
+        // Notification Functions
+        function updateNotificationCount() {
+            fetch('/notifications/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.querySelector('#notificationBadge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => console.error('Error updating count:', error));
+        }
+        
+        function declineLoan(requestId) {
+            if (confirm('Are you sure you want to decline this loan request?')) {
+                fetch(`/friend-loan/respond/${requestId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'decline' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Request declined');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
+            }
+        }
+        
+        // Friend Loan Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Small delay before checking alerts
             setTimeout(checkMaturityAlerts, 1000);
+            
+            // Search users
+            const searchInput = document.getElementById('friendSearchUser');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    let query = this.value;
+                    
+                    if (query.length < 2) {
+                        document.getElementById('friendSearchResults').innerHTML = '';
+                        return;
+                    }
+                    
+                    searchTimeout = setTimeout(function() {
+                        fetch(`/friend-loan/search-users?q=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                displayFriendResults(data.users);
+                            })
+                            .catch(error => {
+                                console.error('Search error:', error);
+                            });
+                    }, 300);
+                });
+            }
+            
+            // Update summary on changes
+            document.getElementById('obligationId')?.addEventListener('change', updateLoanSummary);
+            document.getElementById('senderWalletId')?.addEventListener('change', updateLoanSummary);
+            document.getElementById('loanAmount')?.addEventListener('input', updateLoanSummary);
+            
+            // Send request button
+            const sendBtn = document.getElementById('friendSendRequest');
+            if (sendBtn) {
+                sendBtn.addEventListener('click', sendFriendLoanRequest);
+            }
+            
+            // Back button
+            const backBtn = document.getElementById('friendBackToSearch');
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    document.getElementById('friendStep2').style.display = 'none';
+                    document.getElementById('friendStep1').style.display = 'block';
+                    this.style.display = 'none';
+                    document.getElementById('friendSendRequest').style.display = 'none';
+                });
+            }
+            
+            // Update notification count periodically
+            updateNotificationCount();
+            setInterval(updateNotificationCount, 30000);
         });
+        
+        function displayFriendResults(users) {
+            const container = document.getElementById('friendSearchResults');
+            if (!users || users.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:10px; color:#8faa8f;">No users found</div>';
+                return;
+            }
+            
+            let html = '';
+            users.forEach(user => {
+                html += `
+                    <div class="friend-search-item" data-id="${user.id}" data-name="${user.name}">
+                        <div class="friend-search-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="friend-search-info">
+                            <div class="friend-search-name">${escapeHtml(user.name)}</div>
+                            <div class="friend-search-email">${escapeHtml(user.email)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            
+            container.querySelectorAll('.friend-search-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const userId = this.dataset.id;
+                    const userName = this.dataset.name;
+                    
+                    document.getElementById('selectedUserId').value = userId;
+                    document.getElementById('selectedUserName').innerHTML = userName;
+                    
+                    // Charger les obligations et wallets avant d'afficher l'étape 2
+                    loadObligationsAndWallets();
+                    
+                    document.getElementById('friendStep1').style.display = 'none';
+                    document.getElementById('friendStep2').style.display = 'block';
+                    document.getElementById('friendBackToSearch').style.display = 'inline-block';
+                    document.getElementById('friendSendRequest').style.display = 'inline-block';
+                    
+                    // Attendre que les selects soient chargés
+                    setTimeout(() => {
+                        updateLoanSummary();
+                    }, 500);
+                });
+            });
+        }
     </script>
 
     <script src="{{ asset('bundles/fosjsrouting/js/router.js') }}"></script>

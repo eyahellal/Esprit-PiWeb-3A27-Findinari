@@ -177,7 +177,7 @@
         position: absolute;
         top: 55px;
         right: 0;
-        width: 380px;
+        width: 400px;
         background: white;
         border-radius: 16px;
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
@@ -251,8 +251,37 @@
     }
     
     .notification-list {
-        max-height: 340px;
+        max-height: 400px;
         overflow-y: auto;
+    }
+    
+    /* Styles pour les boutons dans les notifications */
+    .notification-message .btn-sm {
+        font-size: 11px;
+        padding: 5px 12px;
+        margin-top: 8px;
+        margin-right: 8px;
+        display: inline-block;
+        text-decoration: none;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    
+    .notification-message .btn-success {
+        background: #28a745;
+        color: white;
+        border: none;
+    }
+    
+    .notification-message .btn-danger {
+        background: #dc3545;
+        color: white;
+        border: none;
+    }
+    
+    .notification-message .btn-sm:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
     }
     
     .notification-item {
@@ -298,8 +327,8 @@
     }
     
     .notification-message {
-        font-size: 11px;
-        color: #6b8f6b;
+        font-size: 12px;
+        color: #4b6b4b;
         margin-bottom: 4px;
         line-height: 1.4;
     }
@@ -417,21 +446,10 @@
         border-radius: 4px;
     }
     
-    /* Close popup when clicking outside */
-    .popup-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 999;
-        display: none;
-    }
-    
     /* Responsive */
     @media (max-width: 768px) {
         .notification-popup {
-            width: 320px;
+            width: 340px;
             right: -10px;
         }
         .bell-ring {
@@ -496,24 +514,19 @@
         let html = '';
         notifications.forEach(notif => {
             let unreadClass = !notif.isRead ? 'unread' : '';
-            let icon = '💰';
-            
-            switch(notif.type) {
-                case 'success': icon = '✅'; break;
-                case 'danger': icon = '❌'; break;
-                case 'warning': icon = '⚠️'; break;
-                default: icon = '💰';
-            }
             
             html += `
                 <div class="notification-item ${unreadClass}" data-id="${notif.id}">
                     <div class="d-flex gap-3 align-items-start">
                         <div class="notification-icon">
-                            <i class="${icon === '✅' ? 'fas fa-check' : icon === '❌' ? 'fas fa-times' : icon === '⚠️' ? 'fas fa-exclamation-triangle' : 'fas fa-chart-line'}"></i>
+                            ${notif.type === 'success' ? '<i class="fas fa-check-circle"></i>' : 
+                              notif.type === 'danger' ? '<i class="fas fa-exclamation-circle"></i>' : 
+                              notif.type === 'warning' ? '<i class="fas fa-exclamation-triangle"></i>' : 
+                              '<i class="fas fa-info-circle"></i>'}
                         </div>
                         <div class="notification-content flex-grow-1">
                             <div class="notification-title">${escapeHtml(notif.title)}</div>
-                            <div class="notification-message">${escapeHtml(notif.message)}</div>
+                            <div class="notification-message">${notif.message}</div>
                             <div class="notification-time">
                                 <i class="far fa-clock me-1"></i>${getTimeAgo(notif.createdAt)}
                             </div>
@@ -534,6 +547,23 @@
         });
         
         container.innerHTML = html;
+        
+        // Attacher les événements pour les boutons Accept/Decline dans le HTML
+        document.querySelectorAll('.loan-notification .btn-success').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                if (url) window.location.href = url;
+            });
+        });
+        
+        document.querySelectorAll('.loan-notification .btn-danger').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const onclick = this.getAttribute('onclick');
+                if (onclick) eval(onclick);
+            });
+        });
     }
     
     function escapeHtml(text) {
@@ -647,8 +677,31 @@
         }
     }
     
+    // Fonction globale pour décliner un prêt
+    window.declineLoan = function(requestId) {
+        if (confirm('Are you sure you want to decline this loan request?')) {
+            fetch(`/friend-loan/respond/${requestId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'decline' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Request declined');
+                    loadNotifications();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+    };
+    
     // Initial load and periodic check
-    document.addEventListener('turbo:load', function() {
+    document.addEventListener('DOMContentLoaded', function() {
         if (window.notificationCheckInterval) {
             clearInterval(window.notificationCheckInterval);
         }
