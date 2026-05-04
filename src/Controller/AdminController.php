@@ -763,6 +763,8 @@ class AdminController extends AbstractController
             'filterWalletId' => $filterWalletId,
             'filterStatut' => $filterStatut,
             'searchObjectif' => $searchObjectif,
+            'anomalies'        => null,   // ← ajouter cette ligne
+            'stats'            => null,   // ← et celle-ci aussi
         ]);
     }
 
