@@ -163,7 +163,7 @@ Feedback analysis:
 
                 $response = $client->request('POST', 'http://localhost:11434/api/generate', [
                     'json' => [
-                        'model' => 'phi3:mini',
+                        'model' => 'gemma3:1b',
                         'prompt' => $prompt,
                         'stream' => false,
                     ],
