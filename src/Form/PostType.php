@@ -15,6 +15,7 @@ class PostType extends AbstractType
         $builder
             ->add('contenu', TextareaType::class, [
                 'label' => false,
+                'required' => false,
                 'attr' => [
                     'rows' => 5,
                     'class' => 'community-editor',

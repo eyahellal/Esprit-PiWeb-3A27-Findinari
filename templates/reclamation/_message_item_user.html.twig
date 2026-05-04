@@ -1,5 +1,5 @@
 {% set isUser = message.typeSender == 'USER' %}
-<div class="msg-wrapper {{ isUser ? 'user' : 'admin' }} animate-in">
+<div id="msg-wrapper-{{ message.id }}" class="msg-wrapper {{ isUser ? 'user' : 'admin' }} animate-in">
     <div class="msg-meta">
         {% if isUser %}
             You &bull; {{ message.date|ago }}

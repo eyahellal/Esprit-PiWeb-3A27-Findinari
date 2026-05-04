@@ -14,8 +14,6 @@ return [
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
 
-    Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
-
     FOS\JsRoutingBundle\FOSJsRoutingBundle::class => ['all' => true],
     App\Bundle\Statistic\StatisticBundle::class => ['all' => true],
     Karser\Recaptcha3Bundle\KarserRecaptcha3Bundle::class => ['all' => true],
@@ -23,5 +21,5 @@ return [
     Symfony\UX\Dropzone\DropzoneBundle::class => ['all' => true],
     Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
     Knp\Bundle\TimeBundle\KnpTimeBundle::class => ['all' => true],
-
+    App\community\RatingBundle\CommunityRatingBundle::class => ['all' => true],
 ];

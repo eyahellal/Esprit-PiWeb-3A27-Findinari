@@ -11,6 +11,7 @@ use App\Repository\InvestissementobligationRepository;
 use App\Repository\ObligationRepository;
 use App\Repository\WalletRepository;
 use App\Service\SimpleNotificationService;
+use App\Service\Loan\InvestmentValidatorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,13 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/loan/investment')]
 class InvestissementobligationController extends AbstractController
 {
+    private InvestmentValidatorService $investmentValidator;
+
+    public function __construct(InvestmentValidatorService $investmentValidator)
+    {
+        $this->investmentValidator = $investmentValidator;
+    }
+
     private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
     {
         $user = $this->getUser();
@@ -121,9 +129,27 @@ class InvestissementobligationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $obligationId = $investment->getObligationId();
-            $selectedObligation = null;
+            // Récupérer l'utilisateur
+            $user = $this->getUserOrCreate($entityManager);
             
+            // Récupérer le wallet
+            $walletId = $investment->getWalletId();
+            $wallet = $entityManager->getRepository(Wallet::class)->find($walletId);
+            
+            // Vérification que le wallet existe et appartient à l'utilisateur
+            if (!$wallet) {
+                $this->addFlash('error', 'Wallet introuvable');
+                return $this->redirectToRoute('app_investment_new');
+            }
+            
+            if ($wallet->getUtilisateur()->getId() !== $user->getId()) {
+                $this->addFlash('error', 'Ce wallet ne vous appartient pas');
+                return $this->redirectToRoute('app_investment_new');
+            }
+            
+            // Récupérer l'obligation
+            $selectedObligation = null;
+            $obligationId = $investment->getObligationId();
             if ($obligationId) {
                 $obligationRepo = $entityManager->getRepository(Obligation::class);
                 $selectedObligation = $obligationRepo->find($obligationId);
@@ -132,6 +158,14 @@ class InvestissementobligationController extends AbstractController
                     $maturityDate = (clone $investment->getDateAchat())->modify("+{$durationInMonths} months");
                     $investment->setDateMaturite($maturityDate);
                 }
+            }
+            
+            // ⭐ VALIDATION MÉTIER - Vérification du solde du wallet
+            try {
+                $this->investmentValidator->validate($investment, $wallet, $selectedObligation);
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->redirectToRoute('app_investment_new', ['idObligation' => $obligationId]);
             }
             
             $entityManager->persist($investment);
@@ -159,12 +193,17 @@ class InvestissementobligationController extends AbstractController
                 'name' => $obl->getNom()
             ];
         }
+        
+        // Récupérer les wallets de l'utilisateur pour le formulaire
+        $user = $this->getUserOrCreate($entityManager);
+        $wallets = $entityManager->getRepository(Wallet::class)->findBy(['utilisateur' => $user]);
 
         return $this->render('loan/investment/new.html.twig', [
             'investment' => $investment,
             'form' => $form,
             'selected_obligation' => $obligation,
             'obligationsData' => $obligationsData,
+            'wallets' => $wallets,
         ]);
     }
 
@@ -246,6 +285,14 @@ class InvestissementobligationController extends AbstractController
                     $maturityDate = (clone $investment->getDateAchat())->modify("+{$durationInMonths} months");
                     $investment->setDateMaturite($maturityDate);
                 }
+            }
+            
+            // ⭐ VALIDATION MÉTIER pour l'édition
+            try {
+                $this->investmentValidator->validate($investment, $wallet, $selectedObligation);
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('error', $e->getMessage());
+                return $this->redirectToRoute('app_investment_edit', ['idInvestissement' => $idInvestissement]);
             }
             
             $entityManager->flush();

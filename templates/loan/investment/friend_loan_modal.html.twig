@@ -1,0 +1,316 @@
+{# templates/loan/friend_loan_modal.html.twig #}
+
+<!-- Bouton flottant -->
+<div id="friendLoanBtn" class="floating-btn" style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+    <button class="btn btn-primary rounded-circle shadow-lg" style="width: 60px; height: 60px; border-radius: 50%; font-size: 24px;">
+        <i class="fas fa-hand-holding-usd"></i>
+    </button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="friendLoanModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-handshake me-2"></i>
+                    Prêt entre amis
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Étape 1: Recherche utilisateur -->
+                <div id="step1">
+                    <label class="form-label fw-bold">👤 Rechercher un ami</label>
+                    <input type="text" id="searchUser" class="form-control" placeholder="Nom, prénom ou email...">
+                    <div id="searchResults" class="list-group mt-2" style="max-height: 200px; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Étape 2: Détails du prêt (caché au début) -->
+                <div id="step2" style="display: none;">
+                    <div class="alert alert-info">
+                        <strong><i class="fas fa-user-check"></i> Prêt à :</strong>
+                        <span id="selectedUserName"></span>
+                        <input type="hidden" id="selectedUserId">
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">💰 Montant (DT)</label>
+                            <input type="number" id="loanAmount" class="form-control" min="10" max="10000" value="500">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">📈 Taux d'intérêt (%)</label>
+                            <input type="number" id="interestRate" class="form-control" step="0.5" min="0" max="20" value="5">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">⏱️ Durée (mois)</label>
+                            <select id="durationMonths" class="form-select">
+                                <option value="3">3 mois</option>
+                                <option value="6">6 mois</option>
+                                <option value="12" selected>12 mois</option>
+                                <option value="24">24 mois</option>
+                                <option value="36">36 mois</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif -->
+                    <div class="alert alert-success mt-3">
+                        <h6 class="fw-bold">📊 Récapitulatif</h6>
+                        <div class="row">
+                            <div class="col-6">Montant prêté :</div>
+                            <div class="col-6 text-end"><span id="summaryAmount">0</span> DT</div>
+                            <div class="col-6">Intérêts :</div>
+                            <div class="col-6 text-end"><span id="summaryInterest">0</span> DT</div>
+                            <div class="col-6 fw-bold">Total à recevoir :</div>
+                            <div class="col-6 text-end fw-bold"><span id="summaryTotal">0</span> DT</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" id="sendLoanRequest" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-paper-plane"></i> Envoyer la demande
+                </button>
+                <button type="button" id="backToSearch" class="btn btn-outline-secondary" style="display: none;">
+                    ← Retour
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section pour afficher les demandes reçues -->
+<div id="incomingRequests" class="mt-4">
+    <h5><i class="fas fa-bell"></i> Demandes de prêt reçues</h5>
+    <div id="requestsList" class="list-group"></div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Ouvrir le modal
+    $('#friendLoanBtn').click(function() {
+        $('#friendLoanModal').modal('show');
+        resetModal();
+    });
+    
+    // Recherche d'utilisateurs
+    let searchTimeout;
+    $('#searchUser').on('input', function() {
+        clearTimeout(searchTimeout);
+        let query = $(this).val();
+        
+        if (query.length < 2) {
+            $('#searchResults').empty();
+            return;
+        }
+        
+        searchTimeout = setTimeout(function() {
+            $.ajax({
+                url: '/friend-loan/search-users',
+                data: { q: query },
+                success: function(response) {
+                    displaySearchResults(response.users);
+                }
+            });
+        }, 300);
+    });
+    
+    function displaySearchResults(users) {
+        let html = '';
+        users.forEach(user => {
+            html += `
+                <a href="#" class="list-group-item list-group-item-action select-user" 
+                   data-id="${user.id}" data-name="${user.name}" data-email="${user.email}">
+                    <div class="d-flex align-items-center">
+                        <img src="${user.avatar}" class="rounded-circle me-2" width="40" height="40">
+                        <div>
+                            <strong>${user.name}</strong><br>
+                            <small class="text-muted">${user.email}</small>
+                        </div>
+                    </div>
+                </a>
+            `;
+        });
+        $('#searchResults').html(html);
+        
+        // Sélectionner un utilisateur
+        $('.select-user').click(function(e) {
+            e.preventDefault();
+            let userId = $(this).data('id');
+            let userName = $(this).data('name');
+            
+            $('#selectedUserId').val(userId);
+            $('#selectedUserName').text(userName);
+            
+            $('#step1').hide();
+            $('#step2').show();
+            $('#backToSearch').show();
+            $('#sendLoanRequest').show();
+            
+            updateSummary();
+        });
+    }
+    
+    // Mettre à jour le récapitulatif
+    function updateSummary() {
+        let amount = parseFloat($('#loanAmount').val()) || 0;
+        let rate = parseFloat($('#interestRate').val()) || 0;
+        let months = parseInt($('#durationMonths').val()) || 0;
+        
+        let interest = amount * (rate / 100) * (months / 12);
+        let total = amount + interest;
+        
+        $('#summaryAmount').text(amount.toFixed(2));
+        $('#summaryInterest').text(interest.toFixed(2));
+        $('#summaryTotal').text(total.toFixed(2));
+    }
+    
+    $('#loanAmount, #interestRate, #durationMonths').on('input change', updateSummary);
+    
+    // Envoyer la demande
+    $('#sendLoanRequest').click(function() {
+        let data = {
+            receiverId: $('#selectedUserId').val(),
+            amount: parseFloat($('#loanAmount').val()),
+            interestRate: parseFloat($('#interestRate').val()),
+            durationMonths: parseInt($('#durationMonths').val())
+        };
+        
+        $.ajax({
+            url: '/friend-loan/send-request',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(response) {
+                if (response.success) {
+                    alert('✅ ' + response.message);
+                    $('#friendLoanModal').modal('hide');
+                    resetModal();
+                    loadIncomingRequests();
+                } else {
+                    alert('❌ ' + response.error);
+                }
+            },
+            error: function(xhr) {
+                alert('❌ Erreur: ' + (xhr.responseJSON?.error || 'Erreur serveur'));
+            }
+        });
+    });
+    
+    $('#backToSearch').click(function() {
+        $('#step2').hide();
+        $('#step1').show();
+        $('#backToSearch').hide();
+        $('#sendLoanRequest').hide();
+    });
+    
+    function resetModal() {
+        $('#step1').show();
+        $('#step2').hide();
+        $('#backToSearch').hide();
+        $('#sendLoanRequest').hide();
+        $('#searchUser').val('');
+        $('#searchResults').empty();
+        $('#loanAmount').val('500');
+        $('#interestRate').val('5');
+        $('#durationMonths').val('12');
+        updateSummary();
+    }
+    
+    // Charger les demandes reçues
+    function loadIncomingRequests() {
+        $.ajax({
+            url: '/friend-loan/my-requests',
+            success: function(response) {
+                displayRequests(response.requests);
+            }
+        });
+    }
+    
+    function displayRequests(requests) {
+        if (requests.length === 0) {
+            $('#requestsList').html('<div class="alert alert-info">Aucune demande en attente</div>');
+            return;
+        }
+        
+        let html = '';
+        requests.forEach(req => {
+            html += `
+                <div class="list-group-item" id="request-${req.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong><i class="fas fa-user"></i> ${req.senderName}</strong><br>
+                            <small>💰 ${req.amount} DT à ${req.interestRate}% sur ${req.durationMonths} mois</small><br>
+                            <small class="text-success">📈 Vous rendrez: ${req.totalToReturn} DT</small><br>
+                            <small class="text-muted">📅 Expire le: ${req.expiresAt}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-success btn-sm accept-loan" data-id="${req.id}">
+                                <i class="fas fa-check"></i> Accepter
+                            </button>
+                            <button class="btn btn-danger btn-sm decline-loan" data-id="${req.id}">
+                                <i class="fas fa-times"></i> Refuser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        $('#requestsList').html(html);
+        
+        // Accepter la demande
+        $('.accept-loan').click(function() {
+            let requestId = $(this).data('id');
+            if (confirm('✅ Confirmez-vous l\'acceptation de ce prêt ?')) {
+                respondToLoan(requestId, 'accept');
+            }
+        });
+        
+        // Refuser la demande
+        $('.decline-loan').click(function() {
+            let requestId = $(this).data('id');
+            if (confirm('❌ Refuser cette demande ?')) {
+                respondToLoan(requestId, 'decline');
+            }
+        });
+    }
+    
+    function respondToLoan(requestId, action) {
+        $.ajax({
+            url: '/friend-loan/respond/' + requestId,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ action: action }),
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    loadIncomingRequests();
+                } else {
+                    alert('❌ ' + response.error);
+                }
+            }
+        });
+    }
+    
+    // Charger les demandes au chargement
+    loadIncomingRequests();
+    
+    // Rafraîchir toutes les 30 secondes
+    setInterval(loadIncomingRequests, 30000);
+});
+</script>
+
+<style>
+.floating-btn button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.floating-btn button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
+}
+</style>

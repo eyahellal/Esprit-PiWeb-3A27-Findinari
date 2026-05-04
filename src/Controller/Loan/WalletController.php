@@ -2,13 +2,14 @@
 
 namespace App\Controller\Loan;
 
-use App\Entity\management\Wallet;
+use App\Entity\Loan\Wallet;
 use App\Form\WalletType;
 use App\Entity\user\Utilisateur;
 use App\Repository\WalletRepository;
 use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -50,6 +51,8 @@ class WalletController extends AbstractController
     public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
         $user = $this->getUserOrCreate($entityManager);
         
         $qb = $repository->createQueryBuilder('w')
@@ -60,12 +63,26 @@ class WalletController extends AbstractController
             $qb->andWhere('w.pays LIKE :search OR w.devise LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
-        
-        $wallets = $qb->getQuery()->getResult();
+
+        // Count total results
+        $total = (clone $qb)->select('COUNT(w.id)')->getQuery()->getSingleScalarResult();
+        $totalPages = max(1, ceil($total / $limit));
+
+        if ($page < 1) $page = 1;
+        if ($page > $totalPages) $page = $totalPages;
+
+        // Get paginated results
+        $wallets = $qb->setFirstResult(($page - 1) * $limit)
+                      ->setMaxResults($limit)
+                      ->getQuery()
+                      ->getResult();
 
         return $this->render('loan/wallet/index.html.twig', [
             'wallets' => $wallets,
             'search' => $search,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
         ]);
     }
 
@@ -157,5 +174,28 @@ class WalletController extends AbstractController
         }
 
         return $this->redirectToRoute('app_wallet_index');
+    }
+
+    // ==============================================
+    // API ROUTE FOR FRIEND LOAN (MODIFIÉE AVEC FLOAT)
+    // ==============================================
+    
+    #[Route('/api/list', name: 'app_wallet_api_list', methods: ['GET'])]
+    public function getWalletsList(WalletRepository $walletRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUserOrCreate($entityManager);
+        $wallets = $walletRepository->findBy(['utilisateur' => $user]);
+        
+        $results = [];
+        foreach ($wallets as $wallet) {
+            $results[] = [
+                'id' => $wallet->getId(),
+                'country' => $wallet->getPays(),
+                'balance' => (float)$wallet->getSolde(), // Convertir en float explicitement
+                'currency' => $wallet->getDevise()
+            ];
+        }
+        
+        return $this->json(['wallets' => $results]);
     }
 }

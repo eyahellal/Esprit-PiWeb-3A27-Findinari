@@ -1240,18 +1240,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 const chatContainer = document.getElementById('chatContainer');
                 const noMessagesPlaceholder = document.getElementById('noMessagesPlaceholder');
                 
-                if (noMessagesPlaceholder) {
-                    noMessagesPlaceholder.remove();
+                // Parse the new HTML and only append messages that don't exist
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.html, 'text/html');
+                const newMessages = doc.querySelectorAll('[id^="msg-wrapper-"]');
+                
+                let appendedCount = 0;
+                newMessages.forEach(msg => {
+                    if (!document.getElementById(msg.id)) {
+                        if (noMessagesPlaceholder) noMessagesPlaceholder.remove();
+                        chatContainer.appendChild(msg);
+                        appendedCount++;
+                    }
+                });
+
+                if (appendedCount > 0) {
+                    lastMessageId = data.lastId;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                } else if (data.lastId > lastMessageId) {
+                    lastMessageId = data.lastId;
                 }
-                
-                // Append new messages
-                chatContainer.insertAdjacentHTML('beforeend', data.html);
-                
-                // Update lastId
-                lastMessageId = data.lastId;
-                
-                // Scroll to bottom
-                chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         })
         .catch(err => console.error('Chat Polling Error:', err));

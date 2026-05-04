@@ -2,7 +2,8 @@
 
 namespace App\Repository;
 
-use App\Entity\Portefeuilleaction;
+
+use App\Entity\Loan\Investissementobligation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -13,7 +14,7 @@ class PortefeuilleactionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Portefeuilleaction::class);
+        parent::__construct($registry, Investissementobligation::class);
     }
 
     //    /**

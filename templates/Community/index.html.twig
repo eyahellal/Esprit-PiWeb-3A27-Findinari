@@ -1,89 +1,625 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}Community{% endblock %}
-
 {% block body %}
-<section class="section">
-  <div class="container">
-    <div class="row justify-content-center mb-4">
-      <div class="col-lg-10">
-        <div class="bg-white rounded shadow-sm p-4 d-flex justify-content-between align-items-center">
-          <div>
-            <h2 class="mb-1">Community</h2>
-            <p class="mb-0 text-muted">Posts, commentaires et likes avec le style du template existant.</p>
-          </div>
-          <a href="#create-post-box" class="btn btn-primary">Créer un post</a>
-        </div>
+<section class="community-page">
+  {% include 'Community/_styles.html.twig' %}
+  <div class="community-shell">
+    <div class="community-card community-header">
+      <div>
+        <span class="community-chip">Community feed</span>
+        <h1 class="community-title">Share with the community</h1>
+        <p class="community-subtitle">Enjoy the feed</p>
       </div>
+      <div class="community-chip">{{ feedCount }} posts</div>
     </div>
 
-    <div class="row justify-content-center mb-4">
-      <div class="col-lg-10">
-        <div id="create-post-box" class="bg-white rounded shadow-sm p-4">
-          <h4 class="mb-3">Créer un post</h4>
+    {% for label, messages in app.flashes %}
+      {% for message in messages %}
+        <div class="alert {{ label == 'success' ? 'alert-success' : 'alert-danger' }} mb-3">{{ message }}</div>
+      {% endfor %}
+    {% endfor %}
 
-          {{ form_start(postForm) }}
-            <div class="mb-3">
-              {{ form_label(postForm.contenu) }}
-              {{ form_widget(postForm.contenu, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Écrire quelque chose...'}}) }}
-              {{ form_errors(postForm.contenu) }}
-            </div>
-
-            <button type="submit" class="btn btn-primary">Publier</button>
-          {{ form_end(postForm) }}
-        </div>
-      </div>
-    </div>
-
-    <div class="row justify-content-center">
-      <div class="col-lg-10">
-        {% for post in posts %}
-          <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-4">
-              <div class="d-flex justify-content-between align-items-start gap-3">
+    <div class="community-layout">
+      <div class="community-main-column">
+        <div class="community-card community-composer">
+          <div class="community-composer-grid">
+            <div class="community-avatar">{{ currentUser.prenom|default('U')|slice(0,1)|upper }}</div>
+            <div>
+              <div class="d-flex justify-content-between gap-3 flex-wrap align-items-center mb-2">
                 <div>
-                  <h4 class="mb-1">{{ post.titre ?: 'Publication' }}</h4>
-                  <p class="text-muted mb-0">
-                    {{ post.utilisateur.prenom }} {{ post.utilisateur.nom }}
-                    {% if post.dateCreation %}
-                      • {{ post.dateCreation|date('d/m/Y H:i') }}
-                    {% endif %}
-                  </p>
+                  <strong>{{ currentUser.prenom }} {{ currentUser.nom }}</strong>
+                  <div class="community-helper">Compose a post with image upload, GIFs, AI image generation and moderation.</div>
                 </div>
-                <span class="badge bg-primary-subtle text-primary border">
-                  {{ post.typePost ?: 'STATUT' }}
-                </span>
+                <div class="community-helper"><span id="community-char-count">0</span> / 2000</div>
               </div>
 
-              <p class="mt-3 mb-4">
-                {{ post.contenu|slice(0, 240) }}{% if post.contenu|length > 240 %}...{% endif %}
-              </p>
+              {% if currentUser.canCreateCommunityPost %}
+                {{ form_start(postForm, {attr: {id: 'community-post-form', 'data-moderated-form': '1', novalidate: 'novalidate'}}) }}
+                  {{ form_widget(postForm.contenu, {attr: {class: 'community-textarea', id: 'community-post-textarea', placeholder: 'What is happening in your community today? Use #hashtags to make topics clickable.'}}) }}
+                  {{ form_errors(postForm.contenu) }}
+                  <div class="community-inline-error" id="community-post-inline-error"></div>
+                  <div class="mt-3">
+                    <input
+                      type="text"
+                      class="community-search"
+                      id="community-image-prompt"
+                      maxlength="500"
+                      placeholder="Describe the image to generate, for example: a young woman working on a laptop in a modern cafe, realistic photo"
+                    >
+                    <div class="community-helper mt-2">This field is used only for AI image generation. Your post text stays separate.</div>
+                  </div>
 
-              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div class="text-muted">
-                  👍 {{ post.nombreLikes }} &nbsp; | &nbsp; 💬 {{ post.nombreCommentaires }}
+                  <input type="hidden" name="selected_gif_url" id="community-selected-gif-url">
+                  <input type="hidden" name="uploaded_image_url" id="community-uploaded-image-url">
+                  <input type="hidden" name="ai_image_url" id="community-ai-image-url">
+
+                  <div class="community-media-preview" id="community-media-preview"></div>
+                  <div class="community-helper" id="community-media-status"></div>
+
+                  <div class="community-composer-actions">
+                    <div class="community-action-row">
+                      <button type="button" class="community-btn secondary" id="community-upload-image-trigger">Upload image</button>
+                      <button type="button" class="community-btn secondary" id="community-open-gif">GIF</button>
+                      <button type="button" class="community-btn secondary" id="community-generate-image">Generate image</button>
+                      <input type="file" accept="image/*" id="community-upload-image-input" class="community-hidden-input">
+                    </div>
+                    <button class="community-btn primary" type="submit">Post</button>
+                  </div>
+                {{ form_end(postForm) }}
+              {% else %}
+                <div class="community-empty-state">Only users with the INFLUENCER role can create posts. You can still like and comment on posts.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="community-card community-sidecard">
+          <form method="get" action="{{ path('community_index') }}" class="community-search-wrap" id="community-search-form">
+            <input type="text" class="community-search" id="community-live-search" name="q" value="{{ communityQuery|default('') }}" placeholder="Search posts, authors or #hashtags...">
+            <select class="community-select" name="filter" id="community-live-filter">
+              <option value="all" {{ communityFilter == 'all' ? 'selected' : '' }}>All posts</option>
+              <option value="comment" {{ communityFilter == 'comment' ? 'selected' : '' }}>With comments</option>
+              <option value="media" {{ communityFilter == 'media' ? 'selected' : '' }}>With media</option>
+            </select>
+            <button type="submit" class="community-btn secondary">Search</button>
+            <a href="{{ path('community_index') }}" class="community-btn secondary">Reset</a>
+          </form>
+        </div>
+
+        <div class="community-feed" id="community-feed-grid">
+          {% for post in posts %}
+            {% set shareText = (post.displayText ?: post.titre ?: 'Community post')|striptags|trim %}
+            <article class="community-card community-post" data-post-card data-search="{{ (post.displayText ~ ' ' ~ post.utilisateur.prenom ~ ' ' ~ post.utilisateur.nom ~ ' ' ~ (post.communityHashtags|join(' ')))|lower }}" data-media="{{ post.mediaItems is not empty ? '1' : '0' }}" data-comments="{{ post.nombreCommentaires > 0 ? '1' : '0' }}" data-post-id="{{ post.idPost }}" data-post-url="{{ absolute_url(path('community_show', {id: post.idPost}))|e('html_attr') }}" data-share-text="{{ shareText|e('html_attr') }}">
+              <div class="community-post-top">
+                <div class="community-avatar">{{ post.utilisateur.prenom|slice(0,1)|upper }}</div>
+                <div>
+                  <a href="{{ path('community_show', {id: post.idPost}) }}" class="community-link-muted">
+                    <strong>{{ post.utilisateur.prenom }} {{ post.utilisateur.nom }}</strong>
+                  </a>
+                  <div class="community-meta-line">
+                    <span>{{ post.utilisateur.gmail }}</span>
+                    <span>•</span>
+                    <span>{{ post.relativeTime }}</span>
+                  </div>
+                  {% if post.communityDisplayHtml %}
+                    <div class="community-post-text">{{ post.communityDisplayHtml|raw }}</div>
+                  {% endif %}
+                  {% if post.communityHashtags is not empty %}
+                    <div class="community-meta-line mt-2">
+                      {% for tag in post.communityHashtags %}
+                        <a href="{{ path('community_index', {q: tag, filter: 'all'}) }}" class="community-hashtag">{{ tag }}</a>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  {% if post.mediaItems is not empty %}
+                    <div class="community-post-media">
+                      {% for media in post.mediaItems %}
+                        <div class="community-post-media-item {{ media.type == 'gif' ? 'is-gif' : '' }}"><img src="{{ media.url }}" alt="Post media" loading="{{ media.type == 'gif' ? 'eager' : 'lazy' }}" decoding="{{ media.type == 'gif' ? 'sync' : 'async' }}"></div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
+                <div class="community-share">
+                  <button type="button" class="community-btn secondary" data-share-toggle>Share</button>
+                  <div class="community-share-menu">
+                    <button type="button" class="community-share-item" data-share-network="native">Share</button>
+                    <button type="button" class="community-share-item" data-share-network="x">Share to X</button>
+                    <button type="button" class="community-share-item" data-share-network="facebook">Share to Facebook</button>
+                    <button type="button" class="community-share-item" data-share-network="copy">Copy post text</button>
+                  </div>
+                </div>
+              </div>
 
-                <div class="d-flex gap-2 flex-wrap">
-                  <a href="{{ path('community_show', {id: post.idPost}) }}" class="btn btn-sm btn-outline-primary">Voir</a>
-
-                  {% if currentUser and post.utilisateur and post.utilisateur.id == currentUser.id %}
-                    <a href="{{ path('community_edit', {id: post.idPost}) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
-
-                    <form method="post" action="{{ path('community_delete', {id: post.idPost}) }}" onsubmit="return confirm('Supprimer ce post ?');">
-                      <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ post.idPost) }}">
-                      <button class="btn btn-sm btn-outline-danger" type="submit">Supprimer</button>
-                    </form>
+              <div class="community-divider"></div>
+              <div class="community-post-actions">
+                <div class="community-post-actions-left">
+                  {% if currentUser.canLikeInCommunity %}
+                    <div class="community-reaction-wrap" data-reaction-wrap>
+                      <div class="community-reaction-bar">
+                        {% for reaction in ['👍','❤️','😂','😮','😢','😡'] %}
+                          <button type="button" class="community-reaction-option" data-reaction="{{ reaction }}">{{ reaction }}</button>
+                        {% endfor %}
+                      </div>
+                      <form method="post" action="{{ path('community_like', {id: post.idPost}) }}" data-like-form>
+                        <button class="community-btn secondary" type="submit"><span data-reaction-label>{{ post.isLikedBy(currentUser) ? 'Liked' : 'Like' }} ({{ post.nombreLikes }})</span></button>
+                      </form>
+                      <button type="button" class="community-btn soft" data-quick-reaction="❤️">React</button>
+                    </div>
+                  {% else %}
+                    <span class="community-stat">Like unavailable</span>
+                  {% endif %}
+                  <a href="{{ path('community_show', {id: post.idPost}) }}" class="community-stat">{{ post.nombreCommentaires }} comments</a>
+                </div>
+                <div class="community-post-actions-right">
+                  <div class="community-rating-pill">
+                    <span class="community-rating-stars">
+                      <span class="base">★★★★★</span>
+                      <span class="fill" style="width: {{ post.communityRating.percent }}%">★★★★★</span>
+                    </span>
+                    <span class="community-helper"><strong>{{ post.communityRating.average|number_format(1) }}</strong>/5 · {{ post.communityRating.total }} vote{{ post.communityRating.total > 1 ? 's' : '' }}</span>
+                  </div>
+                  {% if currentUser.canLikeInCommunity %}
+                    <div class="community-star-buttons" data-rating-box data-url="{{ path('community_rate', {id: post.idPost}) }}" style="display:none">
+                      {% for i in 1..5 %}
+                        <button type="button" class="community-rate-btn {{ i <= post.communityRating.userRating ? 'active' : '' }}" data-star="{{ i }}">★</button>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  {% if (post.utilisateur.id == currentUser.id and currentUser.canCreateCommunityPost) or currentUser.communityAdmin %}
+                    <div class="community-share openable">
+                      <button type="button" class="community-btn secondary" data-share-toggle>•••</button>
+                      <div class="community-share-menu">
+                        {% if post.utilisateur.id == currentUser.id and currentUser.canCreateCommunityPost %}
+                          <a href="{{ path('community_edit', {id: post.idPost}) }}" class="community-share-item">Edit post</a>
+                        {% endif %}
+                        <form method="post" action="{{ path('community_delete', {id: post.idPost}) }}" onsubmit="return confirm('Delete this post?');">
+                          <input type="hidden" name="_token" value="{{ csrf_token('delete_post_' ~ post.idPost) }}">
+                          <button type="submit" class="community-share-item">Delete post</button>
+                        </form>
+                      </div>
+                    </div>
                   {% endif %}
                 </div>
               </div>
-            </div>
-          </div>
-        {% else %}
-          <div class="alert alert-info">Aucun post pour le moment. Crée le premier post.</div>
-        {% endfor %}
+            </article>
+          {% else %}
+            <div class="community-card community-empty-state">No posts found.</div>
+          {% endfor %}
+        </div>
+
+        {% if posts.paginationData.pageCount > 1 %}
+          <nav class="community-pagination" aria-label="Community pagination">
+            {% if posts.paginationData.previous is defined %}
+              <a class="community-page-link" href="{{ path('community_index', {page: posts.paginationData.previous, q: communityQuery, filter: communityFilter}) }}">‹</a>
+            {% endif %}
+            {% for page in posts.paginationData.pagesInRange %}
+              <a class="community-page-link {{ page == posts.paginationData.current ? 'active' : '' }}" href="{{ path('community_index', {page: page, q: communityQuery, filter: communityFilter}) }}">{{ page }}</a>
+            {% endfor %}
+            {% if posts.paginationData.next is defined %}
+              <a class="community-page-link" href="{{ path('community_index', {page: posts.paginationData.next, q: communityQuery, filter: communityFilter}) }}">›</a>
+            {% endif %}
+          </nav>
+        {% endif %}
       </div>
+
+      <aside class="community-side-column">
+        <div class="community-card community-trend-card">
+          <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+            <strong>Recommended for you</strong>
+            <span class="community-chip">For you</span>
+          </div>
+          <div class="community-helper mb-3">Based on your likes, ratings, comments and matching hashtags.</div>
+          <div class="community-suggestions">
+            {% for recommendation in recommendations %}
+              <a class="community-mini-post" href="{{ path('community_show', {id: recommendation.idPost}) }}">
+                <div class="community-avatar small">{{ recommendation.utilisateur.prenom|slice(0,1)|upper }}</div>
+                <div>
+                  <strong>{{ recommendation.utilisateur.prenom }} {{ recommendation.utilisateur.nom }}</strong>
+                  <p>{{ recommendation.displayText|slice(0, 120) ~ (recommendation.displayText|length > 120 ? '…' : '') }}</p>
+                </div>
+              </a>
+            {% else %}
+              <div class="community-empty-state">Interact with posts and the recommendation rail will fill up.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 </section>
+
+<div class="community-modal" id="community-gif-modal">
+  <div class="community-modal-panel">
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+      <div>
+        <h4 class="mb-1">Choose a GIF</h4>
+        <div class="community-helper">Search on Giphy and click a GIF to attach it.</div>
+      </div>
+      <button type="button" class="community-btn secondary" data-community-close>Close</button>
+    </div>
+    <div class="community-search-wrap" style="grid-template-columns:minmax(0,1fr) auto;">
+      <input type="text" class="community-search" id="community-gif-query" placeholder="Search GIFs...">
+      <button type="button" class="community-btn primary" id="community-gif-search-btn">Search</button>
+    </div>
+    <div class="community-gif-grid" id="community-gif-grid"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const textarea = document.getElementById('community-post-textarea');
+  const imagePromptInput = document.getElementById('community-image-prompt');
+  const charCount = document.getElementById('community-char-count');
+  const preview = document.getElementById('community-media-preview');
+  const postForm = document.getElementById('community-post-form');
+  const inlineError = document.getElementById('community-post-inline-error');
+  const gifModal = document.getElementById('community-gif-modal');
+  const gifGrid = document.getElementById('community-gif-grid');
+  const gifQuery = document.getElementById('community-gif-query');
+  const hiddenGif = document.getElementById('community-selected-gif-url');
+  const hiddenUpload = document.getElementById('community-uploaded-image-url');
+  const hiddenAi = document.getElementById('community-ai-image-url');
+  const uploadInput = document.getElementById('community-upload-image-input');
+  const mediaStatus = document.getElementById('community-media-status');
+
+  function hasAttachedMedia() {
+    return Boolean((hiddenGif?.value || '').trim() || (hiddenUpload?.value || '').trim() || (hiddenAi?.value || '').trim());
+  }
+
+  function toggleError(message) {
+    if (!inlineError) return;
+    inlineError.textContent = message || '';
+    inlineError.classList.toggle('show', !!message);
+  }
+
+  function updateCount() {
+    if (textarea && charCount) {
+      charCount.textContent = String(textarea.value.length);
+    }
+  }
+
+  function setMediaStatus(message) {
+    if (mediaStatus) {
+      mediaStatus.textContent = message || '';
+    }
+  }
+
+  function preloadImage(url, label) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      const timer = window.setTimeout(() => {
+        image.onload = null;
+        image.onerror = null;
+        reject(new Error('The media is taking too long to load.'));
+      }, 20000);
+      image.loading = 'lazy';
+      image.alt = label || 'media';
+      image.onload = () => {
+        window.clearTimeout(timer);
+        resolve(image);
+      };
+      image.onerror = () => {
+        window.clearTimeout(timer);
+        reject(new Error('The media could not be loaded.'));
+      };
+      image.src = url;
+    });
+  }
+
+  async function addPreviewItem(url, type, label, key) {
+    if (!preview || !url) return;
+    const previewKey = key || (type + ':' + url);
+    preview.querySelector('[data-preview-key="' + CSS.escape(previewKey) + '"]')?.remove();
+    const item = document.createElement('div');
+    item.className = 'community-media-preview-item ' + (type === 'gif' ? 'is-gif' : '');
+    item.dataset.previewKey = previewKey;
+    try {
+      const image = await preloadImage(url, label);
+      item.appendChild(image);
+    } catch (error) {
+      item.innerHTML = '<div style="display:flex;height:100%;align-items:center;justify-content:center;padding:16px;text-align:center;color:#475467;font-weight:700;">' + (label || 'Attachment added') + '</div>';
+    }
+    preview.prepend(item);
+  }
+
+  async function replacePreviewItem(url, type, label, key) {
+    await addPreviewItem(url, type, label, key);
+  }
+
+  function shareTextOnly(box, network) {
+    const text = (box.closest('[data-post-id]')?.dataset.shareText || '').trim();
+    const localUrl = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1');
+    const postCard = box.closest('[data-post-id]');
+    const postUrl = localUrl ? '' : (postCard?.dataset.postUrl || '');
+
+    if (network === 'copy') {
+      navigator.clipboard?.writeText(text || postUrl || '');
+      alert('Post content copied.');
+      return;
+    }
+    if (network === 'native' && navigator.share) {
+      navigator.share({text: text, url: postUrl || undefined}).catch(() => {});
+      return;
+    }
+    if (network === 'x') {
+      window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(postUrl ? (text + ' ' + postUrl) : text), '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (network === 'facebook') {
+      if (postUrl) {
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(postUrl), '_blank', 'noopener,noreferrer');
+      } else {
+        navigator.clipboard?.writeText(text || '');
+        window.open('https://www.facebook.com/', '_blank', 'noopener,noreferrer');
+        alert('The post text was copied. Paste it on Facebook because localhost links cannot be shared publicly.');
+      }
+    }
+  }
+
+  async function loadGifs(query) {
+    if (!gifGrid) return;
+    gifGrid.innerHTML = '<div class="community-helper">Loading GIFs...</div>';
+    try {
+      const response = await fetch('{{ path('community_gif_search') }}?q=' + encodeURIComponent(query || ''));
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Unable to load GIFs right now.');
+      }
+      gifGrid.innerHTML = '';
+      (data.items || []).forEach((gif) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'community-gif-card';
+        btn.innerHTML = '<img src="' + (gif.preview || gif.url) + '" alt="gif">';
+        btn.addEventListener('click', async function () {
+          toggleError('');
+          try {
+            if (hiddenGif) hiddenGif.value = gif.url;
+            await replacePreviewItem(gif.preview || gif.url, 'gif', 'GIF attached', 'selected-gif');
+            setMediaStatus('GIF attached and ready to post.');
+            gifModal?.classList.remove('open');
+          } catch (error) {
+            toggleError(error.message || 'Unable to attach this GIF.');
+          }
+        });
+        gifGrid.appendChild(btn);
+      });
+      if (!gifGrid.innerHTML.trim()) {
+        gifGrid.innerHTML = '<div class="community-empty-state">' + (query ? 'No GIFs found for this search.' : 'No GIFs available right now.') + '</div>';
+      }
+    } catch (e) {
+      gifGrid.innerHTML = '<div class="community-inline-error show">' + (e.message || 'Unable to load GIFs right now.') + '</div>';
+    }
+  }
+
+  updateCount();
+  textarea?.addEventListener('input', updateCount);
+
+  document.querySelectorAll('[data-share-toggle]').forEach((button) => {
+    button.addEventListener('click', function () {
+      const wrap = button.closest('.community-share');
+      document.querySelectorAll('.community-share.open').forEach((node) => {
+        if (node !== wrap) node.classList.remove('open');
+      });
+      wrap?.classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('[data-share-network]').forEach((button) => {
+    button.addEventListener('click', function () {
+      const box = button.closest('.community-share');
+      if (box) shareTextOnly(box, button.dataset.shareNetwork);
+      box?.classList.remove('open');
+    });
+  });
+  document.addEventListener('click', function (event) {
+    if (!event.target.closest('.community-share')) {
+      document.querySelectorAll('.community-share.open').forEach((node) => node.classList.remove('open'));
+    }
+  });
+
+  document.getElementById('community-open-gif')?.addEventListener('click', async function () {
+    gifModal?.classList.add('open');
+    if (gifGrid && !gifGrid.dataset.loaded) {
+      gifGrid.dataset.loaded = '1';
+      await loadGifs('');
+    }
+  });
+  document.getElementById('community-gif-search-btn')?.addEventListener('click', () => loadGifs(gifQuery?.value || ''));
+  gifQuery?.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      loadGifs(gifQuery.value || '');
+    }
+  });
+  document.querySelectorAll('[data-community-close]').forEach((button) => button.addEventListener('click', function () { gifModal?.classList.remove('open'); }));
+
+  document.getElementById('community-upload-image-trigger')?.addEventListener('click', function () {
+    uploadInput?.click();
+  });
+  uploadInput?.addEventListener('change', async function () {
+    const file = uploadInput.files && uploadInput.files[0];
+    if (!file) return;
+    const tempUrl = URL.createObjectURL(file);
+    const formData = new FormData();
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+    formData.append('file', file);
+    toggleError('');
+    setMediaStatus('Uploading image...');
+    await addPreviewItem(tempUrl, 'image', 'Selected image', 'uploaded-image');
+    try {
+      const response = await fetch('{{ path('community_media_upload') }}', {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        signal: controller.signal
+      });
+      const data = await response.json();
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'Upload failed');
+      }
+      if (hiddenAi) hiddenAi.value = '';
+      if (hiddenUpload) hiddenUpload.value = data.url;
+      await replacePreviewItem(data.url, 'image', 'Uploaded image', 'uploaded-image');
+      setMediaStatus(data.warning || 'Image attached and ready to post.');
+    } catch (e) {
+      if (hiddenUpload) hiddenUpload.value = '';
+      toggleError(e.name === 'AbortError' ? 'Image upload took too long. Please try again.' : (e.message || 'Unable to upload image.'));
+      setMediaStatus('');
+    } finally {
+      window.clearTimeout(timeoutId);
+      window.setTimeout(() => URL.revokeObjectURL(tempUrl), 15000);
+      uploadInput.value = '';
+    }
+  });
+
+  document.getElementById('community-generate-image')?.addEventListener('click', async function () {
+    const button = this;
+    const prompt = (imagePromptInput?.value || '').trim();
+    if (!prompt) {
+      toggleError('Please describe the image you want to generate in the AI image prompt field.');
+      imagePromptInput?.focus();
+      return;
+    }
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+    toggleError('');
+    setMediaStatus('Generating image...');
+    button.disabled = true;
+    try {
+      const response = await fetch('{{ path('community_ai_image') }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+        body: JSON.stringify({prompt}),
+        signal: controller.signal
+      });
+      const data = await response.json();
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || 'Image generation failed');
+      }
+      if (hiddenUpload) hiddenUpload.value = '';
+      if (hiddenAi) hiddenAi.value = data.url;
+      await replacePreviewItem(data.url, 'image', 'AI image attached', 'ai-image');
+      setMediaStatus(data.warning || 'AI image attached and ready to post.');
+    } catch (e) {
+      if (hiddenAi) hiddenAi.value = '';
+      toggleError(e.name === 'AbortError' ? 'Image generation took too long. Please try again.' : (e.message || 'Unable to generate image.'));
+      setMediaStatus('');
+    } finally {
+      window.clearTimeout(timeoutId);
+      button.disabled = false;
+    }
+  });
+
+  if (postForm && textarea) {
+    postForm.addEventListener('submit', async function (event) {
+      if (postForm.dataset.skipModeration === '1') {
+        postForm.dataset.skipModeration = '0';
+        return;
+      }
+      event.preventDefault();
+      toggleError('');
+      if (!(textarea.value || '').trim() && !hasAttachedMedia()) {
+        toggleError('Add some text or attach a GIF/image before posting.');
+        return;
+      }
+      try {
+        const response = await fetch('{{ path('community_moderate') }}', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+          body: JSON.stringify({text: textarea.value || ''})
+        });
+        const data = await response.json();
+        if (data.flagged) {
+          toggleError(data.message || 'This content contains a blocked word or toxic language.');
+          return;
+        }
+      } catch (error) {}
+      postForm.dataset.skipModeration = '1';
+      postForm.submit();
+    });
+  }
+
+  let reactionTimer = null;
+  document.querySelectorAll('[data-reaction-wrap]').forEach((wrap) => {
+    const card = wrap.closest('[data-post-id]');
+    const label = wrap.querySelector('[data-reaction-label]');
+    const likeForm = wrap.querySelector('[data-like-form]');
+    const storageKey = 'community-reaction-' + (card?.dataset.postId || '0');
+    const saved = localStorage.getItem(storageKey);
+    if (saved && label) {
+      const countMatch = (label.textContent || '').match(/\((\d+)\)/);
+      label.textContent = saved + ' ' + (countMatch ? '(' + countMatch[1] + ')' : '');
+    }
+    const open = () => { clearTimeout(reactionTimer); wrap.classList.add('open'); };
+    const close = () => { clearTimeout(reactionTimer); reactionTimer = setTimeout(() => wrap.classList.remove('open'), 300); };
+    wrap.addEventListener('mouseenter', open);
+    wrap.addEventListener('mouseleave', close);
+    wrap.querySelectorAll('[data-reaction]').forEach((option) => {
+      option.addEventListener('click', function () {
+        localStorage.setItem(storageKey, option.dataset.reaction || '👍');
+        if (label) {
+          const countMatch = (label.textContent || '').match(/\((\d+)\)/);
+          label.textContent = (option.dataset.reaction || '👍') + ' ' + (countMatch ? '(' + countMatch[1] + ')' : '');
+        }
+        wrap.classList.remove('open');
+        likeForm?.requestSubmit();
+      });
+    });
+    wrap.querySelectorAll('[data-quick-reaction]').forEach((button) => {
+      button.addEventListener('click', function () {
+        const reaction = button.dataset.quickReaction || 'Love';
+        localStorage.setItem(storageKey, reaction);
+        if (label) {
+          const countMatch = (label.textContent || '').match(/\((\d+)\)/);
+          label.textContent = reaction + ' ' + (countMatch ? '(' + countMatch[1] + ')' : '');
+        }
+        wrap.classList.remove('open');
+        likeForm?.requestSubmit();
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-rating-box]').forEach((box) => {
+    const stars = Array.from(box.querySelectorAll('[data-star]'));
+    function paint(value) {
+      stars.forEach((star) => star.classList.toggle('active', Number(star.dataset.star) <= value));
+    }
+    stars.forEach((star) => {
+      star.addEventListener('click', async function () {
+        const value = Number(star.dataset.star);
+        paint(value);
+        try {
+          const body = new URLSearchParams({rating: String(value)});
+          const response = await fetch(box.dataset.url, {
+            method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'},
+            body
+          });
+          const data = await response.json();
+          if (data.error) return;
+          const info = box.closest('.community-post-actions-right')?.querySelector('.community-rating-pill .community-helper');
+          const fill = box.closest('.community-post-actions-right')?.querySelector('.community-rating-pill .fill');
+          if (info) info.innerHTML = '<strong>' + Number(data.average || 0).toFixed(1) + '</strong>/5 · ' + Number(data.total || 0) + ' vote' + (Number(data.total || 0) > 1 ? 's' : '');
+          if (fill) fill.style.width = Number(data.percent || 0) + '%';
+        } catch (e) {}
+      });
+    });
+  });
+
+  const searchInput = document.getElementById('community-live-search');
+  const filterInput = document.getElementById('community-live-filter');
+  function applyLocalFilter() {
+    const term = (searchInput?.value || '').trim().toLowerCase();
+    const filter = filterInput?.value || 'all';
+    document.querySelectorAll('[data-post-card]').forEach((card) => {
+      const matchesTerm = !term || (card.dataset.search || '').includes(term);
+      const matchesFilter = filter === 'all' || (filter === 'media' && card.dataset.media === '1') || (filter === 'comment' && card.dataset.comments === '1');
+      card.style.display = matchesTerm && matchesFilter ? '' : 'none';
+    });
+  }
+  searchInput?.addEventListener('input', applyLocalFilter);
+  filterInput?.addEventListener('change', applyLocalFilter);
+})();
+</script>
 {% endblock %}

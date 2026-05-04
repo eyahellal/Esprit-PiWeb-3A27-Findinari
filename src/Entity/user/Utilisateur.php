@@ -54,8 +54,8 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $gmail = null;
 
-    #[ORM\Column(name: 'mdp', type: 'string', length: 255)]
-    private ?string $mdp = null;
+   #[ORM\Column(name: 'mdp', type: 'string', length: 255)]
+private ?string $mdp = null;
 
     #[ORM\Column(name: 'role', type: 'string', length: 50, options: ['default' => 'USER'])]
     #[Assert\NotBlank(message: "Le rôle est obligatoire.")]
@@ -134,7 +134,22 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->mdp;
     }
+   public function canCreateCommunityPost(): bool
+{
+    return in_array('ROLE_INFLUENCER', $this->getRoles(), true);
+}
 
+public function canLikeInCommunity(): bool
+{
+    return in_array('ROLE_USER', $this->getRoles(), true)
+        || in_array('ROLE_INFLUENCER', $this->getRoles(), true)
+        || in_array('ROLE_ADMIN', $this->getRoles(), true);
+}
+
+public function isCommunityAdmin(): bool
+{
+    return in_array('ROLE_ADMIN', $this->getRoles(), true);
+}
     public function setMdp(string $mdp): static
     {
         $this->mdp = $mdp;
@@ -251,4 +266,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
     }
+    public function canCommentInCommunity(): bool
+{
+    return in_array('ROLE_USER', $this->getRoles(), true)
+        || in_array('ROLE_INFLUENCER', $this->getRoles(), true)
+        || in_array('ROLE_ADMIN', $this->getRoles(), true);
+}
 }

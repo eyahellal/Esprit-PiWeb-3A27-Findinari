@@ -1,5 +1,5 @@
 {% set isAdmin = message.typeSender == 'ADMIN' %}
-<div class="msg-group animate-in">
+<div id="msg-wrapper-{{ message.id }}" class="msg-group animate-in">
     <div class="msg-container {{ isAdmin ? 'admin' : 'user' }}">
         {% if not isAdmin %}
             <div class="msg-avatar">
