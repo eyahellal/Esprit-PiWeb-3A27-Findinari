@@ -13,6 +13,7 @@ parameters:
     groq_model: '%env(GROQ_MODEL)%'
     hf_api_token: '%env(HF_API_TOKEN)%'
     hf_api_url: '%env(HF_API_URL)%'
+    sentiment_api_url: '%env(SENTIMENT_API_URL)%'
 
 
 services:
@@ -85,3 +86,6 @@ services:
     App\Service\Loan\InvestmentValidatorService:
         autowire: true
         autoconfigure: true
+    App\Service\SentimentService:
+        arguments:
+            $apiUrl: '%sentiment_api_url%'

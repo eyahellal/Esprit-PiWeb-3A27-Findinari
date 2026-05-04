@@ -555,7 +555,8 @@ class AdminController extends AbstractController
     public function tickets(
         Request $request,
         TicketRepository $ticketRepository,
-        PaginatorInterface $paginator
+        \Knp\Component\Pager\PaginatorInterface $paginator,
+        \App\Service\SentimentService $sentimentService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -585,9 +586,16 @@ class AdminController extends AbstractController
             10
         );
 
+        $sentiments = [];
+        foreach ($pagination as $ticket) {
+            $sentiments[$ticket->getId()] = $sentimentService->getTicketSentiment($ticket);
+        }
+
         return $this->render('admin/tickets.html.twig', [
             'tickets'     => $pagination,
             'currentSort' => $sort,
+            'sentiments'  => $sentiments,  // ← pluriel, et pas de $ticket hors foreach
+
         ]);
     }
 
@@ -742,7 +750,8 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
-        TicketSlaCalculator $ticketSlaCalculator
+        TicketSlaCalculator $ticketSlaCalculator,
+        \App\Service\SentimentService $sentimentService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -824,6 +833,8 @@ class AdminController extends AbstractController
             'ticket'   => $ticket,
             'messages' => $ticket->getMessages(),
             'form'     => $form->createView(),
+            'sentiment' => $sentimentService->getTicketSentiment($ticket),   // ← c'était manquant
+
         ]);
     }
 

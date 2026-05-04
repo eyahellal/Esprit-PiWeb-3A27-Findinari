@@ -1,7 +1,6 @@
 <?php
 
-namespace App\tests\Service\Ticket;
-
+namespace App\Tests\Service\Ticket;
 
 use App\Entity\reclamation\Ticket;
 use App\Service\Ticket\TicketManager;
@@ -22,8 +21,8 @@ class TicketManagerTest extends TestCase
         $ticket->setTitre('Erreur paiement');
         $ticket->setDescription('Le paiement par carte ne fonctionne plus');
         $ticket->setDateCreation(new \DateTime('-1 day'));
-        $ticket->setPriorite('High');
-        $ticket->setStatut('Open');
+        $ticket->setPriorite(Ticket::PRIORITY_HIGH);
+        $ticket->setStatut(Ticket::STATUS_OPEN);
         $ticket->setType('Technical');
 
         return $ticket;
@@ -80,7 +79,6 @@ class TicketManagerTest extends TestCase
         $this->manager->validate($ticket);
     }
 
-    
     public function testTicketWithFutureCreationDate(): void
     {
         $this->expectException(\InvalidArgumentException::class);
