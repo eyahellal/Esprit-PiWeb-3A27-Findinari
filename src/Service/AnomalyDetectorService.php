@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Service;
-
 class AnomalyDetectorService
 {
     private IsolationForest $model;

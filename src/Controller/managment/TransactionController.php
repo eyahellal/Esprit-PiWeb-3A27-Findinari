@@ -72,7 +72,7 @@ public function weather(Request $request, GroqService $groqService): Response
 #[Route('/holiday', name: 'app_holiday_index', methods: ['GET'])]
 public function holiday(): Response
 {
-   return $this->render('management/weather/index.html.twig', [
+   return $this->render('management/holiday/index.html.twig', [
             'groq_api_key' => $this->getParameter('groq_api_key'),
         ]);
 }

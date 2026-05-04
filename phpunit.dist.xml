@@ -19,6 +19,8 @@
         
         <!-- Configuration pour TCPDF -->
         <env name="KERNEL_CLASS" value="App\Kernel" />
+            <env name="DATABASE_URL" value="mysql://root:@127.0.0.1:3306/fin_dinari?serverVersion=8.0.33&amp;charset=utf8mb4" force="true"/>
+
     </php>
 
     <testsuites>
@@ -44,6 +46,10 @@
         </exclude>
 
         <deprecationTrigger>
+            <method>Doctrine\Deprecations\Deprecation::trigger</method>
+            <method>Doctrine\Deprecations\Deprecation::delegateTriggerToBackend</method>
+            <method>Doctrine\Deprecations\Deprecation::trigger</method>
+            <method>Doctrine\Deprecations\Deprecation::delegateTriggerToBackend</method>
             <method>Doctrine\Deprecations\Deprecation::trigger</method>
             <method>Doctrine\Deprecations\Deprecation::delegateTriggerToBackend</method>
             <function>trigger_deprecation</function>
