@@ -1,5 +1,5 @@
 <?php
-
+// php bin/phpunit tests/Service/CategorieManagerTest.php
 namespace App\Tests\Service;
 
 use App\Entity\management\Categorie;

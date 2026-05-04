@@ -376,7 +376,8 @@ class AdminController extends AbstractController
     public function tickets(
         Request $request,
         TicketRepository $ticketRepository,
-        \Knp\Component\Pager\PaginatorInterface $paginator
+        \Knp\Component\Pager\PaginatorInterface $paginator,
+        \App\Service\SentimentService $sentimentService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -406,9 +407,16 @@ class AdminController extends AbstractController
             10
         );
 
+        $sentiments = [];
+        foreach ($pagination as $ticket) {
+            $sentiments[$ticket->getId()] = $sentimentService->getTicketSentiment($ticket);
+        }
+
         return $this->render('admin/tickets.html.twig', [
             'tickets'     => $pagination,
             'currentSort' => $sort,
+            'sentiments'  => $sentiments,  // ← pluriel, et pas de $ticket hors foreach
+
         ]);
     }
 
@@ -580,7 +588,8 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
-        TicketSlaCalculator $ticketSlaCalculator
+        TicketSlaCalculator $ticketSlaCalculator,
+        \App\Service\SentimentService $sentimentService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -599,60 +608,12 @@ class AdminController extends AbstractController
             $ticket->setPriorite($newPriorite);
         }
 
-        if (in_array($newStatut, [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
-            $ticket->setDateFermeture(new \DateTime());
-        }
+        return $this->render('admin/ticket_details.html.twig', [
+            'ticket'   => $ticket,
+            'messages' => $ticket->getMessages(),
+            'form'     => $form->createView(),
+            'sentiment' => $sentimentService->getTicketSentiment($ticket),   // ← c'était manquant
 
-        $resolvedStatuses = [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'];
-
-        $becameResolved =
-            !in_array($oldStatus, $resolvedStatuses, true)
-            && in_array($ticket->getStatut(), $resolvedStatuses, true);
-
-        $entityManager->flush();
-
-        if (
-            $becameResolved &&
-            $ticket->getUtilisateur() &&
-            $ticket->getUtilisateur()->getGmail()
-        ) {
-            try {
-                $recipient = $ticket->getUtilisateur()->getGmail();
-                $sender = $_ENV['MAIL_FROM_ADDRESS'] ?? 'eyahellal8@gmail.com';
-
-                $email = (new TemplatedEmail())
-                    ->from($sender)
-                    ->to($recipient)
-                    ->subject('Your ticket has been resolved')
-                    ->htmlTemplate('emails/ticket_resolved.html.twig')
-                    ->context([
-                        'ticket' => $ticket,
-                        'user' => $ticket->getUtilisateur(),
-                    ]);
-
-                $mailer->send($email);
-                $this->addFlash('info', sprintf('Debug: Mailer->send() logic reached. FROM: %s | TO: %s', $sender, $recipient));
-            } catch (\Throwable $e) {
-                $this->addFlash('danger', sprintf('Debug: Mailer Exception! %s: %s', get_class($e), $e->getMessage()));
-            }
-        } elseif ($becameResolved) {
-            $user = $ticket->getUtilisateur();
-            $this->addFlash('warning', sprintf(
-                'Debug: Email block skipped. User: %s | Email: %s',
-                $user ? $user->getPrenom() : 'NULL',
-                $user ? $user->getGmail() : 'NULL'
-            ));
-        } else {
-             $this->addFlash('secondary', 'Debug: Ticket status updated but "becameResolved" is FALSE (Email not triggered).');
-        }
-
-        $this->addFlash('success', sprintf('Ticket updated successfully. (Resolution detected: %s | User Found: %s)', 
-            $becameResolved ? 'YES' : 'NO',
-            $ticket->getUtilisateur() ? 'YES' : 'NO'
-        ));
-
-        return $this->redirectToRoute('app_admin_ticket_details', [
-            'id' => $ticket->getId(),
         ]);
     }
 

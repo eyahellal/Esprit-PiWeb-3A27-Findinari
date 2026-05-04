@@ -2,29 +2,35 @@
 
 namespace App\Controller;
 
-use App\Entity\reclamation\Ticket;
 use App\Entity\reclamation\Message;
-use App\Form\TicketType;
+use App\Entity\reclamation\Ticket;
 use App\Form\MessageType;
-use App\Service\TicketSlaCalculator;
+use App\Form\TicketType;
+use App\Repository\TicketRepository;
+use App\Service\Ticket\TicketManager;
+use App\Service\TicketPriorityClassifierService;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
-use App\Repository\TicketRepository;
-use App\Service\TicketPriorityClassifierService;
-use Symfony\Component\HttpFoundation\JsonResponse;
-
 class TicketUserController extends AbstractController
 {
+    public function __construct(
+        private TicketManager $ticketManager
+    ) {
+    }
+
     #[Route('/user/ticket/classify-priority', name: 'app_user_ticket_classify_priority', methods: ['POST'])]
     public function classifyPriorityAction(Request $request, TicketPriorityClassifierService $classifier): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
         $title = $data['title'] ?? '';
         $description = $data['description'] ?? '';
 
@@ -36,7 +42,7 @@ class TicketUserController extends AbstractController
             'code' => $result['priority'],
             'source' => $result['source'],
             'raw' => $result['raw'],
-            'is_error' => $result['is_error'] ?? false
+            'is_error' => $result['is_error'] ?? false,
         ]);
     }
 
@@ -44,10 +50,10 @@ class TicketUserController extends AbstractController
     public function myTickets(
         TicketRepository $ticketRepository,
         Request $request,
-        \Knp\Component\Pager\PaginatorInterface $paginator
+        PaginatorInterface $paginator
     ): Response {
         $user = $this->getUser();
-        
+
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
@@ -67,24 +73,24 @@ class TicketUserController extends AbstractController
             'tickets' => $pagination,
         ]);
     }
+
     #[Route('/user/createticket', name: 'app_user_createticket')]
-public function createTicket(
-    Request $request,
-    EntityManagerInterface $entityManager,
-    SluggerInterface $slugger,
-    TicketSlaCalculator $ticketSlaCalculator
-): Response    {
+    public function createTicket(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SluggerInterface $slugger
+    ): Response {
         $ticket = new Ticket();
         $form = $this->createForm(TicketType::class, $ticket);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle file upload
             $imageFile = $form->get('imageUrl')->getData();
+
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
                     $imageFile->move(
@@ -93,18 +99,22 @@ public function createTicket(
                     );
                     $ticket->setImageUrl($newFilename);
                 } catch (FileException $e) {
+                    $this->addFlash('danger', 'Image upload failed.');
                 }
             }
 
-            // Set other fields
-            // ICI : On définit la date de création actuelle
-            $createdAt = new \DateTime();
-
             $ticket->setUtilisateur($this->getUser());
-            $ticket->setDateCreation($createdAt); // L'entité utilisera cette date pour calculer le SLA
-            $ticket->setStatut(Ticket::STATUS_OPEN);
 
-            
+            try {
+                $this->ticketManager->initializeNewTicket($ticket);
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('danger', $e->getMessage());
+
+                return $this->render('reclamation/create_ticket.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
             $entityManager->persist($ticket);
             $entityManager->flush();
 
@@ -118,7 +128,6 @@ public function createTicket(
         ]);
     }
 
-   
     #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
         Ticket $ticket,
@@ -127,6 +136,7 @@ public function createTicket(
         SluggerInterface $slugger
     ): Response {
         $user = $this->getUser();
+
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
@@ -161,6 +171,7 @@ public function createTicket(
                     $message->setUrlPieceJointe($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Attachment upload failed.');
+
                     return $this->redirectToRoute('app_user_ticket_details', [
                         'id' => $ticket->getId(),
                     ]);
@@ -169,7 +180,6 @@ public function createTicket(
 
             $entityManager->persist($message);
             $entityManager->flush();
-
 
             return $this->redirectToRoute('app_user_ticket_details', [
                 'id' => $ticket->getId(),
@@ -183,7 +193,6 @@ public function createTicket(
         ]);
     }
 
-
     #[Route('/user/ticket/{id}/delete', name: 'app_user_ticket_delete', methods: ['POST'])]
     public function deleteTicket(
         Ticket $ticket,
@@ -191,12 +200,12 @@ public function createTicket(
         EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
+
         if (!$user || $ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
         if ($this->isCsrfTokenValid('delete_ticket_' . $ticket->getId(), $request->request->get('_token'))) {
-            // Delete associated messages first (cascading normally handles this but let's be sure or just remove ticket)
             $entityManager->remove($ticket);
             $entityManager->flush();
             $this->addFlash('success', 'Ticket deleted successfully.');
@@ -213,31 +222,27 @@ public function createTicket(
         SluggerInterface $slugger
     ): Response {
         $user = $this->getUser();
+
         if (!$user || $ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
-        // Check if ticket can still be edited (not closed?)
-        if ($ticket->getStatut() === Ticket::STATUS_CLOSED) {
-            $this->addFlash('danger', 'Closed tickets cannot be edited.');
-            return $this->redirectToRoute('app_user_tickets');
-        }
-
         $form = $this->createForm(TicketType::class, $ticket);
-        
-        // Remove priority and status fields from the user edit form as requested
         $form->remove('priorite');
-        // (Status isn't in TicketType but just in case)
-        if ($form->has('statut')) $form->remove('statut');
+
+        if ($form->has('statut')) {
+            $form->remove('statut');
+        }
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('imageUrl')->getData();
+
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
                 try {
                     $imageFile->move(
@@ -246,12 +251,24 @@ public function createTicket(
                     );
                     $ticket->setImageUrl($newFilename);
                 } catch (FileException $e) {
-                    // handle exception
+                    $this->addFlash('danger', 'Image upload failed.');
                 }
             }
 
+            try {
+                $this->ticketManager->validateForUpdate($ticket);
+            } catch (\InvalidArgumentException $e) {
+                $this->addFlash('danger', $e->getMessage());
+
+                return $this->redirectToRoute('app_user_ticket_edit', [
+                    'id' => $ticket->getId(),
+                ]);
+            }
+
             $entityManager->flush();
+
             $this->addFlash('success', 'Ticket updated successfully.');
+
             return $this->redirectToRoute('app_user_tickets');
         }
 

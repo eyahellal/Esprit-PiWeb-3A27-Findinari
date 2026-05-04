@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Tests\Controller;
-
+// php bin/phpunit tests/Controller/CategorieControllerTest.php
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class CategorieControllerTest extends WebTestCase

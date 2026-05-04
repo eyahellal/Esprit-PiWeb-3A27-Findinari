@@ -1,5 +1,5 @@
 <?php
-
+//php bin/phpunit tests/Service/BudgetManagerTest.php
 namespace App\Tests\Service;
 
 use PHPUnit\Framework\TestCase;

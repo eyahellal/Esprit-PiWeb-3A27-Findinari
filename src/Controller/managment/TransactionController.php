@@ -15,6 +15,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Service\GroqService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\RecurringTransactionService;
+use App\Service\Management\MLCategoryService;
+
 
 #[Route('/transaction')]
 class TransactionController extends AbstractController
@@ -458,5 +460,43 @@ public function toggleRecurring(Transaction $transaction, EntityManagerInterface
         $this->addFlash('success', $transaction->isRecurring() ? 'Recurring transaction activated!' : 'Recurring transaction stopped!');
     }
     return $this->redirectToRoute('app_transaction_index');
+}
+#[Route('/predict-category', name: 'app_transaction_predict_category', methods: ['POST'])]
+public function predictCategory(
+    Request $request,
+    MLCategoryService $mlService
+): JsonResponse {
+    $data = json_decode($request->getContent(), true);
+
+    $description = $data['description'] ?? '';
+    $amount = (float) ($data['amount'] ?? 0);
+    $type = $data['type'] ?? 'depense';
+
+    $scriptPath = 'C:\projects\whatever\Esprit-PiWeb-3A27-Findinari\malek_ml\predict.py';
+    
+    $command = sprintf(
+        'python %s %s %s %s 2>&1',
+        escapeshellarg($scriptPath),
+        escapeshellarg($description),
+        escapeshellarg((string)$amount),
+        escapeshellarg($type === 'depense' ? 'debit' : 'credit')
+    );
+
+    $output = shell_exec($command);
+
+    // Direct JSON decode — no line parsing needed
+    $result = json_decode(trim($output), true);
+
+    if ($result && isset($result['category'])) {
+        return new JsonResponse([
+            'predicted_category' => $result['category'],
+            'confidence' => $result['confidence']
+        ]);
+    }
+
+    return new JsonResponse([
+        'predicted_category' => null,
+        'confidence' => 0
+    ]);
 }
 }

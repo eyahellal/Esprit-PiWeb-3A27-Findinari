@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Tests\Service;
-
+// php bin/phpunit tests/Service/RecurringTransactionServiceTest.php
 use App\Entity\management\Transaction;
 use App\Entity\management\Categorie;
 use App\Entity\Loan\Wallet;
