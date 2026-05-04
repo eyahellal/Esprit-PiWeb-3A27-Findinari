@@ -30,11 +30,11 @@ class Contributiongoal
     // ── OBJECTIF ────────────────────────────────
     public function getObjectif(): ?Objectif { return $this->objectif; }
 
+    /**
+     * Setter permissif — la validation métier est déléguée à ContributionManager::validate()
+     */
     public function setObjectif(?Objectif $objectif): self
     {
-        if ($objectif === null) {
-            throw new \InvalidArgumentException("L'objectif est obligatoire.");
-        }
         $this->objectif = $objectif;
         return $this;
     }
@@ -42,17 +42,11 @@ class Contributiongoal
     // ── MONTANT ─────────────────────────────────
     public function getMontant(): ?float { return $this->montant; }
 
-    public function setMontant(float $montant): self
+    /**
+     * Setter permissif — la validation métier est déléguée à ContributionManager::validate()
+     */
+    public function setMontant(?float $montant): self
     {
-        if ($montant <= 0) {
-            throw new \InvalidArgumentException("Le montant doit être positif ");
-        }
-        if ($montant > 99_999_999.99) {
-            throw new \InvalidArgumentException("Le montant ne peut pas dépasser 99 999 999,99.");
-        }
-        if (round($montant, 2) !== $montant) {
-            throw new \InvalidArgumentException("Le montant ne peut avoir que 2 décimales maximum.");
-        }
         $this->montant = $montant;
         return $this;
     }
@@ -60,10 +54,8 @@ class Contributiongoal
     // ── DATE ────────────────────────────────────
     public function getDate(): ?\DateTimeInterface { return $this->date; }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setDate(?\DateTimeInterface $date): self
     {
-        
-       
         $this->date = $date;
         return $this;
     }

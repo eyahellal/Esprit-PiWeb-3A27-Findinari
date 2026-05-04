@@ -1,0 +1,126 @@
+{% extends 'base.html.twig' %}
+{% block title %}ML Dashboard — Prédictions IA{% endblock %}
+
+{% block body %}
+<div style="max-width:1200px;margin:0 auto;padding:2rem;font-family:'DM Sans',sans-serif">
+
+  <div style="margin-bottom:2rem">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#1D9E75;margin-bottom:8px">Intelligence Artificielle</div>
+    <h1 style="font-size:28px;font-weight:700;color:#111208;margin:0">Prédictions ML — Objectifs</h1>
+    <p style="color:#7A7870;margin-top:6px">Analyse de vos objectifs par machine learning — 3 modèles entraînés</p>
+  </div>
+
+  {% if predictions is empty %}
+    <div style="background:#fff;border:0.5px dashed #ddd;border-radius:14px;padding:3rem;text-align:center;color:#7A7870">
+      Aucun objectif EN_COURS à analyser.
+    </div>
+  {% else %}
+
+    {# ── Résumé global ── #}
+    {% set nb_ok    = predictions|filter(p => p.prediction.va_atteindre)|length %}
+    {% set nb_risk  = predictions|filter(p => p.prediction.niveau_risque == 'ÉLEVÉ')|length %}
+    {% set nb_moyen = predictions|filter(p => p.prediction.niveau_risque == 'MOYEN')|length %}
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem">
+      <div style="background:#fff;border:0.5px solid #ddd;border-radius:14px;padding:1.25rem;display:flex;align-items:center;gap:14px">
+        <div style="width:40px;height:40px;background:#E1F5EE;border-radius:10px;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div><div style="font-size:24px;font-weight:700;color:#111208">{{ nb_ok }}</div><div style="font-size:10px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em">Vont réussir</div></div>
+      </div>
+      <div style="background:#fff;border:0.5px solid #ddd;border-radius:14px;padding:1.25rem;display:flex;align-items:center;gap:14px">
+        <div style="width:40px;height:40px;background:#FAEEDA;border-radius:10px;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BA7517" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div><div style="font-size:24px;font-weight:700;color:#111208">{{ nb_moyen }}</div><div style="font-size:10px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em">Risque moyen</div></div>
+      </div>
+      <div style="background:#fff;border:0.5px solid #ddd;border-radius:14px;padding:1.25rem;display:flex;align-items:center;gap:14px">
+        <div style="width:40px;height:40px;background:#FCEBEB;border-radius:10px;display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E24B4A" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div><div style="font-size:24px;font-weight:700;color:#111208">{{ nb_risk }}</div><div style="font-size:10px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em">Risque élevé</div></div>
+      </div>
+    </div>
+
+    {# ── Cards prédictions ── #}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+      {% for item in predictions %}
+        {% set p   = item.prediction %}
+        {% set obj = item.objectif %}
+        {% set w   = item.wallet %}
+
+        {% if p.niveau_risque == 'ÉLEVÉ' %}
+          {% set accent = '#E24B4A' %} {% set bg = '#FCEBEB' %} {% set border = '#F7C1C1' %}
+        {% elseif p.niveau_risque == 'MOYEN' %}
+          {% set accent = '#BA7517' %} {% set bg = '#FAEEDA' %} {% set border = '#FAC775' %}
+        {% else %}
+          {% set accent = '#1D9E75' %} {% set bg = '#E1F5EE' %} {% set border = '#9FE1CB' %}
+        {% endif %}
+
+        <div style="background:#fff;border:0.5px solid #ddd;border-radius:16px;overflow:hidden">
+          {# Barre colorée en haut #}
+          <div style="height:3px;background:{{ accent }}"></div>
+
+          <div style="padding:1.25rem">
+            {# Header #}
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+              <div>
+                <div style="font-size:10px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">
+                  {{ w ? w.devise ~ ' · ' ~ w.pays : 'Wallet' }}
+                </div>
+                <div style="font-size:14px;font-weight:600;color:#111208">{{ obj.titre }}</div>
+              </div>
+              <span style="font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;background:{{ bg }};color:{{ accent }};border:0.5px solid {{ border }}">
+                {{ p.niveau_risque }}
+              </span>
+            </div>
+
+            {# Probabilité — grand indicateur visuel #}
+            <div style="background:#F8F7F5;border-radius:10px;padding:1rem;margin-bottom:12px;text-align:center">
+              <div style="font-size:36px;font-weight:700;color:{{ accent }};letter-spacing:-.03em">
+                {{ (p.probabilite_succes * 100)|round(1) }}%
+              </div>
+              <div style="font-size:11px;color:#7A7870;margin-top:2px">probabilité de succès</div>
+            </div>
+
+            {# Stats #}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+              <div style="background:#F8F7F5;border-radius:8px;padding:8px">
+                <div style="font-size:9px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">% prévu</div>
+                <div style="font-size:14px;font-weight:600;color:#111208">{{ p.pct_prevu }}%</div>
+              </div>
+              <div style="background:#F8F7F5;border-radius:8px;padding:8px">
+                <div style="font-size:9px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Fin estimée</div>
+                <div style="font-size:12px;font-weight:600;color:#111208">{{ p.date_fin_estimee }}</div>
+              </div>
+              <div style="background:#F8F7F5;border-radius:8px;padding:8px">
+                <div style="font-size:9px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Jours restants</div>
+                <div style="font-size:14px;font-weight:600;color:#111208">{{ p.jours_restants }}j</div>
+              </div>
+              <div style="background:#F8F7F5;border-radius:8px;padding:8px">
+                <div style="font-size:9px;color:#7A7870;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Va atteindre</div>
+                <div style="font-size:13px;font-weight:700;color:{{ p.va_atteindre ? '#1D9E75' : '#E24B4A' }}">
+                  {{ p.va_atteindre ? 'OUI' : 'NON' }}
+                </div>
+              </div>
+            </div>
+
+            {# Recommandation #}
+            <div style="background:{{ bg }};border:0.5px solid {{ border }};border-radius:8px;padding:10px;font-size:11px;color:{{ accent }};line-height:1.5">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:middle"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              {{ p.recommandation }}
+            </div>
+          </div>
+
+          {# Footer #}
+          <div style="padding:.75rem 1.25rem;background:#F8F7F5;border-top:0.5px solid #F0EDE8;display:flex;justify-content:space-between;font-size:11px;color:#7A7870">
+            <span>Cible : {{ obj.montant|number_format(0,',',' ') }} {{ w ? w.devise : '' }}</span>
+            <a href="{{ path('objectif_ml_predict', {id: obj.id}) }}"
+               style="color:#1D9E75;text-decoration:none;font-weight:600">JSON →</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
