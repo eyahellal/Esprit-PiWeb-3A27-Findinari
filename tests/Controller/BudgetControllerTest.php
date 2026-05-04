@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Tests\Controller;
-
+// php bin/phpunit tests/Controller/BudgetControllerTest.php
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class BudgetControllerTest extends WebTestCase

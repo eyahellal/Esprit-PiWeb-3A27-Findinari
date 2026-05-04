@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Tests\Service;
-
+// php bin/phpunit tests/Service/GroqServiceTest.php
 use App\Service\GroqService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\HttpClient\HttpClientInterface;

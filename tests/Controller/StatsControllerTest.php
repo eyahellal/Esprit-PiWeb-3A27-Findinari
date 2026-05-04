@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Tests\Controller;
-
+// php bin/phpunit tests/Controller/StatsControllerTest.php
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class StatsControllerTest extends WebTestCase

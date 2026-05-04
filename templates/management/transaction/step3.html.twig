@@ -126,39 +126,77 @@
                             <input type="hidden" id="budgetsData" value="{{ budgetsData|json_encode }}">
 
                             {# Category #}
-                            {% if type == 'depense' %}
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold" style="color: #26474E;">Category</label>
-                                    {% if categories is empty %}
-                                        <div class="rounded-3 p-3" style="background: #fff3ee; border-left: 4px solid #F27438;">
-                                            <p class="mb-0 small" style="color: #26474E;">
-                                                <i class="fas fa-info-circle me-2" style="color: #F27438;"></i>
-                                                No budgets found for this wallet.
-                                                <a href="{{ path('app_budget_new_step1') }}" style="color: #F27438;">Create a budget first</a>
-                                            </p>
-                                        </div>
-                                    {% else %}
-                                        <div class="row g-2">
-                                            {% for categorie in categories %}
-                                                <div class="col-md-6">
-                                                    <input type="radio" name="categorie_id"
-                                                           id="cat_{{ categorie.id }}"
-                                                           value="{{ categorie.id }}"
-                                                           class="d-none cat-radio">
-                                                    <label for="cat_{{ categorie.id }}"
-                                                           class="cat-option w-100 rounded-3 p-2 d-flex align-items-center gap-2"
-                                                           style="border: 2px solid #e0e0e0; cursor: pointer; transition: all 0.2s;">
-                                                        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                                                             style="width:38px; height:38px; background: {{ categorie.color ?? '#F27438' }};">
-                                                            <i class="fas {{ categorie.icon ?? 'fa-folder' }} text-white small"></i>
-                                                        </div>
-                                                        <span class="fw-bold small" style="color: #26474E;">{{ categorie.nom }}</span>
-                                                    </label>
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                    {% endif %}
-                                </div>
+{% if type == 'depense' %}
+    <div class="mb-3">
+        <label class="form-label fw-bold" style="color: #26474E;">Category</label>
+
+        {# ✅ AI Suggestion Button — ABOVE categories #}
+        <div class="rounded-3 p-3 mb-3" style="background: #fff3ee; border: 1px solid #F27438;">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="fas fa-robot" style="color: #F27438;"></i>
+                <span class="fw-bold small" style="color: #26474E;">AI Category Suggestion</span>
+            </div>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <button type="button"
+                        onclick="suggestCategory()"
+                        class="btn btn-sm px-3"
+                        style="background: #F27438; color: white; border-radius: 10px;">
+                    <i class="fas fa-magic me-1"></i>Auto Suggest
+                </button>
+                <div id="aiLoading" style="display: none;">
+                    <span class="spinner-border spinner-border-sm" style="color: #F27438;"></span>
+                    <span class="small text-muted ms-1">Analyzing...</span>
+                </div>
+                <div id="aiSuggestion" style="display: none;">
+                    <span class="badge rounded-pill px-3 py-2"
+                          style="background: #e8f5e9; color: #2d6a4f; font-size: 0.85rem;">
+                        <i class="fas fa-tag me-1"></i>
+                        Suggested: <strong id="suggestedCategory">—</strong>
+                        <span id="suggestionConfidence" class="ms-1 text-muted"></span>
+                    </span>
+                </div>
+                <div id="aiError" style="display: none;">
+                    <span class="small text-danger">
+                        <i class="fas fa-exclamation-circle me-1"></i>
+                        Could not predict. Please select manually.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {# ✅ Original Categories — unchanged #}
+        {% if categories is empty %}
+            <div class="rounded-3 p-3" style="background: #fff3ee; border-left: 4px solid #F27438;">
+                <p class="mb-0 small" style="color: #26474E;">
+                    <i class="fas fa-info-circle me-2" style="color: #F27438;"></i>
+                    No budgets found for this wallet.
+                    <a href="{{ path('app_budget_new_step1') }}" style="color: #F27438;">Create a budget first</a>
+                </p>
+            </div>
+        {% else %}
+            <div class="row g-2" id="categoryList">
+                {% for categorie in categories %}
+                    <div class="col-md-6">
+                        <input type="radio" name="categorie_id"
+                               id="cat_{{ categorie.id }}"
+                               value="{{ categorie.id }}"
+                               data-name="{{ categorie.nom }}"
+                               class="d-none cat-radio">
+                        <label for="cat_{{ categorie.id }}"
+                               class="cat-option w-100 rounded-3 p-2 d-flex align-items-center gap-2"
+                               style="border: 2px solid #e0e0e0; cursor: pointer; transition: all 0.2s;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:38px; height:38px; background: {{ categorie.color ?? '#F27438' }};">
+                                <i class="fas {{ categorie.icon ?? 'fa-folder' }} text-white small"></i>
+                            </div>
+                            <span class="fw-bold small" style="color: #26474E;">{{ categorie.nom }}</span>
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
                             {% else %}
                                 <div class="mb-3">
                                     <label class="form-label fw-bold" style="color: #26474E;">Category</label>
@@ -552,10 +590,99 @@ function initCurrencies() {
 document.addEventListener('DOMContentLoaded', initCurrencies);
 document.addEventListener('turbo:load', initCurrencies);
 document.addEventListener('turbo:frame-load', initCurrencies);
-
+    
 // Run immediately if page already loaded
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     initCurrencies();
+}
+async function suggestCategory() {
+    const description = document.querySelector('textarea[name="description"]')?.value?.trim() || '';
+    const amount = parseFloat(document.getElementById('montantInput')?.value || 0);
+
+    // Show error if no description or amount
+    if (!description && amount <= 0) {
+        alert('Please enter amount and description first!');
+        return;
+    }
+
+    // Show loading
+    document.getElementById('aiLoading').style.display = 'block';
+    document.getElementById('aiSuggestion').style.display = 'none';
+    document.getElementById('aiError').style.display = 'none';
+
+    try {
+        const response = await fetch('/transaction/predict-category', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                description: description || 'expense',
+                amount: amount || 1,
+                type: 'depense'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.predicted_category) {
+            // Show suggestion badge
+            document.getElementById('suggestedCategory').textContent = data.predicted_category;
+            document.getElementById('suggestionConfidence').textContent =
+                `(${data.confidence}% confidence)`;
+            document.getElementById('aiSuggestion').style.display = 'block';
+
+            // Auto-select matching category from existing ones
+            autoSelectCategory(data.predicted_category);
+        } else {
+            document.getElementById('aiError').style.display = 'block';
+        }
+
+    } catch (error) {
+        console.error('AI Error:', error);
+        document.getElementById('aiError').style.display = 'block';
+    }
+
+    document.getElementById('aiLoading').style.display = 'none';
+}
+
+function autoSelectCategory(predictedCategory) {
+    // Get all category radio buttons
+    const radios = document.querySelectorAll('input[name="categorie_id"]');
+    let matched = false;
+
+    radios.forEach(radio => {
+        const categoryName = radio.getAttribute('data-name')?.toLowerCase() || '';
+        const predicted = predictedCategory.toLowerCase();
+
+        // Check if names match (partial match)
+        if (categoryName.includes(predicted) || predicted.includes(categoryName)) {
+            // Select this radio
+            radio.checked = true;
+
+            // Update label styling
+            const label = document.querySelector(`label[for="${radio.id}"]`);
+            if (label) {
+                // Reset all labels first
+                document.querySelectorAll('.cat-option').forEach(l => {
+                    l.style.borderColor = '#e0e0e0';
+                    l.style.background = 'white';
+                });
+
+                // Highlight matched category
+                label.style.borderColor = '#F27438';
+                label.style.background = '#fff3ee';
+                label.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            matched = true;
+        }
+    });
+
+    if (!matched) {
+        // No exact match found
+        document.getElementById('aiSuggestion').style.display = 'none';
+        document.getElementById('aiError').style.display = 'block';
+        document.getElementById('aiError').querySelector('span').innerHTML =
+            '<i class="fas fa-info-circle me-1"></i>No matching category found. Please select manually.';
+    }
 }
 </script>
 
