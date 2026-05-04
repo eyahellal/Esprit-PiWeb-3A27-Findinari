@@ -1,0 +1,250 @@
+{% extends 'management/dashboard.html.twig' %}
+
+{% block title %}My Wallets - Fin-Dinari{% endblock %}
+
+{% set active_tab = 'wallet' %}
+
+{% block content %}
+
+<turbo-frame id="content-frame">
+
+    {# Header #}
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-1" style="color: #2d6a4f;">
+                <i class="fas fa-wallet me-2"></i>My Wallets
+            </h1>
+            <p class="text-muted mb-0">Manage your wallets and track your balances across different currencies</p>
+        </div>
+        <div class="col-lg-4 text-end">
+           <a href="{{ path('app_wallet_new') }}" 
+   class="btn btn-lg px-4"
+   data-turbo-frame="_top"
+   style="background: linear-gradient(135deg, #2d6a4f, #52b788); color: white; border: none; border-radius: 12px;">
+    <i class="fas fa-plus me-2"></i>New Wallet
+</a>
+        </div>
+    </div>
+
+    {# Stats Bar #}
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #26474E; box-shadow: 0 4px 20px rgba(45,106,79,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Total Wallets</p>
+                        <h2 class="fw-bold mb-0">{{ total }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-wallet fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background:#76CDCD; box-shadow: 0 4px 20px rgba(30,58,95,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Currencies</p>
+                        <h2 class="fw-bold mb-0">{{ wallets|length }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-coins fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="rounded-4 p-4 text-white h-100"
+                 style="background: #2CCED2; box-shadow: 0 4px 20px rgba(106,5,114,0.3);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-1 opacity-75 small fw-semibold text-uppercase">Countries</p>
+                        <h2 class="fw-bold mb-0">{{ wallets|length }}</h2>
+                    </div>
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:56px; height:56px; background: rgba(255,255,255,0.2);">
+                        <i class="fas fa-globe fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Search Bar #}
+    <div class="row mb-4">
+        <div class="col-lg-6">
+           <form method="get" action="{{ path('app_wallet_index') }}"
+      data-turbo-frame="content-frame"
+      class="d-flex gap-2">
+                <div class="input-group">
+                    <span class="input-group-text border-0 bg-white">
+                        <i class="fas fa-search text-muted"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-0 shadow-sm"
+                           placeholder="Search by country or currency..."
+                           value="{{ search }}"
+                           style="border-radius: 0 12px 12px 0;">
+                </div>
+                <button type="submit" class="btn px-4"
+                        style="background: #F9968B; color: white; border-radius: 12px;">
+                    Search
+                </button>
+                {% if search %}
+                    <a href="{{ path('app_wallet_index') }}" class="btn btn-outline-secondary"
+                       style="border-radius: 12px;">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {# Wallets Grid #}
+    <div class="row" id="walletsGrid">
+        {% if wallets is empty %}
+            <div class="col-12 text-center py-5">
+                <div class="rounded-4 p-5" style="background: #f8fffe; border: 2px dashed #52b788;">
+                    <i class="fas fa-wallet fa-3x mb-3" style="color: #52b788;"></i>
+                    <h4 style="color: #2d6a4f;">No wallets found</h4>
+                    <p class="text-muted">Start by creating your first wallet</p>
+                    <a href="{{ path('app_wallet_new') }}" class="btn mt-2"
+                       style="background: #2d6a4f; color: white; border-radius: 12px;">
+                        <i class="fas fa-plus me-2"></i>Create Wallet
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            {% for wallet in wallets %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 border-0 rounded-4 wallet-card"
+                         style="box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+
+                        {# Card Header with gradient #}
+                        <div class="rounded-top-4 p-4 text-white"
+                             style="background: #F27438;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <p class="mb-1 opacity-75 small text-uppercase fw-semibold">Wallet</p>
+                                    <h4 class="fw-bold mb-0">{{ wallet.pays }}</h4>
+                                </div>
+                                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width:48px; height:48px; background: rgba(255,255,255,0.2);">
+                                    <i class="fas fa-wallet fa-lg"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Card Body #}
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                <p class="text-muted small mb-1 text-uppercase fw-semibold">Balance</p>
+                                <h3 class="fw-bold mb-0" style="color: #2d6a4f;">
+                                    {{ wallet.solde|number_format(2) }}
+                                    <span class="fs-5 text-muted">{{ wallet.devise }}</span>
+                                </h3>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <span class="badge rounded-pill px-3 py-2"
+                                      style="background: #e8f5e9; color: #2d6a4f;">
+                                    <i class="fas fa-coins me-1"></i>{{ wallet.devise }}
+                                </span>
+                                <span class="badge rounded-pill px-3 py-2"
+                                      style="background: #e3f2fd; color: #1e3a5f;">
+                                    <i class="fas fa-globe me-1"></i>{{ wallet.pays }}
+                                </span>
+                            </div>
+
+                            <hr class="my-3">
+
+                            {# Actions #}
+<div class="d-flex gap-2">
+    <a href="{{ path('app_wallet_show', {'id': wallet.id}) }}"
+       class="btn btn-sm flex-fill"
+       data-turbo-frame="_top"
+       style="background: #e8f5e9; color: #2d6a4f; border-radius: 10px;">
+        <i class="fas fa-eye me-1"></i>View
+    </a>
+    <a href="{{ path('app_wallet_edit', {'id': wallet.id}) }}"
+       class="btn btn-sm flex-fill"
+       data-turbo-frame="_top"
+       style="background: #e3f2fd; color: #1e3a5f; border-radius: 10px;">
+        <i class="fas fa-edit me-1"></i>Edit
+    </a>
+    <form method="post" action="{{ path('app_wallet_delete', {'id': wallet.id}) }}"
+          onsubmit="return confirm('Are you sure?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ wallet.id) }}">
+        <button class="btn btn-sm"
+                style="background: #fde8e8; color: #c0392b; border-radius: 10px;">
+            <i class="fas fa-trash"></i>
+        </button>
+    </form>
+</div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{# Pagination #}
+{% if totalPages > 1 %}
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination mb-0" style="gap: 4px;">
+                {# Previous #}
+                <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+                    <a class="page-link rounded-3 border-0 px-3"
+                       href="{{ path('app_wallet_index', {page: currentPage - 1, search: search}) }}"
+                       style="color: {{ currentPage == 1 ? '#999' : '#26474E' }}; background: {{ currentPage == 1 ? '#f5f5f5' : '#e8f5f5' }};">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+
+                {# Page numbers #}
+                {% for p in 1..totalPages %}
+                    <li class="page-item">
+                        <a class="page-link rounded-3 border-0 px-3"
+                           href="{{ path('app_wallet_index', {page: p, search: search}) }}"
+                           style="background: {{ p == currentPage ? '#F27438' : '#f5f5f5' }};
+                                  color: {{ p == currentPage ? 'white' : '#26474E' }};
+                                  font-weight: {{ p == currentPage ? 'bold' : 'normal' }};">
+                            {{ p }}
+                        </a>
+                    </li>
+                {% endfor %}
+
+                {# Next #}
+                <li class="page-item {{ currentPage == totalPages ? 'disabled' : '' }}">
+                    <a class="page-link rounded-3 border-0 px-3"
+                       href="{{ path('app_wallet_index', {page: currentPage + 1, search: search}) }}"
+                       style="color: {{ currentPage == totalPages ? '#999' : '#26474E' }}; background: {{ currentPage == totalPages ? '#f5f5f5' : '#e8f5f5' }};">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <p class="text-center text-muted small mt-2">
+        Showing {{ (currentPage - 1) * 6 + 1 }}-{% if currentPage * 6 > total %}{{ total }}{% else %}{{ currentPage * 6 }}{% endif %} of {{ total }} wallets
+    </p>
+{% endif %}
+</turbo-frame>
+
+<style>
+    .wallet-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px #F27438 !important;
+    }
+    .rounded-top-4 {
+        border-radius: 1rem 1rem 0 0 !important;
+    }
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+</style>
+
+{% endblock %}

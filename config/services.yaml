@@ -1,0 +1,90 @@
+
+
+parameters:
+    tickets_directory: '%kernel.project_dir%/public/uploads/tickets'
+
+    crypto_api_url: '%env(CRYPTO_API_URL)%'
+    news_api_url: '%env(NEWS_API_URL)%'
+    news_api_key: '%env(NEWS_API_KEY)%'
+    ollama_api_url: '%env(OLLAMA_API_URL)%'
+    messages_directory: '%kernel.project_dir%/public/uploads/messages'
+    cloudinary_url: '%env(CLOUDINARY_URL)%'
+    groq_api_key: '%env(GROQ_API_KEY)%'
+    groq_model: '%env(GROQ_MODEL)%'
+    hf_api_token: '%env(HF_API_TOKEN)%'
+    hf_api_url: '%env(HF_API_URL)%'
+
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+        # Supprime toute ligne comme : bind:
+        #   $hasdataApiKey: '%env(HASDATA_API_KEY)%'
+
+        bind:
+            $ollamaApiUrl: '%ollama_api_url%'
+            $projectDir: '%kernel.project_dir%'
+            $cloudinaryUrl: '%cloudinary_url%'
+
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+
+    # Service pour Twelve Data
+    App\Service\TwelveDataService:
+        arguments:
+            $apiKey: '%env(TWELVE_DATA_API_KEY)%'
+
+    App\Service\GroqSuggestionService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
+
+    App\Service\GroqReformulationService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
+
+    App\Service\GroqSummaryService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
+
+    App\Service\TicketPriorityClassifierService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+            $groqModel: '%groq_model%'
+
+    App\Controller\Api\CryptoApiController:
+        arguments:
+            $cryptoApiUrl: '%crypto_api_url%'
+
+    App\Controller\Api\NewsApiController:
+        arguments:
+            $newsApiUrl: '%news_api_url%'
+            $newsApiKey: '%news_api_key%'
+
+    App\Service\PdfGeneratorService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    App\Controller\Loan\ObligationController:
+        arguments:
+            $ollamaApiUrl: '%ollama_api_url%'
+    App\Service\GroqService:
+        arguments:
+            $groqApiKey: '%groq_api_key%'
+
+    App\Service\Loan\InvestmentValidatorService:
+        autowire: true
+        autoconfigure: true
+
+    App\Repository\FriendLoanRequestRepository:
+        tags: ['doctrine.repository_service']

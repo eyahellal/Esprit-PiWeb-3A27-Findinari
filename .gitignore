@@ -1,0 +1,22 @@
+# Environment files
+.env.local
+.env.local.php
+.env.*.local
+
+# Dependencies
+/vendor/
+
+# Cache and logs
+/var/
+
+# Public assets
+/public/bundles/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
