@@ -113,6 +113,7 @@
     {% endfor %}
 {% endif %}
                         <form method="post"
+                        data-turbo="false"
                               action="{{ path('app_transaction_new_step3') }}"
                               id="transactionForm"
                               onsubmit="return validateTransaction()"

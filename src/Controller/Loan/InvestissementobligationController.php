@@ -4,7 +4,7 @@ namespace App\Controller\Loan;
 
 use App\Entity\Loan\Investissementobligation;
 use App\Entity\Loan\Obligation;
-use App\Entity\management\Wallet;
+use App\Entity\Loan\Wallet;
 use App\Entity\user\Utilisateur;
 use App\Form\InvestissementobligationType;
 use App\Repository\InvestissementobligationRepository;

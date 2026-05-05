@@ -95,16 +95,18 @@ class Wallet
     return $this;
 }
 
-    #[ORM\OneToMany(targetEntity: Investissementobligation::class, mappedBy: 'wallet')]
-    private Collection $investissementobligations;
+    /** @var Collection<int, Investissementobligation> */
+#[ORM\OneToMany(targetEntity: Investissementobligation::class, mappedBy: 'wallet')]
+private Collection $investissementobligations;
 
-    public function __construct()
-    {
-        $this->investissementobligations = new ArrayCollection();
-    }
-
-    public function getInvestissementobligations(): Collection
-    {
-        return $this->investissementobligations;
-    }
+public function __construct()
+{
+    $this->investissementobligations = new ArrayCollection();
+}
+// ✅ Fix — add generic return type
+/** @return Collection<int, Investissementobligation> */
+public function getInvestissementobligations(): Collection
+{
+    return $this->investissementobligations;
+}
 }

@@ -8,8 +8,8 @@ use App\Form\UpdateProfileType;
 use App\Service\FacePlusPlusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -149,7 +149,6 @@ class ProfileController extends AbstractController
         }
 
         $imageData = substr($base64Image, $commaPosition + 1);
-
         $decodedImage = base64_decode($imageData, true);
 
         if ($decodedImage === false) {
@@ -157,13 +156,20 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('app_profile');
         }
 
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/var/uploads/faces';
+        $projectDir = $this->getParameter('kernel.project_dir');
+
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('Invalid project directory configuration.');
+        }
+
+        $uploadDir = $projectDir . '/var/uploads/faces';
 
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
             throw new \RuntimeException('Unable to create upload directory.');
         }
 
         $tempPath = $uploadDir . '/' . uniqid('face_enroll_', true) . '.jpg';
+
         file_put_contents($tempPath, $decodedImage);
 
         try {

@@ -15,14 +15,17 @@ class GroqService
         $this->apiKey = $groqApiKey;
     }
 
+    /**
+ * @param array<string, mixed> $weatherData
+ */
     public function generateRecommendations(array $weatherData): string
     {
-        $temp = $weatherData['main']['temp'];
-        $weather = $weatherData['weather'][0]['description'];
+        $temp     = $weatherData['main']['temp'];
+        $weather  = $weatherData['weather'][0]['description'];
         $humidity = $weatherData['main']['humidity'];
-        $wind = round($weatherData['wind']['speed'] * 3.6);
-        $city = $weatherData['name'];
-        $country = $weatherData['sys']['country'];
+        $wind     = round($weatherData['wind']['speed'] * 3.6);
+        $city     = $weatherData['name'];
+        $country  = $weatherData['sys']['country'];
 
         $prompt = "You are a smart financial advisor for a budgeting app called Fin-Dinari. 
 Based on the current weather data, give exactly 4 spending recommendations.
@@ -44,25 +47,29 @@ Each object must have:
             $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->apiKey,
-                    'Content-Type' => 'application/json',
+                    'Content-Type'  => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'llama-3.3-70b-versatile',
+                    'model'    => 'llama-3.3-70b-versatile',
                     'messages' => [
                         ['role' => 'user', 'content' => $prompt]
                     ],
                     'temperature' => 0.7,
-                    'max_tokens' => 1000,
+                    'max_tokens'  => 1000,
                 ],
             ]);
 
             $data = $response->toArray();
             $text = $data['choices'][0]['message']['content'];
-            $text = preg_replace('/```json|```/', '', $text);
-            return trim($text);
+
+            // To this:
+$text = (string) preg_replace('/```json|```/', '', $text);
+return trim($text);
+            
 
         } catch (\Exception $e) {
-            return json_encode($this->getFallbackRecommendations($temp, $weather));
+            // ✅ Fix line 65 — json_encode returns string|false, cast to string
+            return (string) json_encode($this->getFallbackRecommendations($temp, $weather));
         }
     }
 
@@ -72,15 +79,15 @@ Each object must have:
             $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->apiKey,
-                    'Content-Type' => 'application/json',
+                    'Content-Type'  => 'application/json',
                 ],
                 'json' => [
-                    'model' => 'llama-3.3-70b-versatile',
+                    'model'    => 'llama-3.3-70b-versatile',
                     'messages' => [
                         ['role' => 'user', 'content' => $prompt]
                     ],
                     'temperature' => 0.7,
-                    'max_tokens' => 1000,
+                    'max_tokens'  => 1000,
                 ],
             ]);
 
@@ -92,61 +99,65 @@ Each object must have:
         }
     }
 
+    // ✅ Fix line 95 — add array value type annotation
+    /**
+ * @return array<int, array<string, string>>
+ */
     private function getFallbackRecommendations(float $temp, string $weather): array
     {
         $recommendations = [];
 
         if ($temp > 30) {
             $recommendations[] = [
-                'icon' => 'fa-sun',
+                'icon'  => 'fa-sun',
                 'color' => '#F27438',
                 'title' => 'Hot Weather Alert',
-                'text' => 'Budget extra for cold drinks and AC. Consider free indoor activities.'
+                'text'  => 'Budget extra for cold drinks and AC. Consider free indoor activities.'
             ];
         } elseif ($temp > 20) {
             $recommendations[] = [
-                'icon' => 'fa-leaf',
+                'icon'  => 'fa-leaf',
                 'color' => '#2d6a4f',
                 'title' => 'Pleasant Day',
-                'text' => 'Walk or cycle instead of driving to save on transport.'
+                'text'  => 'Walk or cycle instead of driving to save on transport.'
             ];
         } else {
             $recommendations[] = [
-                'icon' => 'fa-snowflake',
+                'icon'  => 'fa-snowflake',
                 'color' => '#2CCED2',
                 'title' => 'Cold Weather',
-                'text' => 'Cook warm meals at home to save money.'
+                'text'  => 'Cook warm meals at home to save money.'
             ];
         }
 
         if (str_contains(strtolower($weather), 'rain')) {
             $recommendations[] = [
-                'icon' => 'fa-umbrella',
+                'icon'  => 'fa-umbrella',
                 'color' => '#3498db',
                 'title' => 'Rainy Day Savings',
-                'text' => 'Stay in and meal prep. Great time for online deal hunting.'
+                'text'  => 'Stay in and meal prep. Great time for online deal hunting.'
             ];
         } else {
             $recommendations[] = [
-                'icon' => 'fa-piggy-bank',
+                'icon'  => 'fa-piggy-bank',
                 'color' => '#2d6a4f',
                 'title' => 'Save Today',
-                'text' => 'Take advantage of good weather for free outdoor activities.'
+                'text'  => 'Take advantage of good weather for free outdoor activities.'
             ];
         }
 
         $recommendations[] = [
-            'icon' => 'fa-wallet',
+            'icon'  => 'fa-wallet',
             'color' => '#26474E',
             'title' => 'Track Your Spending',
-            'text' => 'Review your budget and make sure you are on track.'
+            'text'  => 'Review your budget and make sure you are on track.'
         ];
 
         $recommendations[] = [
-            'icon' => 'fa-chart-line',
+            'icon'  => 'fa-chart-line',
             'color' => '#F27438',
             'title' => 'Financial Check',
-            'text' => 'Check your wallet balance and set realistic spending goals.'
+            'text'  => 'Check your wallet balance and set realistic spending goals.'
         ];
 
         return $recommendations;

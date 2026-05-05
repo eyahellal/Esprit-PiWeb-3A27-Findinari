@@ -83,33 +83,36 @@ class ObjectifManager
      * @throws \InvalidArgumentException
      */
     public function deleteContribution(Contributiongoal $contribution): void
-    {
-        $montant = $contribution->getMontant();
-        if ($montant <= 0) {
-            throw new \InvalidArgumentException('Montant invalide pour cette contribution.');
-        }
-
-        $objectif = $contribution->getObjectif();
-        $walletId = $objectif->getWalletId();
-
-        // Rembourser le wallet
-        $this->connection->executeStatement(
-            'UPDATE wallet SET solde = solde + ? WHERE id = ?',
-            [$montant, $walletId]
-        );
-
-        // Supprimer la contribution
-        $this->em->remove($contribution);
-        $this->em->flush();
-
-        // Recalculer le statut de l'objectif
-        $total = 0;
-        foreach ($objectif->getContributiongoals() as $c) {
-            $total += $c->getMontant();
-        }
-        $objectif->setStatut($total >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
-        $this->em->flush();
+{
+    $montant = $contribution->getMontant();
+    if ($montant <= 0) {
+        throw new \InvalidArgumentException('Montant invalide pour cette contribution.');
     }
+
+    $objectif = $contribution->getObjectif();
+
+    // ✅ Garde null
+    if ($objectif === null) {
+        throw new \InvalidArgumentException('Contribution sans objectif associé.');
+    }
+
+    $walletId = $objectif->getWalletId();  // :93 ✅ plus d'erreur
+
+    $this->connection->executeStatement(
+        'UPDATE wallet SET solde = solde + ? WHERE id = ?',
+        [$montant, $walletId]
+    );
+
+    $this->em->remove($contribution);
+    $this->em->flush();
+
+    $total = 0;
+    foreach ($objectif->getContributiongoals() as $c) {  // :107 ✅
+        $total += $c->getMontant();                        // :110 ✅
+    }
+    $objectif->setStatut($total >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS'); // :110 ✅
+    $this->em->flush();
+}
 
     /**
      * Supprime un objectif et rembourse toutes ses contributions.
@@ -139,14 +142,14 @@ class ObjectifManager
      * @param Objectif[] $objectifs
      * @param array<int, int> $walletToUser  association [walletId => userId]
      * @param array<int, array{nom: string, pays: string}> $usersMap
-     * @return array
+     * @return list<array<string, mixed>>
      */
     public function getTopContributeurs(
-        array $objectifs,
-        array $walletToUser,
-        array $usersMap,
-        GoalStatisticsService $goalStats
-    ): array {
+    array $objectifs,
+    array $walletToUser,
+    array $usersMap,
+    GoalStatisticsService $goalStats
+): array {
         $byUser = [];
 
         foreach ($objectifs as $objectif) {

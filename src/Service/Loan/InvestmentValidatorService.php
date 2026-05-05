@@ -4,7 +4,7 @@ namespace App\Service\Loan;
 
 use App\Entity\Loan\Investissementobligation;
 use App\Entity\Loan\Obligation;
-use App\Entity\management\Wallet;
+use App\Entity\Loan\Wallet;
 use InvalidArgumentException;
 
 class InvestmentValidatorService

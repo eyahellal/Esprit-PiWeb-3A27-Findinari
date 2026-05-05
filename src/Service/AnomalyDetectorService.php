@@ -35,10 +35,6 @@ namespace App\Service;
  */
 class AnomalyDetectorService
 {
-    // Isolation Forest n'est pas disponible dans php-ml
-    // Nous utiliserons une approche statistique uniquement
-    // private IsolationForest $model;
-
     public function __construct()
     {
         // IsolationForest n'est pas disponible
@@ -66,54 +62,6 @@ class AnomalyDetectorService
 
         // 2. Fusion et ranking
         return $this->mergeAndRank([], $statAnomalies);
-    }
-
-    /**
-     * Version simplifiée d'Isolation Forest (simulation)
-     * À remplacer par une vraie implémentation si nécessaire
-     *
-     * @param Contribution[] $contributions
-     * @return Anomaly[]
-     */
-    private function detectML(array $contributions): array
-    {
-        // Simulation simplifiée de détection d'anomalies
-        // Dans un environnement de production, utilisez une vraie librairie ML
-        // comme rubix/ml ou implementez Isolation Forest manuellement
-       
-        $montants = array_column($contributions, 'montant');
-        $mean = array_sum($montants) / count($montants);
-        $std = $this->std($montants);
-       
-        if ($std == 0) {
-            return [];
-        }
-       
-        $anomalies = [];
-        foreach ($contributions as $c) {
-            $zScore = abs(($c['montant'] - $mean) / $std);
-            // Simulation: un point est anormal si son z-score > 2.5
-            if ($zScore > 2.5) {
-                $anomalies[] = [
-                    'objectif_id'    => $c['objectif_id'],
-                    'objectif_titre' => $c['objectif_titre'],
-                    'wallet_id'      => $c['wallet_id'],
-                    'montant'        => $c['montant'],
-                    'date'           => $c['date'],
-                    'niveau_risque'  => $zScore > 4 ? 'ÉLEVÉ' : 'MOYEN',
-                    'methode'        => 'Z-Score (simulation ML)',
-                    'score'          => round($zScore, 4),
-                    'raison'         => sprintf(
-                        'Point détecté par méthode statistique (Z-Score: %.2f) — comportement inhabituel',
-                        $zScore
-                    ),
-                    'source'         => 'ml_simulated',
-                ];
-            }
-        }
-       
-        /** @var Anomaly[] $anomalies */
-        return $anomalies;
     }
 
     /**
@@ -300,7 +248,7 @@ class AnomalyDetectorService
     }
 
     /**
-     * Fusion ML + Stats
+     * Fusion Stats (ML non disponible)
      *
      * @param Anomaly[] $ml
      * @param Anomaly[] $stats
@@ -316,7 +264,7 @@ class AnomalyDetectorService
                     && abs($stat['montant'] - $anomaly['montant']) < 0.01) {
                     // Confirmé par les deux méthodes = ÉLEVÉ automatiquement
                     $anomaly['niveau_risque'] = 'ÉLEVÉ';
-                    $anomaly['methode']       = 'ML + ' . $stat['methode'];
+                    $anomaly['methode']       = 'Stats + ' . $stat['methode'];
                     $anomaly['raison']       .= ' | Confirmé par ' . $stat['methode'] . ': ' . $stat['raison'];
                     $anomaly['score']        += $stat['score'];
                 }

@@ -10,17 +10,17 @@ use DateTime;
 class PdfGeneratorService
 {
     private string $invoiceFolder;
-    
+   
     public function __construct(string $projectDir)
     {
         $this->invoiceFolder = $projectDir . '/public/invoices/';
-        
+       
         // Create the invoices folder if it doesn't exist
         if (!is_dir($this->invoiceFolder)) {
             mkdir($this->invoiceFolder, 0777, true);
         }
     }
-    
+   
     /**
      * Generates a PDF invoice for an investment
      * @param Investissementobligation $investment The investment
@@ -33,21 +33,21 @@ class PdfGeneratorService
         $uniqueId = uniqid();
         $fileName = sprintf('invoice_%s_%s.pdf', $dateStr, $uniqueId);
         $filePath = $this->invoiceFolder . $fileName;
-        
+       
         // Create PDF document
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-        
+       
         // Set document information
         $pdf->SetCreator('Fin-Dinari');
         $pdf->SetAuthor('Fin-Dinari');
         $pdf->SetTitle('Investment Invoice');
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
-        
+       
         // Add a page
         $pdf->AddPage();
         $pdf->SetFont('helvetica', '', 11);
-        
+       
         // ===== HEADER =====
         $html = '
         <style>
@@ -69,58 +69,67 @@ class PdfGeneratorService
             .amount { font-size: 14px; font-weight: bold; color: #b45309; }
             .interest { color: #059669; }
         </style>
-        
+       
         <div class="header">
             <div class="title-main"> FIN-DINARI</div>
             <div class="title-sub">Investment Invoice</div>
         </div>';
-        
+       
         // ===== INVOICE NUMBER AND DATE =====
         $invoiceNumber = 'INV-' . $dateStr . '-' . rand(1000, 9999);
         $currentDate = (new DateTime())->format('d/m/Y H:i');
-        
+       
         $html .= '
         <div class="info-box">
             <strong>Invoice N° :</strong> ' . $invoiceNumber . '<br>
             <strong>Date :</strong> ' . $currentDate . '
         </div>';
-        
+       
         // ===== INVESTMENT DETAILS =====
-        $amount = $investment->getMontantInvesti();
-        $rate = $obligation ? $obligation->getTauxInteret() : 0;
-        $durationDays = $investment->getDateAchat()->diff($investment->getDateMaturite())->days;
+        $amount = (float)($investment->getMontantInvesti() ?? 0.0);
+        $rate = $obligation instanceof Obligation ? (float)$obligation->getTauxInteret() : 0.0;
+       
+        $dateAchat = $investment->getDateAchat();
+        $dateMaturite = $investment->getDateMaturite();
+       
+        // Calculate duration days safely
+        $durationDays = 0;
+        if ($dateAchat instanceof \DateTimeInterface && $dateMaturite instanceof \DateTimeInterface) {
+            $durationDays = $dateAchat->diff($dateMaturite)->days;
+        }
+       
         $interest = $amount * ($rate / 100) * ($durationDays / 365);
         $total = $amount + $interest;
-        
-        $loanType = $obligation ? $obligation->getNom() : 'N/A';
-        $startDate = $investment->getDateAchat()->format('d/m/Y');
-        $endDate = $investment->getDateMaturite()->format('d/m/Y');
-        
+       
+        $loanType = $obligation instanceof Obligation ? ($obligation->getNom() ?? 'N/A') : 'N/A';
+        $startDate = $dateAchat instanceof \DateTimeInterface ? $dateAchat->format('d/m/Y') : 'N/A';
+        $endDate = $dateMaturite instanceof \DateTimeInterface ? $dateMaturite->format('d/m/Y') : 'N/A';
+       
         $html .= '
         <div class="section-title">INVESTMENT DETAILS</div>
-        
+       
         <table>
-            <tr><td class="label">Loan Type:</td><td>' . htmlspecialchars($loanType) . '</td></tr>
+            <td><td class="label">Loan Type:</td><td>' . htmlspecialchars((string)$loanType, ENT_QUOTES, 'UTF-8') . '</td></tr>
             <tr><td class="label">Interest Rate:</td><td>' . number_format($rate, 2) . ' %</td></tr>
             <tr><td class="label">Invested Amount:</td><td>' . number_format($amount, 2) . ' DT</td></tr>
-            <tr><td class="label">Start Date:</td><td>' . $startDate . '</td></tr>
-            <tr><td class="label">End Date:</td><td>' . $endDate . '</td></tr>
-            <tr><td class="label">Duration:</td><td>' . $durationDays . ' days</td></tr>
+            <tr><td class="label">Start Date:</td><td>' . htmlspecialchars((string)$startDate, ENT_QUOTES, 'UTF-8') . '</td></tr>
+            <tr><td class="label">End Date:</td><td>' . htmlspecialchars((string)$endDate, ENT_QUOTES, 'UTF-8') . '</td></tr>
+            <tr><td class="label">Duration:</td><td>' . (int)$durationDays . ' days</td></tr>
         </table>';
-        
+       
         // ===== FINANCIAL SUMMARY =====
         $html .= '
         <div class="section-title">FINANCIAL SUMMARY</div>
-        
+       
         <table>
             <tr><td class="label">Invested amount:</td><td>' . number_format($amount, 2) . ' DT</td></tr>
             <tr><td class="label">Calculated interest:</td><td class="interest">' . number_format($interest, 2) . ' DT</td></tr>
             <tr style="background:#e8f5e9;"><td class="amount">TOTAL TO REPAY:</td><td class="amount">' . number_format($total, 2) . ' DT</td></tr>
         </table>';
-        
+       
         // ===== SIGNATURES =====
         $signDate = (new DateTime())->format('d/m/Y');
-        
+       
         $html .= '
         <div class="signature">
             <div class="sign-left">
@@ -137,23 +146,23 @@ class PdfGeneratorService
             </div>
             <div class="clearfix"></div>
         </div>';
-        
+       
         // ===== FOOTER =====
         $html .= '
         <div class="thanks">
             Thank you for your trust.<br>
             Fin-Dinari - Your financial partner
         </div>
-        
+       
         <div class="footer">
              Fin-Dinari
         </div>';
-        
+       
         $pdf->writeHTML($html, true, false, true, false, '');
-        
+       
         // Save the PDF to file
         $pdf->Output($filePath, 'F');
-        
+       
         return $filePath;
     }
 }

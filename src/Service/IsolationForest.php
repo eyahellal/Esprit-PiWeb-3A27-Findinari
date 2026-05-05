@@ -7,11 +7,13 @@ class IsolationForest
     private int   $nEstimators;
     private int   $maxSamples;
     private float $contamination;
+
+    /** @var array<int, array<string, mixed>> */
     private array $trees = [];
 
     public function __construct(
-        int   $nEstimators  = 100,
-        int   $maxSamples   = 256,
+        int   $nEstimators   = 100,
+        int   $maxSamples    = 256,
         float $contamination = 0.1
     ) {
         $this->nEstimators   = $nEstimators;
@@ -19,7 +21,9 @@ class IsolationForest
         $this->contamination = $contamination;
     }
 
-    // ── ENTRAÎNER LE MODÈLE ──────────────────────────────────────
+    /**
+     * @param array<int, array<int, float>> $X
+     */
     public function fit(array $X): self
     {
         $this->trees = [];
@@ -27,7 +31,6 @@ class IsolationForest
         $sampleSize = min($this->maxSamples, $n);
 
         for ($i = 0; $i < $this->nEstimators; $i++) {
-            // Sous-échantillon aléatoire
             $indices = array_rand($X, $sampleSize);
             if (!is_array($indices)) $indices = [$indices];
             $sample = array_map(fn($idx) => $X[$idx], $indices);
@@ -39,8 +42,10 @@ class IsolationForest
         return $this;
     }
 
-    // ── SCORES D'ANOMALIE ────────────────────────────────────────
-    // Retourne un score entre -1 (très anormal) et 0 (normal)
+    /**
+     * @param array<int, array<int, float>> $X
+     * @return array<int, float>
+     */
     public function scoresSamples(array $X): array
     {
         $scores = [];
@@ -54,14 +59,16 @@ class IsolationForest
             $avgPath = array_sum($pathLengths) / count($pathLengths);
             $cn = $this->cFactor(min($this->maxSamples, $n));
 
-            // Score normalisé : proche de -0.5 = normal, proche de -1 = anomalie
             $scores[] = -pow(2, -$avgPath / max($cn, 1e-10));
         }
 
         return $scores;
     }
 
-    // ── PRÉDIRE (-1 anomalie, 1 normal) ─────────────────────────
+    /**
+     * @param array<int, array<int, float>> $X
+     * @return array<int, int>
+     */
     public function predict(array $X): array
     {
         $scores    = $this->scoresSamples($X);
@@ -70,21 +77,28 @@ class IsolationForest
         return array_map(fn($s) => $s < $threshold ? -1 : 1, $scores);
     }
 
-    // ── CONSTRUCTION D'UN ARBRE ──────────────────────────────────
+    /**
+     * @param array<int, array<int, float>> $X
+     * @return array<string, mixed>
+     */
     private function buildTree(array $X, int $depth, int $maxDepth): array
     {
         $n = count($X);
 
-        // Feuille si trop profond ou un seul point
         if ($depth >= $maxDepth || $n <= 1) {
             return ['type' => 'leaf', 'size' => $n];
         }
 
-        $nFeatures = count($X[0]);
+        $nFeatures  = count($X[0]);
         $featureIdx = rand(0, $nFeatures - 1);
 
-        // Min/Max de la feature choisie
         $values = array_column($X, $featureIdx);
+
+        // ✅ Fix min/max sur tableau potentiellement vide
+        if (empty($values)) {
+            return ['type' => 'leaf', 'size' => $n];
+        }
+
         $min = min($values);
         $max = max($values);
 
@@ -92,7 +106,6 @@ class IsolationForest
             return ['type' => 'leaf', 'size' => $n];
         }
 
-        // Split aléatoire
         $splitValue = $min + lcg_value() * ($max - $min);
 
         $left  = array_values(array_filter($X, fn($p) => $p[$featureIdx] < $splitValue));
@@ -103,29 +116,31 @@ class IsolationForest
         }
 
         return [
-            'type'        => 'node',
-            'feature'     => $featureIdx,
-            'splitValue'  => $splitValue,
-            'left'        => $this->buildTree($left,  $depth + 1, $maxDepth),
-            'right'       => $this->buildTree($right, $depth + 1, $maxDepth),
+            'type'       => 'node',
+            'feature'    => $featureIdx,
+            'splitValue' => $splitValue,
+            'left'       => $this->buildTree($left,  $depth + 1, $maxDepth),
+            'right'      => $this->buildTree($right, $depth + 1, $maxDepth),
         ];
     }
 
-    // ── LONGUEUR DU CHEMIN D'UN POINT DANS UN ARBRE ──────────────
-    private function pathLength(array $point, array $node, int $depth): float
-    {
-        if ($node['type'] === 'leaf') {
-            return $depth + $this->cFactor($node['size']);
-        }
-
-        if ($point[$node['feature']] < $node['splitValue']) {
-            return $this->pathLength($point, $node['left'],  $depth + 1);
-        } else {
-            return $this->pathLength($point, $node['right'], $depth + 1);
-        }
+    /**
+     * @param array<int, float> $point
+     * @param array<string, mixed> $node
+     */
+   private function pathLength(array $point, array $node, int $depth): float
+{
+    if ($node['type'] === 'leaf') {
+        return $depth + $this->cFactor((int) $node['size']);
     }
 
-    // ── FACTEUR DE NORMALISATION ─────────────────────────────────
+    if ($point[(int) $node['feature']] < (float) $node['splitValue']) {
+        return $this->pathLength($point, $node['left'],  $depth + 1);
+    } else {
+        return $this->pathLength($point, $node['right'], $depth + 1);
+    }
+}
+
     private function cFactor(int $n): float
     {
         if ($n <= 1) return 0.0;
@@ -133,7 +148,9 @@ class IsolationForest
         return 2.0 * (log($n - 1) + 0.5772156649) - (2.0 * ($n - 1) / $n);
     }
 
-    // ── SEUIL AUTOMATIQUE ────────────────────────────────────────
+    /**
+     * @param array<int, float> $scores
+     */
     private function computeThreshold(array $scores): float
     {
         $sorted = $scores;
