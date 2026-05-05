@@ -26,7 +26,7 @@ class ObjectifController extends AbstractController
     {
         $user = $this->getUser();
 
-        if ($user instanceof Utilisateur && $user->getId() !== null) {
+        if ($user !== null && method_exists($user, 'getId') && $user->getId() !== null) {
             return (int) $user->getId();
         }
 
@@ -109,7 +109,7 @@ class ObjectifController extends AbstractController
         $usersMap = [];
 
         foreach ($utilisateurRepository->findAll() as $u) {
-            if (!$u instanceof Utilisateur || $u->getId() === null) {
+            if ($u->getId() === null) {
                 continue;
             }
 
@@ -465,28 +465,39 @@ class ObjectifController extends AbstractController
         $events = [];
 
         foreach ($objectif->getContributiongoals() as $contrib) {
+            $montant = $contrib->getMontant();
+            $date = $contrib->getDate();
+
+            if ($montant === null || $date === null) {
+                continue;
+            }
+
             $events[] = [
-                'title' => number_format($contrib->getMontant(), 2, ',', ' ') . ' €',
-                'start' => $contrib->getDate()->format('Y-m-d'),
+                'title' => number_format((float) $montant, 2, ',', ' ') . ' €',
+                'start' => $date->format('Y-m-d'),
                 'color' => '#1a9e6e',
                 'textColor' => '#fff',
-                'extendedProps' => ['montant' => $contrib->getMontant()],
+                'extendedProps' => ['montant' => $montant],
                 'type' => 'contribution',
-                'montant' => $contrib->getMontant(),
+                'montant' => $montant,
             ];
         }
 
         if ($objectif->getStatut() === 'TERMINE') {
             $last = $objectif->getContributiongoals()->last();
 
-            if ($last) {
-                $events[] = [
-                    'title' => '🏆 Objectif atteint',
-                    'start' => $last->getDate()->format('Y-m-d'),
-                    'color' => '#f39c12',
-                    'textColor' => '#fff',
-                    'extendedProps' => ['type' => 'atteint'],
-                ];
+            if ($last instanceof Contributiongoal) {
+                $lastDate = $last->getDate();
+
+                if ($lastDate !== null) {
+                    $events[] = [
+                        'title' => 'Objectif atteint',
+                        'start' => $lastDate->format('Y-m-d'),
+                        'color' => '#f39c12',
+                        'textColor' => '#fff',
+                        'extendedProps' => ['type' => 'atteint'],
+                    ];
+                }
             }
         }
 

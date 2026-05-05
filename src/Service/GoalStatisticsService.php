@@ -66,6 +66,15 @@ class GoalStatisticsService
 
         $contributions = $objectif->getContributiongoals()->toArray();
 
+        /**
+         * Remove contributions without date because PHPStan knows
+         * getDate() can return DateTimeInterface|null.
+         */
+        $contributions = array_values(array_filter(
+            $contributions,
+            static fn ($contrib): bool => $contrib->getDate() !== null
+        ));
+
         if (count($contributions) === 0) {
             return null;
         }
@@ -74,9 +83,23 @@ class GoalStatisticsService
             $contributionCount = count($contributions);
         }
 
-        usort($contributions, fn($a, $b) => $a->getDate() <=> $b->getDate());
+        usort($contributions, static function ($a, $b): int {
+            $dateA = $a->getDate();
+            $dateB = $b->getDate();
+
+            if ($dateA === null || $dateB === null) {
+                return 0;
+            }
+
+            return $dateA <=> $dateB;
+        });
 
         $firstDate = $contributions[0]->getDate();
+
+        if ($firstDate === null) {
+            return null;
+        }
+
         $now = new \DateTime();
         $daysElapsed = max(1, (int) $firstDate->diff($now)->days);
 
@@ -98,7 +121,7 @@ class GoalStatisticsService
 
         $confidence = match (true) {
             $contributionCount >= 5 && $daysElapsed >= 14 => 'haute',
-            $contributionCount >= 2 && $daysElapsed >= 3  => 'moyenne',
+            $contributionCount >= 2 && $daysElapsed >= 3 => 'moyenne',
             default => 'faible',
         };
 
@@ -147,16 +170,36 @@ class GoalStatisticsService
         $predictedDate = (clone $now)->modify("+{$daysNeeded} days");
 
         $contributions = $objectif->getContributiongoals()->toArray();
+
+        $contributions = array_values(array_filter(
+            $contributions,
+            static fn ($contrib): bool => $contrib->getDate() !== null
+        ));
+
         $daysElapsed = 1;
 
         if (count($contributions) > 0) {
-            usort($contributions, fn($a, $b) => $a->getDate() <=> $b->getDate());
-            $daysElapsed = max(1, (int) $contributions[0]->getDate()->diff($now)->days);
+            usort($contributions, static function ($a, $b): int {
+                $dateA = $a->getDate();
+                $dateB = $b->getDate();
+
+                if ($dateA === null || $dateB === null) {
+                    return 0;
+                }
+
+                return $dateA <=> $dateB;
+            });
+
+            $firstDate = $contributions[0]->getDate();
+
+            if ($firstDate !== null) {
+                $daysElapsed = max(1, (int) $firstDate->diff($now)->days);
+            }
         }
 
         $confidence = match (true) {
             $contributionCount >= 5 && $daysElapsed >= 14 => 'haute',
-            $contributionCount >= 2 && $daysElapsed >= 3  => 'moyenne',
+            $contributionCount >= 2 && $daysElapsed >= 3 => 'moyenne',
             default => 'faible',
         };
 

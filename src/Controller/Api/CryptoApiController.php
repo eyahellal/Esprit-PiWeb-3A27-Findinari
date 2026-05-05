@@ -11,20 +11,23 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 #[Route('/api/crypto')]
 class CryptoApiController extends AbstractController
 {
+    /** @var HttpClientInterface */
     private $httpClient;
+   
+    /** @var string */
     private $cryptoApiUrl;
-    
+   
     public function __construct(HttpClientInterface $httpClient, string $cryptoApiUrl)
     {
         $this->httpClient = $httpClient;
         $this->cryptoApiUrl = $cryptoApiUrl;
     }
-    
+   
     #[Route('/prices', name: 'api_crypto_prices', methods: ['GET'])]
     public function getCryptoPrices(): JsonResponse
     {
         $url = $this->cryptoApiUrl . '/simple/price?ids=bitcoin,ethereum,ripple,cardano,dogecoin,solana,polkadot,chainlink,uniswap,litecoin&vs_currencies=usd,eur&include_24hr_change=true';
-        
+       
         try {
             $response = $this->httpClient->request('GET', $url, [
                 'headers' => [
@@ -32,7 +35,7 @@ class CryptoApiController extends AbstractController
                 ]
             ]);
             $data = $response->toArray();
-            
+           
             return $this->json([
                 'success' => true,
                 'prices' => $data
@@ -44,24 +47,26 @@ class CryptoApiController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+   
     #[Route('/market-data', name: 'api_crypto_market', methods: ['GET'])]
     public function getMarketData(): JsonResponse
     {
         $url = $this->cryptoApiUrl . '/global';
-        
+       
         try {
             $response = $this->httpClient->request('GET', $url);
             $data = $response->toArray();
-            
+           
+            $marketData = $data['data'] ?? [];
+           
             return $this->json([
                 'success' => true,
-                'market' => $data['data'] ?? []
+                'market' => $marketData
             ]);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
-                'error' => 'Failed to fetch market data'
+                'error' => 'Failed to fetch market data: ' . $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

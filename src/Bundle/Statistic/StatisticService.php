@@ -4,7 +4,7 @@ namespace App\Bundle\Statistic;
 
 use App\Entity\Loan\Investissementobligation;
 use App\Entity\Loan\Obligation;
-use App\Entity\Loan\Wallet;
+use App\Entity\management\Wallet;
 use App\Entity\user\Utilisateur;
 use App\Repository\InvestissementobligationRepository;
 use App\Repository\ObligationRepository;
@@ -207,7 +207,8 @@ class StatisticService
             $diff = $today->diff($maturityDate);
             $amount = (float)$investment->getMontantInvesti();
            
-            if ($diff !== false && $diff->invert == 1 && $diff->m <= $months && $diff->y == 0) {
+            // $diff est toujours un objet DateInterval, jamais false
+            if ($diff->invert === 1 && $diff->m <= $months && $diff->y === 0) {
                 $monthKey = $maturityDate->format('Y-m');
                 if (isset($forecast[$monthKey])) {
                     $forecast[$monthKey] += $amount;
@@ -232,10 +233,15 @@ class StatisticService
     public function getUserInvestmentSummary(Utilisateur $user): array
     {
         $wallets = $this->walletRepository->findBy(['utilisateur' => $user]);
-        $walletIds = array_map(function(Wallet $w): int {
-            $id = $w->getId();
-            return $id !== null ? (int)$id : 0;
-        }, $wallets);
+       
+        /** @var int[] $walletIds */
+        $walletIds = [];
+        foreach ($wallets as $wallet) {
+            $id = $wallet->getId();
+            if ($id !== null) {
+                $walletIds[] = (int)$id;
+            }
+        }
        
         $walletIds = array_filter($walletIds, fn($id) => $id > 0);
        

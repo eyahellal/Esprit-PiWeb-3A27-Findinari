@@ -82,8 +82,16 @@ class NotificationService
             // ── Rappel contribution (aucune contrib depuis X jours) ─
             if (!empty($contributions)) {
                 usort($contributions, fn($a, $b) => $b->getDate() <=> $a->getDate());
-                $derniere   = $contributions[0]->getDate();
-                $joursEcart = (int)(new \DateTime())->diff($derniere)->days;
+               
+                $derniere = $contributions[0]->getDate();
+                $now = new \DateTime();
+               
+                // Vérifier que $derniere n'est pas null avant d'appeler diff
+                if ($derniere instanceof \DateTimeInterface) {
+                    $joursEcart = (int)$now->diff($derniere)->days;
+                } else {
+                    $joursEcart = 0;
+                }
 
                 $key = "rappel_{$id}";
                 if ($joursEcart >= self::JOURS_RAPPEL) {

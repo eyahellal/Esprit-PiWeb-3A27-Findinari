@@ -67,6 +67,13 @@ class InvestissementobligationController extends AbstractController
         return $newUser;
     }
 
+    private function walletBelongsToUser(Wallet $wallet, Utilisateur $user): bool
+    {
+        $walletUser = $wallet->getUtilisateur();
+
+        return $walletUser instanceof Utilisateur && $walletUser->getId() === $user->getId();
+    }
+
     private function calculateMaturityDate(\DateTimeInterface $dateAchat, int $durationInMonths): \DateTimeImmutable
     {
         return \DateTimeImmutable::createFromInterface($dateAchat)
@@ -137,7 +144,7 @@ class InvestissementobligationController extends AbstractController
     ): Response {
         $investment = new Investissementobligation();
 
-        if ($obligation) {
+        if ($obligation instanceof Obligation) {
             $investment->setObligationId($obligation->getIdObligation());
         }
 
@@ -150,13 +157,13 @@ class InvestissementobligationController extends AbstractController
             $walletId = $investment->getWalletId();
             $wallet = $entityManager->getRepository(Wallet::class)->find($walletId);
 
-            if (!$wallet) {
+            if (!$wallet instanceof Wallet) {
                 $this->addFlash('error', 'Wallet introuvable');
 
                 return $this->redirectToRoute('app_investment_new');
             }
 
-            if ($wallet->getUtilisateur()->getId() !== $user->getId()) {
+            if (!$this->walletBelongsToUser($wallet, $user)) {
                 $this->addFlash('error', 'Ce wallet ne vous appartient pas');
 
                 return $this->redirectToRoute('app_investment_new');
@@ -165,15 +172,16 @@ class InvestissementobligationController extends AbstractController
             $selectedObligation = null;
             $obligationId = $investment->getObligationId();
 
-            if ($obligationId) {
+            if ($obligationId !== null) {
                 $obligationRepo = $entityManager->getRepository(Obligation::class);
-                $selectedObligation = $obligationRepo->find($obligationId);
+                $foundObligation = $obligationRepo->find($obligationId);
 
-                if ($selectedObligation instanceof Obligation) {
+                if ($foundObligation instanceof Obligation) {
+                    $selectedObligation = $foundObligation;
                     $dateAchat = $investment->getDateAchat();
+                    $durationInMonths = $selectedObligation->getDuree();
 
-                    if ($dateAchat !== null) {
-                        $durationInMonths = $selectedObligation->getDuree();
+                    if ($dateAchat !== null && $durationInMonths !== null) {
                         $maturityDate = $this->calculateMaturityDate($dateAchat, $durationInMonths);
                         $investment->setDateMaturite($maturityDate);
                     }
@@ -211,11 +219,13 @@ class InvestissementobligationController extends AbstractController
         $obligationsData = [];
 
         foreach ($allObligations as $obl) {
-            $obligationsData[$obl->getIdObligation()] = [
-                'rate' => $obl->getTauxInteret(),
-                'duration' => $obl->getDuree(),
-                'name' => $obl->getNom(),
-            ];
+            if ($obl instanceof Obligation) {
+                $obligationsData[$obl->getIdObligation()] = [
+                    'rate' => $obl->getTauxInteret(),
+                    'duration' => $obl->getDuree(),
+                    'name' => $obl->getNom(),
+                ];
+            }
         }
 
         $user = $this->getUserOrCreate($entityManager);
@@ -242,13 +252,13 @@ class InvestissementobligationController extends AbstractController
 
         $investment = $repository->find($idInvestissement);
 
-        if (!$investment) {
+        if (!$investment instanceof Investissementobligation) {
             throw $this->createNotFoundException('Investment not found');
         }
 
         $wallet = $walletRepository->find($investment->getWalletId());
 
-        if (!$wallet || $wallet->getUtilisateur()->getId() !== $user->getId()) {
+        if (!$wallet instanceof Wallet || !$this->walletBelongsToUser($wallet, $user)) {
             throw $this->createNotFoundException('Investment not found');
         }
 
@@ -273,13 +283,13 @@ class InvestissementobligationController extends AbstractController
 
         $investment = $repository->find($idInvestissement);
 
-        if (!$investment) {
+        if (!$investment instanceof Investissementobligation) {
             throw $this->createNotFoundException('Investment not found');
         }
 
         $wallet = $walletRepository->find($investment->getWalletId());
 
-        if (!$wallet || $wallet->getUtilisateur()->getId() !== $user->getId()) {
+        if (!$wallet instanceof Wallet || !$this->walletBelongsToUser($wallet, $user)) {
             throw $this->createNotFoundException('Investment not found');
         }
 
@@ -288,9 +298,13 @@ class InvestissementobligationController extends AbstractController
 
         $obligation = null;
 
-        if ($investment->getObligationId()) {
+        if ($investment->getObligationId() !== null) {
             $obligationRepo = $entityManager->getRepository(Obligation::class);
-            $obligation = $obligationRepo->find($investment->getObligationId());
+            $foundObligation = $obligationRepo->find($investment->getObligationId());
+
+            if ($foundObligation instanceof Obligation) {
+                $obligation = $foundObligation;
+            }
         }
 
         $form = $this->createForm(InvestissementobligationType::class, $investment);
@@ -300,15 +314,16 @@ class InvestissementobligationController extends AbstractController
             $obligationId = $investment->getObligationId();
             $selectedObligation = null;
 
-            if ($obligationId) {
+            if ($obligationId !== null) {
                 $obligationRepo = $entityManager->getRepository(Obligation::class);
-                $selectedObligation = $obligationRepo->find($obligationId);
+                $foundObligation = $obligationRepo->find($obligationId);
 
-                if ($selectedObligation instanceof Obligation) {
+                if ($foundObligation instanceof Obligation) {
+                    $selectedObligation = $foundObligation;
                     $dateAchat = $investment->getDateAchat();
+                    $durationInMonths = $selectedObligation->getDuree();
 
-                    if ($dateAchat !== null) {
-                        $durationInMonths = $selectedObligation->getDuree();
+                    if ($dateAchat !== null && $durationInMonths !== null) {
                         $maturityDate = $this->calculateMaturityDate($dateAchat, $durationInMonths);
                         $investment->setDateMaturite($maturityDate);
                     }
@@ -355,11 +370,13 @@ class InvestissementobligationController extends AbstractController
         $obligationsData = [];
 
         foreach ($allObligations as $obl) {
-            $obligationsData[$obl->getIdObligation()] = [
-                'rate' => $obl->getTauxInteret(),
-                'duration' => $obl->getDuree(),
-                'name' => $obl->getNom(),
-            ];
+            if ($obl instanceof Obligation) {
+                $obligationsData[$obl->getIdObligation()] = [
+                    'rate' => $obl->getTauxInteret(),
+                    'duration' => $obl->getDuree(),
+                    'name' => $obl->getNom(),
+                ];
+            }
         }
 
         return $this->render('loan/investment/edit.html.twig', [
@@ -383,13 +400,13 @@ class InvestissementobligationController extends AbstractController
 
         $investment = $repository->find($idInvestissement);
 
-        if (!$investment) {
+        if (!$investment instanceof Investissementobligation) {
             throw $this->createNotFoundException('Investment not found');
         }
 
         $wallet = $walletRepository->find($investment->getWalletId());
 
-        if (!$wallet || $wallet->getUtilisateur()->getId() !== $user->getId()) {
+        if (!$wallet instanceof Wallet || !$this->walletBelongsToUser($wallet, $user)) {
             throw $this->createNotFoundException('Investment not found');
         }
 

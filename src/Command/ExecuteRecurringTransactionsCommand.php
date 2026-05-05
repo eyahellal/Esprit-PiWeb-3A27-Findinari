@@ -43,6 +43,12 @@ class ExecuteRecurringTransactionsCommand extends Command
         foreach ($dueTransactions as $recurring) {
             $wallet = $recurring->getWallet();
 
+            // Vérifier que le wallet existe
+            if (!$wallet) {
+                $io->warning('Skipped: ' . $recurring->getDescription() . ' — wallet not found.');
+                continue;
+            }
+
             // For expense: check wallet balance
             if ($recurring->getType() === 'depense' && $recurring->getMontant() > $wallet->getSolde()) {
                 $io->warning('Skipped: ' . $recurring->getDescription() . ' — insufficient balance.');
@@ -69,23 +75,43 @@ class ExecuteRecurringTransactionsCommand extends Command
 
             $this->entityManager->persist($transaction);
 
-           // ✅ After — add default case
-$next = clone $recurring->getNextExecutionDate();
-match ($recurring->getFrequency()) {
-    'daily' => $next->modify('+1 day'),
-    'weekly' => $next->modify('+1 week'),
-    'monthly' => $next->modify('+1 month'),
-    'yearly' => $next->modify('+1 year'),
-    default => null,
-};
-            $recurring->setNextExecutionDate($next);
+            // Calculer la prochaine date d'exécution
+            $nextExecutionDate = $recurring->getNextExecutionDate();
+           
+            if ($nextExecutionDate instanceof \DateTime) {
+                $next = clone $nextExecutionDate;
+               
+                switch ($recurring->getFrequency()) {
+                    case 'daily':
+                        $next->modify('+1 day');
+                        break;
+                    case 'weekly':
+                        $next->modify('+1 week');
+                        break;
+                    case 'monthly':
+                        $next->modify('+1 month');
+                        break;
+                    case 'yearly':
+                        $next->modify('+1 year');
+                        break;
+                    default:
+                        // Frequency non reconnue, on ne fait rien
+                        break;
+                }
+               
+                $recurring->setNextExecutionDate($next);
 
-            // Auto-disable if past end date
-            if ($recurring->getEndDate() && $next > $recurring->getEndDate()) {
-                $recurring->setIsRecurring(false);
+                // Auto-disable if past end date
+                $endDate = $recurring->getEndDate();
+                if ($endDate instanceof \DateTime && $next > $endDate) {
+                    $recurring->setIsRecurring(false);
+                }
+            } else {
+                $io->warning('Skipped: ' . $recurring->getDescription() . ' — invalid next execution date.');
+                continue;
             }
 
-            $io->success('Executed: ' . ($recurring->getDescription() ?? 'Transaction') . ' — ' . $recurring->getMontant() . ' ' . $wallet->getDevise());
+            $io->success('Executed: ' . ($recurring->getDescription() ?? 'Transaction') . ' — ' . number_format($recurring->getMontant(), 2) . ' ' . $wallet->getDevise());
         }
 
         $this->entityManager->flush();

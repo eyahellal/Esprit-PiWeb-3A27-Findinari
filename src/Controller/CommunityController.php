@@ -111,7 +111,7 @@ class CommunityController extends AbstractController
     private function env(string $name, ?string $default = null): ?string
     {
         $value = $_ENV[$name] ?? $_SERVER[$name] ?? getenv($name);
-        if ($value === false || $value === null || $value === '') {
+        if ($value === false || $value === '')  {
             return $default;
         }
 
@@ -371,7 +371,7 @@ class CommunityController extends AbstractController
 
             $raw = $response->getContent(false);
             $data = json_decode($raw, true);
-            $data = is_array($data) ? $data : [];
+            
 
             $score = $this->extractToxicityScore($data);
             $flagged = (bool) ($data['flagged'] ?? $data['toxic'] ?? $data['is_toxic'] ?? $data['blocked'] ?? false);
@@ -476,7 +476,7 @@ class CommunityController extends AbstractController
     private function persistImageBytesLocally(string $imageBytes, string $contentType, Request $request, string $prefix = 'community_ai'): array
     {
        
-        $targetDir = (string) $this->getParameter('kernel.project_dir') . '/public/uploads/community';
+        $targetDir = (string) ($this->getParameter('kernel.project_dir') ?? throw new \RuntimeException('kernel.project_dir non défini')) . '/public/uploads/community';
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
         throw new \RuntimeException('Impossible de creer le dossier local de televersement.');
         }
@@ -500,7 +500,7 @@ class CommunityController extends AbstractController
             'storage' => 'local',
         ];
     }
-
+    /** @return array<string, mixed> */
     private function uploadGeneratedImageToCloudinary(string $imageBytes, string $contentType, HttpClientInterface $httpClient): array
     {
         $extension = match (true) {
@@ -526,10 +526,10 @@ class CommunityController extends AbstractController
             @unlink($finalPath);
         }
     }
-
+    /** @return array<string, mixed> */
     private function storeUploadedFileLocally(UploadedFile $file, Request $request): array
     {
-        $targetDir = (string) $this->getParameter('kernel.project_dir') . '/public/uploads/community';
+       $targetDir = (string) ($this->getParameter('kernel.project_dir') ?? throw new \RuntimeException('kernel.project_dir non défini')) . '/public/uploads/community';
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
             throw new \RuntimeException('Impossible de creer le dossier local de televersement.');
         }
@@ -562,7 +562,10 @@ class CommunityController extends AbstractController
             fclose($handle);
         }
     }
-
+    /** 
+    * @return array<string, mixed>
+    * @phpstan-ignore method.unused
+    */
     private function uploadRemoteImageToCloudinary(string $remoteUrl, HttpClientInterface $httpClient): array
     {
         return $this->uploadPayloadToCloudinary([
@@ -596,17 +599,20 @@ class CommunityController extends AbstractController
         ]);
 
         $data = $response->toArray(false);
-        if (!is_array($data) || empty($data['secure_url'])) {
+        if (empty($data['secure_url'])) {
             throw new \RuntimeException('Réponse Cloudinary invalide.');
         }
 
         return $data;
     }
-
+     /**
+    * @return list<string>
+    * @phpstan-ignore method.unused
+    */
     private function extractTagsFromText(string $text): array
     {
         preg_match_all('/(^|[^\w])#([A-Za-z0-9_]+)/u', $text, $matches);
-        return array_values(array_unique(array_map(static fn ($tag) => '#' . mb_strtolower($tag), $matches[2] ?? [])));
+        return array_values(array_unique(array_map(static fn ($tag) => '#' . mb_strtolower($tag), $matches[2] )));
     }
     /** @return array<mixed> */
     private function wordBag(string $text): array
@@ -717,8 +723,10 @@ class CommunityController extends AbstractController
         usort($scored, static fn (array $a, array $b) => $b['score'] <=> $a['score']);
         return array_map(static fn (array $row) => $row['post'], array_slice($scored, 0, 4));
     }
-    /** @param array<mixed> $allPosts
-    *  @return array<string, mixed> */ 
+    /**
+    * @param list<Post> $allPosts
+    * @return list<Post>
+    */
     private function buildRecommendations(array $allPosts, Utilisateur $currentUser, RatingStorage $ratingStorage, HttpClientInterface $httpClient): array
     {
         $url = $this->normalizeRecommendationUrl();
@@ -736,8 +744,7 @@ class CommunityController extends AbstractController
 
                 $raw = $response->getContent(false);
                 $data = json_decode($raw, true);
-                $data = is_array($data) ? $data : [];
-                $ids = $this->extractRecommendationIds(is_array($data) ? $data : []);
+                $ids = $this->extractRecommendationIds($data);
                 if ($ids !== []) {
                     $byId = [];
                     foreach ($allPosts as $post) {
@@ -1077,7 +1084,7 @@ class CommunityController extends AbstractController
         $user = $this->getCurrentUtilisateur($utilisateurRepository);
         $this->ensureCanLike($user);
         $value = (int) ($request->request->get('rating') ?? $request->query->get('rating', 0));
-        $summary = $ratingStorage->rate((int) $post->getIdPost(), (string) $user->getId(), $value);
+        $summary = $ratingStorage->rate((int) $post->getIdPost(), $value, (string) $user->getId());
 
         return $this->json($summary);
     }
@@ -1282,6 +1289,6 @@ class CommunityController extends AbstractController
         $em->remove($commentaire);
         $em->flush();
         $this->addFlash('success', 'Commentaire supprimé.');
-        return $this->redirectToRoute('community_show', ['id' => $post?->getIdPost()]);
+        return $this->redirectToRoute('community_show', ['id' => $post !== null ? $post->getIdPost() : null]);
     }
 }
