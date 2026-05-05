@@ -4,6 +4,7 @@ namespace App\Entity\error;
 
 use App\Repository\TransactionactionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\error\Action;
 
 #[ORM\Entity(repositoryClass: TransactionactionRepository::class)]
 #[ORM\Table(name: 'transactionaction')]

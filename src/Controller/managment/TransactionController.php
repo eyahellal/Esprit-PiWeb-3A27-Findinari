@@ -22,34 +22,43 @@ use App\Service\Management\MLCategoryService;
 class TransactionController extends AbstractController
 {
     private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
-    {
-        $user = $this->getUser();
+{
+    $user = $this->getUser();
 
-        if (!$user) {
-            $user = $entityManager->getRepository(Utilisateur::class)->find(1);
-        }
-
-        if (!$user) {
-            $user = $entityManager->getRepository(Utilisateur::class)->findOneBy(['gmail' => 'admin@findinari.com']);
-        }
-
-        if (!$user) {
-            $user = new Utilisateur();
-            $user->setNom('Admin');
-            $user->setPrenom('User');
-            $user->setGmail('admin@findinari.com');
-            $user->setMdp('password');
-            $user->setRole('ADMIN');
-            $user->setStatut('ACTIF');
-            $user->setDateCreation(new \DateTime());
-            $user->setDateModification(new \DateTime());
-            $user->setFaceEnabled(false);
-            $entityManager->persist($user);
-            $entityManager->flush();
-        }
-
+    // ✅ Check 1 — already logged in as Utilisateur
+    if ($user instanceof Utilisateur) {
         return $user;
     }
+
+    // ✅ Check 2 — find by ID
+    $user = $entityManager->getRepository(Utilisateur::class)->find(1);
+    if ($user instanceof Utilisateur) {
+        return $user;
+    }
+
+    // ✅ Check 3 — find by email
+    $user = $entityManager->getRepository(Utilisateur::class)
+        ->findOneBy(['gmail' => 'admin@findinari.com']);
+    if ($user instanceof Utilisateur) {
+        return $user;
+    }
+
+    // ✅ Check 4 — create admin user
+    $user = new Utilisateur();
+    $user->setNom('Admin');
+    $user->setPrenom('User');
+    $user->setGmail('admin@findinari.com');
+    $user->setMdp('password');
+    $user->setRole('ADMIN');
+    $user->setStatut('ACTIF');
+    $user->setDateCreation(new \DateTime());
+    $user->setDateModification(new \DateTime());
+    $user->setFaceEnabled(false);
+    $entityManager->persist($user);
+    $entityManager->flush();
+
+    return $user;
+}
  #[Route('/weather', name: 'app_weather_index', methods: ['GET', 'POST'])]
 public function weather(Request $request, GroqService $groqService): Response
 {

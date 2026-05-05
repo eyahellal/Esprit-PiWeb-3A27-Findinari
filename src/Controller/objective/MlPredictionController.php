@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
+use App\Entity\user\Utilisateur;
 #[Route('/ml')]
 class MlPredictionController extends AbstractController
 {
@@ -123,7 +123,7 @@ class MlPredictionController extends AbstractController
         Request               $request
     ): Response {
         $user   = $this->getUser();
-        $userId = $user?->getId() ?? 1;
+        $userId = ($user instanceof Utilisateur) ? $user->getId() : 1;
 
         $walletsRaw = $connection->fetchAllAssociative(
             'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',

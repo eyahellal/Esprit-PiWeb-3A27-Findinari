@@ -21,6 +21,9 @@ class BudgetController extends AbstractController
     private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
 {
     $user = $this->getUser();
+    if ($user instanceof Utilisateur) {
+        return $user;  // ← Add this check
+    }
 
     if (!$user) {
         $user = $entityManager->getRepository(Utilisateur::class)->find(1);

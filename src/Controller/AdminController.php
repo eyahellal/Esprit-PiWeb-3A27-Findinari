@@ -581,17 +581,21 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_tickets');
     }
-//mailer envoie un protocle stmp avec brevo 
-    #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
-    public function ticketDetails(
-        Ticket $ticket,
-        Request $request,
-        EntityManagerInterface $entityManager,
-        MailerInterface $mailer,
-        TicketSlaCalculator $ticketSlaCalculator,
-        \App\Service\SentimentService $sentimentService
-    ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+#[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
+public function ticketDetails(
+    Ticket $ticket,
+    Request $request,
+    EntityManagerInterface $entityManager,
+    MailerInterface $mailer,
+    TicketSlaCalculator $ticketSlaCalculator,
+    \App\Service\SentimentService $sentimentService
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    // ✅ Define form BEFORE the if block
+    $message = new Message();
+    $form = $this->createForm(MessageType::class, $message);
+    $form->handleRequest($request);
 
     if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
         $oldStatus = $ticket->getStatut();
@@ -608,22 +612,21 @@ class AdminController extends AbstractController
             $ticket->setPriorite($newPriorite);
         }
 
-        return $this->render('admin/ticket_details.html.twig', [
-            'ticket'   => $ticket,
-            'messages' => $ticket->getMessages(),
-            'form'     => $form->createView(),
-            'sentiment' => $sentimentService->getTicketSentiment($ticket),   // ← c'était manquant
+        $entityManager->flush();
 
+        return $this->render('admin/ticket_details.html.twig', [
+            'ticket'    => $ticket,
+            'messages'  => $ticket->getMessages(),
+            'form'      => $form->createView(),
+            'sentiment' => $sentimentService->getTicketSentiment($ticket),
         ]);
     }
 
-    $message = new Message();
-    $form = $this->createForm(MessageType::class, $message);
-
     return $this->render('admin/ticket_details.html.twig', [
-        'ticket' => $ticket,
-        'messages' => $ticket->getMessages(),
-        'form' => $form->createView(),
+        'ticket'    => $ticket,
+        'messages'  => $ticket->getMessages(),
+        'form'      => $form->createView(),
+        'sentiment' => $sentimentService->getTicketSentiment($ticket),
     ]);
 }
     #[Route('/admin/obligations', name: 'app_admin_obligations')]

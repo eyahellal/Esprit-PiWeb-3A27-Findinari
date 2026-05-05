@@ -191,9 +191,7 @@ class Ticket
      */
     public function getMessages(): Collection
     {
-        if (!$this->messages instanceof Collection) {
-            $this->messages = new ArrayCollection();
-        }
+        
         return $this->messages;
     }
 

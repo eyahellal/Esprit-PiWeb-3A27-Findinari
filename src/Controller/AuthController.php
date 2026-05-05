@@ -80,9 +80,8 @@ class AuthController extends AbstractController
         }
 
         $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
-        $decodedImage = base64_decode($imageData);
-
-        if ($decodedImage === false) {
+        $decodedImage = base64_decode($imageData, true);
+if ($decodedImage === false || $decodedImage === '') {
             $this->addFlash('danger', 'Failed to decode image.');
             return $this->redirectToRoute('app_front_login');
         }
@@ -400,8 +399,7 @@ PROMPT;
     private function env(string $key, ?string $default = null): string
     {
         $value = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
-
-        if ($value === false || $value === null || $value === '') {
+if ($value === false || $value === '' || !$value) {
             if ($default !== null) {
                 return $default;
             }

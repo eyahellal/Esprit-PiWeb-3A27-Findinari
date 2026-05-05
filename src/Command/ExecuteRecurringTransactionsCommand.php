@@ -69,14 +69,15 @@ class ExecuteRecurringTransactionsCommand extends Command
 
             $this->entityManager->persist($transaction);
 
-            // Calculate next execution date
-            $next = clone $recurring->getNextExecutionDate();
-            match ($recurring->getFrequency()) {
-                'daily' => $next->modify('+1 day'),
-                'weekly' => $next->modify('+1 week'),
-                'monthly' => $next->modify('+1 month'),
-                'yearly' => $next->modify('+1 year'),
-            };
+           // ✅ After — add default case
+$next = clone $recurring->getNextExecutionDate();
+match ($recurring->getFrequency()) {
+    'daily' => $next->modify('+1 day'),
+    'weekly' => $next->modify('+1 week'),
+    'monthly' => $next->modify('+1 month'),
+    'yearly' => $next->modify('+1 year'),
+    default => null,
+};
             $recurring->setNextExecutionDate($next);
 
             // Auto-disable if past end date

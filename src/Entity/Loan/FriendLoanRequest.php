@@ -14,8 +14,7 @@ class FriendLoanRequest
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
-
+    private int|null $id = null;
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, name: 'sender_id')]
     private ?Utilisateur $sender = null;
