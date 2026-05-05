@@ -475,10 +475,13 @@ class CommunityController extends AbstractController
     /** @return array<mixed> */
     private function persistImageBytesLocally(string $imageBytes, string $contentType, Request $request, string $prefix = 'community_ai'): array
     {
-       
-        $targetDir = (string) ($this->getParameter('kernel.project_dir') ?? throw new \RuntimeException('kernel.project_dir non défini')) . '/public/uploads/community';
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('kernel.project_dir non défini');
+        }
+        $targetDir = $projectDir . '/public/uploads/community';
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
-        throw new \RuntimeException('Impossible de creer le dossier local de televersement.');
+            throw new \RuntimeException('Impossible de creer le dossier local de televersement.');
         }
 
         $contentType = strtolower($contentType);
@@ -529,7 +532,11 @@ class CommunityController extends AbstractController
     /** @return array<string, mixed> */
     private function storeUploadedFileLocally(UploadedFile $file, Request $request): array
     {
-       $targetDir = (string) ($this->getParameter('kernel.project_dir') ?? throw new \RuntimeException('kernel.project_dir non défini')) . '/public/uploads/community';
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('kernel.project_dir non défini');
+        }
+        $targetDir = $projectDir . '/public/uploads/community';
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
             throw new \RuntimeException('Impossible de creer le dossier local de televersement.');
         }
@@ -748,11 +755,13 @@ class CommunityController extends AbstractController
                 if ($ids !== []) {
                     $byId = [];
                     foreach ($allPosts as $post) {
-                        if ($post instanceof Post && $post->getIdPost()) {
+                        // FIX :751 — removed instanceof check that was always true
+                        if ($post->getIdPost()) {
                             $byId[(int) $post->getIdPost()] = $post;
                         }
                     }
 
+                    /** @var list<Post> $recommendations */
                     $recommendations = [];
                     foreach ($ids as $id) {
                         if (!isset($byId[$id])) {
@@ -778,7 +787,10 @@ class CommunityController extends AbstractController
             }
         }
 
-        return $this->buildFallbackRecommendations($allPosts, $currentUser, $ratingStorage);
+        // FIX :781 — cast to list<Post>
+        /** @var list<Post> $fallback */
+        $fallback = array_values($this->buildFallbackRecommendations($allPosts, $currentUser, $ratingStorage));
+        return $fallback;
     }
 
     private function appendMediaToPost(Post $post, Request $request): void
@@ -1181,7 +1193,7 @@ class CommunityController extends AbstractController
             $commentaire->setStatut('ACTIF');
             $commentaire->setDateCreation($commentaire->getDateCreation() ?? new \DateTime());
             $commentaire->setDateModification(new \DateTime());
-            $post->setNombreCommentaires(($post->getNombreCommentaires() ?? 0) + 1);
+            $post->setNombreCommentaires($post->getNombreCommentaires() + 1);
             $em->persist($commentaire);
             $em->flush();
             $this->addFlash('success', 'Commentaire ajouté.');
@@ -1289,6 +1301,7 @@ class CommunityController extends AbstractController
         $em->remove($commentaire);
         $em->flush();
         $this->addFlash('success', 'Commentaire supprimé.');
-        return $this->redirectToRoute('community_show', ['id' => $post !== null ? $post->getIdPost() : null]);
+        // FIX :1184 — $post can be null here, use null-safe operator directly
+        return $this->redirectToRoute('community_show', ['id' => $post?->getIdPost()]);
     }
 }

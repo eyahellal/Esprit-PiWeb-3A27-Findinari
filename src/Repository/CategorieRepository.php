@@ -15,7 +15,10 @@ class CategorieRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Categorie::class);
     }
-    public function findByFilters(string $search = '', string $statut = ''): array
+    /**
+ * @return array<int, Categorie>
+ */
+public function findByFilters(string $search = '', string $statut = ''): array
 {
     $qb = $this->createQueryBuilder('c');
 

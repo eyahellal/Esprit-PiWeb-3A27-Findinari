@@ -97,7 +97,7 @@ class InflationController extends AbstractController
         if ($request->isMethod('POST')) {
             $montant = (float) $request->request->get('montant', 0);
             $annees  = (int)   $request->request->get('annees', 1);
-            $country = $request->request->get('country', 'TN');
+            $country = (string) $request->request->get('country', 'TN');
 
             if ($montant <= 0) {
                 $error = 'Veuillez entrer un montant valide (supérieur à 0).';
@@ -106,7 +106,6 @@ class InflationController extends AbstractController
             } elseif (!isset(self::COUNTRIES[$country])) {
                 $error = 'Pays invalide.';
             } else {
-                // ✅ Essaie l'API, sinon fallback automatique
                 $inflationInfo = $this->getInflationData($country);
                 $taux          = $inflationInfo['taux'];
                 $tauxDecimal   = $taux / 100;
@@ -121,7 +120,7 @@ class InflationController extends AbstractController
 
                 $valeurFuture          = $montant * pow(1 + $tauxDecimal, $annees);
                 $difference            = $valeurFuture - $montant;
-     $contributionMensuelle = $difference / ($annees * 12);
+                $contributionMensuelle = $difference / ($annees * 12);
 
                 $result = [
                     'montant_initial'        => $montant,
@@ -146,44 +145,60 @@ class InflationController extends AbstractController
         ]);
     }
 
+    /** @return array{taux: float, annee: string, source: string} */
     private function getInflationData(string $country): array
     {
-        
         try {
             $response = $this->client->request(
                 'GET',
                 "https://api.worldbank.org/v2/country/{$country}/indicator/FP.CPI.TOTL.ZG",
                 [
                     'query'   => ['format' => 'json', 'mrv' => 5],
-                    'timeout' => 2, // 2 secondes max
+                    'timeout' => 2,
                 ]
             );
 
-            $data = $response->toArray();
+            /** @var array<int, mixed> $raw */
+            $raw = $response->toArray();
 
-            if (isset($data[1]) && is_array($data[1])) {
-                foreach ($data[1] as $entry) {
-                    if ($entry['value'] !== null && $entry['value'] > 0) {
+            // Correction de l'indexation (Ligne 106)
+            if (!isset($raw[1])) {
+                throw new \RuntimeException('Invalid response');
+            }
+
+            $entries = $raw[1];
+
+            // On vérifie que $entries est itérable pour le foreach
+            if (is_iterable($entries)) {
+                foreach ($entries as $entry) {
+                    if (!is_array($entry)) {
+                        continue;
+                    }
+                    $value = $entry['value'] ?? null;
+                    $date  = $entry['date']  ?? null;
+                    if (is_numeric($value) && (float)$value > 0 && $date !== null) {
                         return [
-                            'taux'   => round((float) $entry['value'], 2),
-                            'annee'  => $entry['date'],
+                            'taux'   => round((float) $value, 2),
+                            'annee'  => (string) $date,
                             'source' => '🌐 World Bank (temps réel)',
                         ];
                     }
                 }
             }
+
         } catch (\Exception $e) {
-            // API indisponible → fallback silencieux
+            // API indisponible → fallback
         }
 
-        // ✅ Fallback fiable si API indisponible
         $fallback = self::FALLBACK_RATES[$country]
             ?? ['taux' => 3.0, 'source' => 'Estimation mondiale'];
 
         return [
-            'taux'   => $fallback['taux'],
+            'taux'   => (float) $fallback['taux'],
             'annee'  => '2024',
             'source' => '📊 ' . $fallback['source'],
         ];
     }
 }
+
+

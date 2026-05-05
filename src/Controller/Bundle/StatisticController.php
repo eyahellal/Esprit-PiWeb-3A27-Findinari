@@ -3,60 +3,79 @@
 namespace App\Controller\Bundle;
 
 use App\Bundle\Statistic\StatisticService;
+use App\Entity\user\Utilisateur;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 class StatisticController extends AbstractController
 {
-    #[Route('/statistics', name: 'app_statistics')]
-    public function index(StatisticService $statisticService): Response
+    private StatisticService $statisticService;
+
+    public function __construct(StatisticService $statisticService)
     {
-        $investmentStats = $statisticService->getInvestmentStats();
-        $walletStats = $statisticService->getWalletStats();
-        $obligationRanking = $statisticService->getObligationRanking();
-        $maturityForecast = $statisticService->getMaturityForecast(6);
-        
+        $this->statisticService = $statisticService;
+    }
+
+    #[Route('/statistics', name: 'app_statistics', methods: ['GET'])]
+    public function index(): Response
+    {
+        // Récupérer l'utilisateur connecté
+        $user = $this->getUser();
+       
+        // Vérifier que l'utilisateur est une instance de Utilisateur
+        if (!$user instanceof Utilisateur) {
+            // Si l'utilisateur n'est pas trouvé ou n'est pas du bon type
+            return $this->redirectToRoute('app_front_login');
+        }
+       
+        // Récupérer les données statistiques
+        $investmentStats = $this->statisticService->getInvestmentStats();
+        $walletStats = $this->statisticService->getWalletStats();
+        $obligationRanking = $this->statisticService->getObligationRanking();
+        $maturityForecast = $this->statisticService->getMaturityForecast(6);
+       
+        // Récupérer le résumé des investissements de l'utilisateur
+        $userInvestmentSummary = $this->statisticService->getUserInvestmentSummary($user);
+       
         return $this->render('statistics/index.html.twig', [
             'investmentStats' => $investmentStats,
             'walletStats' => $walletStats,
             'obligationRanking' => $obligationRanking,
             'maturityForecast' => $maturityForecast,
+            'userInvestmentSummary' => $userInvestmentSummary,
         ]);
     }
-    
-    #[Route('/api/statistics/investment', name: 'api_statistics_investment', methods: ['GET'])]
-    public function getInvestmentStats(StatisticService $statisticService): JsonResponse
+   
+    #[Route('/statistics/investments', name: 'app_statistics_investments', methods: ['GET'])]
+    public function investmentStats(): Response
     {
-        return $this->json($statisticService->getInvestmentStats());
+        $investmentStats = $this->statisticService->getInvestmentStats();
+       
+        return $this->render('statistics/investments.html.twig', [
+            'stats' => $investmentStats,
+        ]);
     }
-    
-    #[Route('/api/statistics/wallet', name: 'api_statistics_wallet', methods: ['GET'])]
-    public function getWalletStats(StatisticService $statisticService): JsonResponse
+   
+    #[Route('/statistics/wallets', name: 'app_statistics_wallets', methods: ['GET'])]
+    public function walletStats(): Response
     {
-        return $this->json($statisticService->getWalletStats());
+        $walletStats = $this->statisticService->getWalletStats();
+        $obligationRanking = $this->statisticService->getObligationRanking();
+       
+        return $this->render('statistics/wallets.html.twig', [
+            'walletStats' => $walletStats,
+            'obligationRanking' => $obligationRanking,
+        ]);
     }
-    
-    #[Route('/api/statistics/obligation-ranking', name: 'api_statistics_ranking', methods: ['GET'])]
-    public function getObligationRanking(StatisticService $statisticService): JsonResponse
+   
+    #[Route('/statistics/forecast', name: 'app_statistics_forecast', methods: ['GET'])]
+    public function maturityForecast(): Response
     {
-        return $this->json($statisticService->getObligationRanking());
-    }
-    
-    #[Route('/api/statistics/maturity-forecast', name: 'api_statistics_forecast', methods: ['GET'])]
-    public function getMaturityForecast(StatisticService $statisticService): JsonResponse
-    {
-        return $this->json($statisticService->getMaturityForecast(6));
-    }
-    
-    #[Route('/api/statistics/user-summary', name: 'api_statistics_user', methods: ['GET'])]
-    public function getUserSummary(StatisticService $statisticService): JsonResponse
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            return $this->json(['error' => 'User not authenticated'], 401);
-        }
-        return $this->json($statisticService->getUserInvestmentSummary($user));
+        $maturityForecast = $this->statisticService->getMaturityForecast(12);
+       
+        return $this->render('statistics/forecast.html.twig', [
+            'forecast' => $maturityForecast,
+        ]);
     }
 }

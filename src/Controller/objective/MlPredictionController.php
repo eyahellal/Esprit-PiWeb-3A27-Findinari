@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Controller\objective;
+
 use App\Entity\objective\Objectif;
 use App\Entity\user\Utilisateur;
 use App\Repository\ObjectifRepository;
@@ -28,26 +30,20 @@ class MlPredictionController extends AbstractController
         $this->pythonBin = $this->isWindows ? 'python' : 'python3';
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // HELPER : appelle ml_service.py via fichier temporaire
-    // ─────────────────────────────────────────────────────────────────────────
     /**
-   * @param array<string, mixed> $data
-   * @return array<string, mixed>|null
-   */
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>|null
+     */
     private function callMlService(array $data): ?array
     {
         if (!file_exists($this->mlScriptPath)) {
             return null;
         }
 
-        // Écrire le JSON dans un fichier temporaire
         $tmpFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ml_input_' . uniqid() . '.json';
         file_put_contents($tmpFile, json_encode($data, JSON_UNESCAPED_UNICODE));
 
         $script  = $this->mlScriptPath;
-
-        // ⭐ FIX 1 : forcer UTF-8 sur Windows via PYTHONIOENCODING
         $env     = $this->isWindows ? 'set PYTHONIOENCODING=utf-8 && ' : '';
         $command = "{$env}{$this->pythonBin} \"{$script}\" predict-file \"{$tmpFile}\" 2>&1";
 
@@ -58,13 +54,10 @@ class MlPredictionController extends AbstractController
             return null;
         }
 
-        // ⭐ FIX 2 : convertir l'encodage Windows (CP1252) → UTF-8 si nécessaire
         if ($this->isWindows && !mb_check_encoding($output, 'UTF-8')) {
             $output = mb_convert_encoding($output, 'UTF-8', 'CP1252');
         }
 
-        // ⭐ FIX 3 : le JSON est sur plusieurs lignes (indent=2)
-        //    On extrait tout le bloc JSON en cherchant { ... }
         if (preg_match('/\{[^{]*"va_atteindre".*\}/s', $output, $matches)) {
             $jsonStr = $matches[0];
         } else {
@@ -75,12 +68,9 @@ class MlPredictionController extends AbstractController
         return (is_array($result) && !isset($result['error'])) ? $result : null;
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // HELPER : construit le vecteur de features depuis un objectif
-    // ─────────────────────────────────────────────────────────────────────────
     /**
-    * @return array<string, mixed>
-    */
+     * @return array<string, mixed>
+     */
     private function buildFeatures(
         Objectif $objectif,
         float $walletSolde,
@@ -90,16 +80,26 @@ class MlPredictionController extends AbstractController
         $totalContrib = (float) $stats['totalCollected'];
         $nbContrib    = $objectif->getContributiongoals()->count();
 
-        $dateDebut        = $objectif->getDateDebut();
-        $joursdepuisDebut = $dateDebut
-            ? (int) $dateDebut->diff(new \DateTime())->days
-            : 0;
+        $dateDebut = $objectif->getDateDebut();
+       
+        // ✅ Correction 1 : Vérifier que $dateDebut n'est pas null
+        $joursdepuisDebut = 0;
+        if ($dateDebut instanceof \DateTimeInterface) {
+            $joursdepuisDebut = (int) $dateDebut->diff(new \DateTime())->days;
+        }
 
-        $contribs         = $objectif->getContributiongoals()->toArray();
+        $contribs = $objectif->getContributiongoals()->toArray();
+       
+        // ✅ Correction 2 : Initialiser $joursSansContrib
         $joursSansContrib = $joursdepuisDebut;
+       
+        // ✅ Correction 3 : Vérifier que $contribs n'est pas vide
         if (!empty($contribs)) {
             usort($contribs, fn($a, $b) => $b->getDate() <=> $a->getDate());
-            $joursSansContrib = (int) $contribs[0]->getDate()->diff(new \DateTime())->days;
+            $derniereDate = $contribs[0]->getDate();
+            if ($derniereDate instanceof \DateTimeInterface) {
+                $joursSansContrib = (int) $derniereDate->diff(new \DateTime())->days;
+            }
         }
 
         $freqContribMois = $joursdepuisDebut > 0
@@ -118,9 +118,6 @@ class MlPredictionController extends AbstractController
         ];
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // DASHBOARD
-    // ─────────────────────────────────────────────────────────────────────────
     #[Route('/dashboard', name: 'ml_dashboard', methods: ['GET'])]
     public function dashboard(
         ObjectifRepository    $objectifRepo,
@@ -128,8 +125,8 @@ class MlPredictionController extends AbstractController
         Connection            $connection,
         Request               $request
     ): Response {
-        $user   = $this->getUser();
-      
+        $user = $this->getUser();
+     
         $userId = ($user instanceof Utilisateur) ? $user->getId() : 1;
         $walletsRaw = $connection->fetchAllAssociative(
             'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
@@ -184,9 +181,6 @@ class MlPredictionController extends AbstractController
         ]);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // PREDICT JSON
-    // ─────────────────────────────────────────────────────────────────────────
     #[Route('/predict/{id}', name: 'objectif_ml_predict', methods: ['GET'])]
     public function predict(
         int                   $id,
@@ -214,7 +208,7 @@ class MlPredictionController extends AbstractController
                 json_encode(['error' => 'Erreur ML.', 'features' => $features], JSON_UNESCAPED_UNICODE),
                 500,
                 ['Content-Type' => 'application/json'],
-                true   // $json = true → pas de double-encodage
+                true
             );
         }
 
@@ -226,9 +220,6 @@ class MlPredictionController extends AbstractController
         );
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // HEALTH
-    // ─────────────────────────────────────────────────────────────────────────
     #[Route('/health', name: 'ml_health', methods: ['GET'])]
     public function health(): JsonResponse
     {

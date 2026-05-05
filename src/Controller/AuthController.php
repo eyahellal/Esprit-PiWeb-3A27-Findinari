@@ -532,20 +532,19 @@ PROMPT;
     }
 
     private function env(string $key, ?string $default = null): string
-    {
-        $value = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
+{
+    $value = $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key);
 
-        if ($value === false || $value === '' || $value === null) {
-            if ($default !== null) {
-                return $default;
-            }
-
-            throw new \RuntimeException(sprintf('Missing environment variable: %s', $key));
+    if ($value === false || $value === '') {
+        if ($default !== null) {
+            return $default;
         }
 
-        return trim((string) $value);
+        throw new \RuntimeException(sprintf('Missing environment variable: %s', $key));
     }
 
+    return trim((string) $value);
+}
     private function sendBrevoEmail(
         HttpClientInterface $httpClient,
         string $toEmail,

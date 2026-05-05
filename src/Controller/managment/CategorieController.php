@@ -19,8 +19,8 @@ public function index(CategorieRepository $categorieRepository, Request $request
 {
     $search = $request->query->get('search', '');
     $statut = $request->query->get('statut', '');
-    $page = $request->query->getInt('page', 1);
-    $limit = 6;
+    $page   = $request->query->getInt('page', 1);
+    $limit  = 6;
 
     $qb = $categorieRepository->createQueryBuilder('c');
 
@@ -34,26 +34,26 @@ public function index(CategorieRepository $categorieRepository, Request $request
            ->setParameter('statut', $statut);
     }
 
-    // Count total
-    $total = (clone $qb)->select('COUNT(c.id)')->getQuery()->getSingleScalarResult();
-    $totalPages = max(1, ceil($total / $limit));
+    // ✅ Fix line 39 — cast to int
+    $total      = (int) (clone $qb)->select('COUNT(c.id)')->getQuery()->getSingleScalarResult();
+    $totalPages = max(1, (int) ceil($total / $limit));
 
     if ($page < 1) $page = 1;
     if ($page > $totalPages) $page = $totalPages;
 
-    // Get paginated results
-    $categories = $qb->setFirstResult(($page - 1) * $limit)
+    // ✅ Fix line 45 — cast to int
+    $categories = $qb->setFirstResult((int)(($page - 1) * $limit))
                      ->setMaxResults($limit)
                      ->getQuery()
                      ->getResult();
 
     return $this->render('management/categorie/index.html.twig', [
-        'categories' => $categories,
-        'search' => $search,
-        'statut' => $statut,
+        'categories'  => $categories,
+        'search'      => $search,
+        'statut'      => $statut,
         'currentPage' => $page,
-        'totalPages' => $totalPages,
-        'total' => $total,
+        'totalPages'  => $totalPages,
+        'total'       => $total,
     ]);
 }
 
@@ -96,14 +96,15 @@ public function edit(Request $request, Categorie $categorie, EntityManagerInterf
     ]);
 }
 
-    #[Route('/{id}/delete', name: 'app_categorie_delete', methods: ['POST'])]
-    public function delete(Request $request, Categorie $categorie, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$categorie->getId(), $request->request->get('_token'))) {
-            $entityManager->remove($categorie);
-            $entityManager->flush();
-            $this->addFlash('success', 'Category deleted!');
-        }
-        return $this->redirectToRoute('app_categorie_index');
+  #[Route('/{id}/delete', name: 'app_categorie_delete', methods: ['POST'])]
+public function delete(Request $request, Categorie $categorie, EntityManagerInterface $entityManager): Response
+{
+    // ✅ Fix line 102 — cast to string
+    if ($this->isCsrfTokenValid('delete' . $categorie->getId(), (string) $request->request->get('_token'))) {
+        $entityManager->remove($categorie);
+        $entityManager->flush();
+        $this->addFlash('success', 'Category deleted!');
     }
+    return $this->redirectToRoute('app_categorie_index');
+}
 }

@@ -19,7 +19,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class GenerateEntitiesCommand extends Command
 {
     private Connection $connection;
+   
+    /** @var AbstractSchemaManager<\Doctrine\DBAL\Platforms\AbstractPlatform> */
     private ?AbstractSchemaManager $schemaManager = null;
+   
+    /** @var array<string, bool> */
     private array $generatedRelations = [];
 
     public function __construct(Connection $connection)
@@ -76,6 +80,9 @@ class GenerateEntitiesCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * @return AbstractSchemaManager<\Doctrine\DBAL\Platforms\AbstractPlatform>
+     */
     private function getSchemaManager(): AbstractSchemaManager
     {
         if ($this->schemaManager === null) {

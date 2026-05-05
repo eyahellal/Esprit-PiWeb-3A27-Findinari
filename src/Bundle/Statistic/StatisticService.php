@@ -10,6 +10,7 @@ use App\Repository\InvestissementobligationRepository;
 use App\Repository\ObligationRepository;
 use App\Repository\WalletRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class StatisticService
 {
@@ -207,7 +208,6 @@ class StatisticService
             $diff = $today->diff($maturityDate);
             $amount = (float)$investment->getMontantInvesti();
            
-            // $diff est toujours un objet DateInterval, jamais false
             if ($diff->invert === 1 && $diff->m <= $months && $diff->y === 0) {
                 $monthKey = $maturityDate->format('Y-m');
                 if (isset($forecast[$monthKey])) {

@@ -200,7 +200,7 @@ class InvestissementobligationController extends AbstractController
             $entityManager->flush();
 
             $notificationService->addNotification(
-                '💰 New Investment',
+                'New Investment',
                 sprintf(
                     'You invested %s DT in %s',
                     number_format((float) $investment->getMontantInvesti(), 2),
@@ -219,13 +219,11 @@ class InvestissementobligationController extends AbstractController
         $obligationsData = [];
 
         foreach ($allObligations as $obl) {
-            if ($obl instanceof Obligation) {
-                $obligationsData[$obl->getIdObligation()] = [
-                    'rate' => $obl->getTauxInteret(),
-                    'duration' => $obl->getDuree(),
-                    'name' => $obl->getNom(),
-                ];
-            }
+            $obligationsData[$obl->getIdObligation()] = [
+                'rate' => $obl->getTauxInteret(),
+                'duration' => $obl->getDuree(),
+                'name' => $obl->getNom(),
+            ];
         }
 
         $user = $this->getUserOrCreate($entityManager);
@@ -335,14 +333,16 @@ class InvestissementobligationController extends AbstractController
             } catch (\InvalidArgumentException $e) {
                 $this->addFlash('error', $e->getMessage());
 
-                return $this->redirectToRoute('app_investment_edit', ['idInvestissement' => $idInvestissement]);
+                return $this->redirectToRoute('app_investment_edit', [
+                    'idInvestissement' => $idInvestissement,
+                ]);
             }
 
             $entityManager->flush();
 
             if ($oldAmount != $investment->getMontantInvesti()) {
                 $notificationService->addNotification(
-                    '✏️ Investment Updated',
+                    'Investment Updated',
                     sprintf(
                         'Investment amount changed from %s DT to %s DT',
                         number_format((float) $oldAmount, 2),
@@ -354,7 +354,7 @@ class InvestissementobligationController extends AbstractController
 
             if ($oldObligationId != $investment->getObligationId() && $selectedObligation instanceof Obligation) {
                 $notificationService->addNotification(
-                    '🔄 Investment Updated',
+                    'Investment Updated',
                     sprintf('Investment obligation changed to %s', $selectedObligation->getNom()),
                     'info'
                 );
@@ -370,13 +370,11 @@ class InvestissementobligationController extends AbstractController
         $obligationsData = [];
 
         foreach ($allObligations as $obl) {
-            if ($obl instanceof Obligation) {
-                $obligationsData[$obl->getIdObligation()] = [
-                    'rate' => $obl->getTauxInteret(),
-                    'duration' => $obl->getDuree(),
-                    'name' => $obl->getNom(),
-                ];
-            }
+            $obligationsData[$obl->getIdObligation()] = [
+                'rate' => $obl->getTauxInteret(),
+                'duration' => $obl->getDuree(),
+                'name' => $obl->getNom(),
+            ];
         }
 
         return $this->render('loan/investment/edit.html.twig', [
@@ -417,7 +415,7 @@ class InvestissementobligationController extends AbstractController
             $entityManager->flush();
 
             $notificationService->addNotification(
-                '🗑️ Investment Deleted',
+                'Investment Deleted',
                 sprintf('Investment of %s DT was deleted', number_format((float) $amount, 2)),
                 'danger'
             );
