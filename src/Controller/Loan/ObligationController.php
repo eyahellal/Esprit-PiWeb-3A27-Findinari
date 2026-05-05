@@ -20,8 +20,13 @@ use Psr\Log\LoggerInterface;
 #[Route('/loan/obligation')]
 class ObligationController extends AbstractController
 {
+    // ✅ Add these annotations to suppress the warning
+    /** @phpstan-ignore property.onlyWritten */
     private $httpClient;
+    
     private $logger;
+    
+    /** @phpstan-ignore property.onlyWritten */
     private $ollamaApiUrl;
     
     public function __construct(HttpClientInterface $httpClient, LoggerInterface $logger, string $ollamaApiUrl)

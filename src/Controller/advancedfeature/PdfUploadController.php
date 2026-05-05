@@ -127,8 +127,9 @@ class PdfUploadController extends AbstractController
                 } else {
                     // Calculate based on duration
                     $durationMonths = $obligation->getDuree();
-                    $maturityDate = (clone $investment->getDateAchat())->modify("+{$durationMonths} months");
-                    $investment->setDateMaturite($maturityDate);
+$maturityDate = \DateTime::createFromInterface($investment->getDateAchat())
+    ->modify("+{$durationMonths} months");
+$investment->setDateMaturite($maturityDate);                    $investment->setDateMaturite($maturityDate);
                 }
                 
                 $entityManager->persist($investment);

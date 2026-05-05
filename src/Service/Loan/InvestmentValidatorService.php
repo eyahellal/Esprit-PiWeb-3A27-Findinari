@@ -38,11 +38,12 @@ class InvestmentValidatorService
         // Règle 4: Le montant investi ne doit pas dépasser le solde du wallet
         if ($investment->getMontantInvesti() > $wallet->getSolde()) {
             throw new InvalidArgumentException(
-                sprintf(
-                    'Le montant investi (%s DT) ne peut pas dépasser le solde de votre wallet (%s DT)',
-                    number_format($investment->getMontantInvesti(), 2),
-                    number_format($wallet->getSolde(), 2)
-                )
+                // ✅ After — cast to float
+sprintf(
+    'Le montant investi (%s DT) ne peut pas dépasser le solde de votre wallet (%s DT)',
+    number_format((float) $investment->getMontantInvesti(), 2),
+    number_format((float) $wallet->getSolde(), 2)
+)
             );
         }
         

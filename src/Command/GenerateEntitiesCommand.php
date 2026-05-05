@@ -20,7 +20,6 @@ use Symfony\Component\Filesystem\Filesystem;
 class GenerateEntitiesCommand extends Command
 {
     private Connection $connection;
-    // private Filesystem $filesystem;
     private ?AbstractSchemaManager $schemaManager = null;
     private array $generatedRelations = [];
 
@@ -28,13 +27,14 @@ class GenerateEntitiesCommand extends Command
      * Constructor.
      *
      * @param Connection $connection The database connection instance.
-     * @param Filesystem $filesystem The filesystem instance.
+     * @param Filesystem $filesystem The filesystem instance (kept for DI compatibility)
      */
     public function __construct(Connection $connection, Filesystem $filesystem)
     {
         parent::__construct();
         $this->connection = $connection;
-        // $this->filesystem = $filesystem;
+        // $filesystem parameter is kept for dependency injection compatibility
+        // It is intentionally not used in this command
     }
 
     /**
@@ -70,18 +70,20 @@ class GenerateEntitiesCommand extends Command
         }
 
         // Sort tables by their relation count in ascending order
-        usort($tables, function (Table $a, Table $b) use ($tableRelationsCount) {
-            return $tableRelationsCount[$a->getName()] <=> $tableRelationsCount[$b->getName()];
+        $tablesArray = $tables;
+        usort($tablesArray, function (Table $a, Table $b) use ($tableRelationsCount) {
+            $countA = $tableRelationsCount[$a->getName()] ?? 0;
+            $countB = $tableRelationsCount[$b->getName()] ?? 0;
+            return $countA <=> $countB;
         });
 
         // Generate entities in sorted order
-        foreach ($tables as $table) {
+        foreach ($tablesArray as $table) {
             $this->generateEntity($table, $oneToManyRelations, $manyToOneRelationsName, $oneToManyRelationsName);
-
             $io->success("Generated: src/Entity/" . ucfirst($table->getName()) . ".php");
         }
 
-        foreach ($tables as $table) {
+        foreach ($tablesArray as $table) {
             $this->generateEntity($table, $oneToManyRelations, $manyToOneRelationsName, $oneToManyRelationsName);
             $io->success("Relations Added: src/Entity/" . ucfirst($table->getName()) . ".php");
         }
@@ -89,7 +91,6 @@ class GenerateEntitiesCommand extends Command
         $io->success("Entities successfully generated in src/Entity/");
         return Command::SUCCESS;
     }
-
 
     /**
      * Retrieves the schema manager instance, caching it to avoid redundant queries.
@@ -108,21 +109,27 @@ class GenerateEntitiesCommand extends Command
      * Generates an entity class from a database table.
      *
      * @param Table $table The database table.
-     * @param array &$oneToManyRelations Reference to OneToMany relations.
-     * @param array &$manyToOneRelationsName Reference to ManyToOne relations.
+     * @param array<string, array<int, string>> &$oneToManyRelations Reference to OneToMany relations.
+     * @param array<string, string> &$manyToOneRelationsName Reference to ManyToOne relations.
+     * @param array<string, string> &$oneToManyRelationsName Reference to OneToMany relations names.
      */
     private function generateEntity(Table $table, array &$oneToManyRelations, array &$manyToOneRelationsName, array &$oneToManyRelationsName): void
     {
         $className = ucfirst($table->getName());
-        $entityCode = "<?php\n\nnamespace App\\Entity;\n\nuse Doctrine\\ORM\\Mapping as ORM;\n\n";
+        $entityCode = "<?php\n\nnamespace App\\Entity;\n\nuse Doctrine\\ORM\\Mapping as ORM;\n";
 
         $imports = $this->generateImports($manyToOneRelationsName, $oneToManyRelationsName, $className);
 
         // Add imports
-        $entityCode .= $imports . "\n";
+        if (!empty($imports)) {
+            $entityCode .= "\n" . $imports;
+        }
+
+        $entityCode .= "\n\n";
 
         // Add entity annotation
         $entityCode .= "#[ORM\\Entity]\n";
+        $entityCode .= "#[ORM\\Table(name: '" . $table->getName() . "')]\n";
         $entityCode .= "class $className\n{\n";
 
         // Get primary key(s)
@@ -142,38 +149,67 @@ class GenerateEntitiesCommand extends Command
 
         // Inject stored OneToMany relations into the correct entities
         if (isset($oneToManyRelations[$className])) {
-            $processedRelations = []; // Keep track of already added relations
+            $processedRelations = [];
 
             foreach ($oneToManyRelations[$className] as $relation) {
-                if (!in_array($relation, $processedRelations)) {
+                if (!in_array($relation, $processedRelations, true)) {
                     $entityCode .= $relation;
-                    $processedRelations[] = $relation; // Mark relation as added
+                    $processedRelations[] = $relation;
 
                     $relationArray = $this->parseRelationAnnotation($relation);
-                    $relationKey = "$className-{$relationArray['mappedBy']}";
+                    if ($relationArray !== null && isset($relationArray['mappedBy'], $relationArray['targetEntity'])) {
+                        $relationKey = "$className-{$relationArray['mappedBy']}";
 
-                    if (!isset($this->generatedRelations[$relationKey])) {
-                        $entityCode .= $this->generateRelationMethods($className, $relationArray['mappedBy'], $relationArray['targetEntity']);
-                        $this->generatedRelations[$relationKey] = true;
+                        if (!isset($this->generatedRelations[$relationKey])) {
+                            $entityCode .= $this->generateRelationMethods($className, $relationArray['mappedBy'], $relationArray['targetEntity']);
+                            $this->generatedRelations[$relationKey] = true;
+                        }
                     }
                 }
             }
         }
 
-
         $entityCode .= "}\n";
 
         // Save the entity file
         $filePath = __DIR__ . "/../../src/Entity/$className.php";
+        $directory = dirname($filePath);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
         file_put_contents($filePath, $entityCode);
     }
 
+    /**
+     * Parses a relation annotation to extract mappedBy and targetEntity.
+     *
+     * @param string $relation The relation annotation string.
+     * @return array<string, string>|null The parsed relation data or null if parsing fails.
+     */
+    private function parseRelationAnnotation(string $relation): ?array
+    {
+        $result = [];
+       
+        if (preg_match('/mappedBy: "([^"]+)"/', $relation, $matches)) {
+            $result['mappedBy'] = $matches[1];
+        } else {
+            return null;
+        }
+       
+        if (preg_match('/targetEntity: ([^:]+)::class/', $relation, $matches)) {
+            $result['targetEntity'] = $matches[1];
+        } else {
+            return null;
+        }
+       
+        return $result;
+    }
 
     /**
      * Generates necessary import statements based on detected relations.
      *
-     * @param array $oneToManyRelations OneToMany relations.
-     * @param array $manyToOneRelationsName ManyToOne relations.
+     * @param array<string, string> $manyToOneRelationsName ManyToOne relations.
+     * @param array<string, string> $oneToManyRelationsName OneToMany relations.
      * @param string $className The name of the entity class.
      * @return string Formatted import statements.
      */
@@ -183,67 +219,60 @@ class GenerateEntitiesCommand extends Command
 
         foreach ($manyToOneRelationsName as $key => $value) {
             if ($key === $className) {
-                $imports[] = "App\\Entity\\$value";
+                $imports[] = "App\\Entity\\" . ucfirst($value);
             }
         }
 
         foreach ($oneToManyRelationsName as $key => $value) {
             if ($key === $className) {
-                $imports[] = "Doctrine\Common\Collections\Collection";
-                $imports[] = "App\\Entity\\$value";
+                $imports[] = "Doctrine\\Common\\Collections\\Collection";
+                $imports[] = "App\\Entity\\" . ucfirst($value);
             }
         }
 
-        // Remove duplicates and format imports
+        // Remove duplicates
         $imports = array_unique($imports);
 
-        // Return an empty string if there are no imports needed
-        if (count($imports) == 0) {
+        if (count($imports) === 0) {
             return "";
         }
-        return "use " . implode(";\nuse ", $imports) . ";\n";
+       
+        return "use " . implode(";\nuse ", $imports) . ";";
     }
 
     /**
      * Retrieves foreign key constraints from the database.
      *
-     * @param array $tables List of table names.
-     * @return array Associative array of foreign keys.
+     * @param array<int, string> $tables List of table names.
+     * @return array<string, array<string, string>> Associative array of foreign keys.
      */
     public function getForeignKeys(array $tables): array
     {
         $foreignKeys = [];
 
-        // Create the schema manager
-        $schemaManager = $this->connection->createSchemaManager();
-
-        // List all tables using the schema manager
+        $schemaManager = $this->getSchemaManager();
         $dbTables = $schemaManager->listTables();
+       
+        $tableNames = array_map(fn($table) => $table->getName(), $dbTables);
 
         foreach ($tables as $tableName) {
-            // Check if the table exists in the list of tables
-            if (in_array($tableName, array_map(fn($table) => $table->getName(), $dbTables))) {
-                // Run a custom SQL query to retrieve foreign keys from the INFORMATION_SCHEMA (MySQL example)
+            if (in_array($tableName, $tableNames, true)) {
                 $sql = "
-                SELECT 
-                    COLUMN_NAME, 
-                    REFERENCED_TABLE_NAME, 
+                SELECT
+                    COLUMN_NAME,
+                    REFERENCED_TABLE_NAME,
                     REFERENCED_COLUMN_NAME
-                FROM 
-                    INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-                WHERE 
-                    TABLE_NAME = :tableName AND 
+                FROM
+                    INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                WHERE
+                    TABLE_NAME = :tableName AND
                     REFERENCED_TABLE_NAME IS NOT NULL
-            ";
+                ";
 
-                // Prepare the query
                 $stmt = $this->connection->prepare($sql);
                 $stmt->bindValue(':tableName', $tableName);
-
-                // Execute the query and fetch the results
                 $fks = $stmt->executeQuery()->fetchAllAssociative();
 
-                // Store foreign keys in the array
                 foreach ($fks as $fk) {
                     $foreignKeys[$fk['COLUMN_NAME']] = [
                         'referencedTable' => $fk['REFERENCED_TABLE_NAME'],
@@ -268,34 +297,32 @@ class GenerateEntitiesCommand extends Command
     {
         $collectionType = "Collection";
         $relatedEntityClass = ucfirst($relatedEntity);
-        $currentEntityClass = ucfirst($currentEntity);
-        $relatedEntityVariable = lcfirst($relatedEntity); // Ensure lowercase variable name
+        $relatedEntityVariable = lcfirst($relatedEntity);
 
-        return "
+        return "\n
         public function get" . $relatedEntityClass . "s(): $collectionType
         {
             return \$this->" . $relatedEntityVariable . "s;
         }
-    
+   
         public function add{$relatedEntityClass}({$relatedEntityClass} \${$relatedEntityVariable}): self
         {
             if (!\$this->{$relatedEntityVariable}s->contains(\${$relatedEntityVariable})) {
                 \$this->{$relatedEntityVariable}s[] = \${$relatedEntityVariable};
                 \${$relatedEntityVariable}->set" . ucfirst($propertyName) . "(\$this);
             }
-    
+   
             return \$this;
         }
-    
+   
         public function remove{$relatedEntityClass}({$relatedEntityClass} \${$relatedEntityVariable}): self
         {
             if (\$this->{$relatedEntityVariable}s->removeElement(\${$relatedEntityVariable})) {
-                // set the owning side to null (unless already changed)
                 if (\${$relatedEntityVariable}->get" . ucfirst($propertyName) . "() === \$this) {
                     \${$relatedEntityVariable}->set" . ucfirst($propertyName) . "(null);
                 }
             }
-    
+   
             return \$this;
         }\n";
     }
@@ -304,11 +331,12 @@ class GenerateEntitiesCommand extends Command
      * Generates entity properties based on database columns.
      *
      * @param Column $column The database column.
-     * @param array $primaryKeys List of primary keys.
-     * @param array $foreignKeys List of foreign keys.
+     * @param array<int, string> $primaryKeys List of primary keys.
+     * @param array<string, array<string, string>> $foreignKeys List of foreign keys.
      * @param string $className The entity class name.
-     * @param array &$oneToManyRelations Reference to OneToMany relations.
-     * @param array &$manyToOneRelationsName Reference to ManyToOne relations.
+     * @param array<string, array<int, string>> &$oneToManyRelations Reference to OneToMany relations.
+     * @param array<string, string> &$manyToOneRelationsName Reference to ManyToOne relations.
+     * @param array<string, string> &$oneToManyRelationsName Reference to OneToMany relations names.
      * @return string The generated property code.
      */
     private function generateProperty(Column $column, array $primaryKeys, array $foreignKeys, string $className, array &$oneToManyRelations, array &$manyToOneRelationsName, array &$oneToManyRelationsName): string
@@ -316,10 +344,9 @@ class GenerateEntitiesCommand extends Command
         $columnName = $column->getName();
         $typeClass = get_class($column->getType());
         $length = $column->getLength();
-        $isPrimaryKey = in_array($columnName, $primaryKeys);
+        $isPrimaryKey = in_array($columnName, $primaryKeys, true);
         $isForeignKey = isset($foreignKeys[$columnName]);
 
-        // Map type classes to Doctrine types
         $doctrineType = match ($typeClass) {
             'Doctrine\DBAL\Types\IntegerType' => 'integer',
             'Doctrine\DBAL\Types\BigIntType' => 'bigint',
@@ -333,130 +360,139 @@ class GenerateEntitiesCommand extends Command
             default => 'string',
         };
 
-        $lengthAnnotation = ($doctrineType === 'string' && $length) ? ", length: $length" : "";
+        $lengthAnnotation = ($doctrineType === 'string' && $length !== null && $length > 0) ? ", length: $length" : "";
+        $phpType = $this->getPHPTypeFromDoctrine($doctrineType);
+        $propertyCode = "\n";
 
-        $propertyCode = "\n    " . ($isPrimaryKey ? "#[ORM\\Id]\n    " : "");
-
+        if ($isPrimaryKey) {
+            $propertyCode .= "    #[ORM\\Id]\n";
+            if ($doctrineType === 'integer' || $doctrineType === 'bigint') {
+                $propertyCode .= "    #[ORM\\GeneratedValue]\n";
+            }
+        }
 
         if ($isForeignKey) {
             $relatedEntity = $foreignKeys[$columnName]['referencedTable'];
             $relatedClassName = ucfirst($relatedEntity);
-
-            // Get the columns of the referenced table
-            $schemaManager = $this->connection->createSchemaManager();
-            $columns = $schemaManager->listTableColumns($relatedEntity);
-
-            // Find the primary key columns from the list of columns
             $primaryKeyColumns = $this->getPrimaryKeyColumns($relatedEntity);
+            $primaryKeyColumn = !empty($primaryKeyColumns) ? $primaryKeyColumns[0] : 'id';
 
-            // Assuming the primary key is the first column in the primary key list
-            $primaryKeyColumn = $primaryKeyColumns ? $primaryKeyColumns[0] : null;
+            $propertyCode .= "    #[ORM\\ManyToOne(targetEntity: $relatedClassName::class)]\n";
+            $propertyCode .= "    #[ORM\\JoinColumn(name: '$columnName', referencedColumnName: '$primaryKeyColumn', nullable: false)]\n";
+            $propertyCode .= "    private ?$relatedClassName \$$columnName = null;\n";
 
-            // If primary key column is found
-            if ($primaryKeyColumn) {
-                // Add ManyToOne in the current entity
-                $propertyCode .= "    #[ORM\\ManyToOne(targetEntity: $relatedClassName::class, inversedBy: \"" . strtolower($className) . "s\")]\n";
-
-                // Add JoinColumn for foreign key relation
-                $propertyCode .= "    #[ORM\\JoinColumn(name: '$columnName', referencedColumnName: '$primaryKeyColumn', onDelete: 'CASCADE')]\n";
-
-                $propertyCode .= "    private $relatedClassName \$$columnName;\n";
-
-                // Store ManyToOne relation in the current entity
-                $manyToOneRelationsName[$className] = $relatedClassName;
-                // Store OneToMany relation in the current entity
-                $oneToManyRelationsName[$relatedClassName] = $className;
-
-                // Store OneToMany relation in the related entity
-                $oneToManyRelations[$relatedClassName][] = "\n    #[ORM\\OneToMany(mappedBy: \"$columnName\", targetEntity: $className::class)]\n    private Collection \$" . strtolower($className) . "s;\n";
-            }
+            $manyToOneRelationsName[$className] = $relatedClassName;
+            $oneToManyRelationsName[$relatedClassName] = $className;
+            $oneToManyRelations[$relatedClassName][] = "\n    #[ORM\\OneToMany(mappedBy: \"$columnName\", targetEntity: $className::class)]\n    private Collection \$" . lcfirst($className) . "s;\n";
         } else {
-            $propertyCode .= "#[ORM\\Column(type: \"$doctrineType\"$lengthAnnotation)]\n";
-            $propertyCode .= "    private " . $this->getPHPTypeFromDoctrine($doctrineType) . " \$$columnName;\n";
+            $propertyCode .= "    #[ORM\\Column(type: \"$doctrineType\"$lengthAnnotation)]\n";
+           
+            if ($doctrineType === 'datetime' || $doctrineType === 'date') {
+                $propertyCode .= "    private ?\\DateTimeInterface \$$columnName = null;\n";
+            } else {
+                $defaultValue = $this->getDefaultValue($doctrineType);
+                $propertyCode .= "    private $phpType \$$columnName = $defaultValue;\n";
+            }
         }
 
         return $propertyCode;
     }
 
-    private function getPHPTypeFromDoctrine(string $doctrineType): string
+    /**
+     * Gets the default value for a PHP type.
+     *
+     * @param string $doctrineType The Doctrine type.
+     * @return string The default value as string.
+     */
+    private function getDefaultValue(string $doctrineType): string
     {
-        $mapping = [
-            'integer' => 'int',
-            'smallint' => 'int',
-            'bigint' => 'string', // BigInt is stored as a string in PHP
-            'string' => 'string',
-            'text' => 'string',
-            'boolean' => 'bool',
-            'decimal' => 'string', // Decimal values are stored as strings to avoid precision loss
-            'float' => 'float',
-            'date' => '\DateTimeInterface',
-            'datetime' => '\DateTimeInterface',
-            'datetimetz' => '\DateTimeInterface',
-            'time' => '\DateTimeInterface',
-            'array' => 'array',
-            'json' => 'array', // JSON is typically decoded to an array
-            'object' => 'object',
-            'binary' => 'string',
-            'blob' => 'string',
-            'guid' => 'string',
-        ];
-
-        return $mapping[$doctrineType] ?? 'mixed'; // Default to 'mixed' if type is unknown
-    }
-    // Helper function to get primary key columns of a table
-    private function getPrimaryKeyColumns(string $tableName): array
-    {
-        $schemaManager = $this->connection->createSchemaManager();
-        $indexes = $schemaManager->listTableIndexes($tableName);
-
-        // Find primary key columns from the indexes
-        if (isset($indexes['primary'])) {
-            return $indexes['primary']->getColumns();
-        }
-
-        return [];
+        return match ($doctrineType) {
+            'integer', 'bigint', 'smallint' => '0',
+            'boolean' => 'false',
+            'float' => '0.0',
+            default => "''",
+        };
     }
 
     /**
-     * Generates getter and setter methods for entity properties.
+     * Gets the PHP type from Doctrine type.
+     *
+     * @param string $doctrineType The Doctrine type.
+     * @return string The PHP type.
+     */
+    private function getPHPTypeFromDoctrine(string $doctrineType): string
+    {
+        return match ($doctrineType) {
+            'integer', 'bigint', 'smallint' => 'int',
+            'boolean' => 'bool',
+            'float' => 'float',
+            'datetime', 'date' => '?\\DateTimeInterface',
+            default => 'string',
+        };
+    }
+
+    /**
+     * Gets primary key columns of a table.
+     *
+     * @param string $tableName The table name.
+     * @return array<int, string> List of primary key columns.
+     */
+    private function getPrimaryKeyColumns(string $tableName): array
+    {
+        try {
+            $schemaManager = $this->getSchemaManager();
+            $table = $schemaManager->introspectTable($tableName);
+            return $table->getPrimaryKey()?->getColumns() ?? [];
+        } catch (\Exception $e) {
+            return ['id'];
+        }
+    }
+
+    /**
+     * Generates getter and setter methods for a column.
      *
      * @param Column $column The database column.
-     * @return string The generated getter and setter methods.
+     * @return string The generated getter and setter code.
      */
     private function generateGettersAndSetters(Column $column): string
     {
         $columnName = $column->getName();
         $methodName = ucfirst($columnName);
-
-        return "
-    public function get$methodName()
-    {
-        return \$this->$columnName;
-    }
-
-    public function set$methodName(\$value)
-    {
-        \$this->$columnName = \$value;
-    }\n";
+        $doctrineType = $this->getDoctrineType($column);
+        $phpType = $this->getPHPTypeFromDoctrine($doctrineType);
+       
+        $getter = "\n    public function get$methodName(): $phpType\n    {\n        return \$this->$columnName;\n    }\n";
+       
+        if ($doctrineType === 'datetime' || $doctrineType === 'date') {
+            $setter = "\n    public function set$methodName(?" . str_replace('?', '', $phpType) . " \$$columnName): self\n    {\n        \$this->$columnName = \$$columnName;\n        return \$this;\n    }\n";
+        } else {
+            $setter = "\n    public function set$methodName($phpType \$$columnName): self\n    {\n        \$this->$columnName = \$$columnName;\n        return \$this;\n    }\n";
+        }
+       
+        return $getter . $setter;
     }
 
     /**
-     * Parses a relation annotation string to extract mappedBy and targetEntity values.
+     * Gets Doctrine type from column.
      *
-     * @param string $relation The relation annotation string.
-     * @return array Associative array containing 'mappedBy' and 'targetEntity' values.
+     * @param Column $column The database column.
+     * @return string The Doctrine type.
      */
-    private function parseRelationAnnotation(string $relation): array
+    private function getDoctrineType(Column $column): string
     {
-        $pattern = '/mappedBy:\s*"([^"]+)",\s*targetEntity:\s*([^\s:]+)::class/';
-
-        if (preg_match($pattern, $relation, $matches)) {
-            return [
-                'mappedBy' => $matches[1],      // Extracted value for mappedBy
-                'targetEntity' => $matches[2]   // Extracted value for targetEntity
-            ];
-        }
-
-        return ['mappedBy' => null, 'targetEntity' => null]; // Return nulls if not found
+        $typeClass = get_class($column->getType());
+       
+        return match ($typeClass) {
+            'Doctrine\DBAL\Types\IntegerType' => 'integer',
+            'Doctrine\DBAL\Types\BigIntType' => 'bigint',
+            'Doctrine\DBAL\Types\SmallIntType' => 'smallint',
+            'Doctrine\DBAL\Types\BooleanType' => 'boolean',
+            'Doctrine\DBAL\Types\DateTimeType', 'Doctrine\DBAL\Types\TimestampType' => 'datetime',
+            'Doctrine\DBAL\Types\DateType' => 'date',
+            'Doctrine\DBAL\Types\TextType' => 'text',
+            'Doctrine\DBAL\Types\DecimalType', 'Doctrine\DBAL\Types\FloatType', 'Doctrine\DBAL\Types\DoubleType' => 'float',
+            'Doctrine\DBAL\Types\StringType', 'Doctrine\DBAL\Types\VarCharType' => 'string',
+            default => 'string',
+        };
     }
 }

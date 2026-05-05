@@ -126,10 +126,7 @@ class Objectif
 
     public function getContributiongoals(): Collection
     {
-        if (!$this->contributiongoals instanceof Collection) {
-            $this->contributiongoals = new ArrayCollection();
-        }
-        return $this->contributiongoals;
+    return $this->contributiongoals;
     }
 
     public function addContributiongoal(Contributiongoal $contributiongoal): self
