@@ -52,10 +52,16 @@ class Post
     #[ORM\Column(name: 'nombreCommentaires', type: 'integer', options: ['default' => 0])]
     private int $nombreCommentaires = 0;
 
+    /**
+     * @var Collection<int, Commentaire>
+     */
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Commentaire::class, orphanRemoval: true)]
     #[ORM\OrderBy(['dateCreation' => 'DESC'])]
     private Collection $commentaires;
 
+    /**
+     * @var Collection<int, Like>
+     */
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Like::class, orphanRemoval: true)]
     private Collection $likes;
 
@@ -98,21 +104,30 @@ class Post
         return $short === $clean ? $short : $short . '...';
     }
 
+    /**
+     * @return list<string>
+     */
     private function extractMediaCandidates(): array
     {
         $content = (string) ($this->contenu ?? '');
         $candidates = [];
 
         if (preg_match_all('/<img[^>]+src=["\']([^"\']+)["\']/i', $content, $matches)) {
-            $candidates = array_merge($candidates, $matches[1]);
+            foreach ($matches[1] as $match) {
+                $candidates[] = (string)$match;
+            }
         }
 
         if (preg_match_all('/\[(?:img|image|gif):([^\]]+)\]/i', $content, $matches)) {
-            $candidates = array_merge($candidates, $matches[1]);
+            foreach ($matches[1] as $match) {
+                $candidates[] = (string)$match;
+            }
         }
 
         if (preg_match_all('/https?:\/\/[^\s<>"\'\]]+/i', $content, $matches)) {
-            $candidates = array_merge($candidates, $matches[0]);
+            foreach ($matches[0] as $match) {
+                $candidates[] = (string)$match;
+            }
         }
 
         $cleaned = array_map(static function (string $candidate): string {
@@ -122,6 +137,9 @@ class Post
         return array_values(array_unique(array_filter($cleaned)));
     }
 
+    /**
+     * @return array{type: string, url: string}|null
+     */
     private function normalizeMediaUrl(string $url): ?array
     {
         $url = trim($url);
@@ -175,6 +193,9 @@ class Post
         ];
     }
 
+    /**
+     * @return list<array{type: string, url: string}>
+     */
     public function getMediaItems(): array
     {
         $items = [];
@@ -354,16 +375,25 @@ class Post
         return $this;
     }
 
+    /**
+     * @return Collection<int, Commentaire>
+     */
     public function getCommentaires(): Collection
     {
         return $this->commentaires;
     }
 
+    /**
+     * @return Collection<int, Like>
+     */
     public function getLikes(): Collection
     {
         return $this->likes;
     }
 
+    /**
+     * @return list<Commentaire>
+     */
     public function getRecentCommentaires(int $limit = 3): array
     {
         return array_slice($this->commentaires->toArray(), 0, $limit);
@@ -440,6 +470,9 @@ class Post
         return $years . ' y ago';
     }
 
+    /**
+     * @return list<string>
+     */
     public function getHashtags(): array
     {
         $text = $this->getDisplayText();

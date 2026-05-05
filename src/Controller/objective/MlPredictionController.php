@@ -1,8 +1,7 @@
 <?php
-// src/Controller/objective/MlPredictionController.php
-
 namespace App\Controller\objective;
-
+use App\Entity\objective\Objectif;
+use App\Entity\user\Utilisateur;
 use App\Repository\ObjectifRepository;
 use App\Service\GoalStatisticsService;
 use Doctrine\DBAL\Connection;
@@ -11,7 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Entity\user\Utilisateur;
+
 #[Route('/ml')]
 class MlPredictionController extends AbstractController
 {
@@ -32,6 +31,10 @@ class MlPredictionController extends AbstractController
     // ─────────────────────────────────────────────────────────────────────────
     // HELPER : appelle ml_service.py via fichier temporaire
     // ─────────────────────────────────────────────────────────────────────────
+    /**
+   * @param array<string, mixed> $data
+   * @return array<string, mixed>|null
+   */
     private function callMlService(array $data): ?array
     {
         if (!file_exists($this->mlScriptPath)) {
@@ -75,13 +78,16 @@ class MlPredictionController extends AbstractController
     // ─────────────────────────────────────────────────────────────────────────
     // HELPER : construit le vecteur de features depuis un objectif
     // ─────────────────────────────────────────────────────────────────────────
+    /**
+    * @return array<string, mixed>
+    */
     private function buildFeatures(
-        $objectif,
+        Objectif $objectif,
         float $walletSolde,
         GoalStatisticsService $goalStats
     ): array {
         $stats        = $goalStats->compute($objectif);
-        $totalContrib = (float) ($stats['totalCollected'] ?? 0);
+        $totalContrib = (float) $stats['totalCollected'];
         $nbContrib    = $objectif->getContributiongoals()->count();
 
         $dateDebut        = $objectif->getDateDebut();
@@ -123,8 +129,8 @@ class MlPredictionController extends AbstractController
         Request               $request
     ): Response {
         $user   = $this->getUser();
+      
         $userId = ($user instanceof Utilisateur) ? $user->getId() : 1;
-
         $walletsRaw = $connection->fetchAllAssociative(
             'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
             [$userId]
@@ -229,7 +235,8 @@ class MlPredictionController extends AbstractController
         $scriptExists = file_exists($this->mlScriptPath);
         $modelsDir    = dirname($this->mlScriptPath, 2) . DIRECTORY_SEPARATOR . 'models';
         $metaExists   = file_exists($modelsDir . DIRECTORY_SEPARATOR . 'meta.json');
-        $python       = trim(shell_exec("{$this->pythonBin} --version 2>&1") ?? 'non trouvé');
+        $rawOutput = shell_exec("{$this->pythonBin} --version 2>&1");
+        $python    = is_string($rawOutput) ? trim($rawOutput) : 'non trouvé';
 
         return $this->json([
             'status'       => ($scriptExists && $metaExists) ? 'ok' : 'error',

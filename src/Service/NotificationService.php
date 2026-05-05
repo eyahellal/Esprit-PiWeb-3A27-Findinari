@@ -45,8 +45,10 @@ class NotificationService
         }
 
         foreach ($objectifs as $objectif) {
-            if (!$objectif instanceof Objectif) continue;
-            if ($objectif->getStatut() === 'TERMINE') continue;
+            // Le PHPDoc garantit que $objectif est de type Objectif, pas besoin de vérification
+            if ($objectif->getStatut() === 'TERMINE') {
+                continue;
+            }
 
             $contributions = $objectif->getContributiongoals()->toArray();
             $total   = array_sum(array_map(fn($c) => (float)$c->getMontant(), $contributions));

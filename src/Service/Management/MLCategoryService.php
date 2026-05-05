@@ -16,11 +16,14 @@ class MLCategoryService
         $this->scriptPath = $projectRoot . DIRECTORY_SEPARATOR . 'malek_ml' . DIRECTORY_SEPARATOR . 'predict.py';
     }
 
-    public function predictCategory(
-        string $description,
-        float $amount,
-        string $type = 'debit'
-    ): array {
+    /**
+ * @return array<string, mixed>
+ */
+public function predictCategory(
+    string $description,
+    float $amount,
+    string $type = 'debit'
+): array {
         $command = sprintf(
             '%s %s %s %s %s 2>&1',
             escapeshellcmd($this->pythonPath),

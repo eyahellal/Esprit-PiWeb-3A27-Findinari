@@ -1,12 +1,21 @@
 <?php
 
+
+
+
 namespace App\Entity\objective;
+
+
+
 
 use App\Repository\ObjectifRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
+
+
+
 
 #[ORM\Entity(repositoryClass: ObjectifRepository::class)]
 #[ORM\Table(name: 'objectif')]
@@ -17,7 +26,13 @@ class Objectif
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
+
+
+
     public function getId(): ?int { return $this->id; }
+
+
+
 
     // ── TITRE ──────────────────────────────────────────────
     #[ORM\Column(type: 'string', nullable: false)]
@@ -34,8 +49,14 @@ class Objectif
     )]
     private ?string $titre = null;
 
+
+
+
     public function getTitre(): ?string { return $this->titre; }
     public function setTitre(string $titre): self { $this->titre = $titre; return $this; }
+
+
+
 
     // ── MONTANT ────────────────────────────────────────────
     #[ORM\Column(type: 'decimal', nullable: false)]
@@ -51,8 +72,14 @@ class Objectif
     )]
     private ?float $montant = null;
 
+
+
+
     public function getMontant(): ?float { return $this->montant; }
     public function setMontant(float $montant): self { $this->montant = $montant; return $this; }
+
+
+
 
     // ── DATE DÉBUT ─────────────────────────────────────────
     #[ORM\Column(type: 'date', name: 'dateDebut', nullable: true)] // ✅ nullable: true
@@ -67,7 +94,13 @@ class Objectif
     )]
     private ?\DateTimeInterface $dateDebut = null;
 
+
+
+
     public function getDateDebut(): ?\DateTimeInterface { return $this->dateDebut; }
+
+
+
 
     // ✅ setter unique qui accepte null
     public function setDateDebut(?\DateTimeInterface $dateDebut): self
@@ -75,6 +108,9 @@ class Objectif
         $this->dateDebut = $dateDebut;
         return $this;
     }
+
+
+
 
     // ── DURÉE ──────────────────────────────────────────────
     #[ORM\Column(type: 'integer', nullable: false)]
@@ -90,8 +126,14 @@ class Objectif
     )]
     private ?int $duree = null;
 
+
+
+
     public function getDuree(): ?int { return $this->duree; }
     public function setDuree(int $duree): self { $this->duree = $duree; return $this; }
+
+
+
 
     // ── STATUT ─────────────────────────────────────────────
     #[ORM\Column(type: 'string', nullable: false)]
@@ -102,8 +144,14 @@ class Objectif
     )]
     private ?string $statut = null;
 
+
+
+
     public function getStatut(): ?string { return $this->statut; }
     public function setStatut(string $statut): self { $this->statut = $statut; return $this; }
+
+
+
 
     // ── WALLET ID ──────────────────────────────────────────
     #[ORM\Column(type: 'integer', name: 'wallet_id', nullable: false)]
@@ -111,12 +159,22 @@ class Objectif
     #[Assert\Positive(message: 'Le wallet ID doit être un entier positif.')]
     private ?int $walletId = null;
 
+
+
+
     public function getWalletId(): ?int { return $this->walletId; }
     public function setWalletId(int $walletId): self { $this->walletId = $walletId; return $this; }
 
+
+
+
     // ── CONTRIBUTIONS ──────────────────────────────────────
+   /**
+     * @var Collection<int, Contributiongoal>
+     */
     #[ORM\OneToMany(targetEntity: Contributiongoal::class, mappedBy: 'objectif')]
     private Collection $contributiongoals;
+
 
     public function __construct()
     {
@@ -124,10 +182,17 @@ class Objectif
         $this->statut = 'EN_COURS';
     }
 
+
+    /**
+     * @return Collection<int, Contributiongoal>
+     */
     public function getContributiongoals(): Collection
     {
-    return $this->contributiongoals;
+        return $this->contributiongoals;
     }
+
+
+
 
     public function addContributiongoal(Contributiongoal $contributiongoal): self
     {
@@ -137,9 +202,14 @@ class Objectif
         return $this;
     }
 
+
+
+
     public function removeContributiongoal(Contributiongoal $contributiongoal): self
     {
         $this->getContributiongoals()->removeElement($contributiongoal);
         return $this;
     }
 }
+
+

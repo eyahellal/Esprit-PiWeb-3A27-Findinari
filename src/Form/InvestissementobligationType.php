@@ -1,11 +1,15 @@
 <?php
 
+
 namespace App\Form;
+
 
 use App\Entity\Loan\Investissementobligation;
 use App\Repository\WalletRepository;
 use App\Repository\ObligationRepository;
 use App\Entity\user\Utilisateur;
+use App\Entity\Loan\Wallet;
+use App\Entity\Loan\Obligation;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -14,40 +18,51 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Security;
 
+
 class InvestissementobligationType extends AbstractType
 {
-    private $walletRepository;
-    private $obligationRepository;
-    private $security;
+    private WalletRepository $walletRepository;
+    private ObligationRepository $obligationRepository;
+    private Security $security;
 
-    public function __construct(WalletRepository $walletRepository, ObligationRepository $obligationRepository, Security $security)
-    {
+
+    public function __construct(
+        WalletRepository $walletRepository,
+        ObligationRepository $obligationRepository,
+        Security $security
+    ) {
         $this->walletRepository = $walletRepository;
         $this->obligationRepository = $obligationRepository;
         $this->security = $security;
     }
 
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $user = $this->security->getUser();
-        
+       
         if (!$user) {
-            $user = $this->walletRepository->getEntityManager()->getRepository(Utilisateur::class)->find(1);
+            // Note: In a production environment, you might want to handle 
+            // unauthenticated users more gracefully or throw an access denied exception.
+            $user = null;
         }
-        
-        // Get wallets for this user only
+       
+        /** @var Wallet[] $wallets */
         $wallets = $this->walletRepository->findBy(['utilisateur' => $user]);
-        
+       
         $walletChoices = [];
         foreach ($wallets as $wallet) {
-            $walletChoices[$wallet->getPays() . ' - ' . number_format($wallet->getSolde(), 2) . ' ' . $wallet->getDevise()] = (string) $wallet->getId();
+            // FIXED: Added (float) cast to ensure number_format receives a float, not float|null
+            $label = $wallet->getPays() . ' - ' . number_format((float)$wallet->getSolde(), 2) . ' ' . $wallet->getDevise();
+            $walletChoices[$label] = (string) $wallet->getId();
         }
 
-        // Get all obligations with data attributes
+
+        /** @var Obligation[] $obligations */
         $obligations = $this->obligationRepository->findAll();
         $obligationChoices = [];
         $obligationData = [];
-        
+       
         foreach ($obligations as $obligation) {
             $label = $obligation->getNom() . ' - ' . $obligation->getTauxInteret() . '% for ' . $obligation->getDuree() . ' months';
             $obligationChoices[$label] = $obligation->getIdObligation();
@@ -57,6 +72,7 @@ class InvestissementobligationType extends AbstractType
                 'name' => $obligation->getNom()
             ];
         }
+
 
         $builder
             ->add('walletId', ChoiceType::class, [
@@ -77,16 +93,26 @@ class InvestissementobligationType extends AbstractType
             ])
             ->add('montantInvesti', NumberType::class, [
                 'label' => false,
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Enter amount to invest', 'step' => '0.01', 'id' => 'amountInput']
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Enter amount to invest',
+                    'step' => '0.01',
+                    'id' => 'amountInput'
+                ]
             ])
             ->add('dateAchat', DateType::class, [
                 'label' => false,
                 'widget' => 'single_text',
                 'html5' => false,
                 'format' => 'dd/MM/yyyy',
-                'attr' => ['class' => 'form-control datepicker', 'placeholder' => 'Select date', 'id' => 'dateInput']
+                'attr' => [
+                    'class' => 'form-control datepicker',
+                    'placeholder' => 'Select date',
+                    'id' => 'dateInput'
+                ]
             ]);
     }
+
 
     public function configureOptions(OptionsResolver $resolver): void
     {
@@ -95,3 +121,9 @@ class InvestissementobligationType extends AbstractType
         ]);
     }
 }
+
+
+
+
+
+

@@ -2,10 +2,10 @@
 
 namespace App\Entity\community;
 
+use App\Entity\user\Utilisateur;
 use App\Repository\CommentaireRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\user\Utilisateur;
 
 #[\AllowDynamicProperties]
 #[ORM\Entity(repositoryClass: CommentaireRepository::class)]
@@ -181,6 +181,9 @@ class Commentaire
         return $days . ' d ago';
     }
 
+    /**
+     * @return list<string>
+     */
     public function getHashtags(): array
     {
         $text = trim((string) $this->contenu);
@@ -199,6 +202,9 @@ class Commentaire
         return array_values(array_unique($tags));
     }
 
+    /**
+     * @return list<string>
+     */
     private function extractMediaCandidates(): array
     {
         $content = (string) ($this->contenu ?? '');
@@ -216,13 +222,17 @@ class Commentaire
             $candidates = array_merge($candidates, $matches[0]);
         }
 
-        $cleaned = array_map(static function (string $candidate): string {
-            return rtrim(trim($candidate), "])},.;");
-        }, $candidates);
+        $cleaned = array_map(
+            static fn (string $candidate): string => rtrim(trim($candidate), "])},.;"),
+            $candidates
+        );
 
         return array_values(array_unique(array_filter($cleaned)));
     }
 
+    /**
+     * @return array{type:string, url:string}|null
+     */
     private function normalizeMediaUrl(string $url): ?array
     {
         $url = trim($url);
@@ -276,6 +286,9 @@ class Commentaire
         ];
     }
 
+    /**
+     * @return list<array{type:string, url:string}>
+     */
     public function getMediaItems(): array
     {
         $items = [];

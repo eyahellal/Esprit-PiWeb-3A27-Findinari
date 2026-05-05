@@ -1,5 +1,7 @@
 <?php
+
 // src/Repository/FriendLoanRequestRepository.php
+
 namespace App\Repository;
 
 use App\Entity\Loan\FriendLoanRequest;
@@ -17,11 +19,15 @@ class FriendLoanRequestRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouver les demandes en attente pour un utilisateur (reçu)
+     * Trouver les demandes en attente pour un utilisateur reçu.
+     *
+     * @return FriendLoanRequest[]
+     * @phpstan-return array<int, FriendLoanRequest>
      */
     public function findPendingRequestsForUser(int $userId): array
     {
-        return $this->createQueryBuilder('r')
+        /** @var array<int, FriendLoanRequest> $results */
+        $results = $this->createQueryBuilder('r')
             ->where('r.receiver = :userId')
             ->andWhere('r.status = :status')
             ->setParameter('userId', $userId)
@@ -29,14 +35,16 @@ class FriendLoanRequestRepository extends ServiceEntityRepository
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
+
+        return $results;
     }
 
     /**
-     * Vérifier si une demande est déjà en attente entre deux utilisateurs
+     * Vérifier si une demande est déjà en attente entre deux utilisateurs.
      */
     public function findPendingRequestBetween(int $senderId, int $receiverId): ?FriendLoanRequest
     {
-        return $this->createQueryBuilder('r')
+        $result = $this->createQueryBuilder('r')
             ->where('r.sender = :senderId')
             ->andWhere('r.receiver = :receiverId')
             ->andWhere('r.status = :status')
@@ -45,5 +53,7 @@ class FriendLoanRequestRepository extends ServiceEntityRepository
             ->setParameter('status', 'pending')
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof FriendLoanRequest ? $result : null;
     }
 }

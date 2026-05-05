@@ -6,7 +6,6 @@ use App\Entity\user\Utilisateur;
 use App\Service\MaturityAlertService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 class AlertController extends AbstractController
@@ -15,35 +14,39 @@ class AlertController extends AbstractController
     public function getMaturityAlerts(MaturityAlertService $alertService): JsonResponse
     {
         $user = $this->getUser();
-       
-        // Vérifier si l'utilisateur est connecté et est une instance de Utilisateur
+
         if (!$user instanceof Utilisateur) {
-            return $this->json(['alerts' => [], 'count' => 0, 'hasAlerts' => false]);
+            return $this->json([
+                'alerts' => [],
+                'count' => 0,
+                'hasAlerts' => false,
+            ]);
         }
-       
+
         $alerts = $alertService->getMaturityAlerts($user);
-       
+
         $formattedAlerts = [];
+
         foreach ($alerts as $alert) {
-            // Vérification des clés existantes pour éviter les erreurs
-            $maturityDate = $alert['maturityDate'] ?? null;
+            $maturityDate = $alert['maturityDate'];
+
             $formattedAlerts[] = [
-                'id' => $alert['id'] ?? null,
-                'obligationName' => $alert['obligationName'] ?? 'Unknown',
-                'amount' => number_format($alert['amount'] ?? 0, 2),
-                'maturityDate' => $maturityDate instanceof \DateTime ? $maturityDate->format('d/m/Y') : 'N/A',
-                'daysLeft' => $alert['daysLeft'] ?? 0,
-                'expectedReturn' => number_format($alert['expectedReturn'] ?? 0, 2),
-                'severity' => $alert['severity'] ?? 'info'
+                'id' => $alert['id'],
+                'obligationName' => $alert['obligationName'],
+                'amount' => number_format($alert['amount'], 2),
+                'maturityDate' => $maturityDate->format('d/m/Y'),
+                'daysLeft' => $alert['daysLeft'],
+                'expectedReturn' => number_format($alert['expectedReturn'], 2),
+                'severity' => $alert['severity'],
             ];
         }
-       
+
         $alertsCount = count($formattedAlerts);
-       
+
         return $this->json([
             'alerts' => $formattedAlerts,
             'count' => $alertsCount,
-            'hasAlerts' => $alertsCount > 0
+            'hasAlerts' => $alertsCount > 0,
         ]);
     }
 }
