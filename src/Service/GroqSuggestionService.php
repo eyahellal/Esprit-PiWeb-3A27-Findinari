@@ -1,8 +1,12 @@
 <?php
 
+
 namespace App\Service;
 
+
+use App\Entity\reclamation\Message; // Assurez-vous que l'import correspond à votre entité
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+
 
 class GroqSuggestionService
 {
@@ -13,16 +17,24 @@ class GroqSuggestionService
     ) {
     }
 
+
+    /**
+     * @param string $role
+     * @param Message[] $lastMessages
+     * @return string[]
+     */
     public function suggestReplies(string $role, array $lastMessages): array
     {
         $conversationText = [];
         foreach ($lastMessages as $message) {
-            $sender = method_exists($message, 'getTypeSender') ? $message->getTypeSender() : 'UNKNOWN';
-            $content = method_exists($message, 'getContenu') ? trim((string) $message->getContenu()) : '';
+            // PHPStan sait maintenant que $message est une instance de Message grâce au typehint PHPDoc
+            $sender = (string) $message->getTypeSender();
+            $content = trim((string) $message->getContenu());
             if ($content !== '') {
                 $conversationText[] = sprintf('%s: %s', $sender, $content);
             }
         }
+
 
         $roleInstruction = match (strtoupper($role)) {
             'ADMIN' => 'ACT AS: Elite Fintech Support Agent for Fin-Dinari. YOUR GOAL: Provide helpful, expert guidance. NEVER ask for help; always offer it.',
@@ -30,19 +42,24 @@ class GroqSuggestionService
             default => 'Formulate concise replies for the current participant.',
         };
 
+
         if (empty($conversationText)) {
             $userPrompt = "The conversation has just started. Suggest 3 professional initial messages to start the interaction as the " . $role;
         } else {
             $userPrompt = "Conversation context (Last 5 messages):\n" . implode("\n", $conversationText);
         }
 
+
         $systemPrompt = <<<PROMPT
 Role-Specific Persona: {$roleInstruction}
 
+
 Context: You are providing 3 quick-reply suggestions for a chat interface.
+
 
 Return ONLY valid JSON in this exact format:
 {"suggestions":["suggestion 1","suggestion 2","suggestion 3"]}
+
 
 CRITICAL RULES:
 - EXACTLY 3 suggestions.
@@ -71,15 +88,18 @@ PROMPT;
             ],
         ]);
 
+
+        /** @var array{choices: array<int, array{message: array{content: string}}>} $data */
         $data = $response->toArray(false);
         $content = $data['choices'][0]['message']['content'] ?? '';
-        
-        if (!is_string($content) || trim($content) === '') {
+       
+        if (trim($content) === '') {
             return [];
         }
 
+
         $decoded = json_decode($content, true);
-        
+       
         // Try regex extraction if direct JSON parsing fails
         if (json_last_error() !== JSON_ERROR_NONE) {
             preg_match('/\{.*\}/s', $content, $matches);
@@ -88,13 +108,20 @@ PROMPT;
             }
         }
 
+
         if (!is_array($decoded) || !isset($decoded['suggestions']) || !is_array($decoded['suggestions'])) {
             return [];
         }
 
-        return array_values(array_filter(array_map(
+
+        /** @var string[] $results */
+        $results = array_values(array_filter(array_map(
             static fn ($item) => is_string($item) ? trim($item) : '',
             $decoded['suggestions']
         )));
+
+
+        return $results;
     }
 }
+
