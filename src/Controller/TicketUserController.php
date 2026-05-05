@@ -103,8 +103,14 @@ class TicketUserController extends AbstractController
                 }
             }
 
-            $ticket->setUtilisateur($this->getUser());
 
+$user = $this->getUser();
+
+if (!$user instanceof \App\Entity\user\Utilisateur) {
+    throw $this->createAccessDeniedException('Utilisateur non valide.');
+}
+
+$ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             try {
                 $this->ticketManager->initializeNewTicket($ticket);
             } catch (\InvalidArgumentException $e) {

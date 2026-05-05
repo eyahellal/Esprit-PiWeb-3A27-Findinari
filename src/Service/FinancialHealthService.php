@@ -7,28 +7,19 @@ use App\Entity\Loan\Obligation;
 use App\Entity\Loan\Wallet;
 use App\Entity\user\Utilisateur;
 use App\Repository\InvestissementobligationRepository;
-use App\Repository\ObligationRepository;
-use App\Repository\TransactionRepository;
 use App\Repository\WalletRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 class FinancialHealthService
 {
     private $walletRepository;
     private $investmentRepository;
-    private $obligationRepository;
-    private $entityManager;
 
     public function __construct(
         WalletRepository $walletRepository,
-        InvestissementobligationRepository $investmentRepository,
-        ObligationRepository $obligationRepository,
-        EntityManagerInterface $entityManager
+        InvestissementobligationRepository $investmentRepository
     ) {
         $this->walletRepository = $walletRepository;
         $this->investmentRepository = $investmentRepository;
-        $this->obligationRepository = $obligationRepository;
-        $this->entityManager = $entityManager;
     }
 
     public function calculateHealthScore(Utilisateur $user): array
@@ -62,13 +53,14 @@ class FinancialHealthService
         $goalProgressScore = $this->calculateGoalProgress($user);
         
         // Calculate total score
-        $totalScore = ($savingsRateScore * 0.25) + 
-                      ($investmentRatioScore * 0.25) + 
-                      ($diversificationScore * 0.20) + 
-                      ($emergencyFundScore * 0.15) + 
-                      ($goalProgressScore * 0.15);
+        $weightedScore = ($savingsRateScore * 0.25) + 
+                         ($investmentRatioScore * 0.25) + 
+                         ($diversificationScore * 0.20) + 
+                         ($emergencyFundScore * 0.15) + 
+                         ($goalProgressScore * 0.15);
         
-        $totalScore = round($totalScore);
+        // Correction PHPStan : Cast explicite en int après l'arrondi
+        $totalScore = (int) round($weightedScore);
         
         // Generate recommendations
         $recommendations = $this->generateRecommendations(
@@ -101,8 +93,6 @@ class FinancialHealthService
     
     private function calculateSavingsRate(Utilisateur $user, float $totalBalance): int
     {
-        // For demo purposes, calculate based on wallet balance
-        // In real implementation, you'd use transaction history
         if ($totalBalance <= 0) return 0;
         if ($totalBalance < 500) return 20;
         if ($totalBalance < 1000) return 40;
@@ -152,7 +142,6 @@ class FinancialHealthService
     
     private function calculateEmergencyFund(array $wallets, float $totalBalance): int
     {
-        // Estimate monthly expenses as 10% of balance (simplified)
         $monthlyExpenses = $totalBalance * 0.1;
         if ($monthlyExpenses <= 0) return 0;
         
@@ -167,9 +156,7 @@ class FinancialHealthService
     
     private function calculateGoalProgress(Utilisateur $user): int
     {
-        // Check if user has any goals (simplified)
-        // In real implementation, query goals from database
-        return 50; // Default mid score
+        return 50; 
     }
     
     private function generateRecommendations(
@@ -183,67 +170,61 @@ class FinancialHealthService
     ): array {
         $recommendations = [];
         
-        // Savings recommendations
         if ($savingsRateScore < 60) {
             $recommendations[] = [
                 'type' => 'savings',
                 'priority' => 'high',
-                'title' => '💪 Improve Your Savings Rate',
+                'title' => ' Improve Your Savings Rate',
                 'message' => 'Try to save at least 20% of your income. Start by tracking your expenses and cutting unnecessary costs.',
                 'action' => 'Create a monthly budget and stick to it.'
             ];
         }
         
-        // Investment recommendations
         if ($investmentRatioScore < 60) {
             $recommendations[] = [
                 'type' => 'investment',
                 'priority' => 'high',
-                'title' => '📈 Increase Your Investments',
+                'title' => ' Increase Your Investments',
                 'message' => 'You have a low investment ratio. Consider investing more of your savings to grow your wealth.',
                 'action' => 'Browse available obligations and start investing today.'
             ];
         }
         
-        // Diversification recommendations
         if ($diversificationScore < 60) {
             $recommendations[] = [
                 'type' => 'diversification',
                 'priority' => 'medium',
-                'title' => '🔄 Diversify Your Portfolio',
+                'title' => ' Diversify Your Portfolio',
                 'message' => 'Your portfolio is not well diversified. Spread your investments across different obligation types.',
                 'action' => 'Explore different obligation options with varying risk levels.'
             ];
         }
         
-        // Emergency fund recommendations
         if ($emergencyFundScore < 50) {
             $recommendations[] = [
                 'type' => 'emergency',
                 'priority' => 'high',
-                'title' => '🚨 Build Your Emergency Fund',
+                'title' => ' Build Your Emergency Fund',
                 'message' => 'You need at least 3-6 months of expenses in savings for emergencies.',
                 'action' => 'Set up automatic transfers to a dedicated emergency wallet.'
             ];
         }
         
-        // General positive recommendation if everything is good
         if (empty($recommendations)) {
             $recommendations[] = [
                 'type' => 'positive',
                 'priority' => 'low',
-                'title' => '🎉 Excellent Financial Health!',
+                'title' => ' Excellent Financial Health!',
                 'message' => 'You\'re doing great! Keep up the good work and continue monitoring your finances.',
                 'action' => 'Share your success with the community and help others.'
             ];
         }
         
-        // Add investment suggestion if no investments
         if (empty($investments) && $totalBalance > 1000) {
             $recommendations[] = [
                 'type' => 'opportunity',
                 'priority' => 'medium',
-                'title' => '💼 Start Investing',
+                'title' => ' Start Investing',
                 'message' => 'You have available funds that could be working for you through investments.',
                 'action' => 'Browse obligations and make your first investment.'
             ];
@@ -287,7 +268,7 @@ class FinancialHealthService
                 [
                     'type' => 'getting_started',
                     'priority' => 'high',
-                    'title' => '🚀 Get Started with Fin-Dinari',
+                    'title' => ' Get Started with Fin-Dinari',
                     'message' => 'Create your first wallet to start tracking your financial health.',
                     'action' => 'Go to Wallets and create a new wallet.'
                 ]

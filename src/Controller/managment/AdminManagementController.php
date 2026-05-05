@@ -48,8 +48,8 @@ $budgetsExpiry = [];
 
 foreach ($allBudgets as $budget) {
     /** @var \DateTime $endDate */
-    $endDate = (clone $budget->getDateBudget())->modify('+' . $budget->getDureeBudget() . ' days');
-    $isExpired = new \DateTime() > $endDate;
+$startDate = $budget->getDateBudget();
+$endDate = \DateTime::createFromInterface($startDate)->modify('+' . $budget->getDureeBudget() . ' days');    $isExpired = new \DateTime() > $endDate;
     $budgetsExpiry[$budget->getId()] = $isExpired;
 
     if ($isExpired) {

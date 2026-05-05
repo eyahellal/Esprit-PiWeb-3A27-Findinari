@@ -121,9 +121,7 @@ class InflationController extends AbstractController
 
                 $valeurFuture          = $montant * pow(1 + $tauxDecimal, $annees);
                 $difference            = $valeurFuture - $montant;
-                $contributionMensuelle = $annees > 0
-    ? $difference / ($annees * 12)
-    : 0;
+     $contributionMensuelle = $difference / ($annees * 12);
 
                 $result = [
                     'montant_initial'        => $montant,

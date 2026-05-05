@@ -15,11 +15,17 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ProfileController extends AbstractController
 {
+    private function getCurrentUserOrRedirect(): ?Utilisateur
+    {
+        $user = $this->getUser();
+
+        return $user instanceof Utilisateur ? $user : null;
+    }
+
     #[Route('/profile', name: 'app_profile')]
     public function profile(): Response
     {
-        /** @var Utilisateur|null $user */
-        $user = $this->getUser();
+        $user = $this->getCurrentUserOrRedirect();
 
         if (!$user) {
             return $this->redirectToRoute('app_front_login');
@@ -35,8 +41,7 @@ class ProfileController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
-        /** @var Utilisateur|null $user */
-        $user = $this->getUser();
+        $user = $this->getCurrentUserOrRedirect();
 
         if (!$user) {
             return $this->redirectToRoute('app_front_login');
@@ -52,7 +57,7 @@ class ProfileController extends AbstractController
                 'gmail' => $user->getGmail(),
             ]);
 
-            if ($existing && $existing->getId() !== $user->getId()) {
+            if ($existing instanceof Utilisateur && $existing->getId() !== $user->getId()) {
                 $this->addFlash('danger', 'This email is already used.');
                 return $this->redirectToRoute('app_profile_update');
             }
@@ -80,8 +85,7 @@ class ProfileController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher
     ): Response {
-        /** @var Utilisateur|null $user */
-        $user = $this->getUser();
+        $user = $this->getCurrentUserOrRedirect();
 
         if (!$user) {
             return $this->redirectToRoute('app_front_login');
@@ -91,8 +95,8 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $currentPassword = $form->get('currentPassword')->getData();
-            $newPassword = $form->get('newPassword')->getData();
+            $currentPassword = (string) $form->get('currentPassword')->getData();
+            $newPassword = (string) $form->get('newPassword')->getData();
 
             if (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
                 $this->addFlash('danger', 'Current password is incorrect.');
@@ -119,8 +123,7 @@ class ProfileController extends AbstractController
         EntityManagerInterface $entityManager,
         FacePlusPlusService $faceService
     ): Response {
-        /** @var Utilisateur|null $user */
-        $user = $this->getUser();
+        $user = $this->getCurrentUserOrRedirect();
 
         if (!$user) {
             return $this->redirectToRoute('app_front_login');
@@ -128,7 +131,7 @@ class ProfileController extends AbstractController
 
         $base64Image = (string) $request->request->get('face_image_data');
 
-        if (!$base64Image) {
+        if ($base64Image === '') {
             $this->addFlash('danger', 'No face image captured.');
             return $this->redirectToRoute('app_profile');
         }
@@ -138,8 +141,16 @@ class ProfileController extends AbstractController
             return $this->redirectToRoute('app_profile');
         }
 
-        $imageData = substr($base64Image, strpos($base64Image, ',') + 1);
-        $decodedImage = base64_decode($imageData);
+        $commaPosition = strpos($base64Image, ',');
+
+        if ($commaPosition === false) {
+            $this->addFlash('danger', 'Invalid captured image.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $imageData = substr($base64Image, $commaPosition + 1);
+
+        $decodedImage = base64_decode($imageData, true);
 
         if ($decodedImage === false) {
             $this->addFlash('danger', 'Failed to decode image.');
@@ -186,8 +197,7 @@ class ProfileController extends AbstractController
     public function disableFace(
         EntityManagerInterface $entityManager
     ): Response {
-        /** @var Utilisateur|null $user */
-        $user = $this->getUser();
+        $user = $this->getCurrentUserOrRedirect();
 
         if (!$user) {
             return $this->redirectToRoute('app_front_login');

@@ -1,601 +1,365 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\objective\Objectif;
 use App\Entity\objective\Contributiongoal;
+use App\Entity\management\Wallet;
+use App\Entity\user\Utilisateur;
 use App\Form\ObjectifType;
 use App\Repository\ObjectifRepository;
-use App\Service\GoalStatisticsService;
-use App\Service\NotificationService;
-use App\Repository\UtilisateurRepository;
-use Doctrine\DBAL\Connection;
+use App\Repository\WalletRepository;
+use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
-use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 
-#[Route('/objectif')]
+#[Route('/objective')]
 class ObjectifController extends AbstractController
 {
-    // ── INDEX ─────────────────────────────────────────────────────────────
-
-    #[Route('', name: 'objectif_index', methods: ['GET'])]
-    public function index(
-        ObjectifRepository    $repo,
-        Connection            $connection,
-        Request               $request,
-        NotificationService   $notifService,
-        GoalStatisticsService $goalStats,
-        UtilisateurRepository $utilisateurRepository,
-        PaginatorInterface    $paginator
-    ): Response {
-        $user             = $this->getUser();
-        $userId           = $user?->getId() ?? 1;
-        $selectedWalletId = $request->query->get('wallet_id');
-
-        if ($selectedWalletId) {
-            $request->getSession()->set('selected_wallet_id', $selectedWalletId);
-        }
-
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $walletsRaw = $connection->fetchAllAssociative(
-                'SELECT id, pays, devise, solde FROM wallet'
-            );
-        } else {
-            $walletsRaw = $connection->fetchAllAssociative(
-                'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
-                [$userId]
-            );
-        }
-
-        $wallets = [];
-        foreach ($walletsRaw as $w) {
-            $wallets[$w['id']] = $w;
-        }
-
-        $qb = $repo->createQueryBuilder('o');
-        if ($selectedWalletId) {
-            $qb->where('o.walletId = :wid')->setParameter('wid', $selectedWalletId);
-        } else {
-            $walletIds = array_keys($wallets);
-            if ($walletIds) {
-                $qb->where('o.walletId IN (:wids)')->setParameter('wids', $walletIds);
-            } else {
-                $qb->where('1 = 0');
-            }
-        }
-
-        $objectifsPaginated = $paginator->paginate(
-            $qb->getQuery(),
-            $request->query->getInt('page', 1),
-            3
-        );
-
-        $notifService->generateForObjectifs(
-            iterator_to_array($objectifsPaginated->getItems())
-        );
-
-        // ══ TOP CONTRIBUTEURS ══
-        $allObjectifs   = $repo->findAll();
-        $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id, pays FROM wallet');
-        $walletToUser   = [];
-        $userPays       = [];
-        foreach ($allWalletsData as $w) {
-            $walletToUser[$w['id']] = $w['utilisateur_id'];
-            if ($w['utilisateur_id'] && !isset($userPays[$w['utilisateur_id']])) {
-                $userPays[$w['utilisateur_id']] = $w['pays'] ?: '—';
-            }
-        }
-
-        $usersMap = [];
-        foreach ($utilisateurRepository->findAll() as $u) {
-            $usersMap[$u->getId()] = [
-                'nom'  => $u->getPrenom() . ' ' . $u->getNom(),
-                'pays' => $userPays[$u->getId()] ?? '—',
-            ];
-        }
-
-        $byUser = [];
-        foreach ($allObjectifs as $objectif) {
-            $wid = $objectif->getWalletId();
-            $uid = $walletToUser[$wid] ?? null;
-            if (!$uid || !isset($usersMap[$uid])) continue;
-
-            $stats = $goalStats->compute($objectif);
-            if (!isset($byUser[$uid])) {
-                $byUser[$uid] = [
-                    'userId'            => $uid,
-                    'userName'          => $usersMap[$uid]['nom'],
-                    'pays'              => $usersMap[$uid]['pays'],
-                    'objectifsAtteints' => [],
-                    'totalCollected'    => 0,
-                ];
-            }
-            if ($stats['progressPct'] >= 100) {
-                $byUser[$uid]['objectifsAtteints'][] = ['objectif' => $objectif, 'stats' => $stats];
-                $byUser[$uid]['totalCollected'] += $stats['totalCollected'];
-            }
-        }
-
-        // ── FIX : trier par totalCollected décroissant (et nb objectifs en priorité)
-        usort($byUser, function ($a, $b) {
-            $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
-            if ($diff !== 0) return $diff;
-            return $b['totalCollected'] <=> $a['totalCollected'];
-        });
-
-        // Garder uniquement ceux qui ont au moins 1 objectif atteint, top 3
-        $topContributeurs = array_slice(
-            array_values(array_filter($byUser, fn($u) => count($u['objectifsAtteints']) > 0)),
-            0, 3
-        );
-
-        return $this->render('objectif/index.html.twig', [
-            'objectifs'        => $objectifsPaginated,
-            'wallets'          => $wallets,
-            'selectedWalletId' => $selectedWalletId,
-            'notifCount'       => $notifService->countUnread(),
-            'topContributeurs' => $topContributeurs,
-        ]);
-    }
-
-    // ── NEW ───────────────────────────────────────────────────────────────
-    #[Route('/new', name: 'objectif_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em): Response
+    /**
+     * Récupère l'utilisateur connecté ou le crée par défaut
+     */
+    private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
     {
-        $walletId = $request->getSession()->get('selected_wallet_id');
-
-        if (!$walletId) {
-            $this->addFlash('error', 'Veuillez sélectionner un wallet avant de créer un objectif.');
-            return $this->redirectToRoute('objectif_index');
-        }
-
-        $objectif = new Objectif();
-        $objectif->setWalletId((int) $walletId);
-
-        $form = $this->createForm(ObjectifType::class, $objectif);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($objectif);
-            $em->flush();
-            $this->addFlash('success', 'Objectif créé avec succès !');
-            return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
-        }
-
-        return $this->render('objectif/new.html.twig', [
-            'form'     => $form,
-            'walletId' => $walletId,
-        ]);
-    }
-
-    // ── NOTIFICATIONS ─────────────────────────────────────────────────────
-    #[Route('/notifications', name: 'notifications_list', methods: ['GET'])]
-    public function notificationsList(NotificationService $notifService): JsonResponse
-    {
-        return $this->json($notifService->getUnread());
-    }
-
-    #[Route('/notifications/read-all', name: 'notifications_read_all', methods: ['POST'])]
-    public function notificationsReadAll(NotificationService $notifService): JsonResponse
-    {
-        $notifService->markAllRead();
-        return $this->json(['ok' => true]);
-    }
-
-    #[Route('/notifications/{key}/read', name: 'notification_mark_read', methods: ['POST'])]
-    public function notificationMarkRead(
-        string              $key,
-        NotificationService $notifService
-    ): JsonResponse {
-        $notifService->markRead($key);
-        return $this->json(['ok' => true]);
-    }
-
-    // ── TOP CONTRIBUTIONS ─────────────────────────────────────────────────
-    #[Route('/top-contributions/detail/{userId}', name: 'top_contributions', methods: ['GET'])]
-    public function topContributionsDetail(
-        int                   $userId,
-        ObjectifRepository    $objectifRepo,
-        GoalStatisticsService $goalStats,
-        Connection            $connection,
-        UtilisateurRepository $utilisateurRepository
-    ): Response {
         $user = $this->getUser();
-        if (!$user) {
-            throw $this->createAccessDeniedException('Vous devez être connecté.');
+       
+        if ($user instanceof Utilisateur) {
+            return $user;
         }
-
-        $utilisateur = $utilisateurRepository->find($userId);
-        if (!$utilisateur) {
-            throw $this->createNotFoundException('Utilisateur introuvable.');
+       
+        // Chercher un utilisateur par défaut
+        $defaultUser = $entityManager->getRepository(Utilisateur::class)->find(1);
+        if ($defaultUser) {
+            return $defaultUser;
         }
-
-        // Récupérer les wallets de cet utilisateur
-        $walletsData = $connection->fetchAllAssociative(
-            'SELECT id, pays FROM wallet WHERE utilisateur_id = ?', [$userId]
-        );
-        $walletIds = array_column($walletsData, 'id');
-        $pays      = $walletsData[0]['pays'] ?? '—';
-
-        // ── FIX : Calculer le rang correctement ──
-        $allObjectifs   = $objectifRepo->findAll();
-        $allWalletsData = $connection->fetchAllAssociative('SELECT id, utilisateur_id FROM wallet');
-        $walletToUser   = [];
-        foreach ($allWalletsData as $w) {
-            $walletToUser[$w['id']] = $w['utilisateur_id'];
+       
+        $defaultUser = $entityManager->getRepository(Utilisateur::class)->findOneBy(['gmail' => 'admin@findinari.com']);
+        if ($defaultUser) {
+            return $defaultUser;
         }
-
-        // Construire $byUser en conservant le userId comme clé séparée
-        $byUser = [];
-        foreach ($allObjectifs as $objectif) {
-            $wid = $objectif->getWalletId();
-            $uid = $walletToUser[$wid] ?? null;
-            if (!$uid) continue;
-
-            $stats = $goalStats->compute($objectif);
-            if (!isset($byUser[$uid])) {
-                $byUser[$uid] = [
-                    'userId'            => $uid,
-                    'objectifsAtteints' => [],
-                    'totalCollected'    => 0,
-                ];
-            }
-            if ($stats['progressPct'] >= 100) {
-                $byUser[$uid]['objectifsAtteints'][] = true;
-                $byUser[$uid]['totalCollected'] += $stats['totalCollected'];
-            }
-        }
-
-        // Filtrer ceux qui ont au moins 1 objectif atteint
-        $byUser = array_values(array_filter($byUser, fn($u) => count($u['objectifsAtteints']) > 0));
-
-        // Trier de la même façon que dans index()
-        usort($byUser, function ($a, $b) {
-            $diff = count($b['objectifsAtteints']) - count($a['objectifsAtteints']);
-            if ($diff !== 0) return $diff;
-            return $b['totalCollected'] <=> $a['totalCollected'];
-        });
-
-        // ── FIX : chercher le rang via userId stocké dans chaque entrée
-        $rank = 1;
-        foreach ($byUser as $entry) {
-            if ((int)$entry['userId'] === $userId) break;
-            $rank++;
-        }
-
-        // Construire les données détaillées pour cet utilisateur
-        $objectifsAtteints = [];
-        if ($walletIds) {
-            $objectifs = $objectifRepo->findBy(['walletId' => $walletIds]);
-            foreach ($objectifs as $objectif) {
-                $stats = $goalStats->compute($objectif);
-                if ($stats['progressPct'] >= 100) {
-                    $objectifsAtteints[] = [
-                        'objectif'      => $objectif,
-                        'stats'         => $stats,
-                        'contributions' => $objectif->getContributiongoals()->toArray(),
-                    ];
-                }
-            }
-        }
-
-        $userData = [
-            'userId'            => $userId,
-            'userName'          => $utilisateur->getPrenom() . ' ' . $utilisateur->getNom(),
-            'pays'              => $pays,
-            'rank'              => $rank,
-            'objectifsAtteints' => $objectifsAtteints,
-        ];
-
-        return $this->render('objectif/top_contributions_detail.html.twig', [
-            'userData' => $userData,
-        ]);
+       
+        // Créer un utilisateur par défaut
+        $newUser = new Utilisateur();
+        $newUser->setNom('Admin');
+        $newUser->setPrenom('User');
+        $newUser->setGmail('admin@findinari.com');
+        $newUser->setMdp('password');
+        $newUser->setRole('ADMIN');
+        $newUser->setStatut('ACTIF');
+        $newUser->setDateCreation(new \DateTime());
+        $newUser->setDateModification(new \DateTime());
+        $newUser->setFaceEnabled(false);
+       
+        $entityManager->persist($newUser);
+        $entityManager->flush();
+       
+        return $newUser;
     }
 
-    // ── HISTORIQUE ────────────────────────────────────────────────────────
-    #[Route('/historique', name: 'objectif_historique', methods: ['GET'])]
-    public function historique(
-        ObjectifRepository    $repo,
-        GoalStatisticsService $goalStats,
-        Connection            $connection,
-        Request               $request,
-        NotificationService   $notifService,
-        PaginatorInterface    $paginator
-    ): Response {
-        $user   = $this->getUser();
-        $userId = $user?->getId() ?? 1;
+    /**
+     * Récupère l'ID de l'utilisateur connecté
+     */
+    private function getCurrentUserId(EntityManagerInterface $entityManager): int
+    {
+        $user = $this->getUserOrCreate($entityManager);
+        $userId = $user->getId();
+       
+        if ($userId === null) {
+            throw new \RuntimeException('User ID cannot be null');
+        }
+       
+        return $userId;
+    }
 
-        if ($this->isGranted('ROLE_ADMIN')) {
-            $walletsRaw = $connection->fetchAllAssociative(
-                'SELECT id, pays, devise, solde FROM wallet'
-            );
+    #[Route('/', name: 'app_objectif_index', methods: ['GET'])]
+    public function index(
+        ObjectifRepository $objectifRepository,
+        WalletRepository $walletRepository,
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $userId = $this->getCurrentUserId($entityManager);
+       
+        $search = $request->query->get('search');
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
+       
+        // Récupérer les wallets de l'utilisateur
+        $userWallets = $walletRepository->findBy(['utilisateur' => $userId]);
+        $walletIds = [];
+        foreach ($userWallets as $wallet) {
+            $walletIds[] = $wallet->getId();
+        }
+       
+        if (empty($walletIds)) {
+            $objectifs = [];
+            $total = 0;
+            $totalPages = 1;
         } else {
-            $walletsRaw = $connection->fetchAllAssociative(
-                'SELECT id, pays, devise, solde FROM wallet WHERE utilisateur_id = ?',
-                [$userId]
-            );
-        }
-
-        $walletIds = array_column($walletsRaw, 'id');
-        $objectifs = $walletIds ? $repo->findBy(['walletId' => $walletIds]) : [];
-
-        $historique = [];
-        $enCours    = [];
-
-        foreach ($objectifs as $objectif) {
-            $stats = $goalStats->compute($objectif);
-
-            if ($objectif->getStatut() === 'TERMINE') {
-                $contribs = $objectif->getContributiongoals()->toArray();
-                usort($contribs, fn($a, $b) => $b->getDate() <=> $a->getDate());
-                $dateAtteinte = count($contribs) > 0 ? $contribs[0]->getDate() : null;
-
-                $dureeReelle = null;
-                if ($dateAtteinte && $objectif->getDateDebut()) {
-                    $dureeReelle = (int) $objectif->getDateDebut()->diff($dateAtteinte)->days;
-                }
-
-                $historique[] = [
-                    'objectif'     => $objectif,
-                    'stats'        => $stats,
-                    'dateAtteinte' => $dateAtteinte,
-                    'dureeReelle'  => $dureeReelle,
-                ];
-            } else {
-                $enCours[] = [
-                    'objectif' => $objectif,
-                    'stats'    => $stats,
-                ];
+            $qb = $objectifRepository->createQueryBuilder('o')
+                ->where('o.walletId IN (:walletIds)')
+                ->setParameter('walletIds', $walletIds);
+           
+            if ($search) {
+                $qb->andWhere('o.titre LIKE :search')
+                   ->setParameter('search', '%' . $search . '%');
             }
+           
+            $total = (clone $qb)->select('COUNT(o.id)')->getQuery()->getSingleScalarResult();
+            $totalPages = max(1, ceil($total / $limit));
+           
+            if ($page < 1) $page = 1;
+            if ($page > $totalPages) $page = $totalPages;
+           
+            $objectifs = $qb->setFirstResult(($page - 1) * $limit)
+                            ->setMaxResults($limit)
+                            ->getQuery()
+                            ->getResult();
         }
-
-        usort($historique, function ($a, $b) {
-            if (!$a['dateAtteinte'] || !$b['dateAtteinte']) return 0;
-            return $b['dateAtteinte'] <=> $a['dateAtteinte'];
-        });
-
-        $historiquePaginated = $paginator->paginate(
-            $historique,
-            $request->query->getInt('pageH', 1),
-            5,
-            ['pageParameterName' => 'pageH']
-        );
-
-        $enCoursPaginated = $paginator->paginate(
-            $enCours,
-            $request->query->getInt('pageE', 1),
-            1,
-            ['pageParameterName' => 'pageE']
-        );
-
-        $notifService->generateForObjectifs($objectifs);
-
-        return $this->render('objectif/historique.html.twig', [
-            'historique' => $historiquePaginated,
-            'enCours'    => $enCoursPaginated,
-            'notifCount' => $notifService->countUnread(),
+       
+        return $this->render('objective/index.html.twig', [
+            'objectifs' => $objectifs,
+            'search' => $search,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total,
         ]);
     }
 
-    // ── SIMULER ───────────────────────────────────────────────────────────
-    #[Route('/{id}/simuler', name: 'objectif_simuler', methods: ['POST'])]
-    public function simuler(
-        Request               $request,
-        Objectif              $objectif,
-        GoalStatisticsService $goalStats
-    ): JsonResponse {
-        $dailyAmount = (float) $request->request->get('montant_quotidien', 0);
-
-        if ($dailyAmount <= 0) {
-            return $this->json(['error' => 'Le montant journalier doit être positif.'], 400);
-        }
-
-        $simulation = $goalStats->simulateDailyContribution($objectif, $dailyAmount);
-
-        if (!$simulation) {
-            return $this->json(['message' => 'Cet objectif est déjà atteint !']);
-        }
-
-        return $this->json([
-            'predictedDate'  => $simulation['predictedDate']->format('d/m/Y'),
-            'daysNeeded'     => $simulation['daysNeeded'],
-            'velocityPerDay' => $simulation['velocityPerDay'],
-            'remaining'      => $simulation['remaining'],
-            'confidence'     => $simulation['confidence'],
-        ]);
-    }
-
-    // ── EVENTS CALENDRIER ─────────────────────────────────────────────────
-    #[Route('/{id}/events', name: 'objectif_events', methods: ['GET'])]
-    public function events(Objectif $objectif): JsonResponse
-    {
-        $events = [];
-
-        foreach ($objectif->getContributiongoals() as $contrib) {
-            $events[] = [
-                'title'         => number_format($contrib->getMontant(), 2, ',', ' ') . ' €',
-                'start'         => $contrib->getDate()->format('Y-m-d'),
-                'color'         => '#1a9e6e',
-                'textColor'     => '#fff',
-                'extendedProps' => ['montant' => $contrib->getMontant()],
-                'type'    => 'contribution',
-                'montant' => $contrib->getMontant(),
-            ];
-        }
-
-        if ($objectif->getStatut() === 'TERMINE') {
-            $last = $objectif->getContributiongoals()->last();
-            if ($last) {
-                $events[] = [
-                    'title'     => '🏆 Objectif atteint',
-                    'start'     => $last->getDate()->format('Y-m-d'),
-                    'color'     => '#f39c12',
-                    'textColor' => '#fff',
-                    'extendedProps'   => ['type' => 'atteint'],
-                ];
-            }
-        }
-
-        return $this->json($events);
-    }
-
-    // ── SHOW ──────────────────────────────────────────────────────────────
-    #[Route('/{id}', name: 'objectif_show', methods: ['GET'])]
-    public function show(Objectif $objectif, GoalStatisticsService $goalStats): Response
-    {
-        $stats = $goalStats->compute($objectif);
-        return $this->render('objectif/show.html.twig', [
-            'objectif' => $objectif,
-            'stats'    => $stats,
-        ]);
-    }
-
-    // ── EDIT ──────────────────────────────────────────────────────────────
-    #[Route('/{id}/edit', name: 'objectif_edit', methods: ['GET', 'POST'])]
-    public function edit(
-        Request                $request,
-        Objectif               $objectif,
-        EntityManagerInterface $em
+    #[Route('/new', name: 'app_objectif_new', methods: ['GET', 'POST'])]
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
     ): Response {
-        $walletId = $objectif->getWalletId();
-        $form = $this->createForm(ObjectifType::class, $objectif);
+        $userId = $this->getCurrentUserId($entityManager);
+       
+        $objectif = new Objectif();
+       
+        // Récupérer les wallets de l'utilisateur
+        $walletRepository = $entityManager->getRepository(Wallet::class);
+        $wallets = $walletRepository->findBy(['utilisateur' => $userId]);
+       
+        $form = $this->createForm(ObjectifType::class, $objectif, [
+            'wallets' => $wallets
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            $this->addFlash('success', 'Objectif modifié avec succès !');
-            return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
+            $entityManager->persist($objectif);
+            $entityManager->flush();
+
+            $notificationService->addNotification(
+                '🎯 New Financial Goal Created',
+                sprintf('Goal "%s" has been created with target amount %.2f DT', $objectif->getTitre(), $objectif->getMontant()),
+                'success'
+            );
+
+            $this->addFlash('success', 'Goal created successfully!');
+            return $this->redirectToRoute('app_objectif_index');
         }
 
-        return $this->render('objectif/edit.html.twig', [
+        return $this->render('objective/new.html.twig', [
             'objectif' => $objectif,
-            'form'     => $form,
+            'form' => $form,
+            'wallets' => $wallets,
         ]);
     }
 
-    // ── DELETE ────────────────────────────────────────────────────────────
-    #[Route('/{id}/delete', name: 'objectif_delete', methods: ['POST'])]
+    #[Route('/{id}', name: 'app_objectif_show', methods: ['GET'])]
+    public function show(
+        int $id,
+        ObjectifRepository $objectifRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $userId = $this->getCurrentUserId($entityManager);
+       
+        $objectif = $objectifRepository->find($id);
+       
+        if (!$objectif) {
+            throw $this->createNotFoundException('Goal not found');
+        }
+       
+        // Vérifier que l'objectif appartient à l'utilisateur
+        $walletRepository = $entityManager->getRepository(Wallet::class);
+        $wallet = $walletRepository->find($objectif->getWalletId());
+       
+        if (!$wallet || $wallet->getUtilisateur()->getId() !== $userId) {
+            throw $this->createNotFoundException('Goal not found');
+        }
+       
+        $contributions = $objectif->getContributiongoals();
+        $totalContributed = 0;
+        foreach ($contributions as $contribution) {
+            $totalContributed += $contribution->getMontant();
+        }
+       
+        $progress = $objectif->getMontant() > 0 ? ($totalContributed / $objectif->getMontant()) * 100 : 0;
+       
+        return $this->render('objective/show.html.twig', [
+            'objectif' => $objectif,
+            'contributions' => $contributions,
+            'totalContributed' => $totalContributed,
+            'progress' => round($progress, 2),
+        ]);
+    }
+
+    #[Route('/{id}/edit', name: 'app_objectif_edit', methods: ['GET', 'POST'])]
+    public function edit(
+        int $id,
+        Request $request,
+        ObjectifRepository $objectifRepository,
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
+    ): Response {
+        $userId = $this->getCurrentUserId($entityManager);
+       
+        $objectif = $objectifRepository->find($id);
+       
+        if (!$objectif) {
+            throw $this->createNotFoundException('Goal not found');
+        }
+       
+        // Vérifier que l'objectif appartient à l'utilisateur
+        $walletRepository = $entityManager->getRepository(Wallet::class);
+        $wallet = $walletRepository->find($objectif->getWalletId());
+       
+        if (!$wallet || $wallet->getUtilisateur()->getId() !== $userId) {
+            throw $this->createNotFoundException('Goal not found');
+        }
+       
+        $wallets = $walletRepository->findBy(['utilisateur' => $userId]);
+       
+        $form = $this->createForm(ObjectifType::class, $objectif, [
+            'wallets' => $wallets
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+           
+            $notificationService->addNotification(
+                '✏️ Financial Goal Updated',
+                sprintf('Goal "%s" has been updated', $objectif->getTitre()),
+                'info'
+            );
+           
+            $this->addFlash('success', 'Goal updated successfully!');
+            return $this->redirectToRoute('app_objectif_index');
+        }
+
+        return $this->render('objective/edit.html.twig', [
+            'objectif' => $objectif,
+            'form' => $form,
+            'wallets' => $wallets,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_objectif_delete', methods: ['POST'])]
     public function delete(
-        Request                $request,
-        Objectif               $objectif,
-        EntityManagerInterface $em,
-        Connection             $connection
+        int $id,
+        Request $request,
+        ObjectifRepository $objectifRepository,
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
     ): Response {
-        $walletId = $objectif->getWalletId();
-
-        if ($this->isCsrfTokenValid('delete' . $objectif->getId(), $request->request->get('_token'))) {
-            foreach ($objectif->getContributiongoals() as $contrib) {
-                $connection->executeStatement(
-                    'UPDATE wallet SET solde = solde + ? WHERE id = ?',
-                    [$contrib->getMontant(), $walletId]
-                );
-            }
-
-            $em->remove($objectif);
-            $em->flush();
-            $this->addFlash('success', 'Objectif supprimé et contributions remboursées dans le wallet.');
+        $userId = $this->getCurrentUserId($entityManager);
+       
+        $objectif = $objectifRepository->find($id);
+       
+        if (!$objectif) {
+            throw $this->createNotFoundException('Goal not found');
+        }
+       
+        // Vérifier que l'objectif appartient à l'utilisateur
+        $walletRepository = $entityManager->getRepository(Wallet::class);
+        $wallet = $walletRepository->find($objectif->getWalletId());
+       
+        if (!$wallet || $wallet->getUtilisateur()->getId() !== $userId) {
+            throw $this->createNotFoundException('Goal not found');
+        }
+       
+        if ($this->isCsrfTokenValid('delete'.$objectif->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($objectif);
+            $entityManager->flush();
+           
+            $notificationService->addNotification(
+                '🗑️ Financial Goal Deleted',
+                sprintf('Goal "%s" has been deleted', $objectif->getTitre()),
+                'danger'
+            );
+           
+            $this->addFlash('success', 'Goal deleted successfully!');
         }
 
-        return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
+        return $this->redirectToRoute('app_objectif_index');
     }
 
-    // ── CONTRIBUER ────────────────────────────────────────────────────────
-    #[Route('/{id}/contribuer', name: 'objectif_contribuer', methods: ['POST'])]
-    public function contribuer(
-        Request                $request,
-        Objectif               $objectif,
-        EntityManagerInterface $em,
-        Connection             $connection,
-        NotificationService    $notifService
-    ): Response {
-        $montant  = (float) $request->request->get('montant');
-        $walletId = $objectif->getWalletId();
-
-        if ($montant > 0) {
-            $wallet = $connection->fetchAssociative(
-                'SELECT * FROM wallet WHERE id = ?',
-                [$walletId]
-            );
-
-            if (!$wallet || $wallet['solde'] < $montant) {
-                $this->addFlash('error', 'Solde insuffisant dans ce wallet !');
-                return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
-            }
-
-            if ($montant > $objectif->getMontant()) {
-                $this->addFlash('error', sprintf(
-                    'Le montant de la contribution (%.2f) ne peut pas dépasser le montant cible (%.2f) !',
-                    $montant,
-                    $objectif->getMontant()
-                ));
-                return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
-            }
-
-            $contribution = new Contributiongoal();
-            $contribution->setMontant($montant);
-            $contribution->setDate(new \DateTime());
-            $contribution->setObjectif($objectif);
-            $em->persist($contribution);
-
-            $connection->executeStatement(
-                'UPDATE wallet SET solde = solde - ? WHERE id = ?',
-                [$montant, $walletId]
-            );
-
-            $totalContrib = $montant;
-            foreach ($objectif->getContributiongoals() as $c) {
-                $totalContrib += $c->getMontant();
-            }
-
-            $objectif->setStatut($totalContrib >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
-            $em->flush();
-
-            $notifService->generateForObjectifs([$objectif]);
-
-            $this->addFlash('success', 'Contribution de ' . $montant . ' ajoutée !');
+    #[Route('/contribute/{id}', name: 'app_objectif_contribute', methods: ['POST'])]
+    public function contribute(
+        int $id,
+        Request $request,
+        ObjectifRepository $objectifRepository,
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
+    ): JsonResponse {
+        $userId = $this->getCurrentUserId($entityManager);
+       
+        $data = json_decode($request->getContent(), true);
+        $amount = $data['amount'] ?? 0;
+       
+        if ($amount <= 0) {
+            return $this->json(['success' => false, 'error' => 'Amount must be greater than 0'], 400);
         }
-
-        return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
-    }
-
-    // ── DELETE CONTRIBUTION ───────────────────────────────────────────────
-    #[Route('/contrib/{id}/delete', name: 'contribution_delete', methods: ['POST'])]
-    public function deleteContribution(
-        Request                $request,
-        Contributiongoal       $contribution,
-        EntityManagerInterface $em,
-        Connection             $connection,
-        NotificationService    $notifService
-    ): Response {
-        $objectif = $contribution->getObjectif();
-        $walletId = $objectif->getWalletId();
-        $montant  = $contribution->getMontant();
-
-        if ($this->isCsrfTokenValid('delete_contrib' . $contribution->getId(), $request->request->get('_token'))) {
-            $connection->executeStatement(
-                'UPDATE wallet SET solde = solde + ? WHERE id = ?',
-                [$montant, $walletId]
-            );
-
-            $em->remove($contribution);
-            $em->flush();
-
-            $totalContrib = 0;
-            foreach ($objectif->getContributiongoals() as $c) {
-                $totalContrib += $c->getMontant();
-            }
-            $objectif->setStatut($totalContrib >= $objectif->getMontant() ? 'TERMINE' : 'EN_COURS');
-            $em->flush();
-
-            $notifService->generateForObjectifs([$objectif]);
-
-            $this->addFlash('success', 'Contribution supprimée, ' . $montant . ' remboursé dans le wallet !');
+       
+        $objectif = $objectifRepository->find($id);
+       
+        if (!$objectif) {
+            return $this->json(['success' => false, 'error' => 'Goal not found'], 404);
         }
-
-        return $this->redirectToRoute('objectif_index', ['wallet_id' => $walletId]);
+       
+        // Vérifier que l'objectif appartient à l'utilisateur
+        $walletRepository = $entityManager->getRepository(Wallet::class);
+        $wallet = $walletRepository->find($objectif->getWalletId());
+       
+        if (!$wallet || $wallet->getUtilisateur()->getId() !== $userId) {
+            return $this->json(['success' => false, 'error' => 'Goal not found'], 404);
+        }
+       
+        // Créer la contribution
+        $contribution = new Contributiongoal();
+        $contribution->setObjectif($objectif);
+        $contribution->setMontant($amount);
+        $contribution->setDate(new \DateTime());
+       
+        $entityManager->persist($contribution);
+        $entityManager->flush();
+       
+        // Calculer la progression
+        $totalContributed = 0;
+        foreach ($objectif->getContributiongoals() as $contributionGoal) {
+            $totalContributed += $contributionGoal->getMontant();
+        }
+       
+        $progress = $objectif->getMontant() > 0 ? ($totalContributed / $objectif->getMontant()) * 100 : 0;
+       
+        $notificationService->addNotification(
+            '💰 Contribution Added',
+            sprintf('You contributed %.2f DT to goal "%s"', $amount, $objectif->getTitre()),
+            'success'
+        );
+       
+        return $this->json([
+            'success' => true,
+            'message' => 'Contribution added successfully',
+            'totalContributed' => $totalContributed,
+            'progress' => round($progress, 2),
+            'remaining' => $objectif->getMontant() - $totalContributed
+        ]);
     }
 }
