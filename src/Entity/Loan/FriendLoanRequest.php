@@ -14,7 +14,8 @@ class FriendLoanRequest
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private int|null $id = null;
+    private ?int $id = null;
+
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, name: 'sender_id')]
     private ?Utilisateur $sender = null;
@@ -23,11 +24,13 @@ class FriendLoanRequest
     #[ORM\JoinColumn(nullable: false, name: 'receiver_id')]
     private ?Utilisateur $receiver = null;
 
+    // ✅ CORRECTION : DECIMAL doit être string, pas float
     #[ORM\Column(type: Types::DECIMAL, precision: 15, scale: 2)]
-    private ?float $amount = null;
+    private ?string $amount = null;
 
+    // ✅ CORRECTION : DECIMAL doit être string, pas float
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
-    private ?float $interestRate = null;
+    private ?string $interestRate = null;
 
     #[ORM\Column]
     private ?int $durationMonths = null;
@@ -84,25 +87,53 @@ class FriendLoanRequest
         return $this;
     }
 
-    public function getAmount(): ?float
+    /**
+     * Retourne le montant (string pour compatibilité DECIMAL)
+     */
+    public function getAmount(): ?string
     {
         return $this->amount;
     }
 
-    public function setAmount(float $amount): self
+    /**
+     * Retourne le montant en float pour les calculs
+     */
+    public function getAmountFloat(): ?float
     {
-        $this->amount = $amount;
+        return $this->amount !== null ? (float)$this->amount : null;
+    }
+
+    /**
+     * Set le montant (accepte string ou float)
+     */
+    public function setAmount(string|float $amount): self
+    {
+        $this->amount = is_float($amount) ? (string)$amount : $amount;
         return $this;
     }
 
-    public function getInterestRate(): ?float
+    /**
+     * Retourne le taux d'intérêt (string pour compatibilité DECIMAL)
+     */
+    public function getInterestRate(): ?string
     {
         return $this->interestRate;
     }
 
-    public function setInterestRate(float $interestRate): self
+    /**
+     * Retourne le taux d'intérêt en float pour les calculs
+     */
+    public function getInterestRateFloat(): ?float
     {
-        $this->interestRate = $interestRate;
+        return $this->interestRate !== null ? (float)$this->interestRate : null;
+    }
+
+    /**
+     * Set le taux d'intérêt (accepte string ou float)
+     */
+    public function setInterestRate(string|float $interestRate): self
+    {
+        $this->interestRate = is_float($interestRate) ? (string)$interestRate : $interestRate;
         return $this;
     }
 

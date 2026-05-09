@@ -17,40 +17,40 @@
                 <div class="card-body p-4">
                     <div class="alert alert-info">
                         <strong><i class="fas fa-user me-2"></i> Lender:</strong>
-                        {{ loan.sender.nom }} {{ loan.sender.prenom }}<br>
+                        {{ loan.sender.nom|default('N/A') }} {{ loan.sender.prenom|default('') }}<br>
                         <strong><i class="fas fa-envelope me-2"></i> Email:</strong>
-                        {{ loan.sender.gmail }}
+                        {{ loan.sender.gmail|default('N/A') }}
                     </div>
 
-                    {% if obligation %}
+                    {% if obligation is defined and obligation %}
                     <div class="alert alert-secondary">
                         <strong><i class="fas fa-chart-line me-2"></i> Obligation:</strong>
-                        {{ obligation.nom }}<br>
-                        <strong>Interest Rate:</strong> {{ obligation.tauxInteret }}%<br>
-                        <strong>Duration:</strong> {{ obligation.duree }} months
+                        {{ obligation.nom|default('Unknown') }}<br>
+                        <strong>Interest Rate:</strong> {{ obligation.tauxInteret|default(0) }}%<br>
+                        <strong>Duration:</strong> {{ obligation.duree|default(0) }} months
                     </div>
                     {% endif %}
 
                     <div class="row mb-3">
                         <div class="col-6">
                             <strong>💰 Amount:</strong>
-                            <span class="text-primary">{{ loan.amount|number_format(2) }} DT</span>
+                            <span class="text-primary">{{ loan.amount|default(0)|number_format(2) }} DT</span>
                         </div>
                         <div class="col-6">
                             <strong>📈 Interest Rate:</strong>
-                            <span class="text-warning">{{ loan.interestRate }}%</span>
+                            <span class="text-warning">{{ loan.interestRate|default(0) }}%</span>
                         </div>
                         <div class="col-6 mt-2">
                             <strong>⏱️ Duration:</strong>
-                            <span>{{ loan.durationMonths }} months</span>
+                            <span>{{ loan.durationMonths|default(0) }} months</span>
                         </div>
                         <div class="col-6 mt-2">
                             <strong>💵 Interest:</strong>
-                            <span class="text-success">{{ interest|number_format(2) }} DT</span>
+                            <span class="text-success">{{ interest|default(0)|number_format(2) }} DT</span>
                         </div>
                         <div class="col-12 mt-2">
                             <strong class="fs-5">💰 Total to repay:</strong>
-                            <span class="fs-5 fw-bold text-success">{{ total|number_format(2) }} DT</span>
+                            <span class="fs-5 fw-bold text-success">{{ total|default(0)|number_format(2) }} DT</span>
                         </div>
                     </div>
 
@@ -65,7 +65,7 @@
                                 <option value="">-- Choose your wallet --</option>
                                 {% for wallet in wallets %}
                                     <option value="{{ wallet.id }}">
-                                        {{ wallet.pays }} - {{ wallet.solde|number_format(2) }} {{ wallet.devise }}
+                                        {{ wallet.pays|default('Unknown') }} - {{ wallet.solde|default(0)|number_format(2) }} {{ wallet.devise|default('DT') }}
                                     </option>
                                 {% endfor %}
                             </select>
@@ -99,7 +99,7 @@
                 <div class="card-footer text-muted text-center rounded-bottom-4 py-3">
                     <small>
                         <i class="fas fa-clock me-1"></i>
-                        This request expires on {{ loan.expiresAt|date('Y-m-d H:i') }}
+                        This request expires on {{ loan.expiresAt ? loan.expiresAt|date('Y-m-d H:i') : 'N/A' }}
                     </small>
                 </div>
             </div>

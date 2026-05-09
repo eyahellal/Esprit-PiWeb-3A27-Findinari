@@ -2,6 +2,7 @@
 
 namespace App\Controller\Loan;
 
+use App\Entity\Loan\FriendLoanRequest;
 use App\Entity\Loan\Investissementobligation;
 use App\Entity\Loan\Obligation;
 use App\Entity\Loan\Wallet;
@@ -15,6 +16,7 @@ use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -67,6 +69,17 @@ class InvestissementobligationController extends AbstractController
         return $newUser;
     }
 
+    private function getCurrentUser(EntityManagerInterface $entityManager): Utilisateur
+    {
+        $user = $this->getUser();
+
+        if ($user instanceof Utilisateur) {
+            return $user;
+        }
+
+        return $this->getUserOrCreate($entityManager);
+    }
+
     private function walletBelongsToUser(Wallet $wallet, Utilisateur $user): bool
     {
         $walletUser = $wallet->getUtilisateur();
@@ -74,11 +87,11 @@ class InvestissementobligationController extends AbstractController
         return $walletUser instanceof Utilisateur && $walletUser->getId() === $user->getId();
     }
 
-    private function calculateMaturityDate(\DateTimeInterface $dateAchat, int $durationInMonths): \DateTimeImmutable
-    {
-        return \DateTimeImmutable::createFromInterface($dateAchat)
-            ->modify('+' . $durationInMonths . ' months');
-    }
+    private function calculateMaturityDate(\DateTimeInterface $dateAchat, int $durationInMonths): \DateTime
+{
+    $date = \DateTime::createFromInterface($dateAchat);
+    return $date->modify('+' . $durationInMonths . ' months');
+}
 
     #[Route('/', name: 'app_investment_index', methods: ['GET'])]
     public function index(
@@ -267,6 +280,53 @@ class InvestissementobligationController extends AbstractController
             'obligation' => $obligation,
         ]);
     }
+
+   #[Route('/my-debts', name: 'app_investment_my_debts', methods: ['GET'])]
+public function myDebts(EntityManagerInterface $em): JsonResponse
+{
+    try {
+        $user = $this->getCurrentUser($em);
+        
+        // Récupérer les demandes ACCEPTÉES où l'utilisateur est l'emprunteur (receiver)
+        $acceptedLoans = $em->getRepository(FriendLoanRequest::class)
+            ->createQueryBuilder('r')
+            ->where('r.receiver = :user')
+            ->andWhere('r.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'accepted')
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+        
+        $debts = [];
+        foreach ($acceptedLoans as $loan) {
+            $amount = (float)$loan->getAmount();
+            $interestRate = (float)$loan->getInterestRate();
+            $durationMonths = $loan->getDurationMonths();
+            
+            $interest = $amount * ($interestRate / 100) * ($durationMonths / 12);
+            $total = $amount + $interest;
+            
+            $createdAt = $loan->getCreatedAt();
+            $maturityDate = $createdAt ? (clone $createdAt)->modify('+' . $durationMonths . ' months') : null;
+            
+            $debts[] = [
+                'id' => $loan->getId(),
+                'lenderName' => ($loan->getSender()?->getNom() ?? '') . ' ' . ($loan->getSender()?->getPrenom() ?? ''),
+                'amount' => number_format($amount, 2),
+                'interestRate' => $interestRate,
+                'durationMonths' => $durationMonths,
+                'totalToRepay' => number_format($total, 2),
+                'maturityDate' => $maturityDate ? $maturityDate->format('d/m/Y') : 'N/A',
+            ];
+        }
+        
+        return $this->json(['debts' => $debts]);
+        
+    } catch (\Exception $e) {
+        return $this->json(['error' => $e->getMessage()], 500);
+    }
+}
 
     #[Route('/{idInvestissement}/edit', name: 'app_investment_edit', methods: ['GET', 'POST'])]
     public function edit(

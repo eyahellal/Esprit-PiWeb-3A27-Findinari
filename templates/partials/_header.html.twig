@@ -526,6 +526,7 @@
                         </div>
                         <div class="notification-content flex-grow-1">
                             <div class="notification-title">${escapeHtml(notif.title)}</div>
+                            <!-- ✅ Afficher le message brut (contient déjà le HTML des boutons) -->
                             <div class="notification-message">${notif.message}</div>
                             <div class="notification-time">
                                 <i class="far fa-clock me-1"></i>${getTimeAgo(notif.createdAt)}
@@ -547,23 +548,6 @@
         });
         
         container.innerHTML = html;
-        
-        // Attacher les événements pour les boutons Accept/Decline dans le HTML
-        document.querySelectorAll('.loan-notification .btn-success').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = this.getAttribute('href');
-                if (url) window.location.href = url;
-            });
-        });
-        
-        document.querySelectorAll('.loan-notification .btn-danger').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const onclick = this.getAttribute('onclick');
-                if (onclick) eval(onclick);
-            });
-        });
     }
     
     function escapeHtml(text) {
@@ -625,6 +609,8 @@
     }
     
     async function markAllNotificationsRead() {
+        if (!confirm('Mark all notifications as read?')) return;
+        
         try {
             await fetch('/notifications/mark-all-read', {
                 method: 'POST',
@@ -638,6 +624,8 @@
     }
     
     async function deleteNotification(id) {
+        if (!confirm('Delete this notification?')) return;
+        
         try {
             await fetch('/notifications/delete', {
                 method: 'POST',
@@ -690,6 +678,7 @@
                 if (data.success) {
                     alert('Request declined');
                     loadNotifications();
+                    location.reload();
                 } else {
                     alert('Error: ' + data.error);
                 }
