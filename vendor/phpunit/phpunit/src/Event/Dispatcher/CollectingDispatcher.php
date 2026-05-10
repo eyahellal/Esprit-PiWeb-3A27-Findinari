@@ -9,36 +9,21 @@
  */
 namespace PHPUnit\Event;
 
-use PHPUnit\Runner\DeprecationCollector\Facade as DeprecationCollector;
-use PHPUnit\Runner\DeprecationCollector\TestTriggeredDeprecationSubscriber;
-
 /**
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
- *
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  */
 final class CollectingDispatcher implements Dispatcher
 {
     private EventCollection $events;
-    private DirectDispatcher $isolatedDirectDispatcher;
 
-    public function __construct(DirectDispatcher $directDispatcher)
+    public function __construct()
     {
-        $this->isolatedDirectDispatcher = $directDispatcher;
-        $this->events                   = new EventCollection;
-
-        $this->isolatedDirectDispatcher->registerSubscriber(new TestTriggeredDeprecationSubscriber(DeprecationCollector::collector()));
+        $this->events = new EventCollection;
     }
 
     public function dispatch(Event $event): void
     {
         $this->events->add($event);
-
-        try {
-            $this->isolatedDirectDispatcher->dispatch($event);
-        } catch (UnknownEventTypeException) {
-            // Do nothing.
-        }
     }
 
     public function flush(): EventCollection

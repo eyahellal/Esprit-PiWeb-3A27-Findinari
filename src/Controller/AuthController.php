@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -579,5 +580,211 @@ public function resetPassword(
     return $this->render('security/reset_password.html.twig', [
         'form' => $form->createView(),
     ]);
+}
+#[Route('/api/login', name: 'api_login_javafx', methods: ['POST'])]
+public function apiLogin(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    UserPasswordHasherInterface $passwordHasher
+): JsonResponse {
+    $data = json_decode($request->getContent(), true);
+
+    $email = trim((string) ($data['email'] ?? ''));
+    $password = (string) ($data['password'] ?? '');
+
+    if (!$email || !$password) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Email and password are required.'
+        ], 400);
+    }
+
+    $user = $entityManager->getRepository(Utilisateur::class)->findOneBy([
+        'gmail' => $email,
+    ]);
+
+    if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Invalid email or password.'
+        ], 401);
+    }
+
+    if ($user->getStatut() !== 'ACTIF') {
+        return $this->json([
+            'success' => false,
+            'message' => 'Please activate your account first.'
+        ], 403);
+    }
+
+    return $this->json([
+        'success' => true,
+        'user' => [
+            'id' => $user->getId(),
+            'gmail' => $user->getGmail(),
+            'nom' => $user->getNom(),
+            'prenom' => $user->getPrenom(),
+            'role' => $user->getRole(),
+            'statut' => $user->getStatut(),
+        ]
+    ]);
+}
+#[Route('/api/users/face-token', name: 'api_user_face_token', methods: ['GET'])]
+public function apiUserFaceToken(
+    Request $request,
+    EntityManagerInterface $entityManager
+): JsonResponse {
+    $email = trim((string) $request->query->get('email', ''));
+
+    if (!$email) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Email is required.'
+        ], 400);
+    }
+
+    $user = $entityManager->getRepository(Utilisateur::class)->findOneBy([
+        'gmail' => $email,
+    ]);
+
+    if (!$user) {
+        return $this->json([
+            'success' => false,
+            'message' => 'User not found.'
+        ], 404);
+    }
+
+    if (!$user->isFaceEnabled() || !$user->getFaceToken()) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Face login is not enabled.'
+        ], 403);
+    }
+
+    return $this->json([
+        'success' => true,
+        'faceToken' => $user->getFaceToken()
+    ]);
+}
+#[Route('/api/register', name: 'api_register_javafx', methods: ['POST'])]
+public function apiRegister(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    UserPasswordHasherInterface $passwordHasher,
+    HttpClientInterface $httpClient
+): JsonResponse {
+    $data = json_decode($request->getContent(), true);
+
+    $prenom = trim((string) ($data['prenom'] ?? ''));
+    $nom = trim((string) ($data['nom'] ?? ''));
+    $gmail = trim((string) ($data['gmail'] ?? ''));
+    $password = (string) ($data['password'] ?? '');
+
+    if (!$prenom || !$nom || !$gmail || !$password) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Missing fields'
+        ], 400);
+    }
+
+    $existingUser = $entityManager
+        ->getRepository(Utilisateur::class)
+        ->findOneBy(['gmail' => $gmail]);
+
+    if ($existingUser) {
+        return $this->json([
+            'success' => false,
+            'message' => 'Email already exists'
+        ], 409);
+    }
+
+    $user = new Utilisateur();
+    $user->setPrenom($prenom);
+    $user->setNom($nom);
+    $user->setGmail($gmail);
+
+    $hashedPassword = $passwordHasher->hashPassword($user, $password);
+    $user->setMdp($hashedPassword);
+
+    $user->setRole('USER');
+    $user->setStatut('INACTIF');
+    $user->setDateCreation(new \DateTime());
+    $user->setDateModification(new \DateTime());
+
+    $entityManager->persist($user);
+    $entityManager->flush();
+
+    $expires = time() + 86400;
+    $email = (string) $user->getGmail();
+
+    $signature = hash_hmac(
+        'sha256',
+        $email . '|' . $expires,
+        $this->env('APP_SECRET')
+    );
+
+    $activationLink = $this->generateUrl(
+        'app_activate_account',
+        [
+            'email' => $email,
+            'expires' => $expires,
+            'signature' => $signature,
+        ],
+        UrlGeneratorInterface::ABSOLUTE_URL
+    );
+
+    try {
+        $mailResponse = $httpClient->request('POST', 'https://api.brevo.com/v3/smtp/email', [
+            'headers' => [
+                'accept' => 'application/json',
+                'api-key' => trim($this->env('BREVO_API_KEY')),
+                'content-type' => 'application/json',
+            ],
+            'json' => [
+                'sender' => [
+                    'name' => trim($this->env('BREVO_SENDER_NAME')),
+                    'email' => trim($this->env('BREVO_SENDER_EMAIL')),
+                ],
+                'to' => [
+                    [
+                        'email' => $user->getGmail(),
+                        'name' => trim(($user->getPrenom() ?? '') . ' ' . ($user->getNom() ?? '')),
+                    ]
+                ],
+                'subject' => 'Activate your Fin Dinari account',
+                'htmlContent' => '
+                    <html>
+                        <body>
+                            <p>Dear ' . htmlspecialchars((string) $user->getPrenom(), ENT_QUOTES, 'UTF-8') . ',</p>
+                            <p>Your account has been created successfully.</p>
+                            <p>Please activate your account by clicking the link below:</p>
+                            <p><a href="' . htmlspecialchars($activationLink, ENT_QUOTES, 'UTF-8') . '">Activate my account</a></p>
+                            <p>This link expires in 24 hours.</p>
+                        </body>
+                    </html>
+                ',
+            ],
+        ]);
+
+        if ($mailResponse->getStatusCode() < 200 || $mailResponse->getStatusCode() >= 300) {
+            return $this->json([
+                'success' => false,
+                'message' => 'User created, but activation email failed.',
+                'brevo_error' => $mailResponse->getContent(false)
+            ], 500);
+        }
+
+    } catch (\Throwable $e) {
+        return $this->json([
+            'success' => false,
+            'message' => 'User created, but activation email failed.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+
+    return $this->json([
+        'success' => true,
+        'message' => 'User created successfully. Activation email sent.'
+    ], 201);
 }
 }
