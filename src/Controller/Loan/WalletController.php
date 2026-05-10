@@ -9,6 +9,7 @@ use App\Repository\WalletRepository;
 use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,69 +20,71 @@ class WalletController extends AbstractController
     private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
     {
         $user = $this->getUser();
-        
-        if (!$user) {
-            $user = $entityManager->getRepository(Utilisateur::class)->find(1);
+
+        if ($user instanceof Utilisateur) {
+            return $user;
         }
-        
-        if (!$user) {
-            $user = $entityManager->getRepository(Utilisateur::class)->findOneBy(['gmail' => 'admin@findinari.com']);
+
+        $defaultUser = $entityManager->getRepository(Utilisateur::class)->find(1);
+        if ($defaultUser instanceof Utilisateur) {
+            return $defaultUser;
         }
-        
-        if (!$user) {
-            $user = new Utilisateur();
-            $user->setNom('Admin');
-            $user->setPrenom('User');
-            $user->setGmail('admin@findinari.com');
-            $user->setMdp('password');
-            $user->setRole('ADMIN');
-            $user->setStatut('ACTIF');
-            $user->setDateCreation(new \DateTime());
-            $user->setDateModification(new \DateTime());
-            $user->setFaceEnabled(false);
-            $entityManager->persist($user);
-            $entityManager->flush();
+
+        $defaultUser = $entityManager->getRepository(Utilisateur::class)
+            ->findOneBy(['gmail' => 'admin@findinari.com']);
+        if ($defaultUser instanceof Utilisateur) {
+            return $defaultUser;
         }
-        
-        return $user;
+
+        $newUser = new Utilisateur();
+        $newUser->setNom('Admin');
+        $newUser->setPrenom('User');
+        $newUser->setGmail('admin@findinari.com');
+        $newUser->setMdp('password');
+        $newUser->setRole('ADMIN');
+        $newUser->setStatut('ACTIF');
+        $newUser->setDateCreation(new \DateTime());
+        $newUser->setDateModification(new \DateTime());
+        $newUser->setFaceEnabled(false);
+        $entityManager->persist($newUser);
+        $entityManager->flush();
+
+        return $newUser;
     }
 
-   #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
+    #[Route('/', name: 'app_wallet_index', methods: ['GET'])]
     public function index(WalletRepository $repository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $search = $request->query->get('search');
-        $page = $request->query->getInt('page', 1);
-        $limit = 6;
-        $user = $this->getUserOrCreate($entityManager);
-        
+        $page   = $request->query->getInt('page', 1);
+        $limit  = 6;
+        $user   = $this->getUserOrCreate($entityManager);
+
         $qb = $repository->createQueryBuilder('w')
             ->where('w.utilisateur = :user')
             ->setParameter('user', $user);
-        
+
         if ($search) {
             $qb->andWhere('w.pays LIKE :search OR w.devise LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
 
-        // Count total results
-        $total = (clone $qb)->select('COUNT(w.id)')->getQuery()->getSingleScalarResult();
-        $totalPages = max(1, ceil($total / $limit));
+        $total = (int) (clone $qb)->select('COUNT(w.id)')->getQuery()->getSingleScalarResult();
+        $totalPages = max(1, (int) ceil($total / $limit));
 
-        if ($page < 1) $page = 1;
-        if ($page > $totalPages) $page = $totalPages;
+        $currentPage = max(1, min($page, $totalPages));
 
-        // Get paginated results
-        $wallets = $qb->setFirstResult(($page - 1) * $limit)
+        $wallets = $qb->setFirstResult((int)(($currentPage - 1) * $limit))
                       ->setMaxResults($limit)
                       ->getQuery()
                       ->getResult();
 
         return $this->render('loan/wallet/index.html.twig', [
-            'wallets' => $wallets,
-            'search' => $search,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
-            'total' => $total,
+            'wallets'     => $wallets,
+            'search'      => $search,
+            'currentPage' => $currentPage,
+            'totalPages'  => $totalPages,
+            'total'       => $total,
         ]);
     }
 
@@ -99,10 +102,9 @@ class WalletController extends AbstractController
             $entityManager->persist($wallet);
             $entityManager->flush();
 
-            // Add notification
             $notificationService->addNotification(
                 '💳 New Wallet Created',
-                sprintf('New wallet in %s with balance %.2f %s', $wallet->getPays(), $wallet->getSolde(), $wallet->getDevise()),
+                sprintf('New wallet in %s with balance %.2f %s', $wallet->getPays(), $wallet->getSolde() ?? 0, $wallet->getDevise()),
                 'success'
             );
 
@@ -122,7 +124,7 @@ class WalletController extends AbstractController
         $user = $this->getUserOrCreate($entityManager);
         $wallet = $repository->findOneBy(['id' => $id, 'utilisateur' => $user]);
         
-        if (!$wallet) {
+        if (!$wallet instanceof Wallet) {
             throw $this->createNotFoundException('Wallet not found');
         }
         
@@ -137,7 +139,7 @@ class WalletController extends AbstractController
         $user = $this->getUserOrCreate($entityManager);
         $wallet = $repository->findOneBy(['id' => $id, 'utilisateur' => $user]);
         
-        if (!$wallet) {
+        if (!$wallet instanceof Wallet) {
             throw $this->createNotFoundException('Wallet not found');
         }
         
@@ -161,17 +163,41 @@ class WalletController extends AbstractController
     {
         $user = $this->getUserOrCreate($entityManager);
         $wallet = $repository->findOneBy(['id' => $id, 'utilisateur' => $user]);
-        
-        if (!$wallet) {
+
+        if (!$wallet instanceof Wallet) {
             throw $this->createNotFoundException('Wallet not found');
         }
-        
-        if ($this->isCsrfTokenValid('delete'.$wallet->getId(), $request->request->get('_token'))) {
+
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete' . $wallet->getId(), $token !== null ? (string)$token : '')) {
             $entityManager->remove($wallet);
             $entityManager->flush();
             $this->addFlash('success', 'Wallet deleted successfully!');
         }
 
         return $this->redirectToRoute('app_wallet_index');
+    }
+
+    // ==============================================
+    // API ROUTE FOR FRIEND LOAN
+    // ==============================================
+    
+    #[Route('/api/list', name: 'app_wallet_api_list', methods: ['GET'])]
+    public function getWalletsList(WalletRepository $walletRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $user = $this->getUserOrCreate($entityManager);
+        $wallets = $walletRepository->findBy(['utilisateur' => $user]);
+        
+        $results = [];
+        foreach ($wallets as $wallet) {
+            $results[] = [
+                'id' => $wallet->getId(),
+                'country' => $wallet->getPays(),
+                'balance' => (float)($wallet->getSolde() ?? 0),
+                'currency' => $wallet->getDevise()
+            ];
+        }
+        
+        return $this->json(['wallets' => $results]);
     }
 }

@@ -33,18 +33,23 @@ class Wallet
     #[ORM\Column(name: 'devise', type: 'string', length: 10)]
     private ?string $devise = null;
 
+    // ✅ Fix — add generic types
+    /** @var Collection<int, Budget> */
     #[ORM\OneToMany(targetEntity: Budget::class, mappedBy: 'wallet')]
     private Collection $budgets;
 
+    /** @var Collection<int, Investissementobligation> */
     #[ORM\OneToMany(targetEntity: Investissementobligation::class, mappedBy: 'wallet')]
     private Collection $investissementobligations;
 
+    /** @var Collection<int, Objectif> */
     #[ORM\OneToMany(targetEntity: Objectif::class, mappedBy: 'wallet')]
     private Collection $objectifs;
 
     #[ORM\OneToOne(targetEntity: Portefeuilleaction::class, mappedBy: 'wallet')]
     private ?Portefeuilleaction $portefeuilleaction = null;
 
+    /** @var Collection<int, Transaction> */
     #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'wallet')]
     private Collection $transactions;
 
@@ -66,10 +71,20 @@ class Wallet
     public function setSolde(?string $solde): self { $this->solde = $solde; return $this; }
     public function getDevise(): ?string { return $this->devise; }
     public function setDevise(string $devise): self { $this->devise = $devise; return $this; }
+
+    // ✅ Fix — add generic return types
+    /** @return Collection<int, Budget> */
     public function getBudgets(): Collection { return $this->budgets; }
+
+    /** @return Collection<int, Investissementobligation> */
     public function getInvestissementobligations(): Collection { return $this->investissementobligations; }
+
+    /** @return Collection<int, Objectif> */
     public function getObjectifs(): Collection { return $this->objectifs; }
+
     public function getPortefeuilleaction(): ?Portefeuilleaction { return $this->portefeuilleaction; }
     public function setPortefeuilleaction(?Portefeuilleaction $portefeuilleaction): self { $this->portefeuilleaction = $portefeuilleaction; return $this; }
+
+    /** @return Collection<int, Transaction> */
     public function getTransactions(): Collection { return $this->transactions; }
 }

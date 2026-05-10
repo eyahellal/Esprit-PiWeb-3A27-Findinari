@@ -27,17 +27,66 @@ class Portefeuilleaction
     #[ORM\Column(name: 'dateCreation', type: 'datetime', nullable: false)]
     private ?\DateTimeInterface $dateCreation = null;
 
+    /**
+     * @var Collection<int, Transactionaction>
+     */
     #[ORM\OneToMany(targetEntity: Transactionaction::class, mappedBy: 'portefeuilleaction')]
     private Collection $transactionactions;
 
-    public function __construct() { $this->transactionactions = new ArrayCollection(); }
-    public function getId(): ?int { return $this->id; }
-    public function setId(int $id): self { $this->id = $id; return $this; }
-    public function getWallet(): ?Wallet { return $this->wallet; }
-    public function setWallet(?Wallet $wallet): self { $this->wallet = $wallet; return $this; }
-    public function getRendement(): ?string { return $this->rendement; }
-    public function setRendement(?string $rendement): self { $this->rendement = $rendement; return $this; }
-    public function getDateCreation(): ?\DateTimeInterface { return $this->dateCreation; }
-    public function setDateCreation(\DateTimeInterface $dateCreation): self { $this->dateCreation = $dateCreation; return $this; }
-    public function getTransactionactions(): Collection { return $this->transactionactions; }
+    public function __construct()
+    {
+        $this->transactionactions = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getWallet(): ?Wallet
+    {
+        return $this->wallet;
+    }
+
+    public function setWallet(?Wallet $wallet): self
+    {
+        $this->wallet = $wallet;
+        return $this;
+    }
+
+    public function getRendement(): ?string
+    {
+        return $this->rendement;
+    }
+
+    public function setRendement(?string $rendement): self
+    {
+        $this->rendement = $rendement;
+        return $this;
+    }
+
+    public function getDateCreation(): ?\DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
+
+    public function setDateCreation(\DateTimeInterface $dateCreation): self
+    {
+        $this->dateCreation = $dateCreation;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Transactionaction>
+     */
+    public function getTransactionactions(): Collection
+    {
+        return $this->transactionactions;
+    }
 }

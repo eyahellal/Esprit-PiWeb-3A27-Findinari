@@ -2,15 +2,12 @@
 
 namespace App\Entity\reclamation;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\TicketRepository;
+use App\Entity\user\Utilisateur;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Entity\user\Utilisateur;
-
-
-use App\Repository\TicketRepository;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ORM\Table(name: 'ticket')]
@@ -27,7 +24,60 @@ class Ticket
     public const PRIORITY_MEDIUM = 'Medium';
     public const PRIORITY_HIGH = 'High';
 
-  
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'tickets')]
+    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id')]
+    private ?Utilisateur $utilisateur = null;
+
+    #[ORM\Column(type: 'text', nullable: false)]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(min: 10, minMessage: 'La description doit comporter au moins {{ limit }} caractères')]
+    private ?string $description = null;
+
+    #[ORM\Column(name: 'imageUrl', type: 'string', nullable: true)]
+    private ?string $imageUrl = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $deadline = null;
+
+    #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire')]
+    #[Assert\Length(min: 5, minMessage: 'Le titre doit comporter au moins {{ limit }} caractères')]
+    private ?string $titre = null;
+
+    #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'Le type est obligatoire')]
+    private ?string $type = null;
+
+    #[ORM\Column(type: 'string', nullable: false)]
+    private ?string $statut = null;
+
+    #[ORM\Column(type: 'string', nullable: false)]
+    #[Assert\NotBlank(message: 'La priorité est obligatoire')]
+    private ?string $priorite = null;
+
+    #[ORM\Column(name: 'dateCreation', type: 'datetime', nullable: false)]
+    private ?\DateTimeInterface $dateCreation = null;
+
+    #[ORM\Column(name: 'dateFermeture', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateFermeture = null;
+
+    /**
+     * Correction PHPStan : Définition des types génériques (Ligne 286)
+     * @var Collection<int, Message>
+     */
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'ticket', cascade: ['remove'])]
+    private Collection $messages;
+
+    public function __construct()
+    {
+        $this->messages = new ArrayCollection();
+    }
+
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function updateDeadline(): void
@@ -37,24 +87,19 @@ class Ticket
             
             switch ($this->priorite) {
                 case self::PRIORITY_HIGH:
-                    $deadline->modify('+2 hours'); // 2 heures pour High
+                    $deadline->modify('+2 hours');
                     break;
                 case self::PRIORITY_MEDIUM:
-                    $deadline->modify('+24 hours'); // 24 heures pour Medium
+                    $deadline->modify('+24 hours');
                     break;
                 case self::PRIORITY_LOW:
                 default:
-                    $deadline->modify('+48 hours'); // 48 heures pour Low
+                    $deadline->modify('+48 hours');
                     break;
             }
-            // On met à jour la propriété deadline qui sera sauvegardée en DB
             $this->deadline = $deadline;
         }
     }
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
 
     public function getId(): ?int
     {
@@ -67,10 +112,6 @@ class Ticket
         return $this;
     }
 
-    #[ORM\ManyToOne(targetEntity: Utilisateur::class, inversedBy: 'tickets')]
-    #[ORM\JoinColumn(name: 'utilisateur_id', referencedColumnName: 'id')]
-    private ?Utilisateur $utilisateur = null;
-
     public function getUtilisateur(): ?Utilisateur
     {
         return $this->utilisateur;
@@ -81,11 +122,6 @@ class Ticket
         $this->utilisateur = $utilisateur;
         return $this;
     }
-
-    #[ORM\Column(type: 'text', nullable: false)]
-    #[Assert\NotBlank(message: 'La description est obligatoire')]
-    #[Assert\Length(min: 10, minMessage: 'La description doit comporter au moins {{ limit }} caractères')]
-    private ?string $description = null;
 
     public function getDescription(): ?string
     {
@@ -98,9 +134,6 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(name: 'imageUrl', type: 'string', nullable: true)]
-    private ?string $imageUrl = null;
-
     public function getImageUrl(): ?string
     {
         return $this->imageUrl;
@@ -112,33 +145,24 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $deadline = null;
-
-    /**
-     * Calcule le deadline dynamiquement. Même si on modifie la dateCreation ou la priorité
-     * directement en base de données, ce getter renverra toujours la valeur correcte.
-     */
     public function getDeadline(): ?\DateTimeInterface
     {
         if (!$this->dateCreation) {
-            return null; // Pas de date de création = pas de deadline possible
+            return null;
         }
 
-        // On crée un nouvel objet DateTime à partir de la date de création
         $deadline = \DateTime::createFromInterface($this->dateCreation);
         
-        // On applique la logique de délai (SLA) selon la priorité
         switch ($this->priorite) {
             case self::PRIORITY_HIGH:
-                $deadline->modify('+2 hours'); // +2h pour High
+                $deadline->modify('+2 hours');
                 break;
             case self::PRIORITY_MEDIUM:
-                $deadline->modify('+24 hours'); // +24h pour Medium
+                $deadline->modify('+24 hours');
                 break;
             case self::PRIORITY_LOW:
             default:
-                $deadline->modify('+48 hours'); // +48h pour Low (par défaut)
+                $deadline->modify('+48 hours');
                 break;
         }
 
@@ -151,11 +175,6 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    #[Assert\NotBlank(message: 'Le titre est obligatoire')]
-    #[Assert\Length(min: 5, minMessage: 'Le titre doit comporter au moins {{ limit }} caractères')]
-    private ?string $titre = null;
-
     public function getTitre(): ?string
     {
         return $this->titre;
@@ -166,10 +185,6 @@ class Ticket
         $this->titre = $titre;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    #[Assert\NotBlank(message: 'Le type est obligatoire')]
-    private ?string $type = null;
 
     public function getType(): ?string
     {
@@ -182,9 +197,6 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(type: 'string', nullable: false)]
-    private ?string $statut = null;
-
     public function getStatut(): ?string
     {
         return $this->statut;
@@ -195,10 +207,6 @@ class Ticket
         $this->statut = $statut;
         return $this;
     }
-
-    #[ORM\Column(type: 'string', nullable: false)]
-    #[Assert\NotBlank(message: 'La priorité est obligatoire')]
-    private ?string $priorite = null;
 
     public function getPriorite(): ?string
     {
@@ -211,9 +219,6 @@ class Ticket
         return $this;
     }
 
-    #[ORM\Column(name: 'dateCreation', type: 'datetime', nullable: false)]
-    private ?\DateTimeInterface $dateCreation = null;
-
     public function getDateCreation(): ?\DateTimeInterface
     {
         return $this->dateCreation;
@@ -224,9 +229,6 @@ class Ticket
         $this->dateCreation = $dateCreation;
         return $this;
     }
-
-    #[ORM\Column(name: 'dateFermeture', type: 'datetime', nullable: true)]
-    private ?\DateTimeInterface $dateFermeture = null;
 
     public function getDateFermeture(): ?\DateTimeInterface
     {
@@ -239,45 +241,38 @@ class Ticket
         return $this;
     }
 
-#[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'ticket', cascade: ['remove'])]  
-  private Collection $messages;
-
-    public function __construct()
-    {
-        $this->messages = new ArrayCollection();
-    }
-
     /**
      * @return Collection<int, Message>
      */
     public function getMessages(): Collection
     {
-        if (!$this->messages instanceof Collection) {
-            $this->messages = new ArrayCollection();
-        }
+        // Correction PHPStan : Suppression de l'instanceof redondant (Ligne 300)
         return $this->messages;
     }
 
     public function addMessage(Message $message): self
     {
-        if (!$this->getMessages()->contains($message)) {
-            $this->getMessages()->add($message);
+        if (!$this->messages->contains($message)) {
+            $this->messages->add($message);
         }
         return $this;
     }
 
     public function removeMessage(Message $message): self
     {
-        $this->getMessages()->removeElement($message);
+        $this->messages->removeElement($message);
         return $this;
     }
 
     public function isBreached(): bool
     {
-        if (!$this->getDeadline() || in_array($this->statut, [self::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'])) {
+        $deadline = $this->getDeadline();
+        if (!$deadline || in_array($this->statut, [self::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
             return false;
         }
 
-        return new \DateTime() > $this->getDeadline();
+        return new \DateTime() > $deadline;
     }
 }
+
+

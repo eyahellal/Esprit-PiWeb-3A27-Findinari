@@ -16,7 +16,6 @@ use App\Repository\ObjectifRepository;
 use App\Repository\TicketRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\WalletRepository;
-use App\Service\AnomalyDetectorService;
 use App\Service\TicketSlaCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -33,10 +32,6 @@ use Symfony\UX\Chartjs\Model\Chart;
 
 class AdminController extends AbstractController
 {
-    // ═══════════════════════════════════════════════════════════
-    //  DASHBOARD
-    // ═══════════════════════════════════════════════════════════
-
     #[Route('/admin', name: 'app_admin_dashboard')]
     public function dashboard(
         Request $request,
@@ -47,7 +42,7 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $q        = trim((string) $request->query->get('q', ''));
+        $q = trim((string) $request->query->get('q', ''));
         $userSort = trim((string) $request->query->get('user_sort', 'name_asc'));
         $objStatut = trim((string) $request->query->get('obj_statut', ''));
 
@@ -87,9 +82,9 @@ class AdminController extends AbstractController
 
         $allUsers = $utilisateurRepository->findAll();
 
-        $adminCount       = 0;
-        $userCount        = 0;
-        $influencerCount  = 0;
+        $adminCount = 0;
+        $userCount = 0;
+        $influencerCount = 0;
         $activeUsersCount = 0;
         $inactiveUsersCount = 0;
 
@@ -110,26 +105,22 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/dashboard.html.twig', [
-            'users'               => $users,
-            'feedbacks'           => $feedbacks,
-            'objectifs'           => $objectifs,
-            'totalUsers'          => count($allUsers),
-            'filteredUsersCount'  => $users->getTotalItemCount(),
-            'totalFeedbacks'      => $feedbackRepository->count([]),
-            'adminCount'          => $adminCount,
-            'userCount'           => $userCount,
-            'influencerCount'     => $influencerCount,
-            'activeUsersCount'    => $activeUsersCount,
-            'inactiveUsersCount'  => $inactiveUsersCount,
-            'search'              => $q,
-            'userSort'            => $userSort,
-            'objStatut'           => $objStatut,
+            'users' => $users,
+            'feedbacks' => $feedbacks,
+            'objectifs' => $objectifs,
+            'totalUsers' => count($allUsers),
+            'filteredUsersCount' => $users->getTotalItemCount(),
+            'totalFeedbacks' => $feedbackRepository->count([]),
+            'adminCount' => $adminCount,
+            'userCount' => $userCount,
+            'influencerCount' => $influencerCount,
+            'activeUsersCount' => $activeUsersCount,
+            'inactiveUsersCount' => $inactiveUsersCount,
+            'search' => $q,
+            'userSort' => $userSort,
+            'objStatut' => $objStatut,
         ]);
     }
-
-    // ═══════════════════════════════════════════════════════════
-    //  AJAX USERS
-    // ═══════════════════════════════════════════════════════════
 
     #[Route('/admin/ajax/users', name: 'app_admin_ajax_users', methods: ['GET'])]
     public function ajaxUsers(
@@ -139,7 +130,7 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $q        = trim((string) $request->query->get('q', ''));
+        $q = trim((string) $request->query->get('q', ''));
         $userSort = trim((string) $request->query->get('user_sort', 'name_asc'));
 
         $usersQb = $this->buildUsersQuery($utilisateurRepository, $q, $userSort);
@@ -152,16 +143,12 @@ class AdminController extends AbstractController
         );
 
         return $this->render('admin/_users_table.html.twig', [
-            'users'      => $users,
+            'users' => $users,
             'totalUsers' => $utilisateurRepository->count([]),
-            'search'     => $q,
-            'userSort'   => $userSort,
+            'search' => $q,
+            'userSort' => $userSort,
         ]);
     }
-
-    // ═══════════════════════════════════════════════════════════
-    //  HELPER — BUILD USERS QUERY
-    // ═══════════════════════════════════════════════════════════
 
     private function buildUsersQuery(
         UtilisateurRepository $utilisateurRepository,
@@ -172,37 +159,44 @@ class AdminController extends AbstractController
 
         if ($q !== '') {
             $qb->andWhere('u.nom LIKE :q OR u.prenom LIKE :q')
-               ->setParameter('q', '%'.$q.'%');
+                ->setParameter('q', '%' . $q . '%');
         }
 
         switch ($userSort) {
             case 'name_desc':
-                $qb->orderBy('u.nom', 'DESC')->addOrderBy('u.prenom', 'DESC');
+                $qb->orderBy('u.nom', 'DESC')
+                    ->addOrderBy('u.prenom', 'DESC');
                 break;
+
             case 'role_asc':
-                $qb->orderBy('u.role', 'ASC')->addOrderBy('u.nom', 'ASC')->addOrderBy('u.prenom', 'ASC');
+                $qb->orderBy('u.role', 'ASC')
+                    ->addOrderBy('u.nom', 'ASC')
+                    ->addOrderBy('u.prenom', 'ASC');
                 break;
+
             case 'role_desc':
-                $qb->orderBy('u.role', 'DESC')->addOrderBy('u.nom', 'ASC')->addOrderBy('u.prenom', 'ASC');
+                $qb->orderBy('u.role', 'DESC')
+                    ->addOrderBy('u.nom', 'ASC')
+                    ->addOrderBy('u.prenom', 'ASC');
                 break;
+
             case 'id_asc':
                 $qb->orderBy('u.id', 'ASC');
                 break;
+
             case 'id_desc':
                 $qb->orderBy('u.id', 'DESC');
                 break;
+
             case 'name_asc':
             default:
-                $qb->orderBy('u.nom', 'ASC')->addOrderBy('u.prenom', 'ASC');
+                $qb->orderBy('u.nom', 'ASC')
+                    ->addOrderBy('u.prenom', 'ASC');
                 break;
         }
 
         return $qb;
     }
-
-    // ═══════════════════════════════════════════════════════════
-    //  USER ACTIONS
-    // ═══════════════════════════════════════════════════════════
 
     #[Route('/admin/user/{id}/delete', name: 'app_admin_user_delete', methods: ['POST'])]
     public function deleteUser(
@@ -267,20 +261,6 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_dashboard');
     }
 
-    #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
-    public function showUser(Utilisateur $utilisateur): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        return $this->render('admin/user_show.html.twig', [
-            'selectedUser' => $utilisateur,
-        ]);
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    //  CREATE ADMIN
-    // ═══════════════════════════════════════════════════════════
-
     #[Route('/admin/create-admin', name: 'app_admin_create_admin', methods: ['POST'])]
     public function createAdmin(
         Request $request,
@@ -289,19 +269,19 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $nom      = trim((string) $request->request->get('nom'));
-        $prenom   = trim((string) $request->request->get('prenom'));
-        $gmail    = trim((string) $request->request->get('gmail'));
+        $nom = trim((string) $request->request->get('nom'));
+        $prenom = trim((string) $request->request->get('prenom'));
+        $gmail = trim((string) $request->request->get('gmail'));
         $password = (string) $request->request->get('password');
 
-        if (!$nom || !$prenom || !$gmail || !$password) {
+        if ($nom === '' || $prenom === '' || $gmail === '' || $password === '') {
             $this->addFlash('danger', 'All admin fields are required.');
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
         $existing = $entityManager->getRepository(Utilisateur::class)->findOneBy(['gmail' => $gmail]);
 
-        if ($existing) {
+        if ($existing instanceof Utilisateur) {
             $this->addFlash('danger', 'Email already exists.');
             return $this->redirectToRoute('app_admin_dashboard');
         }
@@ -323,10 +303,6 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_dashboard');
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  FEEDBACK
-    // ═══════════════════════════════════════════════════════════
-
     #[Route('/admin/feedback/{id}/delete', name: 'app_admin_feedback_delete', methods: ['POST'])]
     public function deleteFeedback(
         Feedback $feedback,
@@ -346,10 +322,6 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_dashboard');
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  WALLETS
-    // ═══════════════════════════════════════════════════════════
-
     #[Route('/admin/wallets', name: 'app_admin_wallets')]
     public function wallets(
         WalletRepository $walletRepository,
@@ -358,9 +330,10 @@ class AdminController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $wallets = $walletRepository->findAll();
-        $users   = $utilisateurRepository->findAll();
+        $users = $utilisateurRepository->findAll();
 
         $activeUsersCount = 0;
+
         foreach ($users as $user) {
             if (in_array($user->getStatut(), ['ACTIF', 'ACTIVE'], true)) {
                 ++$activeUsersCount;
@@ -368,16 +341,19 @@ class AdminController extends AbstractController
         }
 
         $currencies = [];
+
         foreach ($wallets as $wallet) {
-            if (method_exists($wallet, 'getDevise') && $wallet->getDevise()) {
-                $currencies[] = $wallet->getDevise();
+            $devise = $wallet->getDevise();
+
+            if ($devise !== null && $devise !== '') {
+                $currencies[] = $devise;
             }
         }
 
         return $this->render('admin/wallets.html.twig', [
-            'wallets'          => $wallets,
+            'wallets' => $wallets,
             'activeUsersCount' => $activeUsersCount,
-            'currenciesCount'  => count(array_unique($currencies)),
+            'currenciesCount' => count(array_unique($currencies)),
         ]);
     }
 
@@ -400,180 +376,32 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_wallets');
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  OBJECTIFS + AI ANOMALY DETECTOR
-    // ═══════════════════════════════════════════════════════════
-
-    #[Route('/admin/objectifs', name: 'app_admin_objectifs')]
-    public function objectifs(
-        ObjectifRepository $objectifRepository,
-        WalletRepository $walletRepository,
-        Request $request,
-        AnomalyDetectorService $anomalyDetector
-    ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $filterWalletId = $request->query->get('wallet_id');
-        $filterStatut   = $request->query->get('status');
-        $searchObjectif = trim((string) $request->query->get('q', ''));
-
-        // Construire le map wallets pour la vue
-        $wallets = [];
-        foreach ($walletRepository->findAll() as $w) {
-            $wallets[$w->getId()] = [
-                'pays'   => $w->getPays(),
-                'devise' => $w->getDevise(),
-                'solde'  => $w->getSolde(),
-            ];
-        }
-
-        // Filtres serveur
-        $qb = $objectifRepository->createQueryBuilder('o');
-
-        if ($filterWalletId) {
-            $qb->andWhere('o.walletId = :walletId')
-               ->setParameter('walletId', (int) $filterWalletId);
-        }
-
-        if ($filterStatut) {
-            $qb->andWhere('o.statut = :statut')
-               ->setParameter('statut', $filterStatut);
-        }
-
-        if ($searchObjectif !== '') {
-            $qb->andWhere('o.titre LIKE :q')
-               ->setParameter('q', '%' . $searchObjectif . '%');
-        }
-
-        $objectifs = $qb->orderBy('o.id', 'DESC')->getQuery()->getResult();
-
-        // ── AI Anomaly Detector ──
-        $anomalies = null;
-        $stats     = null;
-
-        if ($request->isMethod('POST')) {
-            // Construire un map walletId → info utilisateur
-            $walletUserMap = [];
-            foreach ($walletRepository->findAll() as $w) {
-                $user = $w->getUtilisateur();
-                if ($user) {
-                    $walletUserMap[$w->getId()] = [
-                        'nom'  => $user->getNom() . ' ' . $user->getPrenom(),
-                        'pays' => $w->getPays(),
-                    ];
-                } else {
-                    $walletUserMap[$w->getId()] = [
-                        'nom'  => 'Inconnu',
-                        'pays' => $w->getPays() ?? '—',
-                    ];
-                }
-            }
-
-            $allContributions = [];
-            foreach ($objectifRepository->findAll() as $obj) {
-                $walletId = $obj->getWalletId();
-                $userInfo = $walletUserMap[$walletId] ?? ['nom' => 'Inconnu', 'pays' => '—'];
-
-                foreach ($obj->getContributiongoals() as $c) {
-                    $allContributions[] = [
-                        'objectif_id'    => $obj->getId(),
-                        'objectif_titre' => $obj->getTitre(),
-                        'wallet_id'      => $walletId,
-                        'user_nom'       => $userInfo['nom'],
-                        'user_pays'      => $userInfo['pays'],
-                        'montant'        => $c->getMontant(),
-                        'date'           => $c->getDate()?->format('Y-m-d'),
-                    ];
-                }
-            }
-
-            if (!empty($allContributions)) {
-                $anomalies = $anomalyDetector->detect($allContributions);
-                $montants  = array_column($allContributions, 'montant');
-                $stats = [
-                    'total_contributions' => count($allContributions),
-                    'total_anomalies'     => count($anomalies),
-                    'eleve'   => count(array_filter($anomalies, fn($a) => in_array(strtoupper($a['niveau_risque']), ['ÉLEVÉ', 'ELEVE']))),
-                    'moyen'   => count(array_filter($anomalies, fn($a) => strtoupper($a['niveau_risque']) === 'MOYEN')),
-                    'moyenne' => count($montants) > 0 ? array_sum($montants) / count($montants) : 0,
-                ];
-            } else {
-                $anomalies = [];
-                $stats = [
-                    'total_contributions' => 0,
-                    'total_anomalies'     => 0,
-                    'eleve'               => 0,
-                    'moyen'               => 0,
-                    'moyenne'             => 0,
-                ];
-            }
-        }
-
-        return $this->render('admin/objectifs.html.twig', [
-            'objectifs'      => $objectifs,
-            'wallets'        => $wallets,
-            'filterWalletId' => $filterWalletId,
-            'filterStatut'   => $filterStatut,
-            'searchObjectif' => $searchObjectif,
-            'anomalies'      => $anomalies,
-            'stats'          => $stats,
-        ]);
-    }
-
-    #[Route('/admin/objectif/{id}/delete', name: 'objectif_delete', methods: ['POST'])]
-    public function deleteObjectif(
-        int $id,
-        Request $request,
-        ObjectifRepository $objectifRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $objectif = $objectifRepository->find($id);
-
-        if (!$objectif) {
-            $this->addFlash('danger', 'Objectif not found.');
-            return $this->redirectToRoute('app_admin_objectifs');
-        }
-
-        if ($this->isCsrfTokenValid('delete' . $id, (string) $request->request->get('_token'))) {
-            $entityManager->remove($objectif);
-            $entityManager->flush();
-            $this->addFlash('success', 'Objectif deleted successfully.');
-        } else {
-            $this->addFlash('danger', 'Invalid CSRF token.');
-        }
-
-        return $this->redirectToRoute('app_admin_objectifs');
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    //  TICKETS
-    // ═══════════════════════════════════════════════════════════
-
-    #[Route('/admin/tickets', name: 'app_admin_tickets')]
+    #[Route('/admin/ticket', name: 'app_admin_tickets')]
     public function tickets(
         Request $request,
         TicketRepository $ticketRepository,
-        \Knp\Component\Pager\PaginatorInterface $paginator,
+        PaginatorInterface $paginator,
         \App\Service\SentimentService $sentimentService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $sort = $request->query->get('sort', 'newest');
-        $qb   = $ticketRepository->createQueryBuilder('t');
+        $qb = $ticketRepository->createQueryBuilder('t');
 
         switch ($sort) {
             case 'oldest':
                 $qb->orderBy('t.id', 'ASC');
                 break;
+
             case 'priority_high':
                 $qb->addSelect("(CASE WHEN t.priorite = 'High' THEN 3 WHEN t.priorite = 'Medium' THEN 2 ELSE 1 END) AS HIDDEN p_order")
-                   ->orderBy('p_order', 'DESC');
+                    ->orderBy('p_order', 'DESC');
                 break;
+
             case 'status_open':
                 $qb->orderBy('t.statut', 'DESC');
                 break;
+
             case 'newest':
             default:
                 $qb->orderBy('t.id', 'DESC');
@@ -587,15 +415,17 @@ class AdminController extends AbstractController
         );
 
         $sentiments = [];
+
         foreach ($pagination as $ticket) {
-            $sentiments[$ticket->getId()] = $sentimentService->getTicketSentiment($ticket);
+            if ($ticket instanceof Ticket) {
+                $sentiments[$ticket->getId()] = $sentimentService->getTicketSentiment($ticket);
+            }
         }
 
         return $this->render('admin/tickets.html.twig', [
-            'tickets'     => $pagination,
+            'tickets' => $pagination,
             'currentSort' => $sort,
-            'sentiments'  => $sentiments,  // ← pluriel, et pas de $ticket hors foreach
-
+            'sentiments' => $sentiments,
         ]);
     }
 
@@ -611,19 +441,18 @@ class AdminController extends AbstractController
             ->getResult();
 
         $events = [];
+
         foreach ($tickets as $ticket) {
             $events[] = [
-                'id'    => $ticket->getId(),
+                'id' => $ticket->getId(),
                 'title' => $ticket->getTitre() ?: 'Untitled Ticket',
-                'start' => $ticket->getDateCreation()
-                    ? $ticket->getDateCreation()->format('Y-m-d\TH:i:s')
-                    : date('Y-m-d\TH:i:s'),
-                'url'       => $this->generateUrl('app_admin_ticket_details', ['id' => $ticket->getId()]),
+                'start' => $ticket->getDateCreation() ? $ticket->getDateCreation()->format('Y-m-d\TH:i:s') : date('Y-m-d\TH:i:s'),
+                'url' => $this->generateUrl('app_admin_ticket_details', ['id' => $ticket->getId()]),
                 'className' => 'priority-' . strtolower($ticket->getPriorite() ?: 'low'),
                 'extendedProps' => [
-                    'status'   => $ticket->getStatut(),
+                    'status' => $ticket->getStatut(),
                     'priority' => $ticket->getPriorite(),
-                    'user'     => $ticket->getUtilisateur()
+                    'user' => $ticket->getUtilisateur()
                         ? $ticket->getUtilisateur()->getPrenom() . ' ' . $ticket->getUtilisateur()->getNom()
                         : 'Anonymous',
                 ],
@@ -631,7 +460,7 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/ticket_calendar.html.twig', [
-            'events'      => json_encode($events),
+            'events' => json_encode($events),
             'ticketCount' => count($tickets),
         ]);
     }
@@ -643,85 +472,110 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $tickets    = $ticketRepository->findAll();
-        $statuses   = [];
+        $tickets = $ticketRepository->findAll();
+
+        $statuses = [];
         $priorities = [];
-        $sla        = ['On Time' => 0, 'Delayed' => 0];
-        $now        = new \DateTime();
+        $sla = ['On Time' => 0, 'Delayed' => 0];
+
+        $now = new \DateTime();
 
         foreach ($tickets as $ticket) {
             $rawStatut = strtolower(trim((string) $ticket->getStatut()));
-            if (in_array($rawStatut, ['en cours', 'in progress'])) {
+
+            if (in_array($rawStatut, ['en cours', 'in progress'], true)) {
                 $statut = Ticket::STATUS_IN_PROGRESS;
-            } elseif (in_array($rawStatut, ['fermé', 'closed', 'resolved'])) {
+            } elseif (in_array($rawStatut, ['fermé', 'closed', 'resolved'], true)) {
                 $statut = Ticket::STATUS_CLOSED;
             } else {
                 $statut = Ticket::STATUS_OPEN;
             }
+
             $statuses[$statut] = ($statuses[$statut] ?? 0) + 1;
 
             $rawPriority = strtolower(trim((string) $ticket->getPriorite()));
-            if (in_array($rawPriority, ['high', 'haute', 'urgent', 'urgente'])) {
+
+            if (in_array($rawPriority, ['high', 'haute', 'urgent', 'urgente'], true)) {
                 $priorite = Ticket::PRIORITY_HIGH;
-            } elseif (in_array($rawPriority, ['medium', 'moyenne'])) {
+            } elseif (in_array($rawPriority, ['medium', 'moyenne'], true)) {
                 $priorite = Ticket::PRIORITY_MEDIUM;
             } else {
                 $priorite = Ticket::PRIORITY_LOW;
             }
+
             $priorities[$priorite] = ($priorities[$priorite] ?? 0) + 1;
 
             $deadline = $ticket->getDeadline();
+
             if ($deadline) {
-                if ($statut === 'Closed') {
+                if ($statut === Ticket::STATUS_CLOSED) {
                     $closedAt = $ticket->getDateFermeture() ?: $now;
-                    $closedAt > $deadline ? $sla['Delayed']++ : $sla['On Time']++;
+
+                    if ($closedAt > $deadline) {
+                        ++$sla['Delayed'];
+                    } else {
+                        ++$sla['On Time'];
+                    }
+                } elseif ($now > $deadline) {
+                    ++$sla['Delayed'];
                 } else {
-                    $now > $deadline ? $sla['Delayed']++ : $sla['On Time']++;
+                    ++$sla['On Time'];
                 }
             }
         }
 
         $statusChart = $chartBuilder->createChart(Chart::TYPE_PIE);
         $statusChart->setData([
-            'labels'   => array_keys($statuses),
-            'datasets' => [[
-                'label'           => 'Ticket Statuses',
-                'backgroundColor' => ['#4ade80', '#fbbf24', '#f87171', '#60a5fa', '#a78bfa', '#9ca3af', '#f472b6'],
-                'data'            => array_values($statuses),
-            ]],
+            'labels' => array_keys($statuses),
+            'datasets' => [
+                [
+                    'label' => 'Ticket Statuses',
+                    'backgroundColor' => ['#4ade80', '#fbbf24', '#f87171', '#60a5fa', '#a78bfa', '#9ca3af', '#f472b6'],
+                    'data' => array_values($statuses),
+                ],
+            ],
         ]);
         $statusChart->setOptions(['responsive' => true, 'maintainAspectRatio' => false]);
 
         $priorityChart = $chartBuilder->createChart(Chart::TYPE_BAR);
         $priorityChart->setData([
-            'labels'   => array_keys($priorities),
-            'datasets' => [[
-                'label'           => 'Tickets by Priority',
-                'backgroundColor' => ['#f87171', '#fbbf24', '#60a5fa', '#9ca3af'],
-                'data'            => array_values($priorities),
-            ]],
+            'labels' => array_keys($priorities),
+            'datasets' => [
+                [
+                    'label' => 'Tickets by Priority',
+                    'backgroundColor' => ['#f87171', '#fbbf24', '#60a5fa', '#9ca3af'],
+                    'data' => array_values($priorities),
+                ],
+            ],
         ]);
         $priorityChart->setOptions([
-            'responsive'          => true,
+            'responsive' => true,
             'maintainAspectRatio' => false,
-            'scales'              => ['y' => ['beginAtZero' => true, 'ticks' => ['stepSize' => 1]]],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['stepSize' => 1],
+                ],
+            ],
         ]);
 
         $slaChart = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
         $slaChart->setData([
-            'labels'   => array_keys($sla),
-            'datasets' => [[
-                'label'           => 'SLA Adherence',
-                'backgroundColor' => ['#4ade80', '#f87171'],
-                'data'            => array_values($sla),
-            ]],
+            'labels' => array_keys($sla),
+            'datasets' => [
+                [
+                    'label' => 'SLA Adherence',
+                    'backgroundColor' => ['#4ade80', '#f87171'],
+                    'data' => array_values($sla),
+                ],
+            ],
         ]);
         $slaChart->setOptions(['responsive' => true, 'maintainAspectRatio' => false]);
 
         return $this->render('admin/ticket_statistics.html.twig', [
-            'statusChart'   => $statusChart,
+            'statusChart' => $statusChart,
             'priorityChart' => $priorityChart,
-            'slaChart'      => $slaChart,
+            'slaChart' => $slaChart,
         ]);
     }
 
@@ -755,92 +609,37 @@ class AdminController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
-            $oldStatus   = $ticket->getStatut();
-            $newStatut   = $request->request->get('statut');
-            $newPriorite = $request->request->get('priorite');
+        $message = new Message();
+        $form = $this->createForm(MessageType::class, $message);
 
-            if ($newStatut) {
+        if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
+            $newStatut = (string) $request->request->get('statut');
+            $newPriorite = (string) $request->request->get('priorite');
+
+            if ($newStatut !== '') {
                 $ticket->setStatut($newStatut);
             }
 
-            if ($newPriorite) {
+            if ($newPriorite !== '') {
                 $ticket->setPriorite($newPriorite);
             }
 
-            if (in_array($newStatut, [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
-                $ticket->setDateFermeture(new \DateTime());
-            }
-
-            $resolvedStatuses = [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'];
-            $becameResolved   = !in_array($oldStatus, $resolvedStatuses, true)
-                && in_array($ticket->getStatut(), $resolvedStatuses, true);
-
             $entityManager->flush();
 
-            if ($becameResolved && $ticket->getUtilisateur() && $ticket->getUtilisateur()->getGmail()) {
-                try {
-                    $recipient = $ticket->getUtilisateur()->getGmail();
-                    $sender    = $_ENV['MAIL_FROM_ADDRESS'] ?? 'eyahellal8@gmail.com';
+            $this->addFlash('success', 'Ticket updated successfully.');
 
-                    $email = (new TemplatedEmail())
-                        ->from($sender)
-                        ->to($recipient)
-                        ->subject('Your ticket has been resolved')
-                        ->htmlTemplate('emails/ticket_resolved.html.twig')
-                        ->context([
-                            'ticket' => $ticket,
-                            'user'   => $ticket->getUtilisateur(),
-                        ]);
-
-                    $mailer->send($email);
-                    $this->addFlash('info', sprintf(
-                        'Debug: Mailer->send() reached. FROM: %s | TO: %s',
-                        $sender,
-                        $recipient
-                    ));
-                } catch (\Throwable $e) {
-                    $this->addFlash('danger', sprintf(
-                        'Debug: Mailer Exception! %s: %s',
-                        get_class($e),
-                        $e->getMessage()
-                    ));
-                }
-            } elseif ($becameResolved) {
-                $user = $ticket->getUtilisateur();
-                $this->addFlash('warning', sprintf(
-                    'Debug: Email block skipped. User: %s | Email: %s',
-                    $user ? $user->getPrenom() : 'NULL',
-                    $user ? $user->getGmail()  : 'NULL'
-                ));
-            } else {
-                $this->addFlash('secondary', 'Debug: Status updated but "becameResolved" is FALSE (email not triggered).');
-            }
-
-            $this->addFlash('success', sprintf(
-                'Ticket updated successfully. (Resolution: %s | User: %s)',
-                $becameResolved            ? 'YES' : 'NO',
-                $ticket->getUtilisateur()  ? 'YES' : 'NO'
-            ));
-
-            return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
+            return $this->redirectToRoute('app_admin_ticket_details', [
+                'id' => $ticket->getId(),
+            ]);
         }
 
-        $message = new Message();
-        $form    = $this->createForm(MessageType::class, $message);
-
         return $this->render('admin/ticket_details.html.twig', [
-            'ticket'   => $ticket,
+            'ticket' => $ticket,
             'messages' => $ticket->getMessages(),
-            'form'     => $form->createView(),
-            'sentiment' => $sentimentService->getTicketSentiment($ticket),   // ← c'était manquant
-
+            'form' => $form->createView(),
+            'sentiment' => $sentimentService->getTicketSentiment($ticket),
         ]);
     }
-
-    // ═══════════════════════════════════════════════════════════
-    //  OBLIGATIONS
-    // ═══════════════════════════════════════════════════════════
 
     #[Route('/admin/obligations', name: 'app_admin_obligations')]
     public function obligations(
@@ -851,20 +650,23 @@ class AdminController extends AbstractController
 
         $obligations = $obligationRepository->findAll();
 
-        $avgRate = 0;
+        $avgRate = 0.0;
+
         if (count($obligations) > 0) {
-            $totalRate = 0;
+            $totalRate = 0.0;
+
             foreach ($obligations as $obligation) {
-                $totalRate += $obligation->getTauxInteret();
+                $totalRate += (float) $obligation->getTauxInteret();
             }
+
             $avgRate = round($totalRate / count($obligations), 2);
         }
 
         $totalInvestments = count($investmentRepository->findAll());
 
         return $this->render('admin/obligations.html.twig', [
-            'obligations'      => $obligations,
-            'avgInterestRate'  => $avgRate,
+            'obligations' => $obligations,
+            'avgInterestRate' => $avgRate,
             'totalInvestments' => $totalInvestments,
         ]);
     }
@@ -880,11 +682,14 @@ class AdminController extends AbstractController
 
         if ($this->isCsrfTokenValid('delete_obligation_admin_' . $obligation->getIdObligation(), (string) $request->request->get('_token'))) {
             $investments = $investmentRepository->findBy(['obligationId' => $obligation->getIdObligation()]);
+
             foreach ($investments as $investment) {
                 $entityManager->remove($investment);
             }
+
             $entityManager->remove($obligation);
             $entityManager->flush();
+
             $this->addFlash('success', 'Obligation and all related investments deleted successfully.');
         } else {
             $this->addFlash('danger', 'Invalid CSRF token.');
@@ -893,9 +698,68 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_obligations');
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  OVERVIEW REDIRECT
-    // ═══════════════════════════════════════════════════════════
+    #[Route('/admin/objectifs', name: 'app_admin_objectifs')]
+    public function objectifs(
+        ObjectifRepository $objectifRepository,
+        WalletRepository $walletRepository,
+        Request $request
+    ): Response {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $filterWalletId = $request->query->get('wallet_id');
+        $filterStatut = $request->query->get('statut');
+        $searchObjectif = trim((string) $request->query->get('q', ''));
+
+        $wallets = [];
+
+        foreach ($walletRepository->findAll() as $w) {
+            $wallets[$w->getId()] = [
+                'pays' => $w->getPays(),
+                'devise' => $w->getDevise(),
+                'solde' => $w->getSolde(),
+            ];
+        }
+
+        $qb = $objectifRepository->createQueryBuilder('o');
+
+        if ($filterWalletId) {
+            $qb->andWhere('o.walletId = :walletId')
+                ->setParameter('walletId', (int) $filterWalletId);
+        }
+
+        if ($filterStatut) {
+            $qb->andWhere('o.statut = :statut')
+                ->setParameter('statut', $filterStatut);
+        }
+
+        if ($searchObjectif !== '') {
+            $qb->andWhere('o.titre LIKE :q')
+                ->setParameter('q', '%' . $searchObjectif . '%');
+        }
+
+        $objectifs = $qb->orderBy('o.id', 'DESC')->getQuery()->getResult();
+
+        return $this->render('admin/objectifs.html.twig', [
+            'objectifs' => $objectifs,
+            'wallets' => $wallets,
+            'selectedWalletId' => $filterWalletId,
+            'filterWalletId' => $filterWalletId,
+            'filterStatut' => $filterStatut,
+            'searchObjectif' => $searchObjectif,
+            'anomalies' => null,
+            'stats' => null,
+        ]);
+    }
+
+    #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
+    public function showUser(Utilisateur $utilisateur): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('admin/user_show.html.twig', [
+            'selectedUser' => $utilisateur,
+        ]);
+    }
 
     #[Route('/admin/overview', name: 'app_admin_overview')]
     public function overviewDashboard(): Response

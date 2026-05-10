@@ -19,6 +19,8 @@ class SentimentService
     /**
      * Analyse les messages d'un ticket et retourne le sentiment global.
      * On prend les 3 derniers messages utilisateur.
+     *
+     * @return array{label: string, score: float, messages_count: int, error?: string}
      */
     public function getTicketSentiment(Ticket $ticket): array
     {
@@ -29,7 +31,7 @@ class SentimentService
         
         // Prendre les 3 derniers messages utilisateur
         $lastMessages = array_slice($userMessages, -3);
-        $messageTexts = array_map(fn($m) => $m->getContenu(), $lastMessages);
+        $messageTexts = array_map(fn($m) => (string)$m->getContenu(), $lastMessages);
 
         if (empty($messageTexts)) {
             return [
@@ -44,6 +46,9 @@ class SentimentService
 
     /**
      * Appelle l'API Flask pour obtenir le sentiment.
+     *
+     * @param string[] $messages
+     * @return array{label: string, score: float, messages_count: int, error?: string}
      */
     private function analyser(array $messages): array
     {
@@ -57,7 +62,10 @@ class SentimentService
                 throw new \Exception('API Sentiment error');
             }
 
-            return $response->toArray();
+            /** @var array{label: string, score: float, messages_count: int} $data */
+            $data = $response->toArray();
+
+            return $data;
         } catch (\Exception $e) {
             // Fallback en cas d'erreur API (API éteinte, etc.)
             return [
@@ -82,5 +90,4 @@ class SentimentService
         } catch (\Exception $e) {
             return false;
         }
-    }
-}
+    }}

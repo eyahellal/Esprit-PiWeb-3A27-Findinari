@@ -1,0 +1,95 @@
+{% extends 'base.html.twig' %}
+{% block title %}Receive Money{% endblock %}
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-lg">
+                <div class="card-header border-0 rounded-top-4 py-3 text-center"
+                     style="background: linear-gradient(135deg, #2CCED2, #26474E);">
+                    <h4 class="mb-0 text-white fw-bold">
+                        <i class="fas fa-money-bill-wave me-2"></i>Money Received!
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label }} rounded-3">{{ message }}</div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    <div class="alert rounded-3 border-0 mb-4" style="background: #e3f2fd;">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>From:</strong><br>
+                                {{ transfer.sender.nom }} {{ transfer.sender.prenom }}
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Amount:</strong><br>
+                                <span class="fs-4 fw-bold" style="color: #2d6a4f;">
+                                    {{ transfer.amountFloat|number_format(2) }} {{ transfer.devise }}
+                                </span>
+                            </div>
+                        </div>
+                        {% if transfer.message %}
+                            <hr>
+                            <small><i class="fas fa-comment me-1"></i> "{{ transfer.message }}"</small>
+                        {% endif %}
+                    </div>
+
+                    <form method="POST" data-turbo="false">
+                        <label class="form-label fw-bold" style="color: #26474E;">
+                            <i class="fas fa-wallet me-2" style="color: #F27438;"></i>
+                            Choose wallet to receive money:
+                        </label>
+                        <select name="wallet_id" class="form-select form-select-lg rounded-3 mb-4" required>
+                            <option value="">-- Select a wallet --</option>
+                            {% for wallet in wallets %}
+                                <option value="{{ wallet.id }}">
+                                    {{ wallet.pays }} — {{ wallet.solde|number_format(2) }} {{ wallet.devise }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="d-grid">
+                            <button type="submit"
+                                    class="btn btn-lg fw-bold text-white rounded-pill py-3"
+                                    style="background: linear-gradient(135deg, #2CCED2, #26474E);">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Confirm & Receive Money
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    select.form-select {
+        background-color: #f0fdf4;
+        color: #26474E;
+        border: 2px solid #2CCED2;
+        font-weight: 500;
+    }
+
+    select.form-select option {
+        background-color: #f0fdf4;
+        color: #26474E;
+        font-weight: 500;
+        padding: 10px;
+    }
+
+    select.form-select:focus {
+        border-color: #F27438;
+        box-shadow: 0 0 0 3px rgba(242, 116, 56, 0.15);
+    }
+
+    select.form-select option:hover,
+    select.form-select option:checked {
+        background-color: #2CCED2;
+        color: white;
+    }
+</style>
+{% endblock %}

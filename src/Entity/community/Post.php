@@ -52,10 +52,16 @@ class Post
     #[ORM\Column(name: 'nombreCommentaires', type: 'integer', options: ['default' => 0])]
     private int $nombreCommentaires = 0;
 
+    /**
+     * @var Collection<int, Commentaire>
+     */
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Commentaire::class, orphanRemoval: true)]
     #[ORM\OrderBy(['dateCreation' => 'DESC'])]
     private Collection $commentaires;
 
+    /**
+     * @var Collection<int, Like>
+     */
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Like::class, orphanRemoval: true)]
     private Collection $likes;
 
@@ -87,6 +93,7 @@ class Post
     private function buildAutoTitle(): string
     {
         $text = trim((string) $this->contenu);
+
         if ($text === '') {
             return 'Post';
         }
@@ -94,24 +101,33 @@ class Post
         $clean = preg_replace('/\s+/', ' ', strip_tags($text)) ?? 'Post';
         $short = mb_substr($clean, 0, 60);
 
-        return $short === $clean ? $short : $short.'...';
+        return $short === $clean ? $short : $short . '...';
     }
 
+    /**
+     * @return list<string>
+     */
     private function extractMediaCandidates(): array
     {
         $content = (string) ($this->contenu ?? '');
         $candidates = [];
 
         if (preg_match_all('/<img[^>]+src=["\']([^"\']+)["\']/i', $content, $matches)) {
-            $candidates = array_merge($candidates, $matches[1]);
+            foreach ($matches[1] as $match) {
+                $candidates[] = (string)$match;
+            }
         }
 
         if (preg_match_all('/\[(?:img|image|gif):([^\]]+)\]/i', $content, $matches)) {
-            $candidates = array_merge($candidates, $matches[1]);
+            foreach ($matches[1] as $match) {
+                $candidates[] = (string)$match;
+            }
         }
 
         if (preg_match_all('/https?:\/\/[^\s<>"\'\]]+/i', $content, $matches)) {
-            $candidates = array_merge($candidates, $matches[0]);
+            foreach ($matches[0] as $match) {
+                $candidates[] = (string)$match;
+            }
         }
 
         $cleaned = array_map(static function (string $candidate): string {
@@ -121,9 +137,13 @@ class Post
         return array_values(array_unique(array_filter($cleaned)));
     }
 
+    /**
+     * @return array{type: string, url: string}|null
+     */
     private function normalizeMediaUrl(string $url): ?array
     {
         $url = trim($url);
+
         if ($url === '' || !preg_match('#^https?://#i', $url)) {
             return null;
         }
@@ -136,14 +156,22 @@ class Post
 
         if (str_contains($lowerHost, 'giphy.com')) {
             if (preg_match('#/media/([A-Za-z0-9]+)/#', $path, $matches)) {
-                return ['type' => 'gif', 'url' => 'https://media.giphy.com/media/' . $matches[1] . '/giphy.gif'];
+                return [
+                    'type' => 'gif',
+                    'url' => 'https://media.giphy.com/media/' . $matches[1] . '/giphy.gif',
+                ];
             }
 
             $lastSegment = basename($path);
+
             if (str_contains($lastSegment, '-')) {
                 $gifId = substr($lastSegment, strrpos($lastSegment, '-') + 1);
+
                 if ($gifId !== '') {
-                    return ['type' => 'gif', 'url' => 'https://media.giphy.com/media/' . $gifId . '/giphy.gif'];
+                    return [
+                        'type' => 'gif',
+                        'url' => 'https://media.giphy.com/media/' . $gifId . '/giphy.gif',
+                    ];
                 }
             }
         }
@@ -158,17 +186,23 @@ class Post
         }
 
         return [
-            'type' => str_contains($lowerPath, '.gif') || str_contains($lowerUrl, '/gif') || str_contains($lowerHost, 'giphy.com') ? 'gif' : 'image',
+            'type' => str_contains($lowerPath, '.gif')
+                || str_contains($lowerUrl, '/gif')
+                || str_contains($lowerHost, 'giphy.com') ? 'gif' : 'image',
             'url' => $url,
         ];
     }
 
+    /**
+     * @return list<array{type: string, url: string}>
+     */
     public function getMediaItems(): array
     {
         $items = [];
 
         foreach ($this->extractMediaCandidates() as $candidate) {
             $normalized = $this->normalizeMediaUrl($candidate);
+
             if ($normalized !== null) {
                 $items[$normalized['url']] = $normalized;
             }
@@ -191,6 +225,7 @@ class Post
             $context->buildViolation('Ajoutez du texte ou un media avant de publier.')
                 ->atPath('contenu')
                 ->addViolation();
+
             return;
         }
 
@@ -217,36 +252,148 @@ class Post
             $content = str_replace($item['url'], '', $content);
         }
 
-        $content = trim((string) preg_replace('/\n{3,}/', "\n\n", $content));
-
-        return $content;
+        return trim((string) preg_replace('/\n{3,}/', "\n\n", $content));
     }
 
-    public function getIdPost(): ?int { return $this->idPost; }
-    public function getId(): ?int { return $this->idPost; }
-    public function getUtilisateur(): ?Utilisateur { return $this->utilisateur; }
-    public function setUtilisateur(?Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
-    public function getTitre(): ?string { return $this->titre; }
-    public function setTitre(?string $titre): self { $this->titre = $titre; return $this; }
-    public function getContenu(): ?string { return $this->contenu; }
-    public function setContenu(string $contenu): self { $this->contenu = trim($contenu); return $this; }
-    public function getTypePost(): ?string { return $this->typePost; }
-    public function setTypePost(?string $typePost): self { $this->typePost = $typePost; return $this; }
-    public function getDateCreation(): ?\DateTimeInterface { return $this->dateCreation; }
-    public function setDateCreation(\DateTimeInterface $dateCreation): self { $this->dateCreation = $dateCreation; return $this; }
-    public function getDateModification(): ?\DateTimeInterface { return $this->dateModification; }
-    public function setDateModification(\DateTimeInterface $dateModification): self { $this->dateModification = $dateModification; return $this; }
-    public function getStatut(): ?string { return $this->statut; }
-    public function setStatut(string $statut): self { $this->statut = $statut; return $this; }
-    public function getVisibilite(): ?string { return $this->visibilite; }
-    public function setVisibilite(string $visibilite): self { $this->visibilite = $visibilite; return $this; }
-    public function getNombreLikes(): int { return $this->nombreLikes; }
-    public function setNombreLikes(int $nombreLikes): self { $this->nombreLikes = max(0, $nombreLikes); return $this; }
-    public function getNombreCommentaires(): int { return $this->nombreCommentaires; }
-    public function setNombreCommentaires(int $nombreCommentaires): self { $this->nombreCommentaires = max(0, $nombreCommentaires); return $this; }
-    public function getCommentaires(): Collection { return $this->commentaires; }
-    public function getLikes(): Collection { return $this->likes; }
+    public function getIdPost(): ?int
+    {
+        return $this->idPost;
+    }
 
+    public function getId(): ?int
+    {
+        return $this->idPost;
+    }
+
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+        return $this;
+    }
+
+    public function getTitre(): ?string
+    {
+        return $this->titre;
+    }
+
+    public function setTitre(?string $titre): self
+    {
+        $this->titre = $titre;
+        return $this;
+    }
+
+    public function getContenu(): ?string
+    {
+        return $this->contenu;
+    }
+
+    public function setContenu(string $contenu): self
+    {
+        $this->contenu = trim($contenu);
+        return $this;
+    }
+
+    public function getTypePost(): ?string
+    {
+        return $this->typePost;
+    }
+
+    public function setTypePost(?string $typePost): self
+    {
+        $this->typePost = $typePost;
+        return $this;
+    }
+
+    public function getDateCreation(): ?\DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
+
+    public function setDateCreation(\DateTimeInterface $dateCreation): self
+    {
+        $this->dateCreation = $dateCreation;
+        return $this;
+    }
+
+    public function getDateModification(): ?\DateTimeInterface
+    {
+        return $this->dateModification;
+    }
+
+    public function setDateModification(\DateTimeInterface $dateModification): self
+    {
+        $this->dateModification = $dateModification;
+        return $this;
+    }
+
+    public function getStatut(): ?string
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(string $statut): self
+    {
+        $this->statut = $statut;
+        return $this;
+    }
+
+    public function getVisibilite(): ?string
+    {
+        return $this->visibilite;
+    }
+
+    public function setVisibilite(string $visibilite): self
+    {
+        $this->visibilite = $visibilite;
+        return $this;
+    }
+
+    public function getNombreLikes(): int
+    {
+        return $this->nombreLikes;
+    }
+
+    public function setNombreLikes(int $nombreLikes): self
+    {
+        $this->nombreLikes = max(0, $nombreLikes);
+        return $this;
+    }
+
+    public function getNombreCommentaires(): int
+    {
+        return $this->nombreCommentaires;
+    }
+
+    public function setNombreCommentaires(int $nombreCommentaires): self
+    {
+        $this->nombreCommentaires = max(0, $nombreCommentaires);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commentaire>
+     */
+    public function getCommentaires(): Collection
+    {
+        return $this->commentaires;
+    }
+
+    /**
+     * @return Collection<int, Like>
+     */
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
+
+    /**
+     * @return list<Commentaire>
+     */
     public function getRecentCommentaires(int $limit = 3): array
     {
         return array_slice($this->commentaires->toArray(), 0, $limit);
@@ -254,7 +401,9 @@ class Post
 
     public function isOwnedBy(?Utilisateur $utilisateur): bool
     {
-        return $utilisateur !== null && $this->utilisateur !== null && $utilisateur->getId() === $this->utilisateur->getId();
+        return $utilisateur !== null
+            && $this->utilisateur !== null
+            && $utilisateur->getId() === $this->utilisateur->getId();
     }
 
     public function isLikedBy(?Utilisateur $utilisateur): bool
@@ -275,50 +424,70 @@ class Post
     public function getRelativeTime(): string
     {
         $date = $this->dateCreation;
+
         if (!$date) {
             return 'just now';
         }
 
         $seconds = max(0, time() - $date->getTimestamp());
+
         if ($seconds < 60) {
             return 'just now';
         }
+
         $minutes = (int) floor($seconds / 60);
+
         if ($minutes < 60) {
-            return $minutes.' min ago';
+            return $minutes . ' min ago';
         }
+
         $hours = (int) floor($minutes / 60);
+
         if ($hours < 24) {
-            return $hours.' h ago';
+            return $hours . ' h ago';
         }
+
         $days = (int) floor($hours / 24);
+
         if ($days < 7) {
-            return $days.' d ago';
+            return $days . ' d ago';
         }
+
         $weeks = (int) floor($days / 7);
+
         if ($weeks < 5) {
-            return $weeks.' w ago';
+            return $weeks . ' w ago';
         }
+
         $months = (int) floor($days / 30);
+
         if ($months < 12) {
-            return $months.' mo ago';
+            return $months . ' mo ago';
         }
+
         $years = (int) floor($days / 365);
 
-        return $years.' y ago';
+        return $years . ' y ago';
     }
 
+    /**
+     * @return list<string>
+     */
     public function getHashtags(): array
     {
         $text = $this->getDisplayText();
+
         if ($text === '') {
             return [];
         }
 
         preg_match_all('/(^|[^\w])#([A-Za-z0-9_]+)/u', $text, $matches);
-        $tags = array_map(static fn ($tag) => '#' . mb_strtolower($tag), $matches[2] ?? []);
+
+        $tags = array_map(
+            static fn (string $tag): string => '#' . mb_strtolower($tag),
+            $matches[2]
+        );
 
         return array_values(array_unique($tags));
     }
-
 }

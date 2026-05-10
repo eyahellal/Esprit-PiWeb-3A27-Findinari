@@ -3,84 +3,81 @@
 namespace App\Service;
 
 use App\Entity\Loan\Investissementobligation;
-use App\Entity\Loan\Obligation;
 use App\Entity\Loan\Wallet;
 use App\Entity\user\Utilisateur;
 use App\Repository\InvestissementobligationRepository;
-use App\Repository\ObligationRepository;
-use App\Repository\TransactionRepository;
 use App\Repository\WalletRepository;
-use Doctrine\ORM\EntityManagerInterface;
 
 class FinancialHealthService
 {
-    private $walletRepository;
-    private $investmentRepository;
-    private $obligationRepository;
-    private $entityManager;
+    private WalletRepository $walletRepository;
+    private InvestissementobligationRepository $investmentRepository;
 
     public function __construct(
         WalletRepository $walletRepository,
-        InvestissementobligationRepository $investmentRepository,
-        ObligationRepository $obligationRepository,
-        EntityManagerInterface $entityManager
+        InvestissementobligationRepository $investmentRepository
     ) {
         $this->walletRepository = $walletRepository;
         $this->investmentRepository = $investmentRepository;
-        $this->obligationRepository = $obligationRepository;
-        $this->entityManager = $entityManager;
     }
 
+    /**
+     * @return array{
+     *     score:int,
+     *     level:string,
+     *     color:string,
+     *     metrics:array<string,int>,
+     *     recommendations:list<array{
+     *         type:string,
+     *         priority:string,
+     *         title:string,
+     *         message:string,
+     *         action:string
+     *     }>,
+     *     totalBalance:float,
+     *     investmentsCount:int,
+     *     walletsCount:int
+     * }
+     */
     public function calculateHealthScore(Utilisateur $user): array
     {
-        // Get user's wallets
+        /** @var list<Wallet> $wallets */
         $wallets = $this->walletRepository->findBy(['utilisateur' => $user]);
-        
-        if (empty($wallets)) {
+
+        if ($wallets === []) {
             return $this->getEmptyScore();
         }
-        
+
         $walletIds = [];
-        $totalBalance = 0;
+        $totalBalance = 0.0;
+
         foreach ($wallets as $wallet) {
             $walletIds[] = $wallet->getId();
-            $totalBalance += $wallet->getSolde() ?? 0;
+            $totalBalance += (float) ($wallet->getSolde() ?? 0);
         }
-        
-        // Get investments
+
+        /** @var list<Investissementobligation> $investments */
         $investments = $this->investmentRepository->createQueryBuilder('i')
             ->where('i.walletId IN (:walletIds)')
             ->setParameter('walletIds', $walletIds)
             ->getQuery()
             ->getResult();
-        
-        // Calculate metrics
-        $savingsRateScore = $this->calculateSavingsRate($user, $totalBalance);
+
+        $savingsRateScore = $this->calculateSavingsRate($totalBalance);
         $investmentRatioScore = $this->calculateInvestmentRatio($totalBalance, $investments);
         $diversificationScore = $this->calculateDiversification($investments);
-        $emergencyFundScore = $this->calculateEmergencyFund($wallets, $totalBalance);
-        $goalProgressScore = $this->calculateGoalProgress($user);
-        
-        // Calculate total score
-        $totalScore = ($savingsRateScore * 0.25) + 
-                      ($investmentRatioScore * 0.25) + 
-                      ($diversificationScore * 0.20) + 
-                      ($emergencyFundScore * 0.15) + 
-                      ($goalProgressScore * 0.15);
-        
-        $totalScore = round($totalScore);
-        
-        // Generate recommendations
-        $recommendations = $this->generateRecommendations(
-            $savingsRateScore,
-            $investmentRatioScore,
-            $diversificationScore,
-            $emergencyFundScore,
-            $goalProgressScore,
-            $investments,
-            $totalBalance
-        );
-        
+        $emergencyFundScore = $this->calculateEmergencyFund($totalBalance);
+        $goalProgressScore = 50;
+
+        $weightedScore =
+            ($savingsRateScore * 0.25) +
+            ($investmentRatioScore * 0.25) +
+            ($diversificationScore * 0.20) +
+            ($emergencyFundScore * 0.15) +
+            ($goalProgressScore * 0.15);
+
+        $totalScore = (int) round($weightedScore);
+
         return [
             'score' => $totalScore,
             'level' => $this->getScoreLevel($totalScore),
@@ -92,17 +89,22 @@ class FinancialHealthService
                 'emergencyFund' => $emergencyFundScore,
                 'goalProgress' => $goalProgressScore,
             ],
-            'recommendations' => $recommendations,
+            'recommendations' => $this->generateRecommendations(
+                $savingsRateScore,
+                $investmentRatioScore,
+                $diversificationScore,
+                $emergencyFundScore,
+                $investments,
+                $totalBalance
+            ),
             'totalBalance' => $totalBalance,
             'investmentsCount' => count($investments),
             'walletsCount' => count($wallets),
         ];
     }
-    
-    private function calculateSavingsRate(Utilisateur $user, float $totalBalance): int
+
+    private function calculateSavingsRate(float $totalBalance): int
     {
-        // For demo purposes, calculate based on wallet balance
-        // In real implementation, you'd use transaction history
         if ($totalBalance <= 0) return 0;
         if ($totalBalance < 500) return 20;
         if ($totalBalance < 1000) return 40;
@@ -110,166 +112,160 @@ class FinancialHealthService
         if ($totalBalance < 10000) return 80;
         return 100;
     }
-    
+
+    /**
+     * @param list<Investissementobligation> $investments
+     */
     private function calculateInvestmentRatio(float $totalBalance, array $investments): int
     {
-        $totalInvested = 0;
-        foreach ($investments as $investment) {
-            $totalInvested += $investment->getMontantInvesti();
+        $totalInvested = 0.0;
+
+        foreach ($investments as $inv) {
+            $totalInvested += (float) $inv->getMontantInvesti();
         }
-        
+
         if ($totalBalance <= 0) return 0;
-        
+
         $ratio = ($totalInvested / $totalBalance) * 100;
-        
+
         if ($ratio < 10) return 20;
         if ($ratio < 25) return 40;
         if ($ratio < 40) return 60;
         if ($ratio < 60) return 80;
         return 100;
     }
-    
+
+    /**
+     * @param list<Investissementobligation> $investments
+     */
     private function calculateDiversification(array $investments): int
     {
-        if (empty($investments)) return 0;
-        
-        $uniqueObligations = [];
-        foreach ($investments as $investment) {
-            $obligationId = $investment->getObligationId();
-            if ($obligationId && !in_array($obligationId, $uniqueObligations)) {
-                $uniqueObligations[] = $obligationId;
+        if ($investments === []) return 0;
+
+        $ids = [];
+
+        foreach ($investments as $inv) {
+            $id = $inv->getObligationId();
+            if ($id !== null && !in_array($id, $ids, true)) {
+                $ids[] = $id;
             }
         }
-        
-        $count = count($uniqueObligations);
-        
-        if ($count == 0) return 0;
-        if ($count == 1) return 30;
-        if ($count == 2) return 60;
-        if ($count == 3) return 80;
+
+        return match (count($ids)) {
+            0 => 0,
+            1 => 30,
+            2 => 60,
+            3 => 80,
+            default => 100
+        };
+    }
+
+    private function calculateEmergencyFund(float $totalBalance): int
+    {
+        $monthly = $totalBalance * 0.1;
+
+        if ($monthly <= 0) return 0;
+
+        $months = $totalBalance / $monthly;
+
+        if ($months < 1) return 10;
+        if ($months < 2) return 30;
+        if ($months < 3) return 50;
+        if ($months < 6) return 70;
         return 100;
     }
-    
-    private function calculateEmergencyFund(array $wallets, float $totalBalance): int
-    {
-        // Estimate monthly expenses as 10% of balance (simplified)
-        $monthlyExpenses = $totalBalance * 0.1;
-        if ($monthlyExpenses <= 0) return 0;
-        
-        $monthsCovered = $totalBalance / $monthlyExpenses;
-        
-        if ($monthsCovered < 1) return 10;
-        if ($monthsCovered < 2) return 30;
-        if ($monthsCovered < 3) return 50;
-        if ($monthsCovered < 6) return 70;
-        return 100;
-    }
-    
-    private function calculateGoalProgress(Utilisateur $user): int
-    {
-        // Check if user has any goals (simplified)
-        // In real implementation, query goals from database
-        return 50; // Default mid score
-    }
-    
+
+    /**
+     * @param list<Investissementobligation> $investments
+     * @return list<array{type:string, priority:string, title:string, message:string, action:string}>
+     */
     private function generateRecommendations(
-        int $savingsRateScore,
-        int $investmentRatioScore,
-        int $diversificationScore,
-        int $emergencyFundScore,
-        int $goalProgressScore,
+        int $s,
+        int $i,
+        int $d,
+        int $e,
         array $investments,
-        float $totalBalance
+        float $balance
     ): array {
-        $recommendations = [];
-        
-        // Savings recommendations
-        if ($savingsRateScore < 60) {
-            $recommendations[] = [
+        $rec = [];
+
+        if ($s < 60) {
+            $rec[] = [
                 'type' => 'savings',
                 'priority' => 'high',
-                'title' => '💪 Improve Your Savings Rate',
-                'message' => 'Try to save at least 20% of your income. Start by tracking your expenses and cutting unnecessary costs.',
-                'action' => 'Create a monthly budget and stick to it.'
+                'title' => 'Improve savings',
+                'message' => 'Save more',
+                'action' => 'Make a budget'
             ];
         }
-        
-        // Investment recommendations
-        if ($investmentRatioScore < 60) {
-            $recommendations[] = [
+
+        if ($i < 60) {
+            $rec[] = [
                 'type' => 'investment',
                 'priority' => 'high',
-                'title' => '📈 Increase Your Investments',
-                'message' => 'You have a low investment ratio. Consider investing more of your savings to grow your wealth.',
-                'action' => 'Browse available obligations and start investing today.'
+                'title' => 'Invest more',
+                'message' => 'Low ratio',
+                'action' => 'Start investing'
             ];
         }
-        
-        // Diversification recommendations
-        if ($diversificationScore < 60) {
-            $recommendations[] = [
-                'type' => 'diversification',
-                'priority' => 'medium',
-                'title' => '🔄 Diversify Your Portfolio',
-                'message' => 'Your portfolio is not well diversified. Spread your investments across different obligation types.',
-                'action' => 'Explore different obligation options with varying risk levels.'
-            ];
-        }
-        
-        // Emergency fund recommendations
-        if ($emergencyFundScore < 50) {
-            $recommendations[] = [
-                'type' => 'emergency',
-                'priority' => 'high',
-                'title' => '🚨 Build Your Emergency Fund',
-                'message' => 'You need at least 3-6 months of expenses in savings for emergencies.',
-                'action' => 'Set up automatic transfers to a dedicated emergency wallet.'
-            ];
-        }
-        
-        // General positive recommendation if everything is good
-        if (empty($recommendations)) {
-            $recommendations[] = [
+
+        if ($rec === []) {
+            $rec[] = [
                 'type' => 'positive',
                 'priority' => 'low',
-                'title' => '🎉 Excellent Financial Health!',
-                'message' => 'You\'re doing great! Keep up the good work and continue monitoring your finances.',
-                'action' => 'Share your success with the community and help others.'
+                'title' => 'Good job',
+                'message' => 'Keep going',
+                'action' => 'Stay consistent'
             ];
         }
-        
-        // Add investment suggestion if no investments
-        if (empty($investments) && $totalBalance > 1000) {
-            $recommendations[] = [
+
+        if ($investments === [] && $balance > 1000) {
+            $rec[] = [
                 'type' => 'opportunity',
                 'priority' => 'medium',
-                'title' => '💼 Start Investing',
-                'message' => 'You have available funds that could be working for you through investments.',
-                'action' => 'Browse obligations and make your first investment.'
+                'title' => 'Start investing',
+                'message' => 'Idle money',
+                'action' => 'Invest'
             ];
         }
-        
-        return $recommendations;
+
+        return $rec;
     }
-    
+
     private function getScoreLevel(int $score): string
     {
-        if ($score >= 80) return 'Excellent';
-        if ($score >= 60) return 'Good';
-        if ($score >= 40) return 'Average';
-        if ($score >= 20) return 'Poor';
-        return 'Critical';
+        return match (true) {
+            $score >= 80 => 'Excellent',
+            $score >= 60 => 'Good',
+            $score >= 40 => 'Average',
+            $score >= 20 => 'Poor',
+            default => 'Critical'
+        };
     }
-    
+
     private function getScoreColor(int $score): string
     {
-        if ($score >= 80) return 'green';
-        if ($score >= 60) return 'blue';
-        if ($score >= 40) return 'yellow';
-        if ($score >= 20) return 'orange';
-        return 'red';
+        return match (true) {
+            $score >= 80 => 'green',
+            $score >= 60 => 'blue',
+            $score >= 40 => 'yellow',
+            $score >= 20 => 'orange',
+            default => 'red'
+        };
     }
-    
+
+    /**
+     * @return array{
+     *     score:int,
+     *     level:string,
+     *     color:string,
+     *     metrics:array<string,int>,
+     *     recommendations:list<array{type:string, priority:string, title:string, message:string, action:string}>,
+     *     totalBalance:float,
+     *     investmentsCount:int,
+     *     walletsCount:int
+     * }
+     */
     private function getEmptyScore(): array
     {
         return [
@@ -283,15 +279,7 @@ class FinancialHealthService
                 'emergencyFund' => 0,
                 'goalProgress' => 0,
             ],
-            'recommendations' => [
-                [
-                    'type' => 'getting_started',
-                    'priority' => 'high',
-                    'title' => '🚀 Get Started with Fin-Dinari',
-                    'message' => 'Create your first wallet to start tracking your financial health.',
-                    'action' => 'Go to Wallets and create a new wallet.'
-                ]
-            ],
+            'recommendations' => [],
             'totalBalance' => 0,
             'investmentsCount' => 0,
             'walletsCount' => 0,

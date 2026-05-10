@@ -128,19 +128,18 @@ class Categorie
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Budget::class, mappedBy: 'categorie')]
-    private Collection $budgets;
-
+   /** @var Collection<int, Budget> */
+#[ORM\OneToMany(targetEntity: Budget::class, mappedBy: 'categorie')]
+private Collection $budgets;
     /**
      * @return Collection<int, Budget>
      */
-    public function getBudgets(): Collection
-    {
-        if (!$this->budgets instanceof Collection) {
-            $this->budgets = new ArrayCollection();
-        }
-        return $this->budgets;
-    }
+    
+// ✅ After
+public function getBudgets(): Collection
+{
+    return $this->budgets;
+}
 
     public function addBudget(Budget $budget): self
     {
@@ -156,8 +155,10 @@ class Categorie
         return $this;
     }
 
-    #[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'categorie')]
-    private Collection $transactions;
+   // ✅ Fix line 159
+/** @var Collection<int, Transaction> */
+#[ORM\OneToMany(targetEntity: Transaction::class, mappedBy: 'categorie')]
+private Collection $transactions;
 
     public function __construct()
     {
@@ -168,13 +169,11 @@ class Categorie
     /**
      * @return Collection<int, Transaction>
      */
-    public function getTransactions(): Collection
-    {
-        if (!$this->transactions instanceof Collection) {
-            $this->transactions = new ArrayCollection();
-        }
-        return $this->transactions;
-    }
+    // ✅ After
+public function getTransactions(): Collection
+{
+    return $this->transactions;
+}
 
     public function addTransaction(Transaction $transaction): self
     {

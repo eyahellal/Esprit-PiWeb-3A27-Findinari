@@ -1,11 +1,17 @@
 <?php
 
+
 namespace App\Repository;
+
 
 use App\Entity\community\Like;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+
+/**
+ * @extends ServiceEntityRepository<Like>
+ */
 class LikeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,3 +19,5 @@ class LikeRepository extends ServiceEntityRepository
         parent::__construct($registry, Like::class);
     }
 }
+
+

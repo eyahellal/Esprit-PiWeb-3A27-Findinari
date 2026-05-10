@@ -1,6 +1,8 @@
 <?php
 
+
 namespace App\Controller;
+
 
 use App\Entity\reclamation\Message;
 use App\Entity\reclamation\Ticket;
@@ -19,6 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
+
 class TicketUserController extends AbstractController
 {
     public function __construct(
@@ -26,16 +29,20 @@ class TicketUserController extends AbstractController
     ) {
     }
 
+
     #[Route('/user/ticket/classify-priority', name: 'app_user_ticket_classify_priority', methods: ['POST'])]
     public function classifyPriorityAction(Request $request, TicketPriorityClassifierService $classifier): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
+
         $title = $data['title'] ?? '';
         $description = $data['description'] ?? '';
 
+
         $result = $classifier->classifyPriority($title, $description);
         $projectPriority = $classifier->mapToProjectPriority($result['priority']);
+
 
         return new JsonResponse([
             'priority' => $projectPriority,
@@ -46,6 +53,7 @@ class TicketUserController extends AbstractController
         ]);
     }
 
+
     #[Route('/user/tickets', name: 'app_user_tickets')]
     public function myTickets(
         TicketRepository $ticketRepository,
@@ -54,14 +62,17 @@ class TicketUserController extends AbstractController
     ): Response {
         $user = $this->getUser();
 
+
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
+
 
         $qb = $ticketRepository->createQueryBuilder('t')
             ->where('t.utilisateur = :user')
             ->setParameter('user', $user)
             ->orderBy('t.dateCreation', 'DESC');
+
 
         $pagination = $paginator->paginate(
             $qb->getQuery(),
@@ -69,10 +80,12 @@ class TicketUserController extends AbstractController
             5
         );
 
+
         return $this->render('reclamation/my_tickets.html.twig', [
             'tickets' => $pagination,
         ]);
     }
+
 
     #[Route('/user/createticket', name: 'app_user_createticket')]
     public function createTicket(
@@ -84,13 +97,16 @@ class TicketUserController extends AbstractController
         $form = $this->createForm(TicketType::class, $ticket);
         $form->handleRequest($request);
 
+
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('imageUrl')->getData();
+
 
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
 
                 try {
                     $imageFile->move(
@@ -103,30 +119,46 @@ class TicketUserController extends AbstractController
                 }
             }
 
-            $ticket->setUtilisateur($this->getUser());
 
+
+
+$user = $this->getUser();
+
+
+if (!$user instanceof \App\Entity\user\Utilisateur) {
+    throw $this->createAccessDeniedException('Utilisateur non valide.');
+}
+
+
+$ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             try {
                 $this->ticketManager->initializeNewTicket($ticket);
             } catch (\InvalidArgumentException $e) {
                 $this->addFlash('danger', $e->getMessage());
+
 
                 return $this->render('reclamation/create_ticket.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
 
+
             $entityManager->persist($ticket);
             $entityManager->flush();
 
+
             $this->addFlash('success', 'Your ticket has been submitted successfully!');
+
 
             return $this->redirectToRoute('support_center');
         }
+
 
         return $this->render('reclamation/create_ticket.html.twig', [
             'form' => $form->createView(),
         ]);
     }
+
 
     #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
@@ -137,17 +169,21 @@ class TicketUserController extends AbstractController
     ): Response {
         $user = $this->getUser();
 
+
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
+
 
         if ($ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException('You do not have access to this ticket.');
         }
 
+
         $message = new Message();
         $form = $this->createForm(MessageType::class, $message);
         $form->handleRequest($request);
+
 
         if ($form->isSubmitted() && $form->isValid()) {
             $message->setTicket($ticket);
@@ -155,12 +191,15 @@ class TicketUserController extends AbstractController
             $message->setDate(new \DateTime());
             $message->setTypeSender('User');
 
+
             $attachmentFile = $form->get('attachment')->getData();
+
 
             if ($attachmentFile) {
                 $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $attachmentFile->guessExtension();
+
 
                 try {
                     $attachmentFile->move(
@@ -168,9 +207,11 @@ class TicketUserController extends AbstractController
                         $newFilename
                     );
 
+
                     $message->setUrlPieceJointe($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Attachment upload failed.');
+
 
                     return $this->redirectToRoute('app_user_ticket_details', [
                         'id' => $ticket->getId(),
@@ -178,13 +219,16 @@ class TicketUserController extends AbstractController
                 }
             }
 
+
             $entityManager->persist($message);
             $entityManager->flush();
+
 
             return $this->redirectToRoute('app_user_ticket_details', [
                 'id' => $ticket->getId(),
             ]);
         }
+
 
         return $this->render('reclamation/my_ticket_details.html.twig', [
             'ticket' => $ticket,
@@ -193,7 +237,8 @@ class TicketUserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/ticket/{id}/delete', name: 'app_user_ticket_delete', methods: ['POST'])]
+
+   #[Route('/user/ticket/{id}/delete', name: 'app_user_ticket_delete', methods: ['POST'])]
     public function deleteTicket(
         Ticket $ticket,
         Request $request,
@@ -201,18 +246,24 @@ class TicketUserController extends AbstractController
     ): Response {
         $user = $this->getUser();
 
+
         if (!$user || $ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
-        if ($this->isCsrfTokenValid('delete_ticket_' . $ticket->getId(), $request->request->get('_token'))) {
+
+        // Correction ici : on cast le token en (string) pour satisfaire PHPStan
+        $token = $request->request->get('_token');
+        if ($this->isCsrfTokenValid('delete_ticket_' . $ticket->getId(), (string) $token)) {
             $entityManager->remove($ticket);
             $entityManager->flush();
             $this->addFlash('success', 'Ticket deleted successfully.');
         }
 
+
         return $this->redirectToRoute('app_user_tickets');
     }
+
 
     #[Route('/user/ticket/{id}/edit', name: 'app_user_ticket_edit', methods: ['GET', 'POST'])]
     public function editTicket(
@@ -223,26 +274,33 @@ class TicketUserController extends AbstractController
     ): Response {
         $user = $this->getUser();
 
+
         if (!$user || $ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException();
         }
 
+
         $form = $this->createForm(TicketType::class, $ticket);
         $form->remove('priorite');
+
 
         if ($form->has('statut')) {
             $form->remove('statut');
         }
 
+
         $form->handleRequest($request);
+
 
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('imageUrl')->getData();
+
 
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
 
                 try {
                     $imageFile->move(
@@ -255,22 +313,28 @@ class TicketUserController extends AbstractController
                 }
             }
 
+
             try {
                 $this->ticketManager->validateForUpdate($ticket);
             } catch (\InvalidArgumentException $e) {
                 $this->addFlash('danger', $e->getMessage());
+
 
                 return $this->redirectToRoute('app_user_ticket_edit', [
                     'id' => $ticket->getId(),
                 ]);
             }
 
+
             $entityManager->flush();
+
 
             $this->addFlash('success', 'Ticket updated successfully.');
 
+
             return $this->redirectToRoute('app_user_tickets');
         }
+
 
         return $this->render('reclamation/edit_ticket.html.twig', [
             'form' => $form->createView(),
@@ -278,3 +342,6 @@ class TicketUserController extends AbstractController
         ]);
     }
 }
+
+
+

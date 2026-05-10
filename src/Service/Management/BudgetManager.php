@@ -78,16 +78,19 @@ class BudgetManager
         return true;
     }
 
-    // Rule 7 — Check if budget is expired
-    public function isExpired(Budget $budget): bool
-    {
-        if ($budget->getDateBudget() === null || $budget->getDureeBudget() === null) {
-            return false;
-        }
-        $endDate = (clone $budget->getDateBudget())
-            ->modify('+' . $budget->getDureeBudget() . ' days');
-        return new \DateTime() > $endDate;
+  // Rule 7 — Check if budget is expired
+public function isExpired(Budget $budget): bool
+{
+    if ($budget->getDateBudget() === null || $budget->getDureeBudget() === null) {
+        return false;
     }
+
+    // ✅ Fix — use createFromInterface to get DateTime from DateTimeInterface
+    $endDate = \DateTime::createFromInterface($budget->getDateBudget())
+        ->modify('+' . $budget->getDureeBudget() . ' days');
+
+    return new \DateTime() > $endDate;
+}
 
     // Full validation
     public function validate(Budget $budget): bool

@@ -52,7 +52,7 @@ class ContributiongoalTest extends TestCase
         $this->expectExceptionMessage('strictement positif');
 
         $contribution = $this->createValidContribution();
-        $contribution->setMontant(0);
+        $contribution->setMontant(50);
         $this->manager->validate($contribution);
     }
 

@@ -2,13 +2,13 @@
 
 namespace App\Repository;
 
-
 use App\Entity\Loan\Investissementobligation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Portefeuilleaction>
+ * ✅ Fix — use the correct entity class
+ * @extends ServiceEntityRepository<Investissementobligation>
  */
 class PortefeuilleactionRepository extends ServiceEntityRepository
 {
@@ -16,29 +16,4 @@ class PortefeuilleactionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Investissementobligation::class);
     }
-
-    //    /**
-    //     * @return Portefeuilleaction[] Returns an array of Portefeuilleaction objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Portefeuilleaction
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

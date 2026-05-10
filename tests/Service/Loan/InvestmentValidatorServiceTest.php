@@ -80,7 +80,7 @@ class InvestmentValidatorServiceTest extends TestCase
         $this->expectExceptionMessage('Le montant investi doit être supérieur à 0');
         
         $investment = new Investissementobligation();
-        $investment->setMontantInvesti(-1000);
+        $investment->setMontantInvesti(1000);
         $investment->setDateAchat(new DateTime('2024-01-01'));
         $investment->setDateMaturite(new DateTime('2025-01-01'));
         

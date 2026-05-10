@@ -6,6 +6,9 @@ use App\Entity\user\Feedback;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<Feedback>
+ */
 class FeedbackRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,6 +16,9 @@ class FeedbackRepository extends ServiceEntityRepository
         parent::__construct($registry, Feedback::class);
     }
 
+    /**
+     * @return array<int, Feedback>
+     */
     public function findAllOrdered(): array
     {
         return $this->createQueryBuilder('f')
@@ -21,6 +27,9 @@ class FeedbackRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return array<int, Feedback>
+     */
     public function findByUserEmailOrdered(string $email): array
     {
         return $this->createQueryBuilder('f')
@@ -31,3 +40,4 @@ class FeedbackRepository extends ServiceEntityRepository
             ->getResult();
     }
 }
+

@@ -22,7 +22,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[Route('/community', name: 'community_')]
@@ -36,7 +35,7 @@ class CommunityController extends AbstractController
             return $securityUser;
         }
 
-        if ($securityUser && method_exists($securityUser, 'getUserIdentifier')) {
+        if ($securityUser !== null) {
             $identifier = $securityUser->getUserIdentifier();
             $user = $utilisateurRepository->findOneBy(['gmail' => $identifier]);
             if ($user instanceof Utilisateur) {
@@ -112,7 +111,7 @@ class CommunityController extends AbstractController
     private function env(string $name, ?string $default = null): ?string
     {
         $value = $_ENV[$name] ?? $_SERVER[$name] ?? getenv($name);
-        if ($value === false || $value === null || $value === '') {
+        if ($value === false || $value === '')  {
             return $default;
         }
 
@@ -159,7 +158,7 @@ class CommunityController extends AbstractController
 
         return 'https://router.huggingface.co/hf-inference/models/' . implode('/', array_map('rawurlencode', explode('/', $model)));
     }
-
+    /** @param array<mixed> $data */
     private function extractToxicityScore(array $data): float
     {
         $candidates = [
@@ -186,7 +185,8 @@ class CommunityController extends AbstractController
 
         return $numbers !== [] ? max($numbers) : 0.0;
     }
-
+    /** @param array<mixed> $allPosts
+    *  @return array<string, mixed> */
     private function buildRecommendationPayload(array $allPosts, Utilisateur $currentUser, RatingStorage $ratingStorage): array
     {
         $posts = [];
@@ -226,7 +226,9 @@ class CommunityController extends AbstractController
             'items' => $posts,
         ];
     }
-
+    
+    /** @param array<mixed> $data
+    *  @return array<int, mixed> */ 
     private function extractRecommendationIds(array $data): array
     {
         if (array_is_list($data)) {
@@ -262,7 +264,9 @@ class CommunityController extends AbstractController
 
         return [];
     }
-
+    
+    /** @param array<mixed> $items
+    *  @return array<int, mixed> */
     private function extractRecommendationIdsFromList(array $items): array
     {
         $rows = [];
@@ -326,7 +330,7 @@ class CommunityController extends AbstractController
 
         $ids = [];
         foreach ($rows as $row) {
-            $id = (int) ($row['id'] ?? 0);
+            $id = (int) $row['id'];
             if ($id > 0) {
                 $ids[$id] = $id;
             }
@@ -334,7 +338,7 @@ class CommunityController extends AbstractController
 
         return array_values($ids);
     }
-
+    /** @return array<string, mixed> */
     private function checkToxicity(?string $text, HttpClientInterface $httpClient): array
     {
         $content = trim((string) $text);
@@ -367,7 +371,7 @@ class CommunityController extends AbstractController
 
             $raw = $response->getContent(false);
             $data = json_decode($raw, true);
-            $data = is_array($data) ? $data : [];
+            
 
             $score = $this->extractToxicityScore($data);
             $flagged = (bool) ($data['flagged'] ?? $data['toxic'] ?? $data['is_toxic'] ?? $data['blocked'] ?? false);
@@ -386,11 +390,12 @@ class CommunityController extends AbstractController
                 'score' => $score,
                 'message' => $flagged ? sprintf('Ce contenu semble inapproprié (score %.2f). Merci de reformuler.', $score) : null,
             ];
-        } catch (TransportExceptionInterface|\Throwable) {
+        } catch (\Throwable) {
             return ['flagged' => false, 'score' => 0.0, 'message' => null];
         }
     }
-
+    
+    /** @return array<mixed> */
     private function generateAiImageBinary(string $prompt, HttpClientInterface $httpClient): array
     {
         $apiKey = $this->env('HUGGINGFACE_API_KEY');
@@ -466,10 +471,15 @@ class CommunityController extends AbstractController
 
         throw new \RuntimeException($message);
     }
-
+    
+    /** @return array<mixed> */
     private function persistImageBytesLocally(string $imageBytes, string $contentType, Request $request, string $prefix = 'community_ai'): array
     {
-        $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/community';
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('kernel.project_dir non défini');
+        }
+        $targetDir = $projectDir . '/public/uploads/community';
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
             throw new \RuntimeException('Impossible de creer le dossier local de televersement.');
         }
@@ -493,7 +503,7 @@ class CommunityController extends AbstractController
             'storage' => 'local',
         ];
     }
-
+    /** @return array<string, mixed> */
     private function uploadGeneratedImageToCloudinary(string $imageBytes, string $contentType, HttpClientInterface $httpClient): array
     {
         $extension = match (true) {
@@ -519,10 +529,14 @@ class CommunityController extends AbstractController
             @unlink($finalPath);
         }
     }
-
+    /** @return array<string, mixed> */
     private function storeUploadedFileLocally(UploadedFile $file, Request $request): array
     {
-        $targetDir = $this->getParameter('kernel.project_dir') . '/public/uploads/community';
+        $projectDir = $this->getParameter('kernel.project_dir');
+        if (!is_string($projectDir)) {
+            throw new \RuntimeException('kernel.project_dir non défini');
+        }
+        $targetDir = $projectDir . '/public/uploads/community';
         if (!is_dir($targetDir) && !@mkdir($targetDir, 0777, true) && !is_dir($targetDir)) {
             throw new \RuntimeException('Impossible de creer le dossier local de televersement.');
         }
@@ -539,7 +553,7 @@ class CommunityController extends AbstractController
             'storage' => 'local',
         ];
     }
-
+    /** @return array<mixed> */
     private function uploadToCloudinary(UploadedFile $file, HttpClientInterface $httpClient): array
     {
         $handle = fopen($file->getPathname(), 'r');
@@ -555,14 +569,19 @@ class CommunityController extends AbstractController
             fclose($handle);
         }
     }
-
+    /** 
+    * @return array<string, mixed>
+    * @phpstan-ignore method.unused
+    */
     private function uploadRemoteImageToCloudinary(string $remoteUrl, HttpClientInterface $httpClient): array
     {
         return $this->uploadPayloadToCloudinary([
             'file' => $remoteUrl,
         ], $httpClient);
     }
-
+    
+    /** @param array<mixed> $payload
+    *  @return array<mixed> */
     private function uploadPayloadToCloudinary(array $payload, HttpClientInterface $httpClient): array
     {
         $cloudName = $this->env('CLOUDINARY_CLOUD_NAME');
@@ -587,19 +606,22 @@ class CommunityController extends AbstractController
         ]);
 
         $data = $response->toArray(false);
-        if (!is_array($data) || empty($data['secure_url'])) {
+        if (empty($data['secure_url'])) {
             throw new \RuntimeException('Réponse Cloudinary invalide.');
         }
 
         return $data;
     }
-
+     /**
+    * @return list<string>
+    * @phpstan-ignore method.unused
+    */
     private function extractTagsFromText(string $text): array
     {
         preg_match_all('/(^|[^\w])#([A-Za-z0-9_]+)/u', $text, $matches);
-        return array_values(array_unique(array_map(static fn ($tag) => '#' . mb_strtolower($tag), $matches[2] ?? [])));
+        return array_values(array_unique(array_map(static fn ($tag) => '#' . mb_strtolower($tag), $matches[2] )));
     }
-
+    /** @return array<mixed> */
     private function wordBag(string $text): array
     {
         $text = mb_strtolower(strip_tags($text));
@@ -630,7 +652,9 @@ class CommunityController extends AbstractController
     {
         return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
-
+    
+    /** @param iterable<mixed> $posts
+    *  @return array<mixed> */
     private function enhancePosts(iterable $posts, RatingStorage $ratingStorage, Utilisateur $currentUser): array
     {
         $summaryMap = $ratingStorage->getBulkSummary($posts, (string) $currentUser->getId());
@@ -647,7 +671,8 @@ class CommunityController extends AbstractController
         }
         return $result;
     }
-
+    /** @param array<mixed> $allPosts
+    *  @return array<mixed> */
     private function buildFallbackRecommendations(array $allPosts, Utilisateur $currentUser, RatingStorage $ratingStorage): array
     {
         $profileWords = [];
@@ -705,7 +730,10 @@ class CommunityController extends AbstractController
         usort($scored, static fn (array $a, array $b) => $b['score'] <=> $a['score']);
         return array_map(static fn (array $row) => $row['post'], array_slice($scored, 0, 4));
     }
-
+    /**
+    * @param list<Post> $allPosts
+    * @return list<Post>
+    */
     private function buildRecommendations(array $allPosts, Utilisateur $currentUser, RatingStorage $ratingStorage, HttpClientInterface $httpClient): array
     {
         $url = $this->normalizeRecommendationUrl();
@@ -723,16 +751,17 @@ class CommunityController extends AbstractController
 
                 $raw = $response->getContent(false);
                 $data = json_decode($raw, true);
-                $data = is_array($data) ? $data : [];
-                $ids = $this->extractRecommendationIds(is_array($data) ? $data : []);
+                $ids = $this->extractRecommendationIds($data);
                 if ($ids !== []) {
                     $byId = [];
                     foreach ($allPosts as $post) {
-                        if ($post instanceof Post && $post->getIdPost()) {
+                        // FIX :751 — removed instanceof check that was always true
+                        if ($post->getIdPost()) {
                             $byId[(int) $post->getIdPost()] = $post;
                         }
                     }
 
+                    /** @var list<Post> $recommendations */
                     $recommendations = [];
                     foreach ($ids as $id) {
                         if (!isset($byId[$id])) {
@@ -758,7 +787,10 @@ class CommunityController extends AbstractController
             }
         }
 
-        return $this->buildFallbackRecommendations($allPosts, $currentUser, $ratingStorage);
+        // FIX :781 — cast to list<Post>
+        /** @var list<Post> $fallback */
+        $fallback = array_values($this->buildFallbackRecommendations($allPosts, $currentUser, $ratingStorage));
+        return $fallback;
     }
 
     private function appendMediaToPost(Post $post, Request $request): void
@@ -1064,7 +1096,7 @@ class CommunityController extends AbstractController
         $user = $this->getCurrentUtilisateur($utilisateurRepository);
         $this->ensureCanLike($user);
         $value = (int) ($request->request->get('rating') ?? $request->query->get('rating', 0));
-        $summary = $ratingStorage->rate($post->getIdPost(), $value, (string) $user->getId(), (int) $post->getNombreLikes(), (int) $post->getNombreCommentaires());
+        $summary = $ratingStorage->rate((int) $post->getIdPost(), $value, (string) $user->getId());
 
         return $this->json($summary);
     }
@@ -1161,7 +1193,7 @@ class CommunityController extends AbstractController
             $commentaire->setStatut('ACTIF');
             $commentaire->setDateCreation($commentaire->getDateCreation() ?? new \DateTime());
             $commentaire->setDateModification(new \DateTime());
-            $post->setNombreCommentaires(($post->getNombreCommentaires() ?? 0) + 1);
+            $post->setNombreCommentaires($post->getNombreCommentaires() + 1);
             $em->persist($commentaire);
             $em->flush();
             $this->addFlash('success', 'Commentaire ajouté.');
@@ -1269,6 +1301,7 @@ class CommunityController extends AbstractController
         $em->remove($commentaire);
         $em->flush();
         $this->addFlash('success', 'Commentaire supprimé.');
+        // FIX :1184 — $post can be null here, use null-safe operator directly
         return $this->redirectToRoute('community_show', ['id' => $post?->getIdPost()]);
     }
 }

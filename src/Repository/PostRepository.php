@@ -1,11 +1,14 @@
 <?php
 
+
 namespace App\Repository;
+
 
 use App\Entity\community\Post;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
+
 
 /**
  * @extends ServiceEntityRepository<Post>
@@ -17,6 +20,7 @@ class PostRepository extends ServiceEntityRepository
         parent::__construct($registry, Post::class);
     }
 
+
     public function createCommunityFeedQuery(?string $term = null, string $filter = 'all'): QueryBuilder
     {
         $qb = $this->createQueryBuilder('p')
@@ -24,12 +28,14 @@ class PostRepository extends ServiceEntityRepository
             ->orderBy('p.dateCreation', 'DESC')
             ->addOrderBy('p.idPost', 'DESC');
 
+
         $term = trim((string) $term);
         if ($term !== '') {
             $normalized = mb_strtolower(ltrim($term, '#'));
             $qb->andWhere('LOWER(p.contenu) LIKE :term OR LOWER(p.titre) LIKE :term OR LOWER(u.nom) LIKE :term OR LOWER(u.prenom) LIKE :term OR LOWER(u.gmail) LIKE :term')
                 ->setParameter('term', '%' . $normalized . '%');
         }
+
 
         if ($filter === 'comment') {
             $qb->andWhere('p.nombreCommentaires > 0');
@@ -41,11 +47,20 @@ class PostRepository extends ServiceEntityRepository
                 ->setParameter('mediaD', '%<img%');
         }
 
+
         return $qb;
     }
+    /**
+     * @return array<int, Post>
+     */
+
 
     public function searchCommunityFeed(?string $term): array
     {
         return $this->createCommunityFeedQuery($term)->getQuery()->getResult();
     }
 }
+
+
+
+

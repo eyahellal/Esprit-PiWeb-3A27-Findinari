@@ -15,7 +15,7 @@ class TwelveDataService
     ) {
         $this->cache = new FilesystemAdapter('twelvedata', 3600); // cache 1h
     }
-
+    /** @return array<string, mixed> */
     public function getStockTimeSeries(string $symbol, string $interval = '1day', int $outputsize = 30): array
     {
         $cacheKey = 'stock_' . preg_replace('/[^a-zA-Z0-9]/', '_', strtolower($symbol)) . '_' . $interval . '_' . $outputsize;
@@ -49,7 +49,7 @@ class TwelveDataService
             return $data;
         });
     }
-
+    /** @return list<array<string, mixed>> */
     public function searchSymbol(string $query): array
     {
         $cacheKey = 'search_' . preg_replace('/[^a-zA-Z0-9]/', '_', strtolower($query));
@@ -68,6 +68,10 @@ class TwelveDataService
             return $data['data'] ?? [];
         });
     }
+    /**
+   * @param list<string> $symbols
+   * @return array<string, array<string, mixed>|null>
+   */
     public function getMultipleQuotes(array $symbols): array
 {
     $results = [];

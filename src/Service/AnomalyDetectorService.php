@@ -1,90 +1,75 @@
 <?php
+
 namespace App\Service;
+
+// Note: IsolationForest n'existe pas dans php-ml
+// Nous allons implémenter une version simplifiée ou importer une librairie externe
+// Pour l'instant, nous commentons l'utilisation de IsolationForest
+
+/**
+ * @phpstan-type Contribution array{
+ *     objectif_id: int,
+ *     objectif_titre: string,
+ *     wallet_id: int,
+ *     montant: float,
+ *     date: string,
+ *     niveau_risque?: string,
+ *     methode?: string,
+ *     score?: float,
+ *     raison?: string,
+ *     source?: string
+ * }
+ *
+ * @phpstan-type Anomaly array{
+ *     objectif_id: int,
+ *     objectif_titre: string,
+ *     wallet_id: int,
+ *     montant: float,
+ *     date: string,
+ *     niveau_risque: string,
+ *     methode: string,
+ *     score: float,
+ *     raison: string,
+ *     source: string
+ * }
+ */
 class AnomalyDetectorService
 {
-    private IsolationForest $model;
-
     public function __construct()
     {
-        $this->model = new IsolationForest(
-            nEstimators:   100,
-            maxSamples:    256,
-            contamination: 0.1
-        );
+        // IsolationForest n'est pas disponible
+        // $this->model = new IsolationForest(
+        //     nEstimators:   100,
+        //     maxSamples:    256,
+        //     contamination: 0.1
+        // );
     }
 
-    // ════════════════════════════════════════════════════════════
-    //  POINT D'ENTRÉE PRINCIPAL
-    // ════════════════════════════════════════════════════════════
+    /**
+     * Point d'entrée principal
+     *
+     * @param Contribution[] $contributions
+     * @return Anomaly[]
+     */
     public function detect(array $contributions): array
     {
         if (count($contributions) < 3) {
             return $this->detectStats($contributions); // fallback si trop peu de données
         }
 
-        // 1. ML — Isolation Forest
-        $mlAnomalies = $this->detectML($contributions);
-
-        // 2. Stats classiques
+        // 1. Stats classiques uniquement car Isolation Forest n'est pas disponible
         $statAnomalies = $this->detectStats($contributions);
 
-        // 3. Fusion et ranking
-        return $this->mergeAndRank($mlAnomalies, $statAnomalies);
+        // 2. Fusion et ranking
+        return $this->mergeAndRank([], $statAnomalies);
     }
 
-    // ════════════════════════════════════════════════════════════
-    //  ISOLATION FOREST (ML)
-    // ════════════════════════════════════════════════════════════
-    private function detectML(array $contributions): array
-    {
-        $montants = array_column($contributions, 'montant');
-        $mean     = array_sum($montants) / count($montants);
-        $std      = $this->std($montants);
-
-        // Normalisation des features pour le modèle
-        $X = [];
-        foreach ($contributions as $c) {
-            $X[] = [
-                $std > 0 ? ($c['montant'] - $mean) / $std : 0,   // montant normalisé
-                fmod((float)$c['montant'], 1000.0) == 0 ? 1 : 0, // montant rond
-                strlen((string)(int)$c['montant']),               // nb chiffres
-            ];
-        }
-
-        // Entraîner et prédire
-        $this->model->fit($X);
-        $predictions = $this->model->predict($X);
-        $scores      = $this->model->scoresSamples($X);
-
-        $anomalies = [];
-        foreach ($contributions as $i => $c) {
-            if ($predictions[$i] === -1) {
-                $score = $scores[$i];
-                $anomalies[] = [
-                    'objectif_id'    => $c['objectif_id'],
-                    'objectif_titre' => $c['objectif_titre'],
-                    'wallet_id'      => $c['wallet_id'],
-                    'montant'        => $c['montant'],
-                    'date'           => $c['date'],
-                    'niveau_risque'  => $score < -0.6 ? 'ÉLEVÉ' : 'MOYEN',
-                    'methode'        => 'Isolation Forest ML',
-                    'score'          => round(abs($score), 4),
-                    'raison'         => sprintf(
-                        'Isolation Forest a isolé ce point anormalement vite (score: %.4f) — comportement inhabituel par rapport aux %d autres contributions',
-                        $score,
-                        count($contributions)
-                    ),
-                    'source'         => 'ml',
-                ];
-            }
-        }
-
-        return $anomalies;
-    }
-
-    // ════════════════════════════════════════════════════════════
-    //  STATISTIQUES CLASSIQUES
-    // ════════════════════════════════════════════════════════════
+    /**
+     * Statistiques classiques
+     *
+     * @param Contribution[] $contributions
+     * @return Anomaly[]
+     */
     private function detectStats(array $contributions): array
     {
         $all = [];
@@ -92,9 +77,17 @@ class AnomalyDetectorService
         $all = array_merge($all, $this->iqr($contributions));
         $all = array_merge($all, $this->rapidPatterns($contributions));
         $all = array_merge($all, $this->businessRules($contributions));
+       
+        /** @var Anomaly[] $all */
         return $all;
     }
 
+    /**
+     * Détection par Z-Score
+     *
+     * @param Contribution[] $contributions
+     * @return Anomaly[]
+     */
     private function zScore(array $contributions): array
     {
         $montants = array_column($contributions, 'montant');
@@ -120,9 +113,17 @@ class AnomalyDetectorService
                 ]);
             }
         }
+       
+        /** @var Anomaly[] $anomalies */
         return $anomalies;
     }
 
+    /**
+     * Détection par IQR (Interquartile Range)
+     *
+     * @param Contribution[] $contributions
+     * @return Anomaly[]
+     */
     private function iqr(array $contributions): array
     {
         $montants = array_column($contributions, 'montant');
@@ -153,9 +154,17 @@ class AnomalyDetectorService
                 ]);
             }
         }
+       
+        /** @var Anomaly[] $anomalies */
         return $anomalies;
     }
 
+    /**
+     * Détection de patterns rapides (contributions trop rapprochées)
+     *
+     * @param Contribution[] $contributions
+     * @return Anomaly[]
+     */
     private function rapidPatterns(array $contributions): array
     {
         $byObjectif = [];
@@ -184,9 +193,17 @@ class AnomalyDetectorService
                 }
             }
         }
+       
+        /** @var Anomaly[] $anomalies */
         return $anomalies;
     }
 
+    /**
+     * Règles métier
+     *
+     * @param Contribution[] $contributions
+     * @return Anomaly[]
+     */
     private function businessRules(array $contributions): array
     {
         $mediane   = $this->mediane(array_column($contributions, 'montant'));
@@ -225,12 +242,18 @@ class AnomalyDetectorService
                 ]);
             }
         }
+       
+        /** @var Anomaly[] $anomalies */
         return $anomalies;
     }
 
-    // ════════════════════════════════════════════════════════════
-    //  FUSION ML + STATS
-    // ════════════════════════════════════════════════════════════
+    /**
+     * Fusion Stats (ML non disponible)
+     *
+     * @param Anomaly[] $ml
+     * @param Anomaly[] $stats
+     * @return Anomaly[]
+     */
     private function mergeAndRank(array $ml, array $stats): array
     {
         $result = $ml;
@@ -241,7 +264,7 @@ class AnomalyDetectorService
                     && abs($stat['montant'] - $anomaly['montant']) < 0.01) {
                     // Confirmé par les deux méthodes = ÉLEVÉ automatiquement
                     $anomaly['niveau_risque'] = 'ÉLEVÉ';
-                    $anomaly['methode']       = 'ML + ' . $stat['methode'];
+                    $anomaly['methode']       = 'Stats + ' . $stat['methode'];
                     $anomaly['raison']       .= ' | Confirmé par ' . $stat['methode'] . ': ' . $stat['raison'];
                     $anomaly['score']        += $stat['score'];
                 }
@@ -274,12 +297,17 @@ class AnomalyDetectorService
         }
 
         usort($final, fn($a, $b) => $b['score'] <=> $a['score']);
+       
+        /** @var Anomaly[] $final */
         return $final;
     }
 
-    // ════════════════════════════════════════════════════════════
-    //  HELPERS
-    // ════════════════════════════════════════════════════════════
+    /**
+     * Calcule l'écart-type d'un tableau de valeurs
+     *
+     * @param float[] $values
+     * @return float
+     */
     private function std(array $values): float
     {
         if (count($values) < 2) return 0.0;
@@ -288,6 +316,12 @@ class AnomalyDetectorService
         return sqrt($variance);
     }
 
+    /**
+     * Calcule la médiane d'un tableau de valeurs
+     *
+     * @param float[] $values
+     * @return float
+     */
     private function mediane(array $values): float
     {
         if (empty($values)) return 0.0;

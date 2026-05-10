@@ -27,23 +27,28 @@ class FeedbackController extends AbstractController
 
         $formView = null;
 
-        if ($user) {
-            $feedback = new Feedback();
-            $form = $this->createForm(FeedbackType::class, $feedback);
-            $form->handleRequest($request);
+        if ($user instanceof Utilisateur) {
+            $userEmail = $user->getGmail();
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $feedback->setUserEmail($user->getGmail());
-                $feedback->setCreatedAt(new \DateTime());
+            if ($userEmail !== null) {
+                $feedback = new Feedback();
+                $form = $this->createForm(FeedbackType::class, $feedback);
+                $form->handleRequest($request);
 
-                $entityManager->persist($feedback);
-                $entityManager->flush();
+                if ($form->isSubmitted() && $form->isValid()) {
+                    $feedback->setUserEmail($userEmail);
+                    $feedback->setCreatedAt(new \DateTime());
 
-                $this->addFlash('success', 'Feedback added successfully.');
-                return $this->redirectToRoute('app_feedback_index');
+                    $entityManager->persist($feedback);
+                    $entityManager->flush();
+
+                    $this->addFlash('success', 'Feedback added successfully.');
+
+                    return $this->redirectToRoute('app_feedback_index');
+                }
+
+                $formView = $form->createView();
             }
-
-            $formView = $form->createView();
         }
 
         $queryBuilder = $feedbackRepository
@@ -71,11 +76,17 @@ class FeedbackController extends AbstractController
         /** @var Utilisateur|null $user */
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('app_front_login');
         }
 
-        if ($feedback->getUserEmail() !== $user->getGmail()) {
+        $userEmail = $user->getGmail();
+
+        if ($userEmail === null) {
+            throw $this->createAccessDeniedException('User email not found.');
+        }
+
+        if ($feedback->getUserEmail() !== $userEmail) {
             throw $this->createAccessDeniedException('You can only edit your own feedback.');
         }
 
@@ -86,6 +97,7 @@ class FeedbackController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Feedback updated successfully.');
+
             return $this->redirectToRoute('app_feedback_index');
         }
 
@@ -104,15 +116,27 @@ class FeedbackController extends AbstractController
         /** @var Utilisateur|null $user */
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof Utilisateur) {
             return $this->redirectToRoute('app_front_login');
         }
 
-        if ($feedback->getUserEmail() !== $user->getGmail()) {
+        $userEmail = $user->getGmail();
+
+        if ($userEmail === null) {
+            throw $this->createAccessDeniedException('User email not found.');
+        }
+
+        if ($feedback->getUserEmail() !== $userEmail) {
             throw $this->createAccessDeniedException('You can only delete your own feedback.');
         }
 
-        if ($this->isCsrfTokenValid('delete_feedback_' . $feedback->getId(), $request->request->get('_token'))) {
+        $token = $request->request->get('_token');
+
+        if (!is_string($token) && $token !== null) {
+            $token = (string) $token;
+        }
+
+        if ($this->isCsrfTokenValid('delete_feedback_' . $feedback->getId(), $token)) {
             $entityManager->remove($feedback);
             $entityManager->flush();
 

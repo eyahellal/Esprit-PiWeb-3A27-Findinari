@@ -16,6 +16,9 @@ class MessageRepository extends ServiceEntityRepository
         parent::__construct($registry, Message::class);
     }
 
+    /**
+     * @return Message[]
+     */
     public function findMessagesAfterId(int $ticketId, int $lastId): array
     {
         return $this->createQueryBuilder('m')

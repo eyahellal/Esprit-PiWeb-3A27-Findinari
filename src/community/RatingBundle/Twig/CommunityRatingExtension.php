@@ -12,6 +12,9 @@ class CommunityRatingExtension extends AbstractExtension
     {
     }
 
+    /**
+     * @return list<TwigFunction>
+     */
     public function getFunctions(): array
     {
         return [
@@ -19,6 +22,9 @@ class CommunityRatingExtension extends AbstractExtension
         ];
     }
 
+    /**
+     * @return array<string, int|float>
+     */
     public function getSummary(int $postId): array
     {
         return $this->ratingStorage->getSummary($postId);

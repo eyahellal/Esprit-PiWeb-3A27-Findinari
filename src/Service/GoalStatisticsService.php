@@ -7,73 +7,101 @@ use App\Entity\objective\Objectif;
 class GoalStatisticsService
 {
     /**
-     * Compute all stats + prediction for a given objective.
-     * Returns array with keys:
-     *   totalCollected, contributionCount, targetAmount, progressPct, prediction
+     * @return array{
+     *     totalCollected: float,
+     *     contributionCount: int,
+     *     targetAmount: float,
+     *     progressPct: float,
+     *     prediction: array{
+     *         predictedDate: \DateTime,
+     *         daysNeeded: int,
+     *         velocityPerDay: float,
+     *         remaining: float,
+     *         confidence: string
+     *     }|null
+     * }
      */
     public function compute(Objectif $objectif): array
     {
-        $totalCollected    = 0;
+        $totalCollected = 0.0;
         $contributionCount = 0;
 
         foreach ($objectif->getContributiongoals() as $contrib) {
-            $totalCollected    += $contrib->getMontant();
+            $totalCollected += (float) $contrib->getMontant();
             $contributionCount++;
         }
 
         $targetAmount = (float) $objectif->getMontant();
-        $progressPct  = $targetAmount > 0 ? ($totalCollected / $targetAmount) * 100 : 0;
-        $progressPct  = min(100, $progressPct);
+        $progressPct = $targetAmount > 0 ? ($totalCollected / $targetAmount) * 100 : 0.0;
+        $progressPct = min(100, $progressPct);
 
-        // ── Prediction (only for non-finished goals) ──────────────────────
         $prediction = $this->computePrediction($objectif, $totalCollected, $contributionCount);
 
         return [
-            'totalCollected'    => $totalCollected,
+            'totalCollected' => $totalCollected,
             'contributionCount' => $contributionCount,
-            'targetAmount'      => $targetAmount,
-            'progressPct'       => $progressPct,
-            'prediction'        => $prediction,
+            'targetAmount' => $targetAmount,
+            'progressPct' => $progressPct,
+            'prediction' => $prediction,
         ];
     }
 
     /**
-     * Predict completion date based on current contribution velocity.
-     *
-     * @param int $contributionCount  Pre-computed count (avoids iterating twice)
+     * @return array{
+     *     predictedDate: \DateTime,
+     *     daysNeeded: int,
+     *     velocityPerDay: float,
+     *     remaining: float,
+     *     confidence: string
+     * }|null
      */
     public function computePrediction(
         Objectif $objectif,
-        float    $totalCollected,
-        int      $contributionCount = -1
+        float $totalCollected,
+        int $contributionCount = -1
     ): ?array {
-        // Already finished → no prediction
         if ($objectif->getStatut() === 'TERMINE') {
             return null;
         }
 
         $contributions = $objectif->getContributiongoals()->toArray();
 
-        // Need at least one contribution
+        /**
+         * Remove contributions without date because PHPStan knows
+         * getDate() can return DateTimeInterface|null.
+         */
+        $contributions = array_values(array_filter(
+            $contributions,
+            static fn ($contrib): bool => $contrib->getDate() !== null
+        ));
+
         if (count($contributions) === 0) {
             return null;
         }
 
-        // Use passed count or compute it
         if ($contributionCount < 0) {
             $contributionCount = count($contributions);
         }
 
-        // Sort ascending by date
-        usort($contributions, fn($a, $b) => $a->getDate() <=> $b->getDate());
+        usort($contributions, static function ($a, $b): int {
+            $dateA = $a->getDate();
+            $dateB = $b->getDate();
 
-        $firstDate   = $contributions[0]->getDate();
-        $now         = new \DateTime();
-        $daysElapsed = (int) $firstDate->diff($now)->days;
+            if ($dateA === null || $dateB === null) {
+                return 0;
+            }
 
-        if ($daysElapsed < 1) {
-            $daysElapsed = 1; // avoid division by zero on same-day contributions
+            return $dateA <=> $dateB;
+        });
+
+        $firstDate = $contributions[0]->getDate();
+
+        if ($firstDate === null) {
+            return null;
         }
+
+        $now = new \DateTime();
+        $daysElapsed = max(1, (int) $firstDate->diff($now)->days);
 
         $velocityPerDay = $totalCollected / $daysElapsed;
 
@@ -82,36 +110,39 @@ class GoalStatisticsService
         }
 
         $targetAmount = (float) $objectif->getMontant();
-        $remaining    = $targetAmount - $totalCollected;
+        $remaining = $targetAmount - $totalCollected;
 
         if ($remaining <= 0) {
             return null;
         }
 
-        $daysNeeded    = (int) ceil($remaining / $velocityPerDay);
+        $daysNeeded = (int) ceil($remaining / $velocityPerDay);
         $predictedDate = (clone $now)->modify("+{$daysNeeded} days");
 
-        // Confidence: more contributions + more elapsed days = more reliable
         $confidence = match (true) {
             $contributionCount >= 5 && $daysElapsed >= 14 => 'haute',
-            $contributionCount >= 2 && $daysElapsed >= 3  => 'moyenne',
-            default                                        => 'faible',
+            $contributionCount >= 2 && $daysElapsed >= 3 => 'moyenne',
+            default => 'faible',
         };
 
         return [
-            'predictedDate'  => $predictedDate,
-            'daysNeeded'     => $daysNeeded,
+            'predictedDate' => $predictedDate,
+            'daysNeeded' => $daysNeeded,
             'velocityPerDay' => round($velocityPerDay, 2),
-            'remaining'      => round($remaining, 2),
-            'confidence'     => $confidence,
+            'remaining' => round($remaining, 2),
+            'confidence' => $confidence,
         ];
     }
 
     /**
-     * Simulate: "If I contribute $dailyAmount per day, when will I reach my goal?"
-     * Returns the same shape as computePrediction(), or null if already done.
-     *
-     * @param float $dailyAmount  Hypothetical daily contribution
+     * @return array{
+     *     predictedDate: \DateTime,
+     *     daysNeeded: int,
+     *     velocityPerDay: float,
+     *     remaining: float,
+     *     confidence: string,
+     *     isSimulation: bool
+     * }|null
      */
     public function simulateDailyContribution(Objectif $objectif, float $dailyAmount): ?array
     {
@@ -119,45 +150,66 @@ class GoalStatisticsService
             return null;
         }
 
-        $totalCollected = 0;
+        $totalCollected = 0.0;
         $contributionCount = 0;
+
         foreach ($objectif->getContributiongoals() as $contrib) {
-            $totalCollected    += $contrib->getMontant();
+            $totalCollected += (float) $contrib->getMontant();
             $contributionCount++;
         }
 
         $targetAmount = (float) $objectif->getMontant();
-        $remaining    = $targetAmount - $totalCollected;
+        $remaining = $targetAmount - $totalCollected;
 
         if ($remaining <= 0) {
-            return null; // already reached
+            return null;
         }
 
-        $daysNeeded    = (int) ceil($remaining / $dailyAmount);
-        $now           = new \DateTime();
+        $daysNeeded = (int) ceil($remaining / $dailyAmount);
+        $now = new \DateTime();
         $predictedDate = (clone $now)->modify("+{$daysNeeded} days");
 
-        // Same confidence logic but based on simulated velocity
         $contributions = $objectif->getContributiongoals()->toArray();
-        $daysElapsed   = 1;
+
+        $contributions = array_values(array_filter(
+            $contributions,
+            static fn ($contrib): bool => $contrib->getDate() !== null
+        ));
+
+        $daysElapsed = 1;
+
         if (count($contributions) > 0) {
-            usort($contributions, fn($a, $b) => $a->getDate() <=> $b->getDate());
-            $daysElapsed = max(1, (int) $contributions[0]->getDate()->diff($now)->days);
+            usort($contributions, static function ($a, $b): int {
+                $dateA = $a->getDate();
+                $dateB = $b->getDate();
+
+                if ($dateA === null || $dateB === null) {
+                    return 0;
+                }
+
+                return $dateA <=> $dateB;
+            });
+
+            $firstDate = $contributions[0]->getDate();
+
+            if ($firstDate !== null) {
+                $daysElapsed = max(1, (int) $firstDate->diff($now)->days);
+            }
         }
 
         $confidence = match (true) {
             $contributionCount >= 5 && $daysElapsed >= 14 => 'haute',
-            $contributionCount >= 2 && $daysElapsed >= 3  => 'moyenne',
-            default                                        => 'faible',
+            $contributionCount >= 2 && $daysElapsed >= 3 => 'moyenne',
+            default => 'faible',
         };
 
         return [
-            'predictedDate'  => $predictedDate,
-            'daysNeeded'     => $daysNeeded,
+            'predictedDate' => $predictedDate,
+            'daysNeeded' => $daysNeeded,
             'velocityPerDay' => round($dailyAmount, 2),
-            'remaining'      => round($remaining, 2),
-            'confidence'     => $confidence,
-            'isSimulation'   => true,
+            'remaining' => round($remaining, 2),
+            'confidence' => $confidence,
+            'isSimulation' => true,
         ];
     }
 }

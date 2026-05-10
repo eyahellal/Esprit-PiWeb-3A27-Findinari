@@ -14,8 +14,6 @@ return [
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
 
-    Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
-
     FOS\JsRoutingBundle\FOSJsRoutingBundle::class => ['all' => true],
     App\Bundle\Statistic\StatisticBundle::class => ['all' => true],
     Karser\Recaptcha3Bundle\KarserRecaptcha3Bundle::class => ['all' => true],

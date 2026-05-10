@@ -1,10 +1,20 @@
 <?php
-// src/Service/NotificationService.php
+
 namespace App\Service;
 
 use App\Entity\objective\Objectif;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * @phpstan-type Notification array{
+ *     key: string,
+ *     type: string,
+ *     titre: string,
+ *     message: string,
+ *     isRead: bool,
+ *     time: int
+ * }
+ */
 class NotificationService
 {
     private const SEUIL_PCT       = 70;
@@ -18,19 +28,27 @@ class NotificationService
         return $this->requestStack->getSession();
     }
 
-    /** Génère les notifications pour une liste d'objectifs et les stocke en session */
+    /**
+     * Génère les notifications pour une liste d'objectifs et les stocke en session
+     *
+     * @param Objectif[] $objectifs
+     */
     public function generateForObjectifs(array $objectifs): void
     {
+        /** @var array<string, Notification> $existing */
         $existing = $this->session()->get(self::SESSION_KEY, []);
-        // Index par clé unique pour éviter les doublons
+       
+        /** @var array<string, Notification> $indexed */
         $indexed  = [];
         foreach ($existing as $n) {
             $indexed[$n['key']] = $n;
         }
 
         foreach ($objectifs as $objectif) {
-            if (!$objectif instanceof Objectif) continue;
-            if ($objectif->getStatut() === 'TERMINE') continue;
+            // Le PHPDoc garantit que $objectif est de type Objectif, pas besoin de vérification
+            if ($objectif->getStatut() === 'TERMINE') {
+                continue;
+            }
 
             $contributions = $objectif->getContributiongoals()->toArray();
             $total   = array_sum(array_map(fn($c) => (float)$c->getMontant(), $contributions));
@@ -46,11 +64,11 @@ class NotificationService
                 $indexed[$key] = [
                     'key'     => $key,
                     'type'    => 'BIENTOT_ATTEINT',
-                    'titre'   => $objectif->getTitre(),
+                    'titre'   => $objectif->getTitre() ?? 'Objectif',
                     'message' => sprintf(
                         '"%s" est à %d%% — plus que %s à collecter !',
-                        $objectif->getTitre(),
-                        round($pct),
+                        $objectif->getTitre() ?? 'Objectif',
+                        (int)round($pct),
                         number_format($montant - $total, 0, ',', ' ')
                     ),
                     'isRead'  => $indexed["bientot_{$id}"]['isRead'] ?? false,
@@ -64,19 +82,27 @@ class NotificationService
             // ── Rappel contribution (aucune contrib depuis X jours) ─
             if (!empty($contributions)) {
                 usort($contributions, fn($a, $b) => $b->getDate() <=> $a->getDate());
-                $derniere   = $contributions[0]->getDate();
-                $joursEcart = (int)(new \DateTime())->diff($derniere)->days;
+               
+                $derniere = $contributions[0]->getDate();
+                $now = new \DateTime();
+               
+                // Vérifier que $derniere n'est pas null avant d'appeler diff
+                if ($derniere instanceof \DateTimeInterface) {
+                    $joursEcart = (int)$now->diff($derniere)->days;
+                } else {
+                    $joursEcart = 0;
+                }
 
                 $key = "rappel_{$id}";
                 if ($joursEcart >= self::JOURS_RAPPEL) {
                     $indexed[$key] = [
                         'key'     => $key,
                         'type'    => 'RAPPEL',
-                        'titre'   => $objectif->getTitre(),
+                        'titre'   => $objectif->getTitre() ?? 'Objectif',
                         'message' => sprintf(
                             'Aucune contribution depuis %d jours sur "%s".',
                             $joursEcart,
-                            $objectif->getTitre()
+                            $objectif->getTitre() ?? 'Objectif'
                         ),
                         'isRead'  => $indexed[$key]['isRead'] ?? false,
                         'time'    => $indexed[$key]['time']   ?? time(),
@@ -90,41 +116,78 @@ class NotificationService
         $this->session()->set(self::SESSION_KEY, array_values($indexed));
     }
 
-    /** Toutes les notifications */
+    /**
+     * Toutes les notifications
+     *
+     * @return Notification[]
+     */
     public function getAll(): array
     {
-        return $this->session()->get(self::SESSION_KEY, []);
+        /** @var Notification[] $notifications */
+        $notifications = $this->session()->get(self::SESSION_KEY, []);
+        return $notifications;
     }
 
-    /** Notifications non lues seulement */
+    /**
+     * Notifications non lues seulement
+     *
+     * @return Notification[]
+     */
     public function getUnread(): array
     {
-        return array_values(array_filter(
-            $this->getAll(),
-            fn($n) => !$n['isRead']
+        /** @var Notification[] $all */
+        $all = $this->getAll();
+       
+        /** @var Notification[] $unread */
+        $unread = array_values(array_filter(
+            $all,
+            fn(array $n): bool => !$n['isRead']
         ));
+       
+        return $unread;
     }
 
-    /** Nombre de non lues */
+    /**
+     * Nombre de non lues
+     *
+     * @return int
+     */
     public function countUnread(): int
     {
         return count($this->getUnread());
     }
 
-    /** Marquer une notification lue par sa clé */
+    /**
+     * Marquer une notification lue par sa clé
+     *
+     * @param string $key La clé de la notification
+     */
     public function markRead(string $key): void
     {
+        /** @var Notification[] $all */
         $all = $this->getAll();
+       
         foreach ($all as &$n) {
-            if ($n['key'] === $key) { $n['isRead'] = true; break; }
+            if ($n['key'] === $key) {
+                $n['isRead'] = true;
+                break;
+            }
         }
+       
         $this->session()->set(self::SESSION_KEY, $all);
     }
 
-    /** Tout marquer lu */
+    /**
+     * Tout marquer lu
+     */
     public function markAllRead(): void
     {
-        $all = array_map(fn($n) => array_merge($n, ['isRead' => true]), $this->getAll());
-        $this->session()->set(self::SESSION_KEY, $all);
+        /** @var Notification[] $all */
+        $all = $this->getAll();
+       
+        /** @var Notification[] $markedAll */
+        $markedAll = array_map(fn(array $n): array => array_merge($n, ['isRead' => true]), $all);
+       
+        $this->session()->set(self::SESSION_KEY, $markedAll);
     }
 }

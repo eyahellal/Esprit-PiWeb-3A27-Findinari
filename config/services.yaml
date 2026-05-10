@@ -1,5 +1,3 @@
-
-
 parameters:
     tickets_directory: '%kernel.project_dir%/public/uploads/tickets'
 
@@ -15,20 +13,14 @@ parameters:
     hf_api_url: '%env(HF_API_URL)%'
     sentiment_api_url: '%env(SENTIMENT_API_URL)%'
 
-
 services:
     _defaults:
         autowire: true
         autoconfigure: true
-
-        # Supprime toute ligne comme : bind:
-        #   $hasdataApiKey: '%env(HASDATA_API_KEY)%'
-
         bind:
             $ollamaApiUrl: '%ollama_api_url%'
             $projectDir: '%kernel.project_dir%'
             $cloudinaryUrl: '%cloudinary_url%'
-
 
     App\:
         resource: '../src/'
@@ -36,7 +28,6 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
 
     # Service pour Twelve Data
     App\Service\TwelveDataService:
@@ -76,9 +67,6 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
-    App\Controller\Loan\ObligationController:
-        arguments:
-            $ollamaApiUrl: '%ollama_api_url%'
     App\Service\GroqService:
         arguments:
             $groqApiKey: '%groq_api_key%'

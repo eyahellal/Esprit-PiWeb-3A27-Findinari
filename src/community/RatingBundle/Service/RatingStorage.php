@@ -18,32 +18,66 @@ class RatingStorage
         return $this->projectDir . '/var/community_ratings.json';
     }
 
+    /**
+     * @return array<string, array<string, int>>
+     */
     private function read(): array
     {
         $path = $this->getFilePath();
+
         if (!is_file($path)) {
             return [];
         }
 
         $raw = @file_get_contents($path);
+
         if (!is_string($raw) || trim($raw) === '') {
             return [];
         }
 
-        $data = json_decode($raw, true);
+        $decoded = json_decode($raw, true);
 
-        return is_array($data) ? $data : [];
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $data = [];
+
+        foreach ($decoded as $postId => $ratings) {
+            if (!is_array($ratings)) {
+                continue;
+            }
+
+            $postRatings = [];
+
+            foreach ($ratings as $viewerKey => $rating) {
+                if (is_numeric($rating)) {
+                    $postRatings[(string) $viewerKey] = (int) $rating;
+                }
+            }
+
+            $data[(string) $postId] = $postRatings;
+        }
+
+        return $data;
     }
 
+    /**
+     * @param array<int|string, array<string, int>> $data
+     */
     private function write(array $data): void
     {
         $path = $this->getFilePath();
         $dir = dirname($path);
+
         if (!is_dir($dir)) {
             @mkdir($dir, 0777, true);
         }
 
-        @file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        @file_put_contents(
+            $path,
+            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
     }
 
     private function getViewerKey(?string $fallback = null): string
@@ -51,11 +85,13 @@ class RatingStorage
         $request = $this->requestStack->getCurrentRequest();
         $session = $request?->getSession();
 
-        if ($fallback) {
-            return 'user_' . preg_replace('/[^a-zA-Z0-9_\-]/', '_', $fallback);
+        if ($fallback !== null && $fallback !== '') {
+            $safeFallback = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $fallback) ?? 'guest';
+
+            return 'user_' . $safeFallback;
         }
 
-        if ($session && !$session->has('community_rating_viewer')) {
+        if ($session !== null && !$session->has('community_rating_viewer')) {
             $session->set('community_rating_viewer', 'anon_' . bin2hex(random_bytes(8)));
         }
 
@@ -73,9 +109,18 @@ class RatingStorage
         return round(min(5.0, $score), 1);
     }
 
-    private function summarize(array $items, ?string $viewerId = null, int $likes = 0, int $comments = 0): array
-    {
-        $ratings = array_values(array_filter($items, static fn ($rating) => is_numeric($rating)));
+    /**
+     * @param array<string, int> $items
+     * @return array<string, int|float>
+     */
+    private function summarize(
+        array $items,
+        ?string $viewerId = null,
+        int $likes = 0,
+        int $comments = 0
+    ): array {
+        $ratings = array_values($items);
+
         $manualTotal = count($ratings);
         $manualSum = array_sum($ratings);
 
@@ -83,10 +128,12 @@ class RatingStorage
         $engagementRating = $this->computeEngagementRating($likes, $comments);
 
         $total = $manualTotal + $engagementVotes;
-        $average = $total > 0 ? round(($manualSum + ($engagementVotes * $engagementRating)) / $total, 1) : 0.0;
+        $average = $total > 0
+            ? round(($manualSum + ($engagementVotes * $engagementRating)) / $total, 1)
+            : 0.0;
 
         $viewerKey = $this->getViewerKey($viewerId);
-        $userRating = isset($items[$viewerKey]) && is_numeric($items[$viewerKey]) ? (int) $items[$viewerKey] : 0;
+        $userRating = $items[$viewerKey] ?? 0;
 
         return [
             'average' => $average,
@@ -99,56 +146,87 @@ class RatingStorage
         ];
     }
 
-    public function rate(int $postId, int $value, ?string $viewerId = null, int $likes = 0, int $comments = 0): array
-    {
+    /**
+     * @return array<string, int|float>
+     */
+    public function rate(
+        int $postId,
+        int $value,
+        ?string $viewerId = null,
+        int $likes = 0,
+        int $comments = 0
+    ): array {
         $value = max(1, min(5, $value));
+
         $data = $this->read();
         $key = (string) $postId;
         $viewerKey = $this->getViewerKey($viewerId);
 
-        if (!isset($data[$key]) || !is_array($data[$key])) {
+        if (!array_key_exists($key, $data)) {
             $data[$key] = [];
         }
 
-        $data[$key][$viewerKey] = $value;
+        $postRatings = $data[$key];
+        $postRatings[$viewerKey] = $value;
+        $data[$key] = $postRatings;
+
         $this->write($data);
 
         return $this->getSummary($postId, $viewerId, $likes, $comments);
     }
 
-    public function getSummary(int $postId, ?string $viewerId = null, int $likes = 0, int $comments = 0): array
-    {
+    /**
+     * @return array<string, int|float>
+     */
+    public function getSummary(
+        int $postId,
+        ?string $viewerId = null,
+        int $likes = 0,
+        int $comments = 0
+    ): array {
         $data = $this->read();
         $items = $data[(string) $postId] ?? [];
-        if (!is_array($items)) {
-            $items = [];
-        }
 
         return $this->summarize($items, $viewerId, $likes, $comments);
     }
 
+    /**
+     * @return array<string, int|float>
+     */
     public function getSummaryForPost(Post $post, ?string $viewerId = null): array
     {
-        return $this->getSummary((int) $post->getIdPost(), $viewerId, (int) $post->getNombreLikes(), (int) $post->getNombreCommentaires());
+        return $this->getSummary(
+            (int) $post->getIdPost(),
+            $viewerId,
+            (int) $post->getNombreLikes(),
+            (int) $post->getNombreCommentaires()
+        );
     }
 
+    /**
+     * @param iterable<Post> $posts
+     * @return array<int, array<string, int|float>>
+     */
     public function getBulkSummary(iterable $posts, ?string $viewerId = null): array
     {
         $data = $this->read();
         $result = [];
 
         foreach ($posts as $post) {
-            if (!$post instanceof Post || !$post->getIdPost()) {
+            $postIdValue = $post->getIdPost();
+
+            if ($postIdValue === null) {
                 continue;
             }
 
-            $postId = (string) $post->getIdPost();
+            $postId = (string) $postIdValue;
             $items = $data[$postId] ?? [];
-            $result[(int) $post->getIdPost()] = $this->summarize(
-                is_array($items) ? $items : [],
+
+            $result[(int) $postIdValue] = $this->summarize(
+                $items,
                 $viewerId,
                 (int) $post->getNombreLikes(),
-                (int) $post->getNombreCommentaires(),
+                (int) $post->getNombreCommentaires()
             );
         }
 

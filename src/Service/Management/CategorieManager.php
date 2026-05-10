@@ -27,16 +27,17 @@ class CategorieManager
         return true;
     }
 
-    // Rule 2 — Name must contain only letters, numbers, spaces
-    public function validateNomFormat(Categorie $categorie): bool
-    {
-        if (!preg_match('/^[a-zA-ZÀ-ÿ0-9\s\-]+$/', $categorie->getNom())) {
-            throw new \InvalidArgumentException(
-                'Name must contain only letters, numbers, and spaces.'
-            );
-        }
-        return true;
+  // Rule 2 — Name must contain only letters, numbers, spaces
+public function validateNomFormat(Categorie $categorie): bool
+{
+    // ✅ Cast to string to avoid null
+    if (!preg_match('/^[a-zA-ZÀ-ÿ0-9\s\-]+$/', (string) $categorie->getNom())) {
+        throw new \InvalidArgumentException(
+            'Name must contain only letters, numbers, and spaces.'
+        );
     }
+    return true;
+}
 
     // Rule 3 — Status must be Active or Inactive
     public function validateStatut(Categorie $categorie): bool

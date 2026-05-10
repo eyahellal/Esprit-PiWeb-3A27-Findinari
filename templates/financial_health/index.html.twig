@@ -137,7 +137,7 @@
         </div>
         
         <!-- Recommendations -->
-        <div class="row">
+        <div class="row mb-5">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0 pt-4 px-4">
@@ -186,6 +186,143 @@
                                     </div>
                                 </div>
                             {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ========================================== -->
+        <!-- AI FINANCIAL INSIGHTS SECTION -->
+        <!-- ========================================== -->
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h4 class="mb-0 fw-bold">
+                                    <i class="fas fa-robot text-primary me-2"></i>AI Financial Insights
+                                </h4>
+                                <p class="text-muted small mt-1">Based on payroll data analysis and machine learning predictions</p>
+                            </div>
+                            <div class="ai-status">
+                                <span class="badge bg-success" id="aiStatus">
+                                    <i class="fas fa-circle me-1" style="font-size: 8px;"></i> AI Ready
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div id="aiLoading" class="text-center py-4" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-2">Analyzing your financial data...</p>
+                        </div>
+                        
+                        <div id="aiContent" style="display: none;">
+                            <div class="row">
+                                <!-- Score Prédit -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="bg-light rounded-3 p-3 h-100">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-chart-line me-1"></i> Predicted Score
+                                        </h6>
+                                        <div class="d-flex align-items-baseline">
+                                            <span class="display-4 fw-bold text-primary" id="predictedScore">--</span>
+                                            <span class="text-muted ms-2">/ 100</span>
+                                            <span class="badge bg-success ms-3" id="improvementBadge">--</span>
+                                        </div>
+                                        <div class="progress mt-2" style="height: 6px;">
+                                            <div class="progress-bar bg-primary" id="scoreProgress" style="width: 0%"></div>
+                                        </div>
+                                        <p class="small text-muted mt-2">
+                                            <i class="fas fa-calendar me-1"></i> Based on your current financial behavior
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 6-Month Forecast -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="bg-light rounded-3 p-3 h-100">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-chart-simple me-1"></i> 6‑Month Forecast
+                                        </h6>
+                                        <div class="row text-center">
+                                            <div class="col-4">
+                                                <div class="small text-muted">3 Months</div>
+                                                <div class="fw-bold text-primary fs-5" id="forecast3">--</div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="small text-muted">6 Months</div>
+                                                <div class="fw-bold text-success fs-5" id="forecast6">--</div>
+                                            </div>
+                                            <div class="col-4">
+                                                <div class="small text-muted">12 Months</div>
+                                                <div class="fw-bold text-info fs-5" id="forecast12">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ML Recommendations -->
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <h6 class="mb-3">
+                                        <i class="fas fa-lightbulb text-warning me-2"></i>ML Recommendations
+                                    </h6>
+                                    <div id="mlRecommendations" class="row g-3"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Financial Metrics -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="bg-light rounded-3 p-3">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-chart-pie me-2"></i>Key Financial Metrics
+                                        </h6>
+                                        <div class="row g-3">
+                                            <div class="col-md-3 col-6">
+                                                <div class="text-center">
+                                                    <div class="small text-muted">Net-to-Gross Ratio</div>
+                                                    <div class="fw-bold" id="metricNetGross">--</div>
+                                                    <div class="progress mt-1" style="height: 4px;">
+                                                        <div class="progress-bar bg-info" id="progressNetGross" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 col-6">
+                                                <div class="text-center">
+                                                    <div class="small text-muted">Tax Rate</div>
+                                                    <div class="fw-bold" id="metricTaxRate">--</div>
+                                                    <div class="progress mt-1" style="height: 4px;">
+                                                        <div class="progress-bar bg-warning" id="progressTaxRate" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 col-6">
+                                                <div class="text-center">
+                                                    <div class="small text-muted">CPP/EI Rate</div>
+                                                    <div class="fw-bold" id="metricCPP">--</div>
+                                                    <div class="progress mt-1" style="height: 4px;">
+                                                        <div class="progress-bar bg-danger" id="progressCPP" style="width: 0%"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3 col-6">
+                                                <div class="text-center">
+                                                    <div class="small text-muted">Confidence Level</div>
+                                                    <div class="fw-bold" id="confidenceLevel">--</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -471,6 +608,213 @@
         background-color: #1b4d3b;
         border-color: #1b4d3b;
     }
+    
+    /* AI Section Styles */
+    .display-4 {
+        font-size: 2.5rem;
+        font-weight: 600;
+    }
+    
+    .ai-status {
+        min-width: 100px;
+        text-align: right;
+    }
+    
+    .recommendation-icon-mini {
+        width: 32px;
+        height: 32px;
+        background: #e8f5e9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadAIPrediction();
+});
+
+async function loadAIPrediction() {
+    const loadingDiv = document.getElementById('aiLoading');
+    const contentDiv = document.getElementById('aiContent');
+    const statusSpan = document.getElementById('aiStatus');
+    
+    // Récupérer les métriques actuelles depuis le template Twig
+    const currentScore = {{ score|default(0) }};
+    const savingsRate = {{ metrics.savingsRate|default(0) }};
+    const investmentRatio = {{ metrics.investmentRatio|default(0) }};
+    const diversification = {{ metrics.diversification|default(0) }};
+    const emergencyFund = {{ metrics.emergencyFund|default(0) }};
+    const goalProgress = {{ metrics.goalProgress|default(0) }};
+    const totalBalance = {{ totalBalance|default(0) }};
+    const walletsCount = {{ walletsCount|default(0) }};
+    const investmentsCount = {{ investmentsCount|default(0) }};
+    
+    // Préparer les données pour le ML
+    const mlData = {
+        current_score: currentScore,
+        savings_rate: savingsRate,
+        investment_ratio: investmentRatio,
+        diversification: diversification,
+        emergency_fund: emergencyFund,
+        goal_progress: goalProgress,
+        total_balance: totalBalance,
+        wallets_count: walletsCount,
+        investments_count: investmentsCount
+    };
+    
+    loadingDiv.style.display = 'block';
+    
+    try {
+        const response = await fetch('/api/ml/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(mlData)
+        });
+        
+        if (!response.ok) throw new Error('ML service not available');
+        
+        const result = await response.json();
+        displayMLResults(result);
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+        statusSpan.innerHTML = '<i class="fas fa-circle me-1" style="font-size: 8px;"></i> AI Ready';
+        statusSpan.className = 'badge bg-success';
+        
+    } catch (error) {
+        console.error('ML prediction error:', error);
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+        statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Demo Mode';
+        statusSpan.className = 'badge bg-warning';
+        
+        // Mode démo - afficher des données simulées
+        displayDemoResults(currentScore);
+    }
+}
+
+function displayMLResults(result) {
+    // Score prédit
+    const predictedScore = result.predicted_score || 0;
+    const improvement = result.improvement || 0;
+    
+    document.getElementById('predictedScore').textContent = predictedScore.toFixed(1);
+    document.getElementById('scoreProgress').style.width = predictedScore + '%';
+    
+    const improvementBadge = document.getElementById('improvementBadge');
+    if (improvement >= 0) {
+        improvementBadge.innerHTML = `<i class="fas fa-arrow-up me-1"></i> +${improvement.toFixed(1)}%`;
+        improvementBadge.className = 'badge bg-success ms-3';
+    } else {
+        improvementBadge.innerHTML = `<i class="fas fa-arrow-down me-1"></i> ${improvement.toFixed(1)}%`;
+        improvementBadge.className = 'badge bg-danger ms-3';
+    }
+    
+    // Forecast
+    const future = result.future_predictions || [];
+    if (future.length >= 3) {
+        document.getElementById('forecast3').textContent = future[0].score.toFixed(1) + '%';
+        document.getElementById('forecast6').textContent = future[1].score.toFixed(1) + '%';
+        document.getElementById('forecast12').textContent = future[2].score.toFixed(1) + '%';
+    }
+    
+    // Metrics
+    if (result.metrics) {
+        document.getElementById('metricNetGross').textContent = result.metrics.net_to_gross_ratio?.toFixed(1) + '%' || '--';
+        document.getElementById('metricTaxRate').textContent = result.metrics.tax_rate?.toFixed(1) + '%' || '--';
+        document.getElementById('metricCPP').textContent = result.metrics.cpp_ei_rate?.toFixed(1) + '%' || '--';
+        
+        document.getElementById('progressNetGross').style.width = (result.metrics.net_to_gross_ratio || 0) + '%';
+        document.getElementById('progressTaxRate').style.width = Math.min(100, (result.metrics.tax_rate || 0)) + '%';
+        document.getElementById('progressCPP').style.width = Math.min(100, (result.metrics.cpp_ei_rate || 0)) + '%';
+    }
+    
+    document.getElementById('confidenceLevel').textContent = result.confidence ? 
+        result.confidence.charAt(0).toUpperCase() + result.confidence.slice(1) : 'Medium';
+    
+    // Recommendations
+    const recommendations = result.recommendations || [];
+    const recContainer = document.getElementById('mlRecommendations');
+    
+    if (recommendations.length > 0) {
+        let recHtml = '';
+        recommendations.forEach(rec => {
+            recHtml += `
+                <div class="col-md-6">
+                    <div class="border rounded-3 p-3 recommendation-card ${rec.type}">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="recommendation-icon-mini">${rec.type === 'savings' ? '💰' : rec.type === 'investment' ? '📈' : rec.type === 'diversification' ? '🔄' : '💡'}</div>
+                            <div>
+                                <h6 class="mb-1">${rec.title}</h6>
+                                <p class="small text-muted mb-2">${rec.message}</p>
+                                <small class="text-primary"><i class="fas fa-arrow-right me-1"></i> ${rec.action}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        recContainer.innerHTML = recHtml;
+    } else {
+        recContainer.innerHTML = `
+            <div class="col-12">
+                <div class="text-center py-3 text-muted">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    You're doing great! No specific recommendations at this time.
+                </div>
+            </div>
+        `;
+    }
+}
+
+function displayDemoResults(currentScore) {
+    const predictedScore = Math.min(100, currentScore + 8);
+    document.getElementById('predictedScore').textContent = predictedScore.toFixed(1);
+    document.getElementById('scoreProgress').style.width = predictedScore + '%';
+    document.getElementById('improvementBadge').innerHTML = `<i class="fas fa-arrow-up me-1"></i> +${(predictedScore - currentScore).toFixed(1)}%`;
+    
+    document.getElementById('forecast3').textContent = Math.min(100, predictedScore + 4).toFixed(1) + '%';
+    document.getElementById('forecast6').textContent = Math.min(100, predictedScore + 9).toFixed(1) + '%';
+    document.getElementById('forecast12').textContent = Math.min(100, predictedScore + 15).toFixed(1) + '%';
+    
+    document.getElementById('metricNetGross').textContent = '72.5%';
+    document.getElementById('metricTaxRate').textContent = '15.2%';
+    document.getElementById('metricCPP').textContent = '6.8%';
+    document.getElementById('progressNetGross').style.width = '72.5%';
+    document.getElementById('progressTaxRate').style.width = '15.2%';
+    document.getElementById('progressCPP').style.width = '6.8%';
+    document.getElementById('confidenceLevel').textContent = 'Medium';
+    
+    document.getElementById('mlRecommendations').innerHTML = `
+        <div class="col-md-6">
+            <div class="border rounded-3 p-3 recommendation-card savings">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="recommendation-icon-mini">💰</div>
+                    <div>
+                        <h6 class="mb-1">💪 Watch Your Net Income Ratio</h6>
+                        <p class="small text-muted mb-2">Your current net-to-gross ratio could be improved with better tax planning.</p>
+                        <small class="text-primary"><i class="fas fa-arrow-right me-1"></i> Consider RRSP contributions to reduce taxable income</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="border rounded-3 p-3 recommendation-card diversification">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="recommendation-icon-mini">📊</div>
+                    <div>
+                        <h6 class="mb-1">🔄 Diversify Your Income Sources</h6>
+                        <p class="small text-muted mb-2">Adding freelance or investment income could improve your financial resilience.</p>
+                        <small class="text-primary"><i class="fas fa-arrow-right me-1"></i> Explore side hustle opportunities</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+</script>
 
 {% endblock %}

@@ -1,50 +1,61 @@
 <?php
 
+
 namespace App\Controller\managment;
+
 
 use App\Entity\management\Transaction;
 use App\Entity\management\Budget;
 use App\Entity\user\Utilisateur;
+use App\Entity\Loan\Wallet;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+
 #[Route('/stats')]
 class StatsController extends AbstractController
 {
-   private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
-{
-    $user = $this->getUser();
+    private function getUserOrCreate(EntityManagerInterface $entityManager): Utilisateur
+    {
+        $user = $this->getUser();
 
-    if (!$user) {
-        $user = $entityManager->getRepository(Utilisateur::class)->find(1);
+
+        // Correction : On vérifie si l'utilisateur est bien une instance de Utilisateur
+        // Si ce n'est pas le cas (ou s'il est nul), on cherche l'admin ou on le crée.
+        if (!$user instanceof Utilisateur) {
+            $user = $entityManager->getRepository(Utilisateur::class)->find(1);
+        }
+
+
+        if (!$user instanceof Utilisateur) {
+            $user = $entityManager->getRepository(Utilisateur::class)
+                ->findOneBy(['gmail' => 'admin@findinari.com']);
+        }
+
+
+        // Create admin user if none exists
+        if (!$user instanceof Utilisateur) {
+            $user = new Utilisateur();
+            $user->setNom('Admin');
+            $user->setPrenom('User');
+            $user->setGmail('admin@findinari.com');
+            $user->setMdp('password');
+            $user->setRole('ADMIN');
+            $user->setStatut('ACTIF');
+            $user->setDateCreation(new \DateTime());
+            $user->setDateModification(new \DateTime());
+            $user->setFaceEnabled(false);
+            $entityManager->persist($user);
+            $entityManager->flush();
+        }
+
+
+        return $user;
     }
 
-    if (!$user) {
-        $user = $entityManager->getRepository(Utilisateur::class)
-            ->findOneBy(['gmail' => 'admin@findinari.com']);
-    }
-
-    // Create admin user if none exists
-    if (!$user) {
-        $user = new Utilisateur();
-        $user->setNom('Admin');
-        $user->setPrenom('User');
-        $user->setGmail('admin@findinari.com');
-        $user->setMdp('password');
-        $user->setRole('ADMIN');
-        $user->setStatut('ACTIF');
-        $user->setDateCreation(new \DateTime());
-        $user->setDateModification(new \DateTime());
-        $user->setFaceEnabled(false);
-        $entityManager->persist($user);
-        $entityManager->flush();
-    }
-
-    return $user;
-}
 
     #[Route('/', name: 'app_stats_index', methods: ['GET'])]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
@@ -52,13 +63,16 @@ class StatsController extends AbstractController
         $user = $this->getUserOrCreate($entityManager);
         $walletId = $request->query->get('wallet', 'all');
 
-        $wallets = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)
+
+        $wallets = $entityManager->getRepository(Wallet::class)
             ->findBy(['utilisateur' => $user]);
+
 
         $selectedWallet = null;
         if ($walletId !== 'all') {
-            $selectedWallet = $entityManager->getRepository(\App\Entity\Loan\Wallet::class)->find($walletId);
+            $selectedWallet = $entityManager->getRepository(Wallet::class)->find($walletId);
         }
+
 
         // Get transactions
         $qb = $entityManager->getRepository(Transaction::class)
@@ -67,12 +81,15 @@ class StatsController extends AbstractController
             ->setParameter('wallets', $wallets)
             ->orderBy('t.date', 'DESC');
 
+
         if ($selectedWallet) {
             $qb->andWhere('t.wallet = :wallet')
                ->setParameter('wallet', $selectedWallet);
         }
 
+
         $transactions = $qb->getQuery()->getResult();
+
 
         // Calculate stats
         $totalIncome = 0;
@@ -80,6 +97,7 @@ class StatsController extends AbstractController
         $categorySpending = [];
         $monthlyData = [];
         $transactionsData = [];
+
 
         foreach ($transactions as $t) {
             $transactionsData[] = [
@@ -93,10 +111,12 @@ class StatsController extends AbstractController
                 'walletPays' => $t->getWallet()->getPays(),
             ];
 
+
             if ($t->getType() === 'income') {
                 $totalIncome += $t->getMontant();
             } else {
                 $totalExpense += $t->getMontant();
+
 
                 // Category spending
                 $catName = $t->getCategorie()->getNom();
@@ -112,6 +132,7 @@ class StatsController extends AbstractController
                 $categorySpending[$catName]['count']++;
             }
 
+
             // Monthly data
             $month = $t->getDate()->format('Y-m');
             if (!isset($monthlyData[$month])) {
@@ -124,11 +145,14 @@ class StatsController extends AbstractController
             }
         }
 
+
         // Sort category spending DESC
         arsort($categorySpending);
 
+
         // Sort monthly data by date
         ksort($monthlyData);
+
 
         // Budget usage
         $budgetUsage = [];
@@ -137,12 +161,15 @@ class StatsController extends AbstractController
             ->where('b.wallet IN (:wallets)')
             ->setParameter('wallets', $wallets);
 
+
         if ($selectedWallet) {
             $budgetQb->andWhere('b.wallet = :wallet')
                      ->setParameter('wallet', $selectedWallet);
         }
 
+
         $budgets = $budgetQb->getQuery()->getResult();
+
 
         foreach ($budgets as $budget) {
             $spent = $entityManager->getRepository(Transaction::class)
@@ -157,6 +184,7 @@ class StatsController extends AbstractController
                 ->getQuery()
                 ->getSingleScalarResult() ?? 0;
 
+
             $budgetUsage[] = [
                 'category' => $budget->getCategorie()->getNom(),
                 'color' => $budget->getCategorie()->getColor() ?? '#F27438',
@@ -166,6 +194,7 @@ class StatsController extends AbstractController
                 'devise' => $budget->getWallet()->getDevise(),
             ];
         }
+
 
         return $this->render('management/stats/index.html.twig', [
             'wallets' => $wallets,
@@ -180,3 +209,6 @@ class StatsController extends AbstractController
         ]);
     }
 }
+
+
+

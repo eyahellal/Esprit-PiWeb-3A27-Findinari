@@ -20,29 +20,36 @@ class ContractApiController extends AbstractController
         PdfGeneratorService $pdfGenerator
     ): Response {
         $investment = $investmentRepository->find($id);
-        
+       
         if (!$investment) {
             return $this->json(['error' => 'Investment not found'], 404);
         }
-        
+       
         $obligation = $obligationRepository->find($investment->getObligationId());
-        
+       
         $filePath = $pdfGenerator->generateInvoice($investment, $obligation);
-        
-        if (!$filePath || !file_exists($filePath)) {
+       
+        // Vérification simplifiée - file_exists est suffisant
+        if (!file_exists($filePath)) {
             return $this->json(['error' => 'Failed to generate PDF'], 500);
         }
-        
+       
         $pdfContent = file_get_contents($filePath);
-        
-        // Delete file after sending
+       
+        if ($pdfContent === false) {
+            // Nettoyer le fichier en cas d'erreur
+            @unlink($filePath);
+            return $this->json(['error' => 'Failed to read PDF content'], 500);
+        }
+       
+        // Nettoyer le fichier après lecture réussie
         @unlink($filePath);
-        
-        $filename = sprintf('Investment_Invoice_%d_%s.pdf', 
-            $investment->getIdInvestissement(), 
+       
+        $filename = sprintf('Investment_Invoice_%d_%s.pdf',
+            $investment->getIdInvestissement(),
             date('Ymd_His')
         );
-        
+       
         return new Response($pdfContent, 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',

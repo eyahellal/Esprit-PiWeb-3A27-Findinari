@@ -2,11 +2,10 @@
 
 namespace App\Controller\managment;
 
+use App\Entity\Loan\Wallet;
 use App\Entity\management\Budget;
 use App\Entity\management\Categorie;
 use App\Entity\management\Transaction;
-use App\Entity\Loan\Wallet;
-use App\Entity\user\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,143 +16,164 @@ class AdminManagementController extends AbstractController
     #[Route('/admin/management', name: 'app_admin_management', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
-        // ── All Wallets ──
         $allWallets = $entityManager->getRepository(Wallet::class)->findAll();
         $totalWallets = count($allWallets);
-        $totalBalance = 0;
-        foreach ($allWallets as $w) {
-            $totalBalance += $w->getSolde();
+        $totalBalance = 0.0;
+
+        foreach ($allWallets as $wallet) {
+            $totalBalance += (float) $wallet->getSolde();
         }
 
-        // ── All Categories ──
         $allCategories = $entityManager->getRepository(Categorie::class)->findAll();
         $totalCategories = count($allCategories);
         $activeCategories = 0;
         $inactiveCategories = 0;
-        foreach ($allCategories as $cat) {
-            if ($cat->getStatut() === 'Active') {
+
+        foreach ($allCategories as $category) {
+            if ($category->getStatut() === 'Active') {
                 $activeCategories++;
             } else {
                 $inactiveCategories++;
             }
         }
 
-       // ── All Budgets with expiry info ──
-$allBudgets = $entityManager->getRepository(Budget::class)->findAll();
-$totalBudgets = count($allBudgets);
-$activeBudgets = 0;
-$expiredBudgets = 0;
-$budgetUsage = [];
-$budgetsExpiry = [];
+        $allBudgets = $entityManager->getRepository(Budget::class)->findAll();
+        $totalBudgets = count($allBudgets);
+        $activeBudgets = 0;
+        $expiredBudgets = 0;
+        $budgetUsage = [];
+        $budgetsExpiry = [];
 
-foreach ($allBudgets as $budget) {
-    /** @var \DateTime $endDate */
-    $endDate = (clone $budget->getDateBudget())->modify('+' . $budget->getDureeBudget() . ' days');
-    $isExpired = new \DateTime() > $endDate;
-    $budgetsExpiry[$budget->getId()] = $isExpired;
+        foreach ($allBudgets as $budget) {
+            $startDate = $budget->getDateBudget();
 
-    if ($isExpired) {
-    $expiredBudgets++;
-} else {
-    $activeBudgets++;
+            if (!$startDate instanceof \DateTimeInterface) {
+                continue;
+            }
 
-    $totalSpent = $entityManager->getRepository(Transaction::class)
-        ->createQueryBuilder('t')
-        ->select('SUM(t.montant)')
-        ->where('t.wallet = :wallet')
-        ->andWhere('t.categorie = :categorie')
-        ->andWhere('t.type = :type')
-        ->setParameter('wallet', $budget->getWallet())
-        ->setParameter('categorie', $budget->getCategorie())
-        ->setParameter('type', 'depense')
-        ->getQuery()
-        ->getSingleScalarResult() ?? 0;  //retourner une seule valeur 
+            $endDate = \DateTime::createFromInterface($startDate)
+                ->modify('+' . $budget->getDureeBudget() . ' days');
 
-    $catName = $budget->getCategorie()->getNom();
+            $isExpired = new \DateTime() > $endDate;
+            $budgetsExpiry[$budget->getId()] = $isExpired;
 
-    if (isset($budgetUsage[$catName])) {
-        // Merge: add limits and spent together
-        $budgetUsage[$catName]['spent'] += (float) $totalSpent;
-        $budgetUsage[$catName]['limit'] += (float) $budget->getMontantMax();
-    } else {
-        $budgetUsage[$catName] = [
-            'category' => $catName,
-            'spent' => (float) $totalSpent,
-            'limit' => (float) $budget->getMontantMax(),
-            'devise' => $budget->getWallet()->getDevise(),
-        ];
-    }
+            if ($isExpired) {
+                $expiredBudgets++;
+                continue;
+            }
 
-    // Recalculate percent after merge
-    $budgetUsage[$catName]['percent'] = $budgetUsage[$catName]['limit'] > 0
-        ? min(100, round(($budgetUsage[$catName]['spent'] / $budgetUsage[$catName]['limit']) * 100, 1))
-        : 0;
-}
-}
-        // ── All Transactions ──
+            $activeBudgets++;
+
+            $category = $budget->getCategorie();
+            $wallet = $budget->getWallet();
+
+            if (!$category instanceof Categorie || !$wallet instanceof Wallet) {
+                continue;
+            }
+
+            $totalSpent = $entityManager->getRepository(Transaction::class)
+                ->createQueryBuilder('t')
+                ->select('SUM(t.montant)')
+                ->where('t.wallet = :wallet')
+                ->andWhere('t.categorie = :categorie')
+                ->andWhere('t.type = :type')
+                ->setParameter('wallet', $wallet)
+                ->setParameter('categorie', $category)
+                ->setParameter('type', 'depense')
+                ->getQuery()
+                ->getSingleScalarResult() ?? 0;
+
+            $catName = $category->getNom() ?? 'Unknown';
+
+            if (isset($budgetUsage[$catName])) {
+                $budgetUsage[$catName]['spent'] += (float) $totalSpent;
+                $budgetUsage[$catName]['limit'] += (float) $budget->getMontantMax();
+            } else {
+                $budgetUsage[$catName] = [
+                    'category' => $catName,
+                    'spent' => (float) $totalSpent,
+                    'limit' => (float) $budget->getMontantMax(),
+                    'devise' => $wallet->getDevise() ?? '',
+                ];
+            }
+
+            $budgetUsage[$catName]['percent'] = $budgetUsage[$catName]['limit'] > 0
+                ? min(100, round(($budgetUsage[$catName]['spent'] / $budgetUsage[$catName]['limit']) * 100, 1))
+                : 0;
+        }
+
         $allTransactions = $entityManager->getRepository(Transaction::class)->findAll();
         $totalTransactions = count($allTransactions);
-        $totalIncome = 0;
-        $totalExpense = 0;
+        $totalIncome = 0.0;
+        $totalExpense = 0.0;
         $recurringCount = 0;
         $monthlyData = [];
         $categorySpending = [];
 
-        foreach ($allTransactions as $t) {
-            // Income / Expense totals
-            if ($t->getType() === 'income') {
-                $totalIncome += $t->getMontant();
+        foreach ($allTransactions as $transaction) {
+            if ($transaction->getType() === 'income') {
+                $totalIncome += (float) $transaction->getMontant();
             } else {
-                $totalExpense += $t->getMontant();
+                $totalExpense += (float) $transaction->getMontant();
             }
 
-            // Recurring count
-            if ($t->isRecurring()) {
+            if ($transaction->isRecurring()) {
                 $recurringCount++;
             }
 
-            // Monthly data for chart
-            $monthKey = $t->getDate()->format('Y-m');
-            if (!isset($monthlyData[$monthKey])) {
-                $monthlyData[$monthKey] = ['income' => 0, 'expense' => 0];
-            }
-            if ($t->getType() === 'income') {
-                $monthlyData[$monthKey]['income'] += $t->getMontant();
-            } else {
-                $monthlyData[$monthKey]['expense'] += $t->getMontant();
-            }
+            $transactionDate = $transaction->getDate();
 
-            // Category spending for pie chart
-            if ($t->getType() === 'depense' && $t->getCategorie()) {
-                $catName = $t->getCategorie()->getNom();
-                if (!isset($categorySpending[$catName])) {
-                    $categorySpending[$catName] = [
-                        'total' => 0,
-                        'count' => 0,
-                        'color' => $t->getCategorie()->getColor() ?? '#16a34a',
-                        'icon' => $t->getCategorie()->getIcon() ?? 'fa-folder',
+            if ($transactionDate instanceof \DateTimeInterface) {
+                $monthKey = $transactionDate->format('Y-m');
+
+                if (!isset($monthlyData[$monthKey])) {
+                    $monthlyData[$monthKey] = [
+                        'income' => 0.0,
+                        'expense' => 0.0,
                     ];
                 }
-                $categorySpending[$catName]['total'] += $t->getMontant();
+
+                if ($transaction->getType() === 'income') {
+                    $monthlyData[$monthKey]['income'] += (float) $transaction->getMontant();
+                } else {
+                    $monthlyData[$monthKey]['expense'] += (float) $transaction->getMontant();
+                }
+            }
+
+            $category = $transaction->getCategorie();
+
+            if ($transaction->getType() === 'depense' && $category instanceof Categorie) {
+                $catName = $category->getNom() ?? 'Unknown';
+
+                if (!isset($categorySpending[$catName])) {
+                    $categorySpending[$catName] = [
+                        'total' => 0.0,
+                        'count' => 0,
+                        'color' => $category->getColor() ?? '#16a34a',
+                        'icon' => $category->getIcon() ?? 'fa-folder',
+                    ];
+                }
+
+                $categorySpending[$catName]['total'] += (float) $transaction->getMontant();
                 $categorySpending[$catName]['count']++;
             }
         }
 
-        // Sort monthly data by date
         ksort($monthlyData);
 
-        // Sort category spending by total (highest first)
-        uasort($categorySpending, fn($a, $b) => $b['total'] <=> $a['total']);
+        uasort(
+            $categorySpending,
+            static fn (array $a, array $b): int => $b['total'] <=> $a['total']
+        );
 
-        // Recent transactions (last 10)
         $recentTransactions = $entityManager->getRepository(Transaction::class)
-            ->createQueryBuilder('t')  //crée un QueryBuilder
+            ->createQueryBuilder('t')
             ->orderBy('t.date', 'DESC')
             ->setMaxResults(10)
-            ->getQuery()  //transforme le QueryBuilder en requête executable
-            ->getResult(); //exécute la requête
+            ->getQuery()
+            ->getResult();
 
-        return $this->render('admin/management_dashboard.html.twig', [  //afficher une vue
+        return $this->render('admin/management_dashboard.html.twig', [
             'totalWallets' => $totalWallets,
             'totalBalance' => $totalBalance,
             'totalCategories' => $totalCategories,
@@ -173,6 +193,7 @@ foreach ($allBudgets as $budget) {
             'allWallets' => $allWallets,
             'allCategories' => $allCategories,
             'allBudgets' => $allBudgets,
+            'budgetsExpiry' => $budgetsExpiry,
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Entity\Loan;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 use App\Repository\InvestissementobligationRepository;
 
 #[ORM\Entity(repositoryClass: InvestissementobligationRepository::class)]
@@ -20,14 +21,17 @@ class Investissementobligation
     #[ORM\Column(name: 'obligation_id', type: 'integer', nullable: true)]
     private ?int $obligationId = null;
 
-    #[ORM\Column(name: 'montantInvesti', type: 'decimal', precision: 10, scale: 2)]
-    private ?float $montantInvesti = null;
+    // ✅ CORRECTION : DECIMAL doit être string, pas float
+    #[ORM\Column(name: 'montantInvesti', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private ?string $montantInvesti = null;
 
+    // ✅ CORRECTION : DATE type doit être DateTime (pas DateTimeImmutable)
     #[ORM\Column(name: 'dateAchat', type: 'date')]
-    private ?\DateTimeInterface $dateAchat = null;
+    private ?\DateTime $dateAchat = null;
 
+    // ✅ CORRECTION : DATE type doit être DateTime (pas DateTimeImmutable)
     #[ORM\Column(name: 'dateMaturite', type: 'date', nullable: true)]
-    private ?\DateTimeInterface $dateMaturite = null;
+    private ?\DateTime $dateMaturite = null;
 
     public function getIdInvestissement(): ?int
     {
@@ -56,34 +60,48 @@ class Investissementobligation
         return $this;
     }
 
-    public function getMontantInvesti(): ?float
+    /**
+     * Retourne le montant investi (string pour compatibilité DECIMAL)
+     */
+    public function getMontantInvesti(): ?string
     {
         return $this->montantInvesti;
     }
 
-    public function setMontantInvesti(float $montantInvesti): self
+    /**
+     * Retourne le montant investi en float pour les calculs
+     */
+    public function getMontantInvestiFloat(): ?float
     {
-        $this->montantInvesti = $montantInvesti;
+        return $this->montantInvesti !== null ? (float)$this->montantInvesti : null;
+    }
+
+    /**
+     * Set le montant investi (accepte string ou float)
+     */
+    public function setMontantInvesti(string|float $montantInvesti): self
+    {
+        $this->montantInvesti = is_float($montantInvesti) ? (string)$montantInvesti : $montantInvesti;
         return $this;
     }
 
-    public function getDateAchat(): ?\DateTimeInterface
+    public function getDateAchat(): ?\DateTime
     {
         return $this->dateAchat;
     }
 
-    public function setDateAchat(\DateTimeInterface $dateAchat): self
+    public function setDateAchat(\DateTime $dateAchat): self
     {
         $this->dateAchat = $dateAchat;
         return $this;
     }
 
-    public function getDateMaturite(): ?\DateTimeInterface
+    public function getDateMaturite(): ?\DateTime
     {
         return $this->dateMaturite;
     }
 
-    public function setDateMaturite(?\DateTimeInterface $dateMaturite): self
+    public function setDateMaturite(?\DateTime $dateMaturite): self
     {
         $this->dateMaturite = $dateMaturite;
         return $this;

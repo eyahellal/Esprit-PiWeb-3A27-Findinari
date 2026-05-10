@@ -4,48 +4,43 @@ namespace App\Controller\Loan;
 
 use App\Entity\Loan\Obligation;
 use App\Form\ObligationType;
-use App\Repository\ObligationRepository;
 use App\Repository\InvestissementobligationRepository;
+use App\Repository\ObligationRepository;
 use App\Service\SimpleNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Psr\Log\LoggerInterface;
 
 #[Route('/loan/obligation')]
 class ObligationController extends AbstractController
 {
-    private $httpClient;
-    private $logger;
-    private $ollamaApiUrl;
-    
-    public function __construct(HttpClientInterface $httpClient, LoggerInterface $logger, string $ollamaApiUrl)
+    private LoggerInterface $logger;
+
+    public function __construct(LoggerInterface $logger)
     {
-        $this->httpClient = $httpClient;
         $this->logger = $logger;
-        $this->ollamaApiUrl = $ollamaApiUrl;
     }
 
     #[Route('/', name: 'app_obligation_index', methods: ['GET'])]
     public function index(
-        ObligationRepository $obligationRepository, 
+        ObligationRepository $obligationRepository,
         Request $request,
         PaginatorInterface $paginator
     ): Response {
         $search = $request->query->get('search');
-        
+
         $queryBuilder = $obligationRepository->createQueryBuilder('o');
-        
-        if ($search) {
+
+        if (is_string($search) && $search !== '') {
             $queryBuilder->where('o.nom LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
-        
+
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
@@ -59,8 +54,11 @@ class ObligationController extends AbstractController
     }
 
     #[Route('/new', name: 'app_obligation_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
+    ): Response {
         $obligation = new Obligation();
         $form = $this->createForm(ObligationType::class, $obligation);
         $form->handleRequest($request);
@@ -70,12 +68,17 @@ class ObligationController extends AbstractController
             $entityManager->flush();
 
             $notificationService->addNotification(
-                '📋 New Obligation Created',
-                sprintf('Obligation "%s" has been created with %.2f%% interest rate', $obligation->getNom(), $obligation->getTauxInteret()),
+                'New Obligation Created',
+                sprintf(
+                    'Obligation "%s" has been created with %.2f%% interest rate',
+                    $obligation->getNom(),
+                    $obligation->getTauxInteret()
+                ),
                 'success'
             );
 
             $this->addFlash('success', 'Obligation created successfully!');
+
             return $this->redirectToRoute('app_obligation_index');
         }
 
@@ -86,41 +89,49 @@ class ObligationController extends AbstractController
     }
 
     #[Route('/{idObligation}', name: 'app_obligation_show', methods: ['GET'])]
-    public function show(int $idObligation, ObligationRepository $repository): Response
-    {
+    public function show(
+        int $idObligation,
+        ObligationRepository $repository
+    ): Response {
         $obligation = $repository->find($idObligation);
-        
-        if (!$obligation) {
+
+        if (!$obligation instanceof Obligation) {
             throw $this->createNotFoundException('Obligation not found');
         }
-        
+
         return $this->render('loan/obligation/show.html.twig', [
             'obligation' => $obligation,
         ]);
     }
 
     #[Route('/{idObligation}/edit', name: 'app_obligation_edit', methods: ['GET', 'POST'])]
-    public function edit(int $idObligation, Request $request, ObligationRepository $repository, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
-    {
+    public function edit(
+        int $idObligation,
+        Request $request,
+        ObligationRepository $repository,
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
+    ): Response {
         $obligation = $repository->find($idObligation);
-        
-        if (!$obligation) {
+
+        if (!$obligation instanceof Obligation) {
             throw $this->createNotFoundException('Obligation not found');
         }
-        
+
         $form = $this->createForm(ObligationType::class, $obligation);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-            
+
             $notificationService->addNotification(
-                '✏️ Obligation Updated',
+                'Obligation Updated',
                 sprintf('Obligation "%s" has been updated', $obligation->getNom()),
                 'info'
             );
-            
+
             $this->addFlash('success', 'Obligation updated successfully!');
+
             return $this->redirectToRoute('app_obligation_index');
         }
 
@@ -131,29 +142,43 @@ class ObligationController extends AbstractController
     }
 
     #[Route('/{idObligation}', name: 'app_obligation_delete', methods: ['POST'])]
-    public function delete(int $idObligation, Request $request, ObligationRepository $repository, InvestissementobligationRepository $investmentRepository, EntityManagerInterface $entityManager, SimpleNotificationService $notificationService): Response
-    {
+    public function delete(
+        int $idObligation,
+        Request $request,
+        ObligationRepository $repository,
+        InvestissementobligationRepository $investmentRepository,
+        EntityManagerInterface $entityManager,
+        SimpleNotificationService $notificationService
+    ): Response {
         $obligation = $repository->find($idObligation);
-        
-        if (!$obligation) {
+
+        if (!$obligation instanceof Obligation) {
             throw $this->createNotFoundException('Obligation not found');
         }
-        
-        if ($this->isCsrfTokenValid('delete'.$obligation->getIdObligation(), $request->request->get('_token'))) {
-            $investments = $investmentRepository->findBy(['obligationId' => $obligation->getIdObligation()]);
+
+        $token = $request->request->get('_token');
+
+        if ($this->isCsrfTokenValid(
+            'delete' . $obligation->getIdObligation(),
+            is_scalar($token) ? (string) $token : null
+        )) {
+            $investments = $investmentRepository->findBy([
+                'obligationId' => $obligation->getIdObligation(),
+            ]);
+
             foreach ($investments as $investment) {
                 $entityManager->remove($investment);
             }
-            
+
             $entityManager->remove($obligation);
             $entityManager->flush();
-            
+
             $notificationService->addNotification(
-                '🗑️ Obligation Deleted',
+                'Obligation Deleted',
                 sprintf('Obligation "%s" has been deleted', $obligation->getNom()),
                 'danger'
             );
-            
+
             $this->addFlash('success', 'Obligation and all related investments deleted successfully!');
         }
 
@@ -163,75 +188,58 @@ class ObligationController extends AbstractController
     #[Route('/api/recommendations', name: 'app_obligation_recommendations', methods: ['GET'])]
     public function getRecommendations(): JsonResponse
     {
-        // First, try to return default recommendations immediately (for testing)
-        // Comment this out once you confirm the endpoint is working
-        return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
-        
-        // Your Ollama code below - uncomment once the endpoint is confirmed working
-        /*
-        $prompt = "Generate 3 investment obligation recommendations for a financial platform. Each recommendation should have: a creative name, an interest rate between 3% and 15% (as a float number), and a duration in months between 6 and 60 (as an integer). Format the response as valid JSON only, no other text. Example format: [{\"name\":\"Example Bond\",\"rate\":8.5,\"duration\":24}]";
-        
-        try {
-            $this->logger->info('Calling Ollama API at: ' . $this->ollamaApiUrl);
-            
-            $response = $this->httpClient->request('POST', $this->ollamaApiUrl, [
-                'json' => [
-                    'model' => 'gemma3:1b',
-                    'prompt' => $prompt,
-                    'stream' => false,
-                    'temperature' => 0.8,
-                    'num_predict' => 500
-                ],
-                'timeout' => 30
-            ]);
-            
-            $data = $response->toArray();
-            $output = trim($data['response'] ?? '');
-            
-            preg_match('/\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\]/s', $output, $matches);
-            $jsonString = $matches[0] ?? '';
-            
-            if (!empty($jsonString)) {
-                $recommendations = json_decode($jsonString, true);
-                if (is_array($recommendations) && !empty($recommendations)) {
-                    return $this->json(['recommendations' => $recommendations]);
-                }
-            }
-            
-            return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
-            
-        } catch (\Exception $e) {
-            $this->logger->error('Ollama API error: ' . $e->getMessage());
-            return $this->json(['recommendations' => $this->getDefaultRecommendations()]);
-        }
-        */
+        return $this->json([
+            'recommendations' => $this->getDefaultRecommendations(),
+        ]);
     }
 
     #[Route('/api/recommendation/add', name: 'app_obligation_recommendation_add', methods: ['POST'])]
-    public function addRecommendation(Request $request, EntityManagerInterface $entityManager): JsonResponse
-    {
+    public function addRecommendation(
+        Request $request,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
         $data = json_decode($request->getContent(), true);
-        
-        if (!isset($data['name']) || !isset($data['rate']) || !isset($data['duration'])) {
-            return $this->json(['success' => false, 'error' => 'Missing required fields'], 400);
+
+        if (!is_array($data)) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Invalid JSON body',
+            ], 400);
         }
-        
+
+        if (!isset($data['name'], $data['rate'], $data['duration'])) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Missing required fields',
+            ], 400);
+        }
+
         try {
             $obligation = new Obligation();
-            $obligation->setNom($data['name']);
-            $obligation->setTauxInteret($data['rate']);
-            $obligation->setDuree($data['duration']);
-            
+            $obligation->setNom((string) $data['name']);
+            $obligation->setTauxInteret((float) $data['rate']);
+            $obligation->setDuree((int) $data['duration']);
+
             $entityManager->persist($obligation);
             $entityManager->flush();
-            
-            return $this->json(['success' => true, 'id' => $obligation->getIdObligation()]);
-        } catch (\Exception $e) {
+
+            return $this->json([
+                'success' => true,
+                'id' => $obligation->getIdObligation(),
+            ]);
+        } catch (\Throwable $e) {
             $this->logger->error('Error saving recommendation: ' . $e->getMessage());
-            return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
+    /**
+     * @return list<array{name: string, rate: float, duration: int}>
+     */
     private function getDefaultRecommendations(): array
     {
         return [

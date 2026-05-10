@@ -14,19 +14,29 @@ class TicketPriorityClassifierService
     }
 
     /**
-     * @return array{priority: string, source: string}
+     * @return array{priority: string, source: string, raw: string, is_error?: bool}
      */
     public function classifyPriority(?string $title, ?string $description): array
     {
         $text = trim(($title ?? '') . ' ' . ($description ?? ''));
 
         if ($text === '') {
-            return ['priority' => 'normal', 'source' => 'default'];
+            // Ajout de 'raw' ici pour correspondre à l'annotation
+            return [
+                'priority' => 'normal', 
+                'source' => 'default', 
+                'raw' => 'Empty content'
+            ];
         }
 
         $localResult = $this->checkKeywordsLocally(mb_strtolower($text));
         if ($localResult !== null) {
-            return ['priority' => $localResult, 'source' => 'local_keywords', 'raw' => 'Detected via local keywords'];
+            // 'raw' est déjà présent ici, c'est bon
+            return [
+                'priority' => $localResult, 
+                'source' => 'local_keywords', 
+                'raw' => 'Detected via local keywords'
+            ];
         }
 
         $aiResult = $this->callRemoteAI($text);
@@ -55,6 +65,9 @@ class TicketPriorityClassifierService
         return null;
     }
 
+    /**
+     * @return array{priority: string, raw: string}
+     */
     private function callRemoteAI(string $text): array
     {
         try {

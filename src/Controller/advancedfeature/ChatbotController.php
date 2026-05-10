@@ -11,66 +11,81 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ChatbotController extends AbstractController
 {
-    private $httpClient;
-    private $projectDir;
-    private $ollamaApiUrl;
-    
+    private HttpClientInterface $httpClient;
+    private string $projectDir;
+    private string $ollamaApiUrl;
+   
     public function __construct(HttpClientInterface $httpClient, string $projectDir, string $ollamaApiUrl)
     {
         $this->httpClient = $httpClient;
         $this->projectDir = $projectDir;
         $this->ollamaApiUrl = $ollamaApiUrl;
     }
-    
+   
     #[Route('/chatbot', name: 'app_chatbot')]
     public function index(): Response
     {
         return $this->render('chatbot/index.html.twig');
     }
-    
+   
     #[Route('/api/chatbot/message', name: 'app_chatbot_message', methods: ['POST'])]
     public function sendMessage(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $userMessage = $data['message'] ?? '';
-        
+       
         if (empty($userMessage)) {
             return $this->json(['error' => 'Message is empty'], 400);
         }
-        
+       
         // Load knowledge base from data.md
         $knowledgeBase = $this->loadKnowledgeBase();
-        
+       
         // Get relevant context based on user question
         $context = $this->getRelevantContext($userMessage, $knowledgeBase);
-        
+       
         // Build prompt for LLM
         $prompt = $this->buildPrompt($userMessage, $context);
-        
+       
         // Call Ollama API
         $response = $this->callOllama($prompt);
-        
+       
         return $this->json([
             'response' => $response,
         ]);
     }
-    
+   
+    /**
+     * Loads the knowledge base from the data.md file
+     *
+     * @return string The knowledge base content
+     */
     private function loadKnowledgeBase(): string
     {
         $dataFilePath = $this->projectDir . '/templates/chatbot/data.md';
-        
+       
         if (file_exists($dataFilePath)) {
-            return file_get_contents($dataFilePath);
+            $content = file_get_contents($dataFilePath);
+            if ($content !== false) {
+                return $content;
+            }
         }
-        
+       
         // Fallback knowledge base if file doesn't exist
         return $this->getFallbackKnowledgeBase();
     }
-    
+   
+    /**
+     * Gets relevant context from the knowledge base based on the user's question
+     *
+     * @param string $question The user's question
+     * @param string $knowledgeBase The knowledge base content
+     * @return string The relevant context
+     */
     private function getRelevantContext(string $question, string $knowledgeBase): string
     {
         $questionLower = strtolower($question);
-        
+       
         // Define sections and their keywords
         $sections = [
             'wallet' => ['wallet', 'wallets', 'create wallet', 'delete wallet', 'edit wallet', 'budget management', 'portefeuille'],
@@ -89,9 +104,9 @@ class ChatbotController extends AbstractController
             'support' => ['help', 'support', 'aide', 'contact', 'problem', 'issue'],
             'calculator' => ['calculator', 'calculate', 'real-time', 'live', 'calculateur'],
         ];
-        
+       
         $relevantSections = [];
-        
+       
         foreach ($sections as $section => $keywords) {
             foreach ($keywords as $keyword) {
                 if (strpos($questionLower, $keyword) !== false) {
@@ -100,19 +115,19 @@ class ChatbotController extends AbstractController
                 }
             }
         }
-        
+       
         // Extract relevant content from knowledge base
         $context = "";
         $lines = explode("\n", $knowledgeBase);
         $currentSection = "";
         $inRelevantSection = false;
-        
+       
         foreach ($lines as $line) {
             // Check for section headers (## or ###)
             if (preg_match('/^##+\s+(.+)/', $line, $matches)) {
                 $currentSection = strtolower($matches[1]);
                 $inRelevantSection = false;
-                
+               
                 foreach ($relevantSections as $section) {
                     if (strpos($currentSection, $section) !== false) {
                         $inRelevantSection = true;
@@ -124,31 +139,37 @@ class ChatbotController extends AbstractController
                     $inRelevantSection = true;
                 }
             }
-            
+           
             if ($inRelevantSection) {
                 $context .= $line . "\n";
             }
         }
-        
+       
         // If no specific context found, return general info
         if (empty(trim($context))) {
             $context = $this->getGeneralContext($knowledgeBase);
         }
-        
+       
         // Limit context length (Ollama has token limits)
         if (strlen($context) > 4000) {
             $context = substr($context, 0, 4000);
         }
-        
+       
         return $context;
     }
-    
+   
+    /**
+     * Gets general context from the knowledge base
+     *
+     * @param string $knowledgeBase The knowledge base content
+     * @return string The general context
+     */
     private function getGeneralContext(string $knowledgeBase): string
     {
         $lines = explode("\n", $knowledgeBase);
         $generalInfo = "";
         $capture = false;
-        
+       
         foreach ($lines as $line) {
             if (strpos($line, '## WELCOME MESSAGE') !== false) {
                 $capture = true;
@@ -160,14 +181,21 @@ class ChatbotController extends AbstractController
                 }
             }
         }
-        
+       
         if (empty($generalInfo)) {
             $generalInfo = "Fin-Dinari is a complete personal finance ecosystem that allows users to manage wallets, invest in obligations, track investments, download PDF contracts, upload PDF files, view crypto prices, check financial news, monitor financial health, receive notifications, join community groups, and set financial goals.";
         }
-        
+       
         return $generalInfo;
     }
-    
+   
+    /**
+     * Builds the prompt for the LLM
+     *
+     * @param string $question The user's question
+     * @param string $context The relevant context
+     * @return string The formatted prompt
+     */
     private function buildPrompt(string $question, string $context): string
     {
         return <<<PROMPT
@@ -189,29 +217,40 @@ USER QUESTION: $question
 YOUR RESPONSE (be helpful and concise):
 PROMPT;
     }
-    
-   private function callOllama(string $prompt): string
-{
-    try {
-        $response = $this->httpClient->request('POST', rtrim($this->ollamaApiUrl, '/') . '/api/generate', [
-            'json' => [
-                'model' => 'gemma3:1b',
-                'prompt' => $prompt,
-                'stream' => false,
-                'temperature' => 0.3,
-            ],
-            'timeout' => 60,
-        ]);
+   
+    /**
+     * Calls the Ollama API to generate a response
+     *
+     * @param string $prompt The prompt to send to Ollama
+     * @return string The generated response
+     */
+    private function callOllama(string $prompt): string
+    {
+        try {
+            $response = $this->httpClient->request('POST', rtrim($this->ollamaApiUrl, '/') . '/api/generate', [
+                'json' => [
+                    'model' => 'gemma3:1b',
+                    'prompt' => $prompt,
+                    'stream' => false,
+                    'temperature' => 0.3,
+                ],
+                'timeout' => 60,
+            ]);
 
-        $data = $response->toArray();
+            $data = $response->toArray();
 
-        return trim($data['response'] ?? 'I apologize, but I encountered an issue generating a response. Please try again.');
+            return trim($data['response'] ?? 'I apologize, but I encountered an issue generating a response. Please try again.');
 
-    } catch (\Throwable $e) {
-        return 'REAL ERROR: ' . $e->getMessage();
+        } catch (\Throwable $e) {
+            return 'Sorry, the chatbot service is temporarily unavailable. Please try again later.';
+        }
     }
-}
-    
+   
+    /**
+     * Returns the fallback knowledge base content
+     *
+     * @return string The fallback knowledge base
+     */
     private function getFallbackKnowledgeBase(): string
     {
         return <<<FALLBACK

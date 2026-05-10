@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Categories — Fin-Dinari</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* ── same CSS variables as admin dashboard ── */
+        :root {
+            --brand: #16a34a; --brand-light: #dcfce7; --brand-dark: #15803d;
+            --danger: #ef4444; --danger-light: #fef2f2;
+            --success: #22c55e; --warning: #f59e0b; --info: #0ea5e9;
+            --bg: #f4f7f4; --surface: #ffffff; --border: #e4ebe4;
+            --text-primary: #1a2e1a; --text-secondary: #4b6b4b; --text-muted: #8faa8f;
+            --sidebar-width: 270px; --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
+            --shadow-card: 0 2px 16px rgba(22,163,74,.07);
+            --shadow-hover: 0 8px 28px rgba(22,163,74,.20);
+            --transition: .22s cubic-bezier(.4,0,.2,1);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-primary); font-size: 14.5px; line-height: 1.6; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: var(--sidebar-width); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; padding: 28px 18px 24px; overflow-y: auto; }
+        .brand { display: flex; align-items: center; gap: 10px; padding: 4px 10px 28px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+        .brand-icon { width: 40px; height: 40px; }
+        .brand-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .brand-name { font-size: 22px; font-weight: 800; color: var(--brand); letter-spacing: -0.5px; }
+        .nav-section { font-size: 11px; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase; color: var(--text-muted); padding: 8px 12px 6px; margin-top: 4px; }
+        .side-link { display: flex; align-items: center; gap: 11px; text-decoration: none; color: var(--text-secondary); padding: 11px 14px; border-radius: var(--radius-md); margin-bottom: 4px; font-weight: 600; font-size: 14px; transition: background var(--transition), color var(--transition); }
+        .side-link:hover { background: var(--brand-light); color: var(--brand); }
+        .side-link.active { background: var(--brand-light); color: var(--brand); box-shadow: inset 3px 0 0 var(--brand); }
+        .sidebar-footer { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--border); }
+        .content { margin-left: var(--sidebar-width); flex: 1; padding: 28px; min-width: 0; }
+        .topbar { background: var(--surface); border-radius: var(--radius-lg); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; box-shadow: var(--shadow-card); border: 1px solid var(--border); }
+        .topbar-title { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+        .topbar-title span { color: var(--brand); }
+        .flash { padding: 14px 18px; border-radius: var(--radius-md); margin-bottom: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; font-size: 14px; animation: fadeSlideDown .3s ease; }
+        @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .flash.success { background: #dcfce7; color: #166534; border: 1px solid #b2f5d1; }
+        .flash.danger  { background: #fef2f2; color: #9b1c1c; border: 1px solid #fdb9b9; }
+        .section { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-card); margin-bottom: 26px; overflow: hidden; }
+        .section-header { padding: 22px 26px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .section-title { font-size: 16px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 9px; }
+        .section-title i { color: var(--brand); }
+        .section-body { padding: 24px 26px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: none; border-radius: var(--radius-sm); padding: 10px 18px; cursor: pointer; font-family: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; transition: filter var(--transition), transform var(--transition); white-space: nowrap; }
+        .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 4px 14px rgba(34,197,94,.35); }
+        .btn-danger  { background: var(--danger); color: #fff; }
+        .btn-sm      { padding: 7px 13px; font-size: 12.5px; border-radius: 6px; }
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .badge.active   { background: #dcfce7; color: #166534; }
+        .badge.inactive { background: #fef2f2; color: #b91c1c; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 26px; }
+        .card { background: var(--surface); border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow-card); border: 1px solid var(--border); display: flex; align-items: flex-start; gap: 16px; transition: transform var(--transition), box-shadow var(--transition); }
+        .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .card-icon { width: 46px; height: 46px; border-radius: 14px; background: var(--card-accent, var(--brand-light)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .card-body { flex: 1; }
+        .card-label { font-size: 12.5px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 4px; }
+        .card-value { font-size: 28px; font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1; }
+        .card.c-green  { --card-accent: #d1fae5; }
+        .card.c-red    { --card-accent: #fef2f2; }
+        .card.c-purple { --card-accent: #dcfce7; }
+        /* Search bar */
+        .search-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 24px; }
+        .search-bar input, .search-bar select { padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: #fafbff; color: var(--text-primary); font-family: inherit; font-size: 14px; font-weight: 500; outline: none; transition: border-color var(--transition); }
+        .search-bar input:focus, .search-bar select:focus { border-color: var(--brand); }
+        .search-bar input { flex: 1; min-width: 200px; }
+        /* Categories grid */
+        .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .cat-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-card); transition: transform var(--transition), box-shadow var(--transition); }
+        .cat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+        .cat-card-header { padding: 20px 22px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .cat-card-icon { width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .cat-card-body { padding: 18px 22px; }
+        .cat-card-name { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+        .cat-card-desc { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; min-height: 18px; }
+        .cat-card-actions { display: flex; gap: 8px; }
+        .cat-card-actions a, .cat-card-actions button { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; text-decoration: none; transition: filter var(--transition); }
+        .cat-card-actions a:hover, .cat-card-actions button:hover { filter: brightness(1.1); }
+        .btn-edit   { background: #e3f2fd; color: #1e3a5f; }
+        .btn-delete { background: #fef2f2; color: var(--danger); }
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 48px; margin-bottom: 14px; opacity: .4; display: block; }
+        /* Pagination */
+        .pagination { display: flex; gap: 6px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+        .page-btn { padding: 8px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface); color: var(--text-secondary); font-weight: 700; font-size: 13px; text-decoration: none; transition: all var(--transition); }
+        .page-btn:hover { background: var(--brand-light); color: var(--brand); border-color: var(--brand); }
+        .page-btn.active { background: var(--brand); color: white; border-color: var(--brand); }
+        .page-btn.disabled { opacity: .4; pointer-events: none; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><img src="{{ asset('images/logo.png') }}" alt="Logo"></div>
+            <span class="brand-name">Fin-Dinari</span>
+        </div>
+
+        <div class="nav-section">Main</div>
+        <a class="side-link" href="{{ path('app_admin_dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+        <a class="side-link" href="{{ path('app_admin_overview_dashboard') }}"><i class="fas fa-chart-bar"></i> Overview Dashboard</a>
+        <a class="side-link" href="{{ path('app_admin_wallets') }}"><i class="fas fa-wallet"></i> Manage Wallets</a>
+        <a class="side-link" href="{{ path('app_admin_management') }}"><i class="fas fa-exchange-alt"></i> Manage Transactions</a>
+        <a class="side-link active" href="{{ path('app_admin_categorie_index') }}"><i class="fas fa-folder"></i> Manage Categories</a>
+        <a class="side-link" href="{{ path('app_admin_objectifs') }}"><i class="fas fa-bullseye"></i> Manage Objectifs</a>
+        <a class="side-link" href="{{ path('app_admin_tickets') }}"><i class="fas fa-ticket-alt"></i> Manage Tickets</a>
+        <a class="side-link" href="{{ path('app_admin_obligations') }}"><i class="fas fa-file-contract"></i> Manage Obligations</a>
+
+        <div class="sidebar-footer">
+            <a class="side-link" href="{{ path('app_home') }}">Back to site</a>
+            <a class="side-link" href="{{ path('app_logout') }}">Logout</a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="topbar">
+            <div class="topbar-title">Categories <span>Management</span></div>
+            <div style="display:flex;align-items:center;gap:14px;">
+                <a href="{{ path('app_admin_categorie_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Category
+                </a>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="flash success"><i class="fas fa-check-circle"></i> {{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="flash danger"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+        {% endfor %}
+
+        {# Stats Cards #}
+        <div class="cards">
+            <div class="card c-purple">
+                <div class="card-icon"><i class="fas fa-folder" style="color:var(--brand);font-size:22px;"></i></div>
+                <div class="card-body">
+                    <div class="card-label">Total Categories</div>
+                    <div class="card-value">{{ total }}</div>
+                </div>
+            </div>
+            <div class="card c-green">
+                <div class="card-icon"><i class="fas fa-check-circle" style="color:var(--brand-dark);font-size:22px;"></i></div>
+                <div class="card-body">
+                    <div class="card-label">Active</div>
+                    <div class="card-value">{{ categories|filter(c => c.statut == 'Active')|length }}</div>
+                </div>
+            </div>
+            <div class="card c-red">
+                <div class="card-icon"><i class="fas fa-times-circle" style="color:var(--danger);font-size:22px;"></i></div>
+                <div class="card-body">
+                    <div class="card-label">Inactive</div>
+                    <div class="card-value">{{ categories|filter(c => c.statut == 'Inactive')|length }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title"><i class="fas fa-folder"></i> All Categories</div>
+            </div>
+            <div class="section-body">
+
+                {# Search Bar #}
+                <form method="get" action="{{ path('app_admin_categorie_index') }}" class="search-bar">
+                    <input type="text" name="search" placeholder="Search by name..." value="{{ search }}">
+                    <select name="statut">
+                        <option value="">All Status</option>
+                        <option value="Active"   {{ statut == 'Active'   ? 'selected' : '' }}>Active</option>
+                        <option value="Inactive" {{ statut == 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Search</button>
+                    {% if search or statut %}
+                        <a href="{{ path('app_admin_categorie_index') }}" class="btn btn-sm" style="background:#f0f2f7;color:var(--text-secondary);">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    {% endif %}
+                </form>
+
+                {# Categories Grid #}
+                {% if categories is empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <p style="font-size:16px;font-weight:700;">No categories found</p>
+                        <a href="{{ path('app_admin_categorie_new') }}" class="btn btn-primary" style="margin-top:12px;">
+                            <i class="fas fa-plus"></i> Create First Category
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="cat-grid">
+                        {% for categorie in categories %}
+                            <div class="cat-card">
+                                <div class="cat-card-header" style="background: {{ categorie.color ?? '#16a34a' }};">
+                                    <div>
+                                        <div style="font-size:11px;opacity:.75;font-weight:700;text-transform:uppercase;margin-bottom:2px;">Category</div>
+                                        <div class="cat-card-name">{{ categorie.nom }}</div>
+                                        <span style="background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">
+                                            {{ categorie.statut }}
+                                        </span>
+                                    </div>
+                                    <div class="cat-card-icon">
+                                        <i class="fas {{ categorie.icon ?? 'fa-folder' }}"></i>
+                                    </div>
+                                </div>
+                                <div class="cat-card-body">
+                                    <div class="cat-card-desc">
+                                        {{ categorie.description ?? 'No description' }}
+                                    </div>
+                                    <div style="display:flex;gap:8px;margin-bottom:12px;font-size:12px;">
+                                        <span style="background:#f0f9f0;color:var(--brand-dark);padding:4px 10px;border-radius:99px;font-weight:700;">
+                                            <i class="fas fa-chart-pie me-1"></i>{{ categorie.budgets|length }} budgets
+                                        </span>
+                                        <span style="background:#f0f9f0;color:var(--brand-dark);padding:4px 10px;border-radius:99px;font-weight:700;">
+                                            <i class="fas fa-exchange-alt me-1"></i>{{ categorie.transactions|length }} tx
+                                        </span>
+                                    </div>
+                                    <div class="cat-card-actions">
+                                        <a href="{{ path('app_admin_categorie_edit', {'id': categorie.id}) }}" class="btn-edit">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <form method="post" action="{{ path('app_admin_categorie_delete', {'id': categorie.id}) }}"
+                                              onsubmit="return confirm('Delete this category?');" style="flex:1;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ categorie.id) }}">
+                                            <button type="submit" class="btn-delete" style="width:100%;">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {# Pagination #}
+                    {% if totalPages > 1 %}
+                        <div class="pagination">
+                            <a href="{{ path('app_admin_categorie_index', {page: currentPage - 1, search: search, statut: statut}) }}"
+                               class="page-btn {{ currentPage == 1 ? 'disabled' : '' }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                            {% for p in 1..totalPages %}
+                                <a href="{{ path('app_admin_categorie_index', {page: p, search: search, statut: statut}) }}"
+                                   class="page-btn {{ p == currentPage ? 'active' : '' }}">{{ p }}</a>
+                            {% endfor %}
+                            <a href="{{ path('app_admin_categorie_index', {page: currentPage + 1, search: search, statut: statut}) }}"
+                               class="page-btn {{ currentPage == totalPages ? 'disabled' : '' }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                        
+                    {% endif %}
+                {% endif %}
+
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
