@@ -9,6 +9,7 @@ use App\Entity\reclamation\Ticket;
 use App\Form\MessageType;
 use App\Form\TicketType;
 use App\Repository\TicketRepository;
+use App\Service\CloudinaryUploader;
 use App\Service\Ticket\TicketManager;
 use App\Service\TicketPriorityClassifierService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,7 +26,8 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class TicketUserController extends AbstractController
 {
     public function __construct(
-        private TicketManager $ticketManager
+        private TicketManager $ticketManager,
+        private CloudinaryUploader $cloudinaryUploader
     ) {
     }
 
@@ -103,20 +105,24 @@ class TicketUserController extends AbstractController
 
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-
-
                 try {
-                    $imageFile->move(
-                        $this->getParameter('tickets_directory'),
-                        $newFilename
+                    $this->addFlash('info', 'File detected, uploading to Cloudinary...');
+                    $cloudinaryUrl = $this->cloudinaryUploader->upload(
+                        $imageFile->getRealPath(), 
+                        'findinari/tickets'
                     );
-                    $ticket->setImageUrl($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Image upload failed.');
+                    
+                    if ($cloudinaryUrl) {
+                        $ticket->setImageUrl($cloudinaryUrl);
+                        $this->addFlash('info', 'Upload successful: ' . $cloudinaryUrl);
+                    } else {
+                        $this->addFlash('warning', 'Cloudinary returned no URL.');
+                    }
+                } catch (\Exception $e) {
+                    $this->addFlash('danger', 'Cloudinary Error: ' . $e->getMessage());
                 }
+            } else {
+                $this->addFlash('secondary', 'Debug: No image file detected in the form.');
             }
 
 
@@ -297,19 +303,18 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
 
 
             if ($imageFile) {
-                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-
-
                 try {
-                    $imageFile->move(
-                        $this->getParameter('tickets_directory'),
-                        $newFilename
+                    $this->addFlash('info', 'Updating image on Cloudinary...');
+                    $cloudinaryUrl = $this->cloudinaryUploader->upload(
+                        $imageFile->getRealPath(), 
+                        'findinari/tickets'
                     );
-                    $ticket->setImageUrl($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Image upload failed.');
+                    if ($cloudinaryUrl) {
+                        $ticket->setImageUrl($cloudinaryUrl);
+                        $this->addFlash('info', 'Update successful: ' . $cloudinaryUrl);
+                    }
+                } catch (\Exception $e) {
+                    $this->addFlash('danger', 'Cloudinary Error: ' . $e->getMessage());
                 }
             }
 

@@ -31,7 +31,8 @@ class MessageController extends AbstractController
         Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        \App\Service\CloudinaryUploader $cloudinaryUploader
     ): Response {
         /** @var Utilisateur|null $user */
         $user = $this->getUser();
@@ -62,23 +63,18 @@ class MessageController extends AbstractController
 
 
             if ($attachmentFile instanceof UploadedFile) {
-                $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $extension = $attachmentFile->guessExtension() ?: 'bin';
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
-
-
                 try {
-                    $messagesDirectory = $this->getParameter('messages_directory');
-                    if (!is_string($messagesDirectory)) {
-                        throw new \RuntimeException('The "messages_directory" parameter must be a string.');
+                    $this->addFlash('info', 'Uploading attachment to Cloudinary...');
+                    $cloudinaryUrl = $cloudinaryUploader->upload(
+                        $attachmentFile->getRealPath(), 
+                        'findinari/messages'
+                    );
+                    if ($cloudinaryUrl) {
+                        $message->setUrlPieceJointe($cloudinaryUrl);
+                        $this->addFlash('info', 'Attachment success: ' . $cloudinaryUrl);
                     }
-
-
-                    $attachmentFile->move($messagesDirectory, $newFilename);
-                    $message->setUrlPieceJointe($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Attachment upload failed.');
+                } catch (\Exception $e) {
+                    $this->addFlash('danger', 'Cloudinary Error: ' . $e->getMessage());
                     return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
                 }
             }
@@ -168,7 +164,8 @@ class MessageController extends AbstractController
         Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager,
-        SluggerInterface $slugger
+        SluggerInterface $slugger,
+        \App\Service\CloudinaryUploader $cloudinaryUploader
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('app_login');
@@ -198,23 +195,18 @@ class MessageController extends AbstractController
 
 
             if ($attachmentFile instanceof UploadedFile) {
-                $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $extension = $attachmentFile->guessExtension() ?: 'bin';
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
-
-
                 try {
-                    $messagesDirectory = $this->getParameter('messages_directory');
-                    if (!is_string($messagesDirectory)) {
-                        throw new \RuntimeException('The "messages_directory" parameter must be a string.');
+                    $this->addFlash('info', 'Admin attachment: uploading...');
+                    $cloudinaryUrl = $cloudinaryUploader->upload(
+                        $attachmentFile->getRealPath(), 
+                        'findinari/messages'
+                    );
+                    if ($cloudinaryUrl) {
+                        $message->setUrlPieceJointe($cloudinaryUrl);
+                        $this->addFlash('info', 'Admin attachment success: ' . $cloudinaryUrl);
                     }
-
-
-                    $attachmentFile->move($messagesDirectory, $newFilename);
-                    $message->setUrlPieceJointe($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('danger', 'Attachment upload failed.');
+                } catch (\Exception $e) {
+                    $this->addFlash('danger', 'Cloudinary Error: ' . $e->getMessage());
                     return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
                 }
             }

@@ -26,9 +26,9 @@
             {% if message.urlPieceJointe %}
                 <div style="margin-top:12px; padding-top:12px; border-top:1px solid {{ isUser ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.06)' }};">
                     {% set isUrl = message.urlPieceJointe starts with 'http' %}
-                    {% set extension = isUrl ? 'm4a' : message.urlPieceJointe|split('.')|last|lower %}
+                    {% set extension = message.urlPieceJointe|split('.')|last|lower|split('?')|first %}
                     
-                    {% if isUrl or extension in ['m4a', 'mp3', 'wav', 'ogg'] %}
+                    {% if extension in ['m4a', 'mp3', 'wav', 'ogg', 'webm'] or '/video/upload/' in message.urlPieceJointe %}
                         <div class="voice-message-player">
                             <button class="play-btn" onclick="toggleAudio(this, '{{ isUrl ? message.urlPieceJointe : asset('uploads/messages/' ~ message.urlPieceJointe) }}')">
                                 <i class="fas fa-play"></i>
@@ -47,12 +47,14 @@
                             </div>
                             <span style="font-size:11px; opacity:0.8; color: inherit;">Voice</span>
                         </div>
-                    {% elseif extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] %}
-                        <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank">
-                            <img src="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                    {% elseif extension in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'] or '/image/upload/' in message.urlPieceJointe %}
+                        {% set imgUrl = isUrl ? message.urlPieceJointe : asset('uploads/messages/' ~ message.urlPieceJointe) %}
+                        <a href="{{ imgUrl }}" target="_blank">
+                            <img src="{{ imgUrl }}" alt="Attachment" style="max-width: 100%; max-height: 250px; border-radius: 12px; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                         </a>
                     {% else %}
-                        <a href="{{ asset('uploads/messages/' ~ message.urlPieceJointe) }}" target="_blank" style="display:inline-flex; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; opacity:.95; font-size:13px;">
+                        {% set fileUrl = isUrl ? message.urlPieceJointe : asset('uploads/messages/' ~ message.urlPieceJointe) %}
+                        <a href="{{ fileUrl }}" target="_blank" style="display:inline-flex; align-items:center; gap:8px; color:inherit; font-weight:700; text-decoration:none; opacity:.95; font-size:13px;">
                             <i class="fas fa-file-download"></i>
                             Download ({{ extension|upper }})
                         </a>

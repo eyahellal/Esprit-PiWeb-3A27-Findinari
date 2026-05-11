@@ -455,7 +455,8 @@
                 <div class="info-group">
                    <span class="info-label">Attached Image</span>
                    <div style="margin-top: 10px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
-                       <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" alt="Ticket Attachment" style="width: 100%; display: block;" onerror="this.onerror=null; this.src='{{ asset('images/placeholder-image-icon.png') }}';">
+                       {% set ticketImgUrl = ticket.imageUrl starts with 'http' ? ticket.imageUrl : asset('uploads/tickets/' ~ ticket.imageUrl) %}
+                       <img src="{{ ticketImgUrl }}" alt="Ticket Attachment" style="width: 100%; display: block;" onerror="this.onerror=null; this.src='{{ asset('images/placeholder-image-icon.png') }}';">
                    </div>
                 </div>
                 {% endif %}

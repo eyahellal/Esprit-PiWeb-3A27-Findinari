@@ -692,7 +692,8 @@
                     {% if ticket.imageUrl %}
                     <span class="info-label">Attachment</span>
                     <div style="margin-bottom:24px;">
-                        <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" style="width:100%; border-radius:10px; border:1px solid var(--border);">
+                        {% set ticketImgUrl = ticket.imageUrl starts with 'http' ? ticket.imageUrl : asset('uploads/tickets/' ~ ticket.imageUrl) %}
+                        <img src="{{ ticketImgUrl }}" style="width:100%; border-radius:10px; border:1px solid var(--border);">
                     </div>
                     {% endif %}
 

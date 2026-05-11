@@ -201,7 +201,8 @@
                     <label>Update Attachment (Optional)</label>
                     {% if ticket.imageUrl %}
                         <div style="margin-bottom: 20px; background: #f9fafb; padding: 15px; border-radius: 12px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 15px;">
-                            <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            {% set currentTicketImgUrl = ticket.imageUrl starts with 'http' ? ticket.imageUrl : asset('uploads/tickets/' ~ ticket.imageUrl) %}
+                            <img src="{{ currentTicketImgUrl }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;">
                             <div>
                                 <div style="font-size: 13px; font-weight: 700; color: #374151;">Current File</div>
                                 <div style="font-size: 12px; color: #6b7280;">This image is currently attached to your ticket.</div>

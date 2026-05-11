@@ -249,7 +249,8 @@
                 <div class="ticket-card priority-{{ ticket.priorite|lower }}-bar">
                     <div class="ticket-image-wrapper">
                         {% if ticket.imageUrl %}
-                            <img src="{{ asset('uploads/tickets/' ~ ticket.imageUrl) }}" alt="{{ ticket.titre }}" class="ticket-thumbnail">
+                            {% set ticketThumbUrl = ticket.imageUrl starts with 'http' ? ticket.imageUrl : asset('uploads/tickets/' ~ ticket.imageUrl) %}
+                            <img src="{{ ticketThumbUrl }}" alt="{{ ticket.titre }}" class="ticket-thumbnail">
                         {% else %}
                             <div class="ticket-thumbnail placeholder-bg">
                                 <i class="fas fa-ticket-alt"></i>

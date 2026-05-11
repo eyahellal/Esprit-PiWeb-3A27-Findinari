@@ -13,16 +13,21 @@ class CloudinaryUploader
         $this->cloudinary = new Cloudinary($cloudinaryUrl);
     }
 
-    public function uploadAudio(string $filePath): ?string
+    public function upload(string $filePath, string $folder = 'findinari/general'): ?string
     {
         $result = $this->cloudinary
             ->uploadApi()
             ->upload($filePath, [
-                'resource_type' => 'video',
-                'folder' => 'findinari/messages',
+                'folder' => $folder,
+                'resource_type' => 'auto',
                 'overwrite' => false,
             ]);
 
         return $result['secure_url'] ?? null;
+    }
+
+    public function uploadAudio(string $filePath): ?string
+    {
+        return $this->upload($filePath, 'findinari/messages');
     }
 }
