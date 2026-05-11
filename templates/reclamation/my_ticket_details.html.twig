@@ -363,7 +363,7 @@
                
                 <div class="info-group">
                     <span class="info-label">Status</span>
-                    <div class="status-badge {% if ticket.statut|lower == 'open' %}status-open{% elseif ticket.statut|lower == 'closed' %}status-closed{% else %}status-in-progress{% endif %}">
+                    <div class="status-badge status-{{ ticket.statut|lower|replace({'_': '-'}) }}">
                         {{ ticket.statut }}
                     </div>
                 </div>

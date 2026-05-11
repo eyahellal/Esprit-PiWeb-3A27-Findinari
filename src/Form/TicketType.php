@@ -28,10 +28,11 @@ class TicketType extends AbstractType
                 'label' => 'Category',
                 'choices' => [
                     'Select a category' => '',
-                    'Technical Support' => 'Technical Support',
-                    'Billing Issue' => 'Billing Issue',
-                    'Account Access' => 'Account Access',
-                    'General Inquiry' => 'General Inquiry',
+                    'Report a Bug' => Ticket::TYPE_BUG,
+                    'Technical Issue' => Ticket::TYPE_TECHNICAL,
+                    'Feature Request' => Ticket::TYPE_FEATURE,
+                    'Account Support' => Ticket::TYPE_ACCOUNT,
+                    'Other / General' => Ticket::TYPE_OTHER,
                 ],
                 'attr' => ['class' => 'form-select'],
             ])

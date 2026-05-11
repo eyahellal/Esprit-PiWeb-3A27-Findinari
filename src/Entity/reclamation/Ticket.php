@@ -15,14 +15,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Ticket
 {
     // Status Constants
-    public const STATUS_OPEN = 'Open';
-    public const STATUS_IN_PROGRESS = 'In Progress';
-    public const STATUS_CLOSED = 'Closed';
+    public const STATUS_OPEN = 'OPEN';
+    public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+    public const STATUS_CLOSED = 'CLOSED';
 
     // Priority Constants
     public const PRIORITY_LOW = 'Low';
     public const PRIORITY_MEDIUM = 'Medium';
     public const PRIORITY_HIGH = 'High';
+
+    // Type Constants (Synchronized with Java Enum)
+    public const TYPE_BUG = 'BUG';
+    public const TYPE_TECHNICAL = 'TECHNICAL_ISSUE';
+    public const TYPE_FEATURE = 'FEATURE_REQUEST';
+    public const TYPE_ACCOUNT = 'ACCOUNT';
+    public const TYPE_OTHER = 'OTHER';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

@@ -256,7 +256,8 @@
                                 <i class="fas fa-ticket-alt"></i>
                             </div>
                         {% endif %}
-                        <div class="badge-overlay status-{{ ticket.statut|lower == 'open' ? 'open' : (ticket.statut|lower == 'closed' ? 'closed' : 'in-progress') }}">
+                        {% set statusClass = ticket.statut|lower|replace({'_': '-'}) %}
+                        <div class="badge-overlay status-{{ statusClass }}">
                             {{ ticket.statut }}
                         </div>
                     </div>
