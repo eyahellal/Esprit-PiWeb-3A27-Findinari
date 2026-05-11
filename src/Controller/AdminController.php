@@ -613,6 +613,7 @@ class AdminController extends AbstractController
         $form = $this->createForm(MessageType::class, $message);
 
         if ($request->isMethod('POST') && $request->request->has('update_ticket')) {
+            $oldStatus = $ticket->getStatut();
             $newStatut = (string) $request->request->get('statut');
             $newPriorite = (string) $request->request->get('priorite');
 
@@ -624,7 +625,38 @@ class AdminController extends AbstractController
                 $ticket->setPriorite($newPriorite);
             }
 
+            // Check if ticket is being closed
+            if (in_array($newStatut, [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'], true)) {
+                $ticket->setDateFermeture(new \DateTime());
+            }
+
+            $resolvedStatuses = [Ticket::STATUS_CLOSED, 'Fermé', 'CLOSED', 'Resolved', 'RESOLVED'];
+            $becameResolved = !in_array($oldStatus, $resolvedStatuses, true)
+                && in_array($ticket->getStatut(), $resolvedStatuses, true);
+
             $entityManager->flush();
+
+            if ($becameResolved && $ticket->getUtilisateur() && $ticket->getUtilisateur()->getGmail()) {
+                try {
+                    $recipient = $ticket->getUtilisateur()->getGmail();
+                    $sender = $_ENV['MAIL_FROM_ADDRESS'] ?? 'eyahellal8@gmail.com';
+
+                    $email = (new TemplatedEmail())
+                        ->from($sender)
+                        ->to($recipient)
+                        ->subject('Your ticket has been resolved')
+                        ->htmlTemplate('emails/ticket_resolved.html.twig')
+                        ->context([
+                            'ticket' => $ticket,
+                            'user' => $ticket->getUtilisateur(),
+                        ]);
+
+                    $mailer->send($email);
+                    $this->addFlash('info', 'Confirmation email sent to the user.');
+                } catch (\Throwable $e) {
+                    $this->addFlash('danger', 'The ticket was updated but the email could not be sent: ' . $e->getMessage());
+                }
+            }
 
             $this->addFlash('success', 'Ticket updated successfully.');
 
