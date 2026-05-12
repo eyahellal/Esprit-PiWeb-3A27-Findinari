@@ -637,13 +637,21 @@
                     <span class="info-label">Customer Sentiment</span>
                     <div style="margin-bottom:20px;">
                         {% if sentiment is defined and sentiment.messages_count > 0 %}
-                            {% set color = sentiment.label == 'satisfied' ? '#16a34a' : (sentiment.label == 'unsatisfied' ? '#dc2626' : '#64748b') %}
+                            {% set sLabel = sentiment.label|lower %}
+                            {% set isSatisfied = sLabel == 'satisfied' or sLabel == 'neutral' %}
+                            {% set displayLabel = isSatisfied ? 'Satisfied' : 'Unsatisfied' %}
+                            {% set color = isSatisfied ? '#16a34a' : '#dc2626' %}
                             <div style="display: flex; align-items: center; gap: 8px; color: {{ color }}; font-weight: 800; font-size: 16px;">
-                                <span>{{ sentiment.label|capitalize }}</span>
+                                <div style="width: 10px; height: 10px; border-radius: 50%; background: {{ color }};"></div>
+                                <span>{{ displayLabel }}</span>
                             </div>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Analyzed from last {{ sentiment.messages_count }} user messages</div>
                         {% else %}
-                            <span style="color: var(--text-muted); font-style: italic; font-size: 13px;">No user messages to analyze</span>
+                             <div style="display: flex; align-items: center; gap: 8px; color: #16a34a; font-weight: 800; font-size: 16px;">
+                                <div style="width: 10px; height: 10px; border-radius: 50%; background: #16a34a;"></div>
+                                <span>Satisfied</span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">No user messages yet - Defaulting to Satisfied</div>
                         {% endif %}
                     </div>
 

@@ -168,11 +168,16 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
 
     #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
-        Ticket $ticket,
+        ?Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger
     ): Response {
+        if (!$ticket) {
+            $this->addFlash('warning', 'This ticket no longer exists.');
+            return $this->redirectToRoute('app_user_tickets');
+        }
+
         $user = $this->getUser();
 
 
@@ -246,10 +251,15 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
 
    #[Route('/user/ticket/{id}/delete', name: 'app_user_ticket_delete', methods: ['POST'])]
     public function deleteTicket(
-        Ticket $ticket,
+        ?Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
+        if (!$ticket) {
+            $this->addFlash('warning', 'This ticket no longer exists.');
+            return $this->redirectToRoute('app_user_tickets');
+        }
+
         $user = $this->getUser();
 
 
@@ -273,11 +283,16 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
 
     #[Route('/user/ticket/{id}/edit', name: 'app_user_ticket_edit', methods: ['GET', 'POST'])]
     public function editTicket(
-        Ticket $ticket,
+        ?Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger
     ): Response {
+        if (!$ticket) {
+            $this->addFlash('warning', 'This ticket no longer exists.');
+            return $this->redirectToRoute('app_user_tickets');
+        }
+
         $user = $this->getUser();
 
 
