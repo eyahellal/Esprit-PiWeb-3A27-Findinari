@@ -521,7 +521,8 @@ class TransactionController extends AbstractController
         $amount      = (float) ($data['amount'] ?? 0);
         $type        = $data['type'] ?? 'depense';
 
-        $scriptPath = 'C:\projects\whatever\Esprit-PiWeb-3A27-Findinari\malek_ml\predict.py';
+        // ✅ After — dynamic path
+$scriptPath = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'malek_ml' . DIRECTORY_SEPARATOR . 'predict.py';
 
         $command = sprintf(
             'python %s %s %s %s 2>&1',
