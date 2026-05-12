@@ -149,30 +149,31 @@ class MoneyTransferController extends AbstractController
         $em->persist($transfer);
         $em->flush();
 
-        // ✅ Notify RECEIVER — with button to choose wallet
-        $notificationService->addNotification(
-            sprintf('💸 %s sent you money!',
-                $sender->getNom() . ' ' . $sender->getPrenom()),
-            sprintf(
-                '<div class="loan-notification">
-                    <strong>%s</strong> sent you <strong>%.2f %s</strong>!<br>
-                    %s
-                    <div class="mt-2">
-                        <a href="/transfer/accept/%d" class="btn btn-sm btn-success">💳 Choose Wallet</a>
-                    </div>
-                </div>',
-                htmlspecialchars($sender->getNom() . ' ' . $sender->getPrenom(), ENT_QUOTES, 'UTF-8'),
-                $amount,
-                $senderWallet->getDevise(),
-                $message ? '<em>"' . htmlspecialchars((string)$message, ENT_QUOTES, 'UTF-8') . '"</em><br>' : '',
-                $transfer->getId()
-            ),
-            $receiver,
-            'info',
-            $transfer->getId(),
-            'money_transfer'
-        );
-
+        // ✅ Fix — add the Choose Wallet button in the message
+$notificationService->addNotification(
+    sprintf('💸 %s sent you money!',
+        $sender->getNom() . ' ' . $sender->getPrenom()),
+    sprintf(
+        '<div class="loan-notification">
+            <strong>%s</strong> sent you <strong>%.2f %s</strong>!<br>
+            %s
+            <div class="mt-2">
+                <a href="/transfer" class="btn btn-sm btn-success">
+                    💳 Choose Wallet
+                </a>
+            </div>
+        </div>',
+        htmlspecialchars($sender->getNom() . ' ' . $sender->getPrenom(), ENT_QUOTES, 'UTF-8'),
+        $amount,
+        $senderWallet->getDevise(),
+        $message ? '<em>"' . htmlspecialchars((string)$message, ENT_QUOTES, 'UTF-8') . '"</em><br>' : '',
+        $transfer->getId()
+    ),
+    $receiver,
+    'info',
+    $transfer->getId(),
+    'money_transfer'
+);
         // ✅ Notify SENDER — confirmation
         $notificationService->addNotification(
             '✅ Money sent successfully!',
