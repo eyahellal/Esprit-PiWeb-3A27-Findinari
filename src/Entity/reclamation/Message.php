@@ -14,6 +14,9 @@ use App\Repository\MessageRepository;
 #[ORM\Table(name: 'message')]
 class Message
 {
+    public const SENDER_USER = 'User';
+    public const SENDER_ADMIN = 'Admin';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

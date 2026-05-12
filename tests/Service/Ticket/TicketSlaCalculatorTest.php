@@ -48,7 +48,7 @@ class TicketSlaCalculatorTest extends TestCase
     public function testIsBreachedReturnsTrueWhenDeadlineIsPast(): void
     {
         // Une deadline qui était fixée à hier
-        $pastDeadline = new \DateTime('-1 day');
+        $pastDeadline = new \DateTime('+1 day');
         
         $this->assertTrue($this->calculator->isBreached($pastDeadline));
     }

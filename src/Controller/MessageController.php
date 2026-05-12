@@ -32,7 +32,8 @@ class MessageController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger,
-        \App\Service\CloudinaryUploader $cloudinaryUploader
+        \App\Service\CloudinaryUploader $cloudinaryUploader,
+        \App\Service\WebSocketService $webSocketService
     ): Response {
         /** @var Utilisateur|null $user */
         $user = $this->getUser();
@@ -54,7 +55,7 @@ class MessageController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $message->setTicket($ticket);
             $message->setDate(new \DateTime());
-            $message->setTypeSender('USER');
+            $message->setTypeSender(Message::SENDER_USER);
             $message->setUtilisateur($user);
 
 
@@ -82,6 +83,13 @@ class MessageController extends AbstractController
 
             $entityManager->persist($message);
             $entityManager->flush();
+
+            // NOTIFY JAVA SERVER
+            $webSocketService->sendMessage(
+                $ticket->getId(), 
+                $message->getContenu() ?? '', 
+                $message->getUrlPieceJointe()
+            );
         }
 
 
@@ -165,7 +173,8 @@ class MessageController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         SluggerInterface $slugger,
-        \App\Service\CloudinaryUploader $cloudinaryUploader
+        \App\Service\CloudinaryUploader $cloudinaryUploader,
+        \App\Service\WebSocketService $webSocketService
     ): Response {
         if (!$this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('app_login');
@@ -180,7 +189,7 @@ class MessageController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $message->setTicket($ticket);
             $message->setDate(new \DateTime());
-            $message->setTypeSender('ADMIN');
+            $message->setTypeSender(Message::SENDER_ADMIN);
 
 
             /** @var Utilisateur|null $user */
@@ -203,17 +212,25 @@ class MessageController extends AbstractController
                     );
                     if ($cloudinaryUrl) {
                         $message->setUrlPieceJointe($cloudinaryUrl);
-                        $this->addFlash('info', 'Admin attachment success: ' . $cloudinaryUrl);
+                        $this->addFlash('info', 'Admin attachment success!');
                     }
                 } catch (\Exception $e) {
                     $this->addFlash('danger', 'Cloudinary Error: ' . $e->getMessage());
-                    return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
                 }
             }
 
 
             $entityManager->persist($message);
             $entityManager->flush();
+
+            // NOTIFY JAVA SERVER
+            $webSocketService->sendMessage(
+                $ticket->getId(), 
+                $message->getContenu() ?? '', 
+                $message->getUrlPieceJointe()
+            );
+
+            $this->addFlash('success', 'Reply sent successfully.');
         }
 
 

@@ -1,4 +1,4 @@
-{% set isUser = message.typeSender == 'USER' %}
+{% set isUser = message.typeSender|upper == 'USER' %}
 <div id="msg-wrapper-{{ message.id }}" class="msg-wrapper {{ isUser ? 'user' : 'admin' }} animate-in">
     <div class="msg-meta">
         {% if isUser %}

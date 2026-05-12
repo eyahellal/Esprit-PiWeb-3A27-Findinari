@@ -581,11 +581,16 @@ class AdminController extends AbstractController
 
     #[Route('/admin/ticket/{id}/delete', name: 'app_admin_ticket_delete', methods: ['POST'])]
     public function deleteTicketAdmin(
-        Ticket $ticket,
+        ?Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$ticket) {
+            $this->addFlash('warning', 'This ticket no longer exists.');
+            return $this->redirectToRoute('app_admin_tickets');
+        }
 
         if ($this->isCsrfTokenValid('delete_ticket_admin_' . $ticket->getId(), (string) $request->request->get('_token'))) {
             $entityManager->remove($ticket);
@@ -600,7 +605,7 @@ class AdminController extends AbstractController
 
     #[Route('/admin/ticket/{id}', name: 'app_admin_ticket_details', methods: ['GET', 'POST'])]
     public function ticketDetails(
-        Ticket $ticket,
+        ?Ticket $ticket,
         Request $request,
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
@@ -608,6 +613,11 @@ class AdminController extends AbstractController
         \App\Service\SentimentService $sentimentService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$ticket) {
+            $this->addFlash('warning', 'This ticket no longer exists.');
+            return $this->redirectToRoute('app_admin_tickets');
+        }
 
         $message = new Message();
         $form = $this->createForm(MessageType::class, $message);
