@@ -1845,7 +1845,27 @@ function updateLoanSummary() {
                 });
             }
         }
-        
+        function acceptLoan(loanId) {
+    console.log("Accepting loan: " + loanId);
+    fetch('/friend-loan/respond/' + loanId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'accept' })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Response data:", data);
+        if (data.success && data.redirect) {
+            window.location.href = data.redirect;
+        } else if (data.error) {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+    });
+}
         // Friend Loan Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(checkMaturityAlerts, 1000);

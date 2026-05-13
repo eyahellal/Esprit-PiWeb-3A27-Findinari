@@ -64,20 +64,20 @@
         </div>
 
         {% if isUser %}
-            <div style="position: relative;" class="message-actions-dropdown">
-                <button type="button" onclick="toggleMessageMenu({{ message.id }})" style="background:none; border:none; color: #9ca3af; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;">
+            <div style="position: relative; margin: 0 4px;" class="message-actions-dropdown">
+                <button type="button" onclick="toggleMessageDropdown({{ message.id }})" style="background:none; border:none; color: #9ca3af; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s;">
                     <i class="fas fa-ellipsis-v" style="font-size: 14px;"></i>
                 </button>
                 
-                <div id="dropdown-{{ message.id }}" style="display: none; position: absolute; {{ isUser ? 'right: 0' : 'left: 0' }}; top: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 10; min-width: 120px; padding: 6px; flex-direction: column; gap: 4px;">
+                <div id="dropdown-{{ message.id }}" style="display: none; position: absolute; {{ isUser ? 'right: 0' : 'left: 0' }}; top: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000; min-width: 140px; padding: 8px; flex-direction: column; gap: 4px;">
                     <button type="button" onclick="editMessage({{ message.id }}, `{{ message.contenu|e('html_attr') }}`)" style="background:none; border:none; color: #1f2937; cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px;">
-                        <i class="fas fa-edit" style="width:14px;"></i> Modifier
+                        <i class="fas fa-edit" style="width:14px;"></i> Edit
                     </button>
                     
                     <form method="post" action="{{ path('app_user_message_delete', {id: message.id}) }}" onsubmit="return confirm('Supprimer ce message définitivement ?');">
                         <input type="hidden" name="_token" value="{{ csrf_token('delete_message_user_' ~ message.id) }}">
                         <button type="submit" style="background:none; border:none; color: #ef4444; cursor: pointer; padding: 8px 12px; font-size: 13px; font-weight: 600; text-align: left; display: flex; align-items: center; gap: 8px; border-radius: 6px; width: 100%;">
-                            <i class="fas fa-trash-alt" style="width:14px;"></i> Supprimer
+                            <i class="fas fa-trash-alt" style="width:14px;"></i> Delete
                         </button>
                     </form>
                 </div>
@@ -94,3 +94,6 @@
         {% endif %}
     </div>
 </div>
+
+
+

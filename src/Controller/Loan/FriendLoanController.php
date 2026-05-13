@@ -272,12 +272,15 @@ class FriendLoanController extends AbstractController
 
             return $this->json(['error' => 'This request has expired'], 400);
         }
-
+if ($action === 'accept') {
+                    // Rediriger vers la page d'acceptation avec wallet
+                    return $this->json(['success' => true, 'redirect' => $this->generateUrl('friend_loan_accept_with_wallet', ['id' => $id])]);
+                }
         if ($action === 'decline') {
             $friendLoan->setStatus('declined');
             $friendLoan->setRespondedAt($now);
             $em->flush();
-
+            
             // Supprimer la notification "received" de l'emprunteur
             $notificationService->deleteLoanNotifications($friendLoan->getId(), $receiver, 'received');
 

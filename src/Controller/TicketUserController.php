@@ -1,7 +1,11 @@
 <?php
 
 
+
+
 namespace App\Controller;
+
+
 
 
 use App\Entity\reclamation\Message;
@@ -23,6 +27,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 
+
+
 class TicketUserController extends AbstractController
 {
     public function __construct(
@@ -32,18 +38,26 @@ class TicketUserController extends AbstractController
     }
 
 
+
+
     #[Route('/user/ticket/classify-priority', name: 'app_user_ticket_classify_priority', methods: ['POST'])]
     public function classifyPriorityAction(Request $request, TicketPriorityClassifierService $classifier): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
 
+
+
         $title = $data['title'] ?? '';
         $description = $data['description'] ?? '';
 
 
+
+
         $result = $classifier->classifyPriority($title, $description);
         $projectPriority = $classifier->mapToProjectPriority($result['priority']);
+
+
 
 
         return new JsonResponse([
@@ -56,6 +70,8 @@ class TicketUserController extends AbstractController
     }
 
 
+
+
     #[Route('/user/tickets', name: 'app_user_tickets')]
     public function myTickets(
         TicketRepository $ticketRepository,
@@ -65,15 +81,21 @@ class TicketUserController extends AbstractController
         $user = $this->getUser();
 
 
+
+
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
+
+
 
 
         $qb = $ticketRepository->createQueryBuilder('t')
             ->where('t.utilisateur = :user')
             ->setParameter('user', $user)
             ->orderBy('t.dateCreation', 'DESC');
+
+
 
 
         $pagination = $paginator->paginate(
@@ -83,10 +105,14 @@ class TicketUserController extends AbstractController
         );
 
 
+
+
         return $this->render('reclamation/my_tickets.html.twig', [
             'tickets' => $pagination,
         ]);
     }
+
+
 
 
     #[Route('/user/createticket', name: 'app_user_createticket')]
@@ -100,18 +126,22 @@ class TicketUserController extends AbstractController
         $form->handleRequest($request);
 
 
+
+
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('imageUrl')->getData();
+
+
 
 
             if ($imageFile) {
                 try {
                     $this->addFlash('info', 'File detected, uploading to Cloudinary...');
                     $cloudinaryUrl = $this->cloudinaryUploader->upload(
-                        $imageFile->getRealPath(), 
+                        $imageFile->getRealPath(),
                         'findinari/tickets'
                     );
-                    
+                   
                     if ($cloudinaryUrl) {
                         $ticket->setImageUrl($cloudinaryUrl);
                         $this->addFlash('info', 'Upload successful: ' . $cloudinaryUrl);
@@ -128,12 +158,20 @@ class TicketUserController extends AbstractController
 
 
 
+
+
+
+
 $user = $this->getUser();
+
+
 
 
 if (!$user instanceof \App\Entity\user\Utilisateur) {
     throw $this->createAccessDeniedException('Utilisateur non valide.');
 }
+
+
 
 
 $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
@@ -143,27 +181,39 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
                 $this->addFlash('danger', $e->getMessage());
 
 
+
+
                 return $this->render('reclamation/create_ticket.html.twig', [
                     'form' => $form->createView(),
                 ]);
             }
 
 
+
+
             $entityManager->persist($ticket);
             $entityManager->flush();
 
 
+
+
             $this->addFlash('success', 'Your ticket has been submitted successfully!');
+
+
 
 
             return $this->redirectToRoute('support_center');
         }
 
 
+
+
         return $this->render('reclamation/create_ticket.html.twig', [
             'form' => $form->createView(),
         ]);
     }
+
+
 
 
     #[Route('/user/ticket/{id}', name: 'app_user_ticket_details', methods: ['GET', 'POST'])]
@@ -178,7 +228,10 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             return $this->redirectToRoute('app_user_tickets');
         }
 
+
         $user = $this->getUser();
+
+
 
 
         if (!$user) {
@@ -186,14 +239,26 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
         }
 
 
-        if ($ticket->getUtilisateur() !== $user) {
+
+
+        $ticketOwner = $ticket->getUtilisateur();
+        $ownerId = $ticketOwner ? $ticketOwner->getId() : 'NULL';
+        $currentUserId = $user ? $user->getId() : 'NULL';
+
+
+        if ($ticketOwner !== $user) {
+            $this->addFlash('danger', "Ticket Access Denied! You: ID $currentUserId | Owner: ID $ownerId");
             throw $this->createAccessDeniedException('You do not have access to this ticket.');
         }
+
+
 
 
         $message = new Message();
         $form = $this->createForm(MessageType::class, $message);
         $form->handleRequest($request);
+
+
 
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -203,13 +268,19 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             $message->setTypeSender('User');
 
 
+
+
             $attachmentFile = $form->get('attachment')->getData();
+
+
 
 
             if ($attachmentFile) {
                 $originalFilename = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $attachmentFile->guessExtension();
+
+
 
 
                 try {
@@ -219,9 +290,13 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
                     );
 
 
+
+
                     $message->setUrlPieceJointe($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('danger', 'Attachment upload failed.');
+
+
 
 
                     return $this->redirectToRoute('app_user_ticket_details', [
@@ -231,8 +306,12 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             }
 
 
+
+
             $entityManager->persist($message);
             $entityManager->flush();
+
+
 
 
             return $this->redirectToRoute('app_user_ticket_details', [
@@ -241,12 +320,16 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
         }
 
 
+
+
         return $this->render('reclamation/my_ticket_details.html.twig', [
             'ticket' => $ticket,
             'messages' => $ticket->getMessages(),
             'form' => $form->createView(),
         ]);
     }
+
+
 
 
    #[Route('/user/ticket/{id}/delete', name: 'app_user_ticket_delete', methods: ['POST'])]
@@ -260,12 +343,17 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             return $this->redirectToRoute('app_user_tickets');
         }
 
+
         $user = $this->getUser();
+
+
 
 
         if (!$user || $ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException();
         }
+
+
 
 
         // Correction ici : on cast le token en (string) pour satisfaire PHPStan
@@ -277,8 +365,12 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
         }
 
 
+
+
         return $this->redirectToRoute('app_user_tickets');
     }
+
+
 
 
     #[Route('/user/ticket/{id}/edit', name: 'app_user_ticket_edit', methods: ['GET', 'POST'])]
@@ -293,7 +385,10 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             return $this->redirectToRoute('app_user_tickets');
         }
 
+
         $user = $this->getUser();
+
+
 
 
         if (!$user || $ticket->getUtilisateur() !== $user) {
@@ -301,8 +396,12 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
         }
 
 
+
+
         $form = $this->createForm(TicketType::class, $ticket);
         $form->remove('priorite');
+
+
 
 
         if ($form->has('statut')) {
@@ -310,18 +409,24 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
         }
 
 
+
+
         $form->handleRequest($request);
+
+
 
 
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('imageUrl')->getData();
 
 
+
+
             if ($imageFile) {
                 try {
                     $this->addFlash('info', 'Updating image on Cloudinary...');
                     $cloudinaryUrl = $this->cloudinaryUploader->upload(
-                        $imageFile->getRealPath(), 
+                        $imageFile->getRealPath(),
                         'findinari/tickets'
                     );
                     if ($cloudinaryUrl) {
@@ -334,10 +439,14 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             }
 
 
+
+
             try {
                 $this->ticketManager->validateForUpdate($ticket);
             } catch (\InvalidArgumentException $e) {
                 $this->addFlash('danger', $e->getMessage());
+
+
 
 
                 return $this->redirectToRoute('app_user_ticket_edit', [
@@ -346,14 +455,22 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
             }
 
 
+
+
             $entityManager->flush();
+
+
 
 
             $this->addFlash('success', 'Ticket updated successfully.');
 
 
+
+
             return $this->redirectToRoute('app_user_tickets');
         }
+
+
 
 
         return $this->render('reclamation/edit_ticket.html.twig', [
@@ -362,6 +479,13 @@ $ticket->setUtilisateur($user); // PHPStan est maintenant d'accord !
         ]);
     }
 }
+
+
+
+
+
+
+
 
 
 

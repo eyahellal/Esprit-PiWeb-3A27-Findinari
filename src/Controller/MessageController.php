@@ -1,7 +1,11 @@
 <?php
 
 
+
+
 namespace App\Controller;
+
+
 
 
 use App\Entity\reclamation\Message;
@@ -24,6 +28,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 
+
+
 class MessageController extends AbstractController
 {
     #[Route('/user/message/new/{id}', name: 'app_user_message_new', methods: ['POST'])]
@@ -42,14 +48,20 @@ class MessageController extends AbstractController
         }
 
 
+
+
         if ($ticket->getUtilisateur() !== $user) {
             throw $this->createAccessDeniedException('You do not have access to this ticket.');
         }
 
 
+
+
         $message = new Message();
         $form = $this->createForm(MessageType::class, $message);
         $form->handleRequest($request);
+
+
 
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -59,15 +71,19 @@ class MessageController extends AbstractController
             $message->setUtilisateur($user);
 
 
+
+
             /** @var UploadedFile|null $attachmentFile */
             $attachmentFile = $form->get('attachment')->getData();
+
+
 
 
             if ($attachmentFile instanceof UploadedFile) {
                 try {
                     $this->addFlash('info', 'Uploading attachment to Cloudinary...');
                     $cloudinaryUrl = $cloudinaryUploader->upload(
-                        $attachmentFile->getRealPath(), 
+                        $attachmentFile->getRealPath(),
                         'findinari/messages'
                     );
                     if ($cloudinaryUrl) {
@@ -81,20 +97,30 @@ class MessageController extends AbstractController
             }
 
 
+
+
             $entityManager->persist($message);
             $entityManager->flush();
 
+
             // NOTIFY JAVA SERVER
             $webSocketService->sendMessage(
-                $ticket->getId(), 
-                $message->getContenu() ?? '', 
-                $message->getUrlPieceJointe()
+                $ticket->getId(),
+                $message->getContenu() ?? '',
+                $message->getUrlPieceJointe(),
+                Message::SENDER_USER,
+                $this->getUser() ? $this->getUser()->getId() : 0,
+                $message->getId()
             );
         }
 
 
+
+
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticket->getId()]);
     }
+
+
 
 
     #[Route('/user/message/{id}/delete', name: 'app_user_message_delete', methods: ['POST'])]
@@ -109,14 +135,20 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $ticket = $message->getTicket();
         $ticketId = $ticket ? $ticket->getId() : null;
 
 
-        if ($message->getUtilisateur() !== $user || $message->getTypeSender() !== 'USER') {
+
+
+        if ($message->getUtilisateur() !== $user || $message->getTypeSender() !== Message::SENDER_USER) {
             $this->addFlash('danger', 'You can only delete your own messages.');
             return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
         }
+
+
 
 
         $token = (string)$request->request->get('_token');
@@ -127,8 +159,12 @@ class MessageController extends AbstractController
         }
 
 
+
+
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
     }
+
+
 
 
     #[Route('/user/message/{id}/edit', name: 'app_user_message_edit', methods: ['POST'])]
@@ -143,17 +179,30 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $ticket = $message->getTicket();
         $ticketId = $ticket ? $ticket->getId() : null;
 
 
-        if ($message->getUtilisateur() !== $user || $message->getTypeSender() !== 'USER') {
-            $this->addFlash('danger', 'You can only edit your own messages.');
+
+
+        $messageOwner = $message->getUtilisateur();
+        $ownerId = $messageOwner ? $messageOwner->getId() : 'NULL';
+        $currentUserId = $user ? $user->getId() : 'NULL';
+
+
+        if ($messageOwner !== $user || $message->getTypeSender() !== Message::SENDER_USER) {
+            $this->addFlash('danger', "Message Edit Denied! You: ID $currentUserId | Owner: ID $ownerId | Role: " . $message->getTypeSender());
             return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
         }
 
 
+
+
         $newContenu = trim((string) $request->request->get('edit_contenu'));
+
+
 
 
         if ($newContenu !== '') {
@@ -163,8 +212,12 @@ class MessageController extends AbstractController
         }
 
 
+
+
         return $this->redirectToRoute('app_user_ticket_details', ['id' => $ticketId]);
     }
+
+
 
 
     #[Route('/admin/ticket/{id}/message/new', name: 'app_admin_message_new', methods: ['POST'])]
@@ -181,15 +234,21 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $message = new Message();
         $form = $this->createForm(MessageType::class, $message);
         $form->handleRequest($request);
+
+
 
 
         if ($form->isSubmitted() && $form->isValid()) {
             $message->setTicket($ticket);
             $message->setDate(new \DateTime());
             $message->setTypeSender(Message::SENDER_ADMIN);
+
+
 
 
             /** @var Utilisateur|null $user */
@@ -199,15 +258,19 @@ class MessageController extends AbstractController
             }
 
 
+
+
             /** @var UploadedFile|null $attachmentFile */
             $attachmentFile = $form->get('attachment')->getData();
+
+
 
 
             if ($attachmentFile instanceof UploadedFile) {
                 try {
                     $this->addFlash('info', 'Admin attachment: uploading...');
                     $cloudinaryUrl = $cloudinaryUploader->upload(
-                        $attachmentFile->getRealPath(), 
+                        $attachmentFile->getRealPath(),
                         'findinari/messages'
                     );
                     if ($cloudinaryUrl) {
@@ -220,22 +283,33 @@ class MessageController extends AbstractController
             }
 
 
+
+
             $entityManager->persist($message);
             $entityManager->flush();
 
+
             // NOTIFY JAVA SERVER
             $webSocketService->sendMessage(
-                $ticket->getId(), 
-                $message->getContenu() ?? '', 
-                $message->getUrlPieceJointe()
+                $ticket->getId(),
+                $message->getContenu() ?? '',
+                $message->getUrlPieceJointe(),
+                Message::SENDER_ADMIN,
+                $this->getUser() ? $this->getUser()->getId() : 0,
+                $message->getId()
             );
+
 
             $this->addFlash('success', 'Reply sent successfully.');
         }
 
 
+
+
         return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticket->getId()]);
     }
+
+
 
 
     #[Route('/admin/message/{id}/delete', name: 'app_admin_message_delete', methods: ['POST'])]
@@ -249,14 +323,20 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $ticket = $message->getTicket();
         $ticketId = $ticket ? $ticket->getId() : null;
 
 
-        if ($message->getTypeSender() !== 'ADMIN') {
+
+
+        if ($message->getTypeSender() !== Message::SENDER_ADMIN) {
             $this->addFlash('danger', 'You can only delete your own messages.');
             return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
         }
+
+
 
 
         $token = (string)$request->request->get('_token');
@@ -269,8 +349,12 @@ class MessageController extends AbstractController
         }
 
 
+
+
         return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
     }
+
+
 
 
     #[Route('/admin/message/{id}/edit', name: 'app_admin_message_edit', methods: ['POST'])]
@@ -284,17 +368,25 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $ticket = $message->getTicket();
         $ticketId = $ticket ? $ticket->getId() : null;
 
 
-        if ($message->getTypeSender() !== 'ADMIN') {
+
+
+        if ($message->getTypeSender() !== Message::SENDER_ADMIN) {
             $this->addFlash('danger', 'You can only edit your own messages.');
             return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
         }
 
 
+
+
         $newContenu = trim((string) $request->request->get('edit_contenu'));
+
+
 
 
         if ($newContenu !== '') {
@@ -306,8 +398,12 @@ class MessageController extends AbstractController
         }
 
 
+
+
         return $this->redirectToRoute('app_admin_ticket_details', ['id' => $ticketId]);
     }
+
+
 
 
     #[Route('/admin/ticket/{id}/voice', name: 'app_admin_message_voice', methods: ['POST'])]
@@ -322,14 +418,20 @@ class MessageController extends AbstractController
         }
 
 
+
+
         try {
             /** @var UploadedFile|null $audioFile */
             $audioFile = $request->files->get('audio');
 
 
+
+
             if (!$audioFile instanceof UploadedFile) {
                 return $this->json(['error' => 'No audio file found in request'], 400);
             }
+
+
 
 
             $realPath = $audioFile->getRealPath();
@@ -338,10 +440,14 @@ class MessageController extends AbstractController
             }
 
 
+
+
             $cloudinaryUrl = $uploader->uploadAudio($realPath);
             if (!$cloudinaryUrl) {
                 return $this->json(['error' => 'Cloudinary upload failed'], 500);
             }
+
+
 
 
             $message = new Message();
@@ -352,14 +458,20 @@ class MessageController extends AbstractController
             $message->setUrlPieceJointe($cloudinaryUrl);
 
 
+
+
             $user = $this->getUser();
             if ($user instanceof Utilisateur) {
                 $message->setUtilisateur($user);
             }
 
 
+
+
             $entityManager->persist($message);
             $entityManager->flush();
+
+
 
 
             return $this->json([
@@ -371,6 +483,8 @@ class MessageController extends AbstractController
             return $this->json(['error' => 'Server error: ' . $e->getMessage()], 500);
         }
     }
+
+
 
 
     #[Route('/user/ticket/{id}/voice', name: 'app_user_message_voice', methods: ['POST'])]
@@ -384,9 +498,13 @@ class MessageController extends AbstractController
         $user = $this->getUser();
 
 
+
+
         if (!$user || $ticket->getUtilisateur() !== $user) {
             return $this->json(['error' => 'Access denied'], 403);
         }
+
+
 
 
         try {
@@ -394,9 +512,13 @@ class MessageController extends AbstractController
             $audioFile = $request->files->get('audio');
 
 
+
+
             if (!$audioFile instanceof UploadedFile) {
                 return $this->json(['error' => 'No audio file found in request'], 400);
             }
+
+
 
 
             $realPath = $audioFile->getRealPath();
@@ -405,10 +527,14 @@ class MessageController extends AbstractController
             }
 
 
+
+
             $cloudinaryUrl = $uploader->uploadAudio($realPath);
             if (!$cloudinaryUrl) {
                 return $this->json(['error' => 'Cloudinary upload failed'], 500);
             }
+
+
 
 
             $message = new Message();
@@ -420,8 +546,12 @@ class MessageController extends AbstractController
             $message->setUtilisateur($user);
 
 
+
+
             $entityManager->persist($message);
             $entityManager->flush();
+
+
 
 
             return $this->json([
@@ -435,6 +565,8 @@ class MessageController extends AbstractController
     }
 
 
+
+
     #[Route('/ticket/{id}/suggestions', name: 'app_ticket_message_suggestions', methods: ['GET'])]
     public function messageSuggestions(
         Ticket $ticket,
@@ -446,12 +578,18 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $role = $this->isGranted('ROLE_ADMIN') ? 'ADMIN' : 'USER';
         $messages = $ticket->getMessages()->toArray();
 
 
+
+
         usort($messages, static fn($a, $b) => $a->getDate() <=> $b->getDate());
         $lastMessages = array_slice($messages, -5);
+
+
 
 
         try {
@@ -466,6 +604,8 @@ class MessageController extends AbstractController
     }
 
 
+
+
     #[Route('/message/reformulate', name: 'app_message_reformulate', methods: ['POST'])]
     public function messageReformulate(
         Request $request,
@@ -477,6 +617,8 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $data = json_decode((string)$request->getContent(), true);
         $content = $data['content'] ?? '';
         $mode = $data['mode'] ?? 'formalize';
@@ -486,12 +628,18 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $role = $this->isGranted('ROLE_ADMIN') ? 'ADMIN' : 'USER';
         $reformulated = $reformulationService->transformMessage($role, $content, $mode);
 
 
+
+
         return $this->json(['transformed' => $reformulated]);
     }
+
+
 
 
     #[Route('/ticket/{id}/summary', name: 'app_ticket_summary', methods: ['GET'])]
@@ -504,13 +652,19 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $messages = $ticket->getMessages()->toArray();
         usort($messages, static fn($a, $b) => $a->getDate() <=> $b->getDate());
+
+
 
 
         $summary = $summaryService->summarizeTicket($messages, $ticket->getStatut() ?? 'OUVERT');
         return $this->json($summary);
     }
+
+
 
 
     #[Route('/ticket/{id}/fetch-new/{lastId}', name: 'app_ticket_fetch_new_messages', methods: ['GET'])]
@@ -526,16 +680,22 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $isAdmin = $this->isGranted('ROLE_ADMIN');
         if (!$isAdmin && $ticket->getUtilisateur() !== $user) {
             return $this->json(['error' => 'Access denied'], 403);
         }
 
 
+
+
         $ticketId = $ticket->getId();
         if (null === $ticketId) {
             return $this->json(['error' => 'Invalid ticket ID'], 400);
         }
+
+
 
 
         $newMessages = $messageRepository->findMessagesAfterId($ticketId, $lastId);
@@ -550,11 +710,15 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $lastIdValue = $lastId;
         if (count($newMessages) > 0) {
             $lastMessage = end($newMessages);
             $lastIdValue = (int)$lastMessage->getId();
         }
+
+
 
 
         return $this->json([
@@ -563,6 +727,8 @@ class MessageController extends AbstractController
             'lastId' => $lastIdValue
         ]);
     }
+
+
 
 
     #[Route('/message/{id}/translate', name: 'app_message_translate', methods: ['POST'])]
@@ -574,15 +740,21 @@ class MessageController extends AbstractController
         }
 
 
+
+
         $ticket = $message->getTicket();
         if (!$ticket) {
             return $this->json(['error' => 'Ticket not found'], 404);
         }
 
 
+
+
         if (!$this->isGranted('ROLE_ADMIN') && $ticket->getUtilisateur() !== $user) {
             return $this->json(['error' => 'Access denied'], 403);
         }
+
+
 
 
         $textToTranslate = $message->getContenu();
@@ -591,9 +763,13 @@ class MessageController extends AbstractController
         }
 
 
+
+
         try {
             $encoded = urlencode($textToTranslate);
             $url = 'https://api.mymemory.translated.net/get?q=' . $encoded . '&langpair=en|fr';
+
+
 
 
             $context = stream_context_create([
@@ -606,7 +782,11 @@ class MessageController extends AbstractController
             ]);
 
 
+
+
             $result = @file_get_contents($url, false, $context);
+
+
 
 
             if ($result) {
@@ -617,12 +797,21 @@ class MessageController extends AbstractController
             }
 
 
+
+
             return $this->json(['error' => 'Translation service unavailable.'], 502);
         } catch (\Throwable $e) {
             return $this->json(['error' => 'Translation failed: ' . $e->getMessage()], 500);
         }
     }
 }
+
+
+
+
+
+
+
 
 
 

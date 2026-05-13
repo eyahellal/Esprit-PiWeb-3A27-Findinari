@@ -2,74 +2,62 @@
 
 namespace App\Service;
 
-// Note: IsolationForest n'existe pas dans php-ml
-// Nous allons implémenter une version simplifiée ou importer une librairie externe
-// Pour l'instant, nous commentons l'utilisation de IsolationForest
-
-/**
- * @phpstan-type Contribution array{
- *     objectif_id: int,
- *     objectif_titre: string,
- *     wallet_id: int,
- *     montant: float,
- *     date: string,
- *     niveau_risque?: string,
- *     methode?: string,
- *     score?: float,
- *     raison?: string,
- *     source?: string
- * }
- *
- * @phpstan-type Anomaly array{
- *     objectif_id: int,
- *     objectif_titre: string,
- *     wallet_id: int,
- *     montant: float,
- *     date: string,
- *     niveau_risque: string,
- *     methode: string,
- *     score: float,
- *     raison: string,
- *     source: string
- * }
- */
 class AnomalyDetectorService
 {
+    private IsolationForest $model;
+
     public function __construct()
     {
-        // IsolationForest n'est pas disponible
-        // $this->model = new IsolationForest(
-        //     nEstimators:   100,
-        //     maxSamples:    256,
-        //     contamination: 0.1
-        // );
+        $this->model = new IsolationForest(
+            nEstimators:   100,
+            maxSamples:    256,
+            contamination: 0.1
+        );
     }
 
-    /**
-     * Point d'entrée principal
-     *
-     * @param Contribution[] $contributions
-     * @return Anomaly[]
-     */
     public function detect(array $contributions): array
     {
         if (count($contributions) < 3) {
-            return $this->detectStats($contributions); // fallback si trop peu de données
+            return $this->detectStats($contributions);
         }
 
-        // 1. Stats classiques uniquement car Isolation Forest n'est pas disponible
         $statAnomalies = $this->detectStats($contributions);
+        $mlAnomalies   = $this->detectML($contributions);
 
-        // 2. Fusion et ranking
-        return $this->mergeAndRank([], $statAnomalies);
+        return $this->mergeAndRank($mlAnomalies, $statAnomalies);
     }
 
-    /**
-     * Statistiques classiques
-     *
-     * @param Contribution[] $contributions
-     * @return Anomaly[]
-     */
+    private function detectML(array $contributions): array
+    {
+        $X = [];
+        foreach ($contributions as $c) {
+            $hour = $c['date'] ? (int) date('G', strtotime($c['date'])) : 12;
+            $X[]  = [(float) $c['montant'], (float) $hour];
+        }
+
+        $this->model->fit($X);
+        $predictions = $this->model->predict($X);
+        $scores      = $this->model->scoresSamples($X);
+
+        $anomalies = [];
+        foreach ($contributions as $i => $c) {
+            if ($predictions[$i] === -1) {
+                $anomalies[] = array_merge($c, [
+                    'niveau_risque' => $scores[$i] < -0.6 ? 'ÉLEVÉ' : 'MOYEN',
+                    'methode'       => 'Isolation Forest',
+                    'score'         => round(abs($scores[$i]), 4),
+                    'raison'        => sprintf(
+                        'Isolation Forest : score d\'anomalie %.4f (seuil contamination 10%%)',
+                        $scores[$i]
+                    ),
+                    'source'        => 'ml',
+                ]);
+            }
+        }
+
+        return $anomalies;
+    }
+
     private function detectStats(array $contributions): array
     {
         $all = [];
@@ -77,17 +65,10 @@ class AnomalyDetectorService
         $all = array_merge($all, $this->iqr($contributions));
         $all = array_merge($all, $this->rapidPatterns($contributions));
         $all = array_merge($all, $this->businessRules($contributions));
-       
-        /** @var Anomaly[] $all */
+
         return $all;
     }
 
-    /**
-     * Détection par Z-Score
-     *
-     * @param Contribution[] $contributions
-     * @return Anomaly[]
-     */
     private function zScore(array $contributions): array
     {
         $montants = array_column($contributions, 'montant');
@@ -113,17 +94,10 @@ class AnomalyDetectorService
                 ]);
             }
         }
-       
-        /** @var Anomaly[] $anomalies */
+
         return $anomalies;
     }
 
-    /**
-     * Détection par IQR (Interquartile Range)
-     *
-     * @param Contribution[] $contributions
-     * @return Anomaly[]
-     */
     private function iqr(array $contributions): array
     {
         $montants = array_column($contributions, 'montant');
@@ -154,17 +128,10 @@ class AnomalyDetectorService
                 ]);
             }
         }
-       
-        /** @var Anomaly[] $anomalies */
+
         return $anomalies;
     }
 
-    /**
-     * Détection de patterns rapides (contributions trop rapprochées)
-     *
-     * @param Contribution[] $contributions
-     * @return Anomaly[]
-     */
     private function rapidPatterns(array $contributions): array
     {
         $byObjectif = [];
@@ -193,17 +160,10 @@ class AnomalyDetectorService
                 }
             }
         }
-       
-        /** @var Anomaly[] $anomalies */
+
         return $anomalies;
     }
 
-    /**
-     * Règles métier
-     *
-     * @param Contribution[] $contributions
-     * @return Anomaly[]
-     */
     private function businessRules(array $contributions): array
     {
         $mediane   = $this->mediane(array_column($contributions, 'montant'));
@@ -229,7 +189,7 @@ class AnomalyDetectorService
                     ),
                     'source'        => 'stats',
                 ]);
-            } elseif (fmod((float)$c['montant'], 1000.0) === 0.0 && $c['montant'] > $mediane * 5) {
+            } elseif (abs(fmod((float)$c['montant'], 1000.0)) < 0.01 && $c['montant'] > $mediane * 5) {
                 $anomalies[] = array_merge($c, [
                     'niveau_risque' => 'MOYEN',
                     'methode'       => 'Règle Métier',
@@ -242,18 +202,10 @@ class AnomalyDetectorService
                 ]);
             }
         }
-       
-        /** @var Anomaly[] $anomalies */
+
         return $anomalies;
     }
 
-    /**
-     * Fusion Stats (ML non disponible)
-     *
-     * @param Anomaly[] $ml
-     * @param Anomaly[] $stats
-     * @return Anomaly[]
-     */
     private function mergeAndRank(array $ml, array $stats): array
     {
         $result = $ml;
@@ -262,7 +214,6 @@ class AnomalyDetectorService
             foreach ($stats as $stat) {
                 if ($stat['objectif_id'] == $anomaly['objectif_id']
                     && abs($stat['montant'] - $anomaly['montant']) < 0.01) {
-                    // Confirmé par les deux méthodes = ÉLEVÉ automatiquement
                     $anomaly['niveau_risque'] = 'ÉLEVÉ';
                     $anomaly['methode']       = 'Stats + ' . $stat['methode'];
                     $anomaly['raison']       .= ' | Confirmé par ' . $stat['methode'] . ': ' . $stat['raison'];
@@ -272,7 +223,6 @@ class AnomalyDetectorService
         }
         unset($anomaly);
 
-        // Ajouter les anomalies stats non détectées par ML
         $mlKeys = array_map(
             fn($a) => $a['objectif_id'] . '|' . round($a['montant'], 2),
             $result
@@ -285,8 +235,7 @@ class AnomalyDetectorService
             }
         }
 
-        // Dédoublonner
-        $seen = [];
+        $seen  = [];
         $final = [];
         foreach ($result as $a) {
             $key = $a['objectif_id'] . '|' . round($a['montant'], 2) . '|' . $a['methode'];
@@ -297,31 +246,18 @@ class AnomalyDetectorService
         }
 
         usort($final, fn($a, $b) => $b['score'] <=> $a['score']);
-       
-        /** @var Anomaly[] $final */
+
         return $final;
     }
 
-    /**
-     * Calcule l'écart-type d'un tableau de valeurs
-     *
-     * @param float[] $values
-     * @return float
-     */
     private function std(array $values): float
     {
         if (count($values) < 2) return 0.0;
-        $mean = array_sum($values) / count($values);
+        $mean     = array_sum($values) / count($values);
         $variance = array_sum(array_map(fn($v) => pow($v - $mean, 2), $values)) / count($values);
         return sqrt($variance);
     }
 
-    /**
-     * Calcule la médiane d'un tableau de valeurs
-     *
-     * @param float[] $values
-     * @return float
-     */
     private function mediane(array $values): float
     {
         if (empty($values)) return 0.0;

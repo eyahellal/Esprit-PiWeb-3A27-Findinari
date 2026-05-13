@@ -1,90 +1,287 @@
 {% extends 'base.html.twig' %}
+{% block navbar %}{% endblock %}
+{% block title %}{{ name ?? symbol }} — Trend{% endblock %}
 
-{% block title %}Tendance - {{ symbol }}{% endblock %}
+{% block stylesheets %}
+<style>
+header, .navbar { display: none !important; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #F5F6F8; font-family: 'Inter', sans-serif; font-size: 14px; }
+
+.topbar {
+    background: #fff; border-bottom: 0.5px solid rgba(0,0,0,.09);
+    position: sticky; top: 0; z-index: 100;
+}
+.topbar-inner {
+    max-width: 1100px; margin: 0 auto;
+    padding: 0 24px; height: 52px;
+    display: flex; align-items: center; gap: 12px;
+}
+.topbar-brand { font-size: 17px; font-weight: 700; color: #111827; text-decoration: none; letter-spacing: -.03em; }
+.topbar-brand em { color: #1D9E75; font-style: normal; }
+.topbar-sep { width: 1px; height: 17px; background: rgba(0,0,0,.09); }
+.topbar-crumb { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #6B7280; }
+.topbar-crumb a { color: #6B7280; text-decoration: none; }
+.topbar-crumb a:hover { color: #111827; }
+.topbar-right { margin-left: auto; }
+.tb-btn {
+    height: 30px; padding: 0 12px; font-size: 12px; font-weight: 500;
+    border-radius: 8px; cursor: pointer; text-decoration: none;
+    border: 0.5px solid rgba(0,0,0,.09); background: transparent;
+    color: #374151; transition: all .15s;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.tb-btn:hover { background: #F9FAFB; color: #111827; }
+
+.page { max-width: 1100px; margin: 0 auto; padding: 28px 24px 64px; }
+
+/* HERO */
+.hero {
+    background: #fff; border: 0.5px solid rgba(0,0,0,.09);
+    border-radius: 14px; padding: 28px 32px;
+    margin-bottom: 20px; display: flex;
+    align-items: center; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.hero-eyebrow {
+    font-size: 10px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: #1D9E75; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; animation: blink 1.6s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.hero-title { font-size: clamp(20px,3vw,28px); font-weight: 700; color: #111827; letter-spacing: -.03em; margin-bottom: 4px; }
+.hero-sub { font-size: 12.5px; color: #6B7280; }
+.hero-badge {
+    background: #F9FAFB; border: 0.5px solid rgba(0,0,0,.09);
+    border-radius: 10px; padding: 14px 22px; text-align: center; min-width: 110px;
+}
+.hero-badge-val { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #6B7280; margin-bottom: 4px; }
+.hero-badge-sym { font-size: 22px; font-weight: 700; color: #111827; font-family: 'JetBrains Mono', monospace; }
+
+/* STATS ROW */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+.stat-card {
+    background: #fff; border: 0.5px solid rgba(0,0,0,.09);
+    border-radius: 12px; padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    transition: transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.stat-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #6B7280; margin-bottom: 5px; }
+.stat-val { font-size: 20px; font-weight: 700; color: #111827; }
+.stat-val.up   { color: #0F6E56; }
+.stat-val.down { color: #A32D2D; }
+
+/* CHART CARD */
+.chart-card {
+    background: #fff; border: 0.5px solid rgba(0,0,0,.09);
+    border-radius: 14px; padding: 24px 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    margin-bottom: 20px;
+}
+.chart-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+}
+.chart-title { font-size: 14px; font-weight: 600; color: #111827; }
+.chart-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
+
+/* RANGE BUTTONS */
+.range-btn {
+    height: 28px; padding: 0 12px; font-size: 11px; font-weight: 600;
+    border-radius: 20px; border: 0.5px solid rgba(0,0,0,.09);
+    background: transparent; color: #6B7280; cursor: pointer;
+    transition: all .15s; font-family: 'Inter', sans-serif;
+}
+.range-btn:hover { background: #E1F5EE; color: #0F6E56; border-color: #9FE1CB; }
+.range-btn.active { background: #1D9E75; color: #fff; border-color: #1D9E75; }
+
+/* ERROR / EMPTY */
+.alert-warn {
+    background: #FAEEDA; border: 0.5px solid #FAC775;
+    border-radius: 12px; padding: 16px 20px;
+    color: #BA7517; font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.alert-err {
+    background: #FCEBEB; border: 0.5px solid #F7C1C1;
+    border-radius: 12px; padding: 16px 20px;
+    color: #A32D2D; font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+
+@media(max-width:768px){ .stats-row{grid-template-columns:1fr 1fr} .hero{flex-direction:column} }
+@media(max-width:480px){ .stats-row{grid-template-columns:1fr 1fr} .page{padding:16px 16px 48px} }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="container mt-4" style="max-width:1000px; margin:0 auto; padding:2rem;">
-
-    <a href="{{ path('market_trends') }}" style="
-        display:inline-flex; align-items:center; gap:6px;
-        font-size:13px; color:#1a9e6e; text-decoration:none;
-        margin-bottom:1.5rem; font-weight:600;
-    ">← Retour aux tendances</a>
-
-    <h1 style="font-size:2rem; font-weight:900; margin-bottom:0.25rem;">
-        {{ name ?? symbol }}
-    </h1>
-    <p style="color:#888; font-size:13px; margin-bottom:2rem;">
-        {{ symbol }} · Clôtures des 30 derniers jours
-    </p>
-
-    {% if error is defined %}
-        <div style="background:#fce8e8; color:#a32d2d; padding:1rem; border-radius:10px; margin-bottom:1rem;">
-            ⚠️ {{ error }}
+<nav class="topbar">
+    <div class="topbar-inner">
+        <a href="{{ path('objectif_index') }}" class="topbar-brand">Findi<em>nari</em></a>
+        <div class="topbar-sep"></div>
+        <div class="topbar-crumb">
+            <a href="{{ path('market_trends') }}">Market Trends</a>
+            <span>›</span>
+            <span>{{ name ?? symbol }}</span>
         </div>
+        <div class="topbar-right">
+            <a href="{{ path('market_trends') }}" class="tb-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to trends
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="page">
+
+    {% if error is not null %}
+        <div class="alert-err">⚠️ {{ error }}</div>
     {% endif %}
+
+    <!-- HERO -->
+    <div class="hero">
+        <div>
+            <div class="hero-eyebrow"><span class="live-dot"></span> Live Market Data</div>
+            <div class="hero-title">{{ name ?? symbol }}</div>
+            <div class="hero-sub">{{ symbol }} · Closing prices — last 30 days</div>
+        </div>
+        <div class="hero-badge">
+            <div class="hero-badge-val">Symbol</div>
+            <div class="hero-badge-sym">{{ symbol }}</div>
+        </div>
+    </div>
 
     {% if dates == '[]' or values == '[]' %}
-        <div style="background:#faeeda; color:#854f0b; padding:1rem; border-radius:10px;">
-            ⚠️ Aucune donnée disponible pour <strong>{{ symbol }}</strong>.
-            Vérifiez que le symbole est valide et que votre clé API est active.
+        <div class="alert-warn">
+            ⚠️ No data available for <strong>{{ symbol }}</strong>.
+            Check that the symbol is valid and your API key is active.
         </div>
     {% else %}
-        <div style="background:#fff; border:1px solid #e6e6e2; border-radius:16px; padding:1.5rem; box-shadow:0 2px 12px rgba(0,0,0,.06);">
-            <canvas id="priceChart" height="120"></canvas>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card"><div class="stat-lbl">Latest Close</div><div class="stat-val" id="statLast">—</div></div>
+            <div class="stat-card"><div class="stat-lbl">Period High</div><div class="stat-val up" id="statHigh">—</div></div>
+            <div class="stat-card"><div class="stat-lbl">Period Low</div><div class="stat-val down" id="statLow">—</div></div>
+            <div class="stat-card"><div class="stat-lbl">Change</div><div class="stat-val" id="statChange">—</div></div>
         </div>
+
+        <!-- CHART -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title">Price History</div>
+                    <div class="chart-sub">Daily closing prices — USD</div>
+                </div>
+                <div style="display:flex;gap:6px;">
+                    <button class="range-btn" data-days="7"  onclick="filterChart(7)">7d</button>
+                    <button class="range-btn" data-days="14" onclick="filterChart(14)">14d</button>
+                    <button class="range-btn active" data-days="30" onclick="filterChart(30)">30d</button>
+                </div>
+            </div>
+            <canvas id="priceChart" height="100"></canvas>
+        </div>
+
     {% endif %}
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const rawDates  = {{ dates|raw }};
-    const rawValues = {{ values|raw }};
+const rawDates  = {{ dates|raw }};
+const rawValues = {{ values|raw }};
 
-    console.log('Dates:', rawDates);
-    console.log('Valeurs:', rawValues);
+let myChart = null;
 
-    if (rawDates.length > 0 && rawValues.length > 0) {
-        const ctx = document.getElementById('priceChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: rawDates,
-                datasets: [{
-                    label: 'Prix de clôture (USD)',
-                    data: rawValues,
-                    borderColor: '#1a9e6e',
-                    backgroundColor: 'rgba(26,158,110,0.08)',
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#1a9e6e',
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => '$' + ctx.parsed.y.toFixed(2)
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        ticks: {
-                            callback: val => '$' + val.toFixed(2)
-                        },
-                        grid: { color: 'rgba(0,0,0,.04)' }
-                    },
-                    x: {
-                        grid: { display: false }
+function updateStats(dates, values) {
+    if (!values.length) return;
+    const last   = values[values.length - 1];
+    const first  = values[0];
+    const high   = Math.max(...values);
+    const low    = Math.min(...values);
+    const change = ((last - first) / first * 100).toFixed(2);
+    const isUp   = parseFloat(change) >= 0;
+
+    document.getElementById('statLast').textContent  = '$' + last.toFixed(2);
+    document.getElementById('statHigh').textContent  = '$' + high.toFixed(2);
+    document.getElementById('statLow').textContent   = '$' + low.toFixed(2);
+
+    const changeEl = document.getElementById('statChange');
+    changeEl.textContent = (isUp ? '+' : '') + change + '%';
+    changeEl.className   = 'stat-val ' + (isUp ? 'up' : 'down');
+
+    return isUp;
+}
+
+function filterChart(days) {
+    // Update boutons
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-days="${days}"]`).classList.add('active');
+
+    const slicedDates  = rawDates.slice(-days);
+    const slicedValues = rawValues.slice(-days);
+
+    const isUp = updateStats(slicedDates, slicedValues);
+    const color = isUp ? '#1D9E75' : '#E24B4A';
+    const bg    = isUp ? 'rgba(29,158,117,0.07)' : 'rgba(226,75,74,0.07)';
+
+    myChart.data.labels                           = slicedDates;
+    myChart.data.datasets[0].data                 = slicedValues;
+    myChart.data.datasets[0].borderColor          = color;
+    myChart.data.datasets[0].backgroundColor      = bg;
+    myChart.data.datasets[0].pointBackgroundColor = color;
+    myChart.update('active');
+}
+
+if (rawDates.length > 0 && rawValues.length > 0) {
+
+    const isUp  = updateStats(rawDates, rawValues);
+    const color = isUp ? '#1D9E75' : '#E24B4A';
+    const bg    = isUp ? 'rgba(29,158,117,0.07)' : 'rgba(226,75,74,0.07)';
+
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: rawDates,
+            datasets: [{
+                label: 'Closing Price (USD)',
+                data: rawValues,
+                borderColor: color,
+                backgroundColor: bg,
+                tension: 0.35,
+                fill: true,
+                pointRadius: 3,
+                pointBackgroundColor: color,
+                pointHoverRadius: 6,
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: { duration: 400, easing: 'easeInOutQuart' },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => '$' + ctx.parsed.y.toFixed(2)
                     }
                 }
+            },
+            scales: {
+                y: {
+                    ticks: { callback: val => '$' + val.toFixed(2) },
+                    grid: { color: 'rgba(0,0,0,.04)' }
+                },
+                x: { grid: { display: false } }
             }
-        });
-    }
+        }
+    });
+}
 </script>
 {% endblock %}

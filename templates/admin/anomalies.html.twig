@@ -1,0 +1,357 @@
+{% extends 'base.html.twig' %}
+{% block title %}AI Anomaly Detector{% endblock %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Anomaly Detector — Fin-Dinari</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand: #16a34a; --brand-light: #dcfce7; --brand-dark: #15803d;
+            --danger: #ef4444; --danger-light: #fef2f2;
+            --warning: #f59e0b; --warning-light: #fff8e6;
+            --info: #0ea5e9; --info-light: #e6f6ff;
+            --bg: #f4f7f4; --surface: #ffffff; --border: #e4ebe4;
+            --text-primary: #1a2e1a; --text-secondary: #4b6b4b; --text-muted: #8faa8f;
+            --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
+            --shadow-card: 0 2px 16px rgba(22,163,74,.07);
+            --shadow-hover: 0 8px 28px rgba(22,163,74,.20);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-primary); font-size: 14.5px; }
+
+        .content { padding: 28px; }
+
+        .topbar {
+            background: var(--surface); border-radius: var(--radius-lg);
+            padding: 16px 24px; display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 26px;
+            box-shadow: var(--shadow-card); border: 1px solid var(--border);
+        }
+        .topbar-title { font-size: 22px; font-weight: 800; }
+        .topbar-title span { color: var(--brand); }
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            border: none; border-radius: var(--radius-sm); padding: 9px 16px;
+            cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700;
+            text-decoration: none; transition: filter .2s, transform .2s;
+        }
+        .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 4px 12px rgba(22,163,74,.28); }
+        .btn-dark { background: linear-gradient(135deg,#0f172a,#15803d); color:#fff; box-shadow: 0 4px 14px rgba(15,23,42,.35); padding: 14px 28px; font-size: 15px; }
+
+        /* HERO */
+        .hero-card {
+            background: linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#15803d 100%);
+            border-radius: var(--radius-lg); padding: 36px 40px; margin-bottom: 26px;
+            color: white; display: flex; align-items: center; justify-content: space-between;
+            gap: 24px; flex-wrap: wrap; position: relative; overflow: hidden;
+        }
+        .hero-card::before { content:''; position:absolute; inset:0; background: radial-gradient(circle at 80% 50%,rgba(22,163,74,.15) 0%,transparent 60%); }
+        .hero-glow { position:absolute; right:-40px; top:-40px; width:200px; height:200px; border-radius:50%; background:rgba(34,197,94,.08); filter:blur(40px); }
+        .hero-text { position:relative; z-index:1; }
+        .hero-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); border-radius:999px; padding:5px 14px; font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; margin-bottom:14px; }
+        .hero-title { font-size:28px; font-weight:800; margin-bottom:8px; }
+        .hero-sub { font-size:14px; opacity:.75; max-width:500px; line-height:1.6; }
+        .hero-action { position:relative; z-index:1; }
+
+        /* STATS */
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:26px; }
+        .stat-card { background:var(--surface); border-radius:var(--radius-md); border:1px solid var(--border); box-shadow:var(--shadow-card); padding:18px 20px; text-align:center; transition:transform .2s,box-shadow .2s; }
+        .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-hover); }
+        .stat-card.danger  { background:var(--danger-light);  border-color:#fecaca; }
+        .stat-card.warning { background:var(--warning-light); border-color:#fde68a; }
+        .stat-card.success { background:var(--brand-light);   border-color:#bbf7d0; }
+        .stat-card.info    { background:var(--info-light);    border-color:#bae6fd; }
+        .stat-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); margin-bottom:8px; }
+        .stat-card.danger  .stat-label { color:#b91c1c; }
+        .stat-card.warning .stat-label { color:#92400e; }
+        .stat-card.success .stat-label { color:var(--brand-dark); }
+        .stat-card.info    .stat-label { color:#0369a1; }
+        .stat-value { font-size:30px; font-weight:800; line-height:1; }
+        .stat-card.danger  .stat-value { color:#b91c1c; }
+        .stat-card.warning .stat-value { color:#92400e; }
+        .stat-card.success .stat-value { color:var(--brand-dark); }
+        .stat-card.info    .stat-value { color:#0369a1; }
+
+        /* FILTERS */
+        .filters-section { background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border); padding:20px 24px; margin-bottom:26px; box-shadow:var(--shadow-card); }
+        .filters-title { font-size:14px; font-weight:800; margin-bottom:14px; color:var(--text-primary); }
+        .filters-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+        .fg { display:flex; flex-direction:column; gap:6px; }
+        .fg label { font-size:12px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.5px; }
+        select, input[type="text"] { padding:9px 14px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text-primary); font-family:inherit; font-size:13.5px; font-weight:500; outline:none; transition:border-color .2s; min-width:180px; }
+        select:focus, input:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(22,163,74,.13); }
+        .btn-secondary { background:#f0f2f7; color:var(--text-secondary); }
+
+        /* SECTION */
+        .section { background:var(--surface); border-radius:var(--radius-lg); border:1px solid var(--border); box-shadow:var(--shadow-card); overflow:hidden; }
+        .section-header { padding:22px 26px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+        .section-title { font-size:16px; font-weight:800; display:flex; align-items:center; gap:9px; }
+        .count-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:999px; font-size:13px; font-weight:700; }
+        .count-danger  { background:var(--danger-light); color:#b91c1c; }
+        .count-success { background:var(--brand-light);  color:var(--brand-dark); }
+
+        /* ANOMALY GRID */
+        .anomaly-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:18px; padding:26px; }
+        .anomaly-card { background:var(--surface); border-radius:var(--radius-md); border:1px solid var(--border); box-shadow:var(--shadow-card); padding:22px 24px; position:relative; overflow:hidden; transition:transform .2s,box-shadow .2s; }
+        .anomaly-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-hover); }
+        .anomaly-card.risk-eleve  { border-left:4px solid var(--danger); }
+        .anomaly-card.risk-moyen  { border-left:4px solid var(--warning); }
+        .anomaly-card.risk-faible { border-left:4px solid var(--info); }
+
+        .risk-tag { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:999px; font-size:11.5px; font-weight:700; margin-bottom:14px; }
+        .risk-tag::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+        .risk-tag.eleve  { background:var(--danger-light); color:#b91c1c; }
+        .risk-tag.moyen  { background:var(--warning-light); color:#92400e; }
+        .risk-tag.faible { background:var(--info-light); color:#0369a1; }
+
+        .anomaly-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:6px; }
+        .anomaly-amount { font-size:26px; font-weight:800; }
+        .method-tag { font-size:11px; font-weight:700; background:#f1f5f1; padding:4px 10px; border-radius:6px; color:var(--text-secondary); white-space:nowrap; }
+
+        .anomaly-meta { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+        .meta-pill { background:#f4faf6; border:1px solid var(--border); padding:3px 10px; border-radius:999px; font-size:12px; font-weight:600; color:var(--text-secondary); }
+
+        .anomaly-reason { font-size:13px; color:var(--text-secondary); line-height:1.6; background:#f9fdf9; padding:12px 14px; border-radius:var(--radius-sm); border-left:3px solid var(--border); }
+
+        .score-bar { margin-top:14px; display:flex; align-items:center; gap:10px; }
+        .score-label { font-size:11px; font-weight:700; color:var(--text-muted); white-space:nowrap; }
+        .score-track { flex:1; height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+        .score-fill { height:100%; border-radius:99px; }
+        .score-fill.eleve  { background:linear-gradient(90deg,#ef4444,#f87171); }
+        .score-fill.moyen  { background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+        .score-fill.faible { background:linear-gradient(90deg,#0ea5e9,#38bdf8); }
+        .score-val { font-size:11.5px; font-weight:700; color:var(--text-secondary); white-space:nowrap; }
+
+        /* EMPTY / INITIAL */
+        .initial-state, .empty-ai { text-align:center; padding:64px 20px; }
+        .initial-icon, .empty-ai-icon { width:80px; height:80px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+        .initial-icon { background:linear-gradient(135deg,#0f172a,#15803d); }
+        .empty-ai-icon { background:var(--brand-light); }
+        .initial-icon svg, .empty-ai-icon svg { width:40px; height:40px; }
+        .initial-title, .empty-ai-title { font-size:20px; font-weight:800; margin-bottom:8px; }
+        .initial-sub, .empty-ai-sub { color:var(--text-muted); font-size:14px; max-width:380px; margin:0 auto; line-height:1.6; }
+
+        /* LOADING */
+        .loading-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,.6); z-index:999; align-items:center; justify-content:center; flex-direction:column; gap:20px; backdrop-filter:blur(6px); }
+        .loading-overlay.show { display:flex; }
+        .loading-box { background:white; border-radius:var(--radius-lg); padding:40px 48px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.2); max-width:360px; width:90%; }
+        .spinner { width:52px; height:52px; border:4px solid var(--brand-light); border-top-color:var(--brand); border-radius:50%; animation:spin .7s linear infinite; margin:0 auto 20px; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .loading-title { font-size:17px; font-weight:800; margin-bottom:6px; }
+        .loading-sub { font-size:13px; color:var(--text-muted); line-height:1.6; }
+        .loading-steps { margin-top:20px; text-align:left; }
+        .loading-step { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--text-muted); padding:6px 0; border-bottom:1px solid var(--border); }
+        .loading-step:last-child { border-bottom:none; }
+        .step-dot { width:8px; height:8px; border-radius:50%; background:var(--border); flex-shrink:0; }
+        .step-dot.active { background:var(--brand); animation:pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    </style>
+</head>
+<body>
+<div class="content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <div class="topbar-title">AI <span>Anomaly Detector</span></div>
+        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-primary">← Dashboard</a>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero-card">
+        <div class="hero-glow"></div>
+        <div class="hero-text">
+            <div class="hero-badge">⚡ Isolation Forest ML + Analyse Statistique</div>
+            <div class="hero-title">Détection d'Anomalies Financières</div>
+            <div class="hero-sub">Algorithme ML Isolation Forest combiné à Z-Score, IQR et règles métier pour détecter les contributions suspectes.</div>
+        </div>
+        <div class="hero-action">
+            <form method="get" action="{{ path('app_admin_anomalies') }}">
+                <button class="btn btn-dark" type="submit" onclick="showLoading()">
+                    ⚡ Lancer l'Analyse IA
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    {% if stats is not null %}
+    <div class="stats-grid">
+        <div class="stat-card {{ stats.total > 0 ? 'danger' : 'success' }}">
+            <div class="stat-label">Anomalies détectées</div>
+            <div class="stat-value">{{ stats.total }}</div>
+        </div>
+        <div class="stat-card {{ stats.eleve > 0 ? 'danger' : '' }}">
+            <div class="stat-label">Risque Élevé</div>
+            <div class="stat-value">{{ stats.eleve }}</div>
+        </div>
+        <div class="stat-card {{ stats.moyen > 0 ? 'warning' : '' }}">
+            <div class="stat-label">Risque Moyen</div>
+            <div class="stat-value">{{ stats.moyen }}</div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-label">Utilisateurs concernés</div>
+            <div class="stat-value">{{ stats.users }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FILTERS -->
+    <div class="filters-section">
+        <div class="filters-title">Filtres</div>
+        <form method="get" action="{{ path('app_admin_anomalies') }}">
+            <div class="filters-row">
+                <div class="fg">
+                    <label>Utilisateur</label>
+                    <select name="user_id">
+                        <option value="">— Tous —</option>
+                        {% for user in allUsers %}
+                            <option value="{{ user.id }}" {{ filterUserId == user.id ? 'selected' : '' }}>
+                                {{ user.prenom }} {{ user.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fg">
+                    <label>Wallet</label>
+                    <select name="wallet_id">
+                        <option value="">— Tous —</option>
+                        {% for wallet in allWallets %}
+                            <option value="{{ wallet.id }}" {{ filterWalletId == wallet.id ? 'selected' : '' }}>
+                                #{{ wallet.id }} — {{ wallet.pays }} / {{ wallet.devise }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fg">
+                    <label>Niveau de risque</label>
+                    <select name="niveau_risque">
+                        <option value="">— Tous —</option>
+                        <option value="ÉLEVÉ"  {{ filterRisk == 'ÉLEVÉ'  ? 'selected' : '' }}>ÉLEVÉ</option>
+                        <option value="MOYEN"  {{ filterRisk == 'MOYEN'  ? 'selected' : '' }}>MOYEN</option>
+                        <option value="FAIBLE" {{ filterRisk == 'FAIBLE' ? 'selected' : '' }}>FAIBLE</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px;align-items:flex-end;">
+                    <button class="btn btn-primary" type="submit" onclick="showLoading()">Appliquer</button>
+                    <a href="{{ path('app_admin_anomalies') }}" class="btn btn-secondary">Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">Résultats de l'Analyse</div>
+            {% if anomalies is not null %}
+                {% if anomalies|length > 0 %}
+                    <span class="count-badge count-danger">⚠ {{ anomalies|length }} anomalie{{ anomalies|length > 1 ? 's' : '' }} détectée{{ anomalies|length > 1 ? 's' : '' }}</span>
+                {% else %}
+                    <span class="count-badge count-success">✓ Aucune anomalie</span>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        {% if anomalies is null %}
+            <div class="initial-state">
+                <div class="initial-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" width="40" height="40"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div class="initial-title">Analyse non lancée</div>
+                <div class="initial-sub">Cliquez sur "Lancer l'Analyse IA" pour démarrer la détection d'anomalies.</div>
+            </div>
+
+        {% elseif anomalies|length == 0 %}
+            <div class="empty-ai">
+                <div class="empty-ai-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.5" width="40" height="40"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div class="empty-ai-title">Aucune anomalie détectée ✓</div>
+                <div class="empty-ai-sub">Toutes les contributions analysées sont dans les normes attendues.</div>
+            </div>
+
+        {% else %}
+            <div class="anomaly-grid">
+                {% for a in anomalies %}
+                    {% set riskRaw = a.niveau_risque|upper %}
+                    {% set riskClass = 'faible' %}
+                    {% if 'LEVE' in riskRaw or 'LEVÉ' in riskRaw or riskRaw == 'ÉLEVÉ' %}
+                        {% set riskClass = 'eleve' %}
+                    {% elseif riskRaw == 'MOYEN' %}
+                        {% set riskClass = 'moyen' %}
+                    {% endif %}
+
+                    {% set scorePct = ((a.score / 15) * 100)|round %}
+{% if scorePct > 100 %}{% set scorePct = 100 %}{% endif %}
+
+                    <div class="anomaly-card risk-{{ riskClass }}">
+                        <div class="risk-tag {{ riskClass }}">{{ a.niveau_risque }}</div>
+                        <div class="anomaly-top">
+                            <div class="anomaly-amount">{{ a.montant|number_format(2, ',', ' ') }}</div>
+                            <div class="method-tag">{{ a.methode }}</div>
+                        </div>
+                        <div class="anomaly-meta">
+                            <span class="meta-pill">Objectif #{{ a.objectif_id }}</span>
+                            <span class="meta-pill">{{ a.objectif_titre }}</span>
+                            <span class="meta-pill">Wallet #{{ a.wallet_id }}</span>
+                            {% if a._devise is defined %}<span class="meta-pill">{{ a._devise }}</span>{% endif %}
+                            {% if a._user_nom is defined and a._user_nom %}
+                                <span class="meta-pill" style="background:#ede9fe;border-color:#c4b5fd;color:#6d28d9;">👤 {{ a._user_nom }}</span>
+                            {% endif %}
+                            {% if a._pays is defined and a._pays %}
+                                <span class="meta-pill" style="background:#fef3c7;border-color:#fde68a;color:#92400e;">🌍 {{ a._pays }}</span>
+                            {% endif %}
+                            {% if a.date %}<span class="meta-pill">{{ a.date }}</span>{% endif %}
+                        </div>
+                        <div class="anomaly-reason">{{ a.raison }}</div>
+                        <div class="score-bar">
+                            <span class="score-label">Score</span>
+                            <div class="score-track">
+                                <div class="score-fill {{ riskClass }}" style="width:{{ scorePct }}%;"></div>
+                            </div>
+                            <span class="score-val">{{ a.score }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <div class="loading-title">Analyse IA en cours…</div>
+        <div class="loading-sub">Isolation Forest + Z-Score + IQR + Règles métier</div>
+        <div class="loading-steps">
+            <div class="loading-step"><div class="step-dot active" id="step1"></div>Construction des arbres Isolation Forest</div>
+            <div class="loading-step"><div class="step-dot" id="step2"></div>Calcul des scores d'anomalie</div>
+            <div class="loading-step"><div class="step-dot" id="step3"></div>Analyse statistique (Z-Score, IQR)</div>
+            <div class="loading-step"><div class="step-dot" id="step4"></div>Fusion et ranking des résultats</div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('show');
+    const steps = ['step1','step2','step3','step4'];
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i > 0) document.getElementById(steps[i-1]).classList.remove('active');
+        if (i < steps.length) { document.getElementById(steps[i]).classList.add('active'); i++; }
+        else clearInterval(interval);
+    }, 600);
+}
+</script>
+</body>
+</html>
+{% endblock %}

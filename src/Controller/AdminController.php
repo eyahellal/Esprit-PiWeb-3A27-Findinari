@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Controller;
-
+use Doctrine\DBAL\Connection;
+use App\Service\AnomalyDetectorService;
 use App\Entity\Loan\Obligation;
 use App\Entity\Loan\Wallet;
 use App\Entity\reclamation\Message;
@@ -792,6 +793,108 @@ class AdminController extends AbstractController
             'stats' => null,
         ]);
     }
+    #[Route('/admin/anomalies', name: 'app_admin_anomalies')]
+public function anomalies(
+    AnomalyDetectorService $anomalyDetector,
+    WalletRepository       $walletRepository,
+    UtilisateurRepository  $utilisateurRepository,
+    Connection             $connection,
+    Request                $request
+): Response {
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+    // Filtres optionnels
+    $filterUserId   = $request->query->get('user_id');
+    $filterRisk     = $request->query->get('niveau_risque', '');
+    $filterWalletId = $request->query->get('wallet_id');
+
+    // Récupérer toutes les contributions depuis la BDD
+    $sql = '
+        SELECT
+            cg.id            AS contribution_id,
+            cg.montant       AS montant,
+            cg.date          AS date,
+            o.id             AS objectif_id,
+            o.titre          AS objectif_titre,
+            w.id             AS wallet_id,
+            w.devise         AS devise,
+            w.pays           AS pays,
+            u.id             AS user_id,
+            u.nom            AS user_nom,
+            u.prenom         AS user_prenom,
+            u.gmail          AS user_gmail
+        FROM contributiongoal cg
+        JOIN objectif o  ON cg.objectif_id  = o.id
+        JOIN wallet   w  ON o.wallet_id     = w.id
+        JOIN utilisateur u ON w.utilisateur_id = u.id
+        WHERE 1=1
+    ';
+
+    $params = [];
+
+    if ($filterUserId) {
+        $sql .= ' AND u.id = ?';
+        $params[] = (int) $filterUserId;
+    }
+
+    if ($filterWalletId) {
+        $sql .= ' AND w.id = ?';
+        $params[] = (int) $filterWalletId;
+    }
+
+    $sql .= ' ORDER BY cg.date DESC';
+
+    $rows = $connection->fetchAllAssociative($sql, $params);
+
+    // Formater pour AnomalyDetectorService
+    $contributions = array_map(fn($row) => [
+        'objectif_id'    => (int)   $row['objectif_id'],
+        'objectif_titre' => (string)$row['objectif_titre'],
+        'wallet_id'      => (int)   $row['wallet_id'],
+        'montant'        => (float) $row['montant'],
+        'date'           => (string)$row['date'],
+        // Données extra pour l'affichage admin (non utilisées par le service)
+        '_user_id'       => (int)   $row['user_id'],
+        '_user_nom'      => $row['user_nom'] . ' ' . $row['user_prenom'],
+        '_user_gmail'    => $row['user_gmail'],
+        '_devise'        => $row['devise'],
+        '_pays'          => $row['pays'],
+    ], $rows);
+
+    // Détection
+    $anomalies = count($contributions) >= 3
+        ? $anomalyDetector->detect($contributions)
+        : [];
+    
+    // Filtre par niveau de risque (post-détection)
+    if ($filterRisk !== '') {
+        $anomalies = array_values(
+            array_filter($anomalies, fn($a) => $a['niveau_risque'] === $filterRisk)
+        );
+    }
+
+    // Stats pour le header
+    $stats = [
+        'total'  => count($anomalies),
+        'eleve'  => count(array_filter($anomalies, fn($a) => $a['niveau_risque'] === 'ÉLEVÉ')),
+        'moyen'  => count(array_filter($anomalies, fn($a) => $a['niveau_risque'] === 'MOYEN')),
+        'users'  => count(array_unique(array_column($anomalies, '_user_id'))),
+    ];
+
+    // Liste des users pour le filtre
+    $allUsers   = $utilisateurRepository->findAll();
+    $allWallets = $walletRepository->findAll();
+
+    return $this->render('admin/anomalies.html.twig', [
+        'anomalies'       => $anomalies,
+        'stats'           => $stats,
+        'allUsers'        => $allUsers,
+        'allWallets'      => $allWallets,
+        'filterUserId'    => $filterUserId,
+        'filterWalletId'  => $filterWalletId,
+        'filterRisk'      => $filterRisk,
+    ]);
+}
 
     #[Route('/admin/user/{id}', name: 'app_admin_user_show', methods: ['GET'])]
     public function showUser(Utilisateur $utilisateur): Response
